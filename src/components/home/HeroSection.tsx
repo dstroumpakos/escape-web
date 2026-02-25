@@ -2,13 +2,13 @@
 
 import Link from 'next/link';
 import { Search, ArrowRight, Sparkles } from 'lucide-react';
-import { useQuery } from 'convex/react';
+import { useSafeQuery } from '@/lib/useSafeQuery';
 import { api } from '../../../convex/_generated/api';
 
 export function HeroSection() {
-  const platformStats = useQuery(api.stats.getPlatformStats) as
-    | { totalPlayers: number; totalRooms: number; averageRating: number }
-    | undefined;
+  const platformStats = useSafeQuery<{ totalPlayers: number; totalRooms: number; averageRating: number }>(
+    api.stats.getPlatformStats
+  );
 
   const playersLabel = platformStats
     ? `${platformStats.totalPlayers.toLocaleString()}+ Players`

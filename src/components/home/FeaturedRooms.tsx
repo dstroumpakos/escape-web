@@ -1,7 +1,7 @@
 'use client';
 
 import { Star, Clock, Users, Zap, DoorOpen } from 'lucide-react';
-import { useQuery } from 'convex/react';
+import { useSafeQuery } from '@/lib/useSafeQuery';
 import { api } from '../../../convex/_generated/api';
 
 interface RoomCardProps {
@@ -199,7 +199,7 @@ function RoomCard({ room }: { room: RoomCardProps }) {
 }
 
 export function FeaturedRooms() {
-  const convexRooms = useQuery(api.rooms.list);
+  const convexRooms = useSafeQuery<any[]>(api.rooms.list);
 
   // Map Convex rooms to our card format, fallback to sample data
   const rooms: RoomCardProps[] =

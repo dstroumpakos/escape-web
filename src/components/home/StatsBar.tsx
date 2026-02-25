@@ -1,7 +1,7 @@
 'use client';
 
 import { Users, DoorOpen, Trophy, Building2 } from 'lucide-react';
-import { useQuery } from 'convex/react';
+import { useSafeQuery } from '@/lib/useSafeQuery';
 import { api } from '../../../convex/_generated/api';
 import { useEffect, useState } from 'react';
 
@@ -35,9 +35,9 @@ function useCountUp(target: number, duration = 1200) {
 }
 
 export function StatsBar() {
-  const platformStats = useQuery(api.stats.getPlatformStats) as
-    | { totalPlayers: number; totalRooms: number; completedEscapes: number; partnerVenues: number }
-    | undefined;
+  const platformStats = useSafeQuery<{ totalPlayers: number; totalRooms: number; completedEscapes: number; partnerVenues: number }>(
+    api.stats.getPlatformStats
+  );
 
   const players = useCountUp(platformStats?.totalPlayers ?? 0);
   const rooms = useCountUp(platformStats?.totalRooms ?? 0);
