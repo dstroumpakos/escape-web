@@ -3,6 +3,7 @@ import './globals.css';
 import { LayoutShell } from '@/components/layout/LayoutShell';
 import { ConvexClientProvider } from '@/components/providers/ConvexClientProvider';
 import { AuthProvider } from '@/lib/auth';
+import { SafeConvex } from '@/components/SafeConvex';
 
 // Force all pages to be dynamically rendered (SSR on-demand)
 // This prevents Convex hooks from failing during build-time pre-rendering

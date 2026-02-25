@@ -6,13 +6,14 @@ import { StatsBar } from '@/components/home/StatsBar';
 import { TestimonialsSection } from '@/components/home/TestimonialsSection';
 import { DownloadCTA } from '@/components/home/DownloadCTA';
 import { ForBusinesses } from '@/components/home/ForBusinesses';
+import { SafeConvex } from '@/components/SafeConvex';
 
 export default function Home() {
   return (
     <>
-      <HeroSection />
-      <StatsBar />
-      <FeaturedRooms />
+      <SafeConvex><HeroSection /></SafeConvex>
+      <SafeConvex><StatsBar /></SafeConvex>
+      <SafeConvex><FeaturedRooms /></SafeConvex>
       <ThemesSection />
       <HowItWorks />
       <TestimonialsSection />
