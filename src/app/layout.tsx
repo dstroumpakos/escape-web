@@ -4,6 +4,10 @@ import { LayoutShell } from '@/components/layout/LayoutShell';
 import { ConvexClientProvider } from '@/components/providers/ConvexClientProvider';
 import { AuthProvider } from '@/lib/auth';
 
+// Force all pages to be dynamically rendered (SSR on-demand)
+// This prevents Convex hooks from failing during build-time pre-rendering
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   title: 'UNLOCKED - Discover & Book Escape Rooms',
   description:
