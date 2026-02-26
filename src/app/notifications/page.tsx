@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useQuery, useMutation } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
 import { useAuth } from '@/lib/auth';
+import { useTranslation } from '@/lib/i18n';
 import {
   Bell,
   Ticket,
@@ -37,6 +38,7 @@ const typeColors: Record<string, string> = {
 export default function NotificationsPage() {
   const router = useRouter();
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
+  const { t } = useTranslation();
 
   const notifications = useQuery(
     api.notifications.getByUser,
@@ -81,12 +83,12 @@ export default function NotificationsPage() {
   const timeAgo = (timestamp: number) => {
     const diff = Date.now() - timestamp;
     const mins = Math.floor(diff / 60000);
-    if (mins < 1) return 'Just now';
-    if (mins < 60) return `${mins}m ago`;
+    if (mins < 1) return t('notifications.just_now');
+    if (mins < 60) return t('notifications.minutes_ago', { count: String(mins) });
     const hours = Math.floor(mins / 60);
-    if (hours < 24) return `${hours}h ago`;
+    if (hours < 24) return t('notifications.hours_ago', { count: String(hours) });
     const days = Math.floor(hours / 24);
-    return `${days}d ago`;
+    return t('notifications.days_ago', { count: String(days) });
   };
 
   return (
@@ -98,12 +100,12 @@ export default function NotificationsPage() {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="section-heading mb-2">
-                Notif<span className="text-gradient">ications</span>
+                {t('notifications.title')}
               </h1>
               <p className="text-brand-text-secondary">
                 {unreadCount > 0
-                  ? `You have ${unreadCount} unread notification${unreadCount > 1 ? 's' : ''}`
-                  : 'You\'re all caught up!'}
+                  ? t('notifications.unread_count', { count: String(unreadCount) })
+                  : t('notifications.all_caught_up')}
               </p>
             </div>
             {unreadCount > 0 && (
@@ -112,7 +114,7 @@ export default function NotificationsPage() {
                 className="btn-ghost text-sm flex items-center gap-1.5"
               >
                 <CheckCheck className="w-4 h-4" />
-                Mark all read
+                {t('notifications.mark_all_read')}
               </button>
             )}
           </div>
@@ -125,14 +127,14 @@ export default function NotificationsPage() {
           {!notifications ? (
             <div className="text-center py-20">
               <div className="w-8 h-8 border-2 border-brand-red/30 border-t-brand-red rounded-full animate-spin mx-auto mb-4" />
-              <p className="text-brand-text-muted">Loading notifications...</p>
+              <p className="text-brand-text-muted">{t('notifications.loading')}</p>
             </div>
           ) : notifications.length === 0 ? (
             <div className="text-center py-20">
               <Bell className="w-16 h-16 text-brand-border mx-auto mb-4" />
-              <h3 className="text-xl font-semibold mb-2">No notifications</h3>
+              <h3 className="text-xl font-semibold mb-2">{t('notifications.no_notifications')}</h3>
               <p className="text-brand-text-muted">
-                When you book rooms or receive updates, you&apos;ll see them here.
+                {t('notifications.no_notifications_desc')}
               </p>
             </div>
           ) : (

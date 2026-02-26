@@ -6,8 +6,10 @@ import Link from 'next/link';
 import { useMutation } from 'convex/react';
 import { api } from '../../../../convex/_generated/api';
 import { Unlock, Building2, Mail, Lock, Eye, EyeOff, Phone, MapPin, FileText, ArrowRight } from 'lucide-react';
+import { useTranslation } from '@/lib/i18n';
 
 export default function CompanyRegisterPage() {
+  const { t } = useTranslation();
   const router = useRouter();
   const registerMutation = useMutation(api.companies.register);
 
@@ -35,7 +37,7 @@ export default function CompanyRegisterPage() {
     setError('');
 
     if (form.password !== form.confirmPassword) {
-      setError('Passwords do not match');
+      setError(t('company.register.passwords_mismatch'));
       return;
     }
 
@@ -60,7 +62,7 @@ export default function CompanyRegisterPage() {
       // Registration successful — redirect to login
       router.push('/company/login?registered=true');
     } catch (err: any) {
-      setError(err?.message || 'Registration failed');
+      setError(err?.message || t('company.register.error'));
     } finally {
       setLoading(false);
     }
@@ -81,15 +83,15 @@ export default function CompanyRegisterPage() {
           </div>
           <div className="flex items-center justify-center gap-2 text-brand-text-secondary">
             <Building2 className="w-4 h-4" />
-            <span className="text-sm font-medium">Register Your Business</span>
+            <span className="text-sm font-medium">{t('company.register.title')}</span>
           </div>
         </div>
 
         {/* Form */}
         <div className="bg-brand-surface rounded-2xl p-8 border border-white/5">
-          <h1 className="text-2xl font-bold mb-2">Create business account</h1>
+          <h1 className="text-2xl font-bold mb-2">{t('company.register.heading')}</h1>
           <p className="text-brand-text-secondary text-sm mb-6">
-            List your escape rooms on UNLOCKED and reach thousands of players
+            {t('company.register.subtitle')}
           </p>
 
           {error && (
@@ -101,7 +103,7 @@ export default function CompanyRegisterPage() {
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Company Name */}
             <div>
-              <label className="block text-sm text-brand-text-secondary mb-1.5">Company Name</label>
+              <label className="block text-sm text-brand-text-secondary mb-1.5">{t('company.register.company_name')}</label>
               <div className="relative">
                 <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-brand-text-secondary" />
                 <input
@@ -109,7 +111,7 @@ export default function CompanyRegisterPage() {
                   value={form.name}
                   onChange={(e) => updateField('name', e.target.value)}
                   className="w-full bg-brand-bg border border-white/10 rounded-xl pl-11 pr-4 py-3 text-white placeholder-brand-text-secondary/50 focus:border-brand-red focus:outline-none transition-colors"
-                  placeholder="Your Company Name"
+                  placeholder={t('company.register.company_placeholder')}
                   required
                 />
               </div>
@@ -117,7 +119,7 @@ export default function CompanyRegisterPage() {
 
             {/* Email */}
             <div>
-              <label className="block text-sm text-brand-text-secondary mb-1.5">Email</label>
+              <label className="block text-sm text-brand-text-secondary mb-1.5">{t('company.register.email')}</label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-brand-text-secondary" />
                 <input
@@ -125,7 +127,7 @@ export default function CompanyRegisterPage() {
                   value={form.email}
                   onChange={(e) => updateField('email', e.target.value)}
                   className="w-full bg-brand-bg border border-white/10 rounded-xl pl-11 pr-4 py-3 text-white placeholder-brand-text-secondary/50 focus:border-brand-red focus:outline-none transition-colors"
-                  placeholder="company@example.com"
+                  placeholder={t('company.register.email_placeholder')}
                   required
                 />
               </div>
@@ -133,7 +135,7 @@ export default function CompanyRegisterPage() {
 
             {/* Phone */}
             <div>
-              <label className="block text-sm text-brand-text-secondary mb-1.5">Phone</label>
+              <label className="block text-sm text-brand-text-secondary mb-1.5">{t('company.register.phone')}</label>
               <div className="relative">
                 <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-brand-text-secondary" />
                 <input
@@ -141,7 +143,7 @@ export default function CompanyRegisterPage() {
                   value={form.phone}
                   onChange={(e) => updateField('phone', e.target.value)}
                   className="w-full bg-brand-bg border border-white/10 rounded-xl pl-11 pr-4 py-3 text-white placeholder-brand-text-secondary/50 focus:border-brand-red focus:outline-none transition-colors"
-                  placeholder="+30 6XX XXX XXXX"
+                  placeholder={t('company.register.phone_placeholder')}
                   required
                 />
               </div>
@@ -150,7 +152,7 @@ export default function CompanyRegisterPage() {
             {/* Address & City */}
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-sm text-brand-text-secondary mb-1.5">Address</label>
+                <label className="block text-sm text-brand-text-secondary mb-1.5">{t('company.register.address')}</label>
                 <div className="relative">
                   <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-brand-text-secondary" />
                   <input
@@ -158,19 +160,19 @@ export default function CompanyRegisterPage() {
                     value={form.address}
                     onChange={(e) => updateField('address', e.target.value)}
                     className="w-full bg-brand-bg border border-white/10 rounded-xl pl-11 pr-4 py-3 text-white placeholder-brand-text-secondary/50 focus:border-brand-red focus:outline-none transition-colors"
-                    placeholder="Street Address"
+                    placeholder={t('company.register.address_placeholder')}
                     required
                   />
                 </div>
               </div>
               <div>
-                <label className="block text-sm text-brand-text-secondary mb-1.5">City</label>
+                <label className="block text-sm text-brand-text-secondary mb-1.5">{t('company.register.city')}</label>
                 <input
                   type="text"
                   value={form.city}
                   onChange={(e) => updateField('city', e.target.value)}
                   className="w-full bg-brand-bg border border-white/10 rounded-xl px-4 py-3 text-white placeholder-brand-text-secondary/50 focus:border-brand-red focus:outline-none transition-colors"
-                  placeholder="Athens"
+                  placeholder={t('company.register.city_placeholder')}
                   required
                 />
               </div>
@@ -178,7 +180,7 @@ export default function CompanyRegisterPage() {
 
             {/* VAT */}
             <div>
-              <label className="block text-sm text-brand-text-secondary mb-1.5">VAT Number (optional)</label>
+              <label className="block text-sm text-brand-text-secondary mb-1.5">{t('company.register.vat_label')}</label>
               <div className="relative">
                 <FileText className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-brand-text-secondary" />
                 <input
@@ -186,27 +188,27 @@ export default function CompanyRegisterPage() {
                   value={form.vatNumber}
                   onChange={(e) => updateField('vatNumber', e.target.value)}
                   className="w-full bg-brand-bg border border-white/10 rounded-xl pl-11 pr-4 py-3 text-white placeholder-brand-text-secondary/50 focus:border-brand-red focus:outline-none transition-colors"
-                  placeholder="EL XXXXXXXXX"
+                  placeholder={t('company.register.vat_placeholder')}
                 />
               </div>
             </div>
 
             {/* Description */}
             <div>
-              <label className="block text-sm text-brand-text-secondary mb-1.5">Description</label>
+              <label className="block text-sm text-brand-text-secondary mb-1.5">{t('company.register.description')}</label>
               <textarea
                 value={form.description}
                 onChange={(e) => updateField('description', e.target.value)}
                 rows={3}
                 className="w-full bg-brand-bg border border-white/10 rounded-xl px-4 py-3 text-white placeholder-brand-text-secondary/50 focus:border-brand-red focus:outline-none transition-colors resize-none"
-                placeholder="Tell us about your escape room business..."
+                placeholder={t('company.register.description_placeholder')}
                 required
               />
             </div>
 
             {/* Password */}
             <div>
-              <label className="block text-sm text-brand-text-secondary mb-1.5">Password</label>
+              <label className="block text-sm text-brand-text-secondary mb-1.5">{t('company.register.password')}</label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-brand-text-secondary" />
                 <input
@@ -230,7 +232,7 @@ export default function CompanyRegisterPage() {
 
             {/* Confirm Password */}
             <div>
-              <label className="block text-sm text-brand-text-secondary mb-1.5">Confirm Password</label>
+              <label className="block text-sm text-brand-text-secondary mb-1.5">{t('company.register.confirm_password')}</label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-brand-text-secondary" />
                 <input
@@ -254,23 +256,23 @@ export default function CompanyRegisterPage() {
                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
               ) : (
                 <>
-                  Create Account <ArrowRight className="w-4 h-4" />
+                  {t('company.register.submit')} <ArrowRight className="w-4 h-4" />
                 </>
               )}
             </button>
           </form>
 
           <p className="text-center text-sm text-brand-text-secondary mt-6">
-            Already have a business account?{' '}
+            {t('company.register.has_account')}{' '}
             <Link href="/company/login" className="text-brand-red hover:underline">
-              Sign in
+              {t('company.register.login')}
             </Link>
           </p>
         </div>
 
         <p className="text-center text-xs text-brand-text-secondary mt-6">
           <Link href="/" className="hover:text-white transition-colors">
-            ← Back to UNLOCKED
+            {t('company.register.back_to_site')}
           </Link>
         </p>
       </div>

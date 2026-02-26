@@ -16,15 +16,21 @@ import {
   Ban,
   FileText,
 } from 'lucide-react';
-
-const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-const MONTHS = [
-  'January', 'February', 'March', 'April', 'May', 'June',
-  'July', 'August', 'September', 'October', 'November', 'December',
-];
+import { useTranslation } from '@/lib/i18n';
 
 export default function CompanyBookingsPage() {
   const { company } = useCompanyAuth();
+  const { t } = useTranslation();
+  const DAYS = [
+    t('common.day_sun'), t('common.day_mon'), t('common.day_tue'),
+    t('common.day_wed'), t('common.day_thu'), t('common.day_fri'), t('common.day_sat')
+  ];
+  const MONTHS = [
+    t('common.month_1'), t('common.month_2'), t('common.month_3'),
+    t('common.month_4'), t('common.month_5'), t('common.month_6'),
+    t('common.month_7'), t('common.month_8'), t('common.month_9'),
+    t('common.month_10'), t('common.month_11'), t('common.month_12')
+  ];
   const companyId = company?.id;
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(
@@ -76,31 +82,31 @@ export default function CompanyBookingsPage() {
     selectedDate.startsWith(`${year}-${String(month + 1).padStart(2, '0')}`);
 
   const handleCancel = async (bookingId: string) => {
-    if (!confirm('Are you sure you want to cancel this booking?')) return;
+    if (!confirm(t('company.bookings.confirm_cancel'))) return;
     await cancelBooking({ companyId: companyId as any, bookingId: bookingId as any });
   };
 
   const handleComplete = async (bookingId: string) => {
-    if (!confirm('Mark this booking as completed?')) return;
+    if (!confirm(t('company.bookings.confirm_complete'))) return;
     await completeBooking({ companyId: companyId as any, bookingId: bookingId as any });
   };
 
   return (
     <div className="p-6 md:p-8 max-w-7xl mx-auto">
       <div className="flex items-center justify-between mb-8">
-        <h1 className="text-2xl md:text-3xl font-bold">Bookings</h1>
+        <h1 className="text-2xl md:text-3xl font-bold">{t('company.bookings.title')}</h1>
         <div className="flex gap-2">
           <button
             onClick={() => setShowExternalModal(true)}
             className="btn-ghost text-sm flex items-center gap-1.5"
           >
-            <Ban className="w-4 h-4" /> Block Slot
+            <Ban className="w-4 h-4" /> {t('company.bookings.block_slot')}
           </button>
           <button
             onClick={() => setShowCreateModal(true)}
             className="btn-primary text-sm flex items-center gap-1.5"
           >
-            <Plus className="w-4 h-4" /> New Booking
+            <Plus className="w-4 h-4" /> {t('company.bookings.new_booking')}
           </button>
         </div>
       </div>
@@ -170,12 +176,12 @@ export default function CompanyBookingsPage() {
 
             {!bookings ? (
               <div className="text-center py-8 text-brand-text-secondary">
-                Loading bookings...
+                {t('company.bookings.loading')}
               </div>
             ) : bookings.length === 0 ? (
               <div className="text-center py-12 text-brand-text-secondary">
                 <CalendarIcon className="w-12 h-12 mx-auto mb-3 opacity-30" />
-                <p>No bookings for this date</p>
+                <p>{t('company.bookings.no_bookings')}</p>
               </div>
             ) : (
               <div className="space-y-3">
@@ -208,7 +214,7 @@ export default function CompanyBookingsPage() {
                               : 'bg-brand-red/10 text-brand-red'
                           }`}
                         >
-                          {booking.source === 'external' ? 'External' : 'UNLOCKED'}
+                          {booking.source === 'external' ? t('company.bookings.external') : t('company.bookings.unlocked_source')}
                         </span>
                         <span
                           className={`text-xs px-2 py-1 rounded-full font-medium ${
@@ -219,7 +225,7 @@ export default function CompanyBookingsPage() {
                               : 'bg-blue-500/10 text-blue-400'
                           }`}
                         >
-                          {booking.status}
+                          {booking.status === 'cancelled' ? t('company.bookings.status_cancelled') : booking.status === 'completed' ? t('company.bookings.status_completed') : booking.status === 'upcoming' ? t('company.bookings.status_upcoming') : booking.status}
                         </span>
                       </div>
                     </div>
@@ -228,7 +234,7 @@ export default function CompanyBookingsPage() {
                         <Users className="w-3.5 h-3.5" /> {booking.playerName}
                       </span>
                       <span className="flex items-center gap-1">
-                        <Users className="w-3.5 h-3.5" /> {booking.players} players
+                        <Users className="w-3.5 h-3.5" /> {booking.players} {t('company.bookings.players_count')}
                       </span>
                       {booking.total > 0 && (
                         <span className="flex items-center gap-1">
@@ -242,17 +248,17 @@ export default function CompanyBookingsPage() {
                       <div className="mt-4 pt-4 border-t border-white/5 space-y-3">
                         <div className="grid grid-cols-2 gap-3 text-sm">
                           <div>
-                            <span className="text-brand-text-secondary">Booking Code</span>
+                            <span className="text-brand-text-secondary">{t('company.bookings.booking_code')}</span>
                             <p className="font-mono font-semibold">{booking.bookingCode}</p>
                           </div>
                           <div>
-                            <span className="text-brand-text-secondary">Payment</span>
-                            <p className="font-semibold">{booking.paymentStatus || 'N/A'}</p>
+                            <span className="text-brand-text-secondary">{t('company.bookings.payment')}</span>
+                            <p className="font-semibold">{booking.paymentStatus || t('company.bookings.na')}</p>
                           </div>
                         </div>
                         {booking.notes && (
                           <div className="text-sm">
-                            <span className="text-brand-text-secondary">Notes</span>
+                            <span className="text-brand-text-secondary">{t('company.bookings.notes')}</span>
                             <p>{booking.notes}</p>
                           </div>
                         )}
@@ -265,7 +271,7 @@ export default function CompanyBookingsPage() {
                               }}
                               className="text-sm px-4 py-2 rounded-xl bg-green-500/10 text-green-400 hover:bg-green-500/20 transition-colors"
                             >
-                              Complete
+                              {t('company.bookings.complete')}
                             </button>
                             <button
                               onClick={(e) => {
@@ -274,7 +280,7 @@ export default function CompanyBookingsPage() {
                               }}
                               className="text-sm px-4 py-2 rounded-xl bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-colors"
                             >
-                              Cancel
+                              {t('company.bookings.cancel')}
                             </button>
                           </div>
                         )}
@@ -331,6 +337,7 @@ function CreateBookingModal({
   onClose: () => void;
 }) {
   const createBooking = useMutation(api.companies.createAdminBooking);
+  const { t } = useTranslation();
   const [form, setForm] = useState({
     roomId: rooms[0]?._id || '',
     time: '',
@@ -363,7 +370,7 @@ function CreateBookingModal({
       });
       onClose();
     } catch (err: any) {
-      setError(err?.message || 'Failed to create booking');
+      setError(err?.message || t('company.bookings.failed_create'));
     } finally {
       setLoading(false);
     }
@@ -373,7 +380,7 @@ function CreateBookingModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
       <div className="bg-brand-surface rounded-2xl border border-white/5 p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-bold">New Booking</h2>
+          <h2 className="text-lg font-bold">{t('company.bookings.new_booking')}</h2>
           <button onClick={onClose} className="p-1 hover:bg-white/5 rounded-lg">
             <X className="w-5 h-5" />
           </button>
@@ -387,14 +394,14 @@ function CreateBookingModal({
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm text-brand-text-secondary mb-1.5">Room</label>
+            <label className="block text-sm text-brand-text-secondary mb-1.5">{t('company.bookings.room')}</label>
             <select
               value={form.roomId}
               onChange={(e) => setForm({ ...form, roomId: e.target.value })}
               className="w-full bg-brand-bg border border-white/10 rounded-xl px-4 py-3 text-white focus:border-brand-red focus:outline-none"
               required
             >
-              <option value="">Select room...</option>
+              <option value="">{t('company.bookings.select_room')}</option>
               {rooms.filter((r) => r.isActive !== false).map((r: any) => (
                 <option key={r._id} value={r._id}>{r.title}</option>
               ))}
@@ -402,7 +409,7 @@ function CreateBookingModal({
           </div>
 
           <div>
-            <label className="block text-sm text-brand-text-secondary mb-1.5">Time</label>
+            <label className="block text-sm text-brand-text-secondary mb-1.5">{t('company.bookings.time')}</label>
             <input
               type="time"
               value={form.time}
@@ -414,7 +421,7 @@ function CreateBookingModal({
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-sm text-brand-text-secondary mb-1.5">Players</label>
+              <label className="block text-sm text-brand-text-secondary mb-1.5">{t('company.bookings.players')}</label>
               <input
                 type="number"
                 min="1"
@@ -425,7 +432,7 @@ function CreateBookingModal({
               />
             </div>
             <div>
-              <label className="block text-sm text-brand-text-secondary mb-1.5">Total (€)</label>
+              <label className="block text-sm text-brand-text-secondary mb-1.5">{t('company.bookings.total_eur')}</label>
               <input
                 type="number"
                 min="0"
@@ -439,19 +446,19 @@ function CreateBookingModal({
           </div>
 
           <div>
-            <label className="block text-sm text-brand-text-secondary mb-1.5">Player Name</label>
+            <label className="block text-sm text-brand-text-secondary mb-1.5">{t('company.bookings.player_name')}</label>
             <input
               type="text"
               value={form.playerName}
               onChange={(e) => setForm({ ...form, playerName: e.target.value })}
               className="w-full bg-brand-bg border border-white/10 rounded-xl px-4 py-3 text-white placeholder-brand-text-secondary/50 focus:border-brand-red focus:outline-none"
-              placeholder="Customer name"
+              placeholder={t('company.bookings.customer_name')}
               required
             />
           </div>
 
           <div>
-            <label className="block text-sm text-brand-text-secondary mb-1.5">Email</label>
+            <label className="block text-sm text-brand-text-secondary mb-1.5">{t('company.bookings.email')}</label>
             <input
               type="email"
               value={form.playerContact}
@@ -463,7 +470,7 @@ function CreateBookingModal({
           </div>
 
           <div>
-            <label className="block text-sm text-brand-text-secondary mb-1.5">Phone</label>
+            <label className="block text-sm text-brand-text-secondary mb-1.5">{t('company.bookings.phone')}</label>
             <input
               type="tel"
               value={form.playerPhone}
@@ -475,13 +482,13 @@ function CreateBookingModal({
           </div>
 
           <div>
-            <label className="block text-sm text-brand-text-secondary mb-1.5">Notes (optional)</label>
+            <label className="block text-sm text-brand-text-secondary mb-1.5">{t('company.bookings.notes_optional')}</label>
             <textarea
               value={form.notes}
               onChange={(e) => setForm({ ...form, notes: e.target.value })}
               rows={2}
               className="w-full bg-brand-bg border border-white/10 rounded-xl px-4 py-3 text-white placeholder-brand-text-secondary/50 focus:border-brand-red focus:outline-none resize-none"
-              placeholder="Any special notes..."
+              placeholder={t('company.bookings.any_notes')}
             />
           </div>
 
@@ -493,7 +500,7 @@ function CreateBookingModal({
             {loading ? (
               <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
             ) : (
-              'Create Booking'
+              t('company.bookings.create_booking')
             )}
           </button>
         </form>
@@ -514,6 +521,7 @@ function ExternalBlockModal({
   onClose: () => void;
 }) {
   const createBlock = useMutation(api.companies.createExternalBlock);
+  const { t } = useTranslation();
   const [form, setForm] = useState({
     roomId: rooms[0]?._id || '',
     time: '',
@@ -575,7 +583,7 @@ function ExternalBlockModal({
       });
       onClose();
     } catch (err: any) {
-      setError(err?.message || 'Failed to block slot');
+      setError(err?.message || t('company.bookings.failed_block'));
     } finally {
       setLoading(false);
     }
@@ -585,7 +593,7 @@ function ExternalBlockModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
       <div className="bg-brand-surface rounded-2xl border border-white/5 p-6 w-full max-w-md">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-bold">Block Slot (External)</h2>
+          <h2 className="text-lg font-bold">{t('company.bookings.block_external')}</h2>
           <button onClick={onClose} className="p-1 hover:bg-white/5 rounded-lg">
             <X className="w-5 h-5" />
           </button>
@@ -599,14 +607,14 @@ function ExternalBlockModal({
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm text-brand-text-secondary mb-1.5">Room</label>
+            <label className="block text-sm text-brand-text-secondary mb-1.5">{t('company.bookings.room')}</label>
             <select
               value={form.roomId}
               onChange={(e) => setForm({ ...form, roomId: e.target.value })}
               className="w-full bg-brand-bg border border-white/10 rounded-xl px-4 py-3 text-white focus:border-brand-red focus:outline-none"
               required
             >
-              <option value="">Select room...</option>
+              <option value="">{t('company.bookings.select_room')}</option>
               {rooms.filter((r) => r.isActive !== false).map((r: any) => (
                 <option key={r._id} value={r._id}>{r.title}</option>
               ))}
@@ -614,7 +622,7 @@ function ExternalBlockModal({
           </div>
 
           <div>
-            <label className="block text-sm text-brand-text-secondary mb-1.5">Time</label>
+            <label className="block text-sm text-brand-text-secondary mb-1.5">{t('company.bookings.time')}</label>
             {availableSlots.length > 0 ? (
               <div>
                 <div className="grid grid-cols-3 gap-2 mb-2">
@@ -634,7 +642,7 @@ function ExternalBlockModal({
                     </button>
                   ))}
                 </div>
-                <p className="text-xs text-brand-text-secondary mb-1">Or enter custom time:</p>
+                <p className="text-xs text-brand-text-secondary mb-1">{t('company.bookings.custom_time')}</p>
                 <input
                   type="time"
                   value={form.time}
@@ -652,46 +660,46 @@ function ExternalBlockModal({
                   required
                 />
                 <p className="text-xs text-brand-text-secondary mt-1">
-                  No slots configured for this date. Enter time manually.
+                  {t('company.bookings.no_slots_manual')}
                 </p>
               </div>
             )}
           </div>
 
           <div>
-            <label className="block text-sm text-brand-text-secondary mb-1.5">Source</label>
+            <label className="block text-sm text-brand-text-secondary mb-1.5">{t('company.bookings.source')}</label>
             <select
               value={form.externalSource}
               onChange={(e) => setForm({ ...form, externalSource: e.target.value })}
               className="w-full bg-brand-bg border border-white/10 rounded-xl px-4 py-3 text-white focus:border-brand-red focus:outline-none"
             >
-              <option value="escapeall">EscapeAll</option>
-              <option value="phone">Phone Reservation</option>
-              <option value="walkin">Walk-In</option>
-              <option value="private_event">Private Event</option>
-              <option value="other">Other</option>
+              <option value="escapeall">{t('company.bookings.source_escapeall')}</option>
+              <option value="phone">{t('company.bookings.source_phone')}</option>
+              <option value="walkin">{t('company.bookings.source_walkin')}</option>
+              <option value="private_event">{t('company.bookings.source_private')}</option>
+              <option value="other">{t('company.bookings.source_other')}</option>
             </select>
           </div>
 
           <div>
-            <label className="block text-sm text-brand-text-secondary mb-1.5">Customer Name (optional)</label>
+            <label className="block text-sm text-brand-text-secondary mb-1.5">{t('company.bookings.customer_optional')}</label>
             <input
               type="text"
               value={form.playerName}
               onChange={(e) => setForm({ ...form, playerName: e.target.value })}
               className="w-full bg-brand-bg border border-white/10 rounded-xl px-4 py-3 text-white placeholder-brand-text-secondary/50 focus:border-brand-red focus:outline-none"
-              placeholder="Customer name"
+              placeholder={t('company.bookings.customer_name')}
             />
           </div>
 
           <div>
-            <label className="block text-sm text-brand-text-secondary mb-1.5">Notes (optional)</label>
+            <label className="block text-sm text-brand-text-secondary mb-1.5">{t('company.bookings.notes_optional')}</label>
             <textarea
               value={form.notes}
               onChange={(e) => setForm({ ...form, notes: e.target.value })}
               rows={2}
               className="w-full bg-brand-bg border border-white/10 rounded-xl px-4 py-3 text-white placeholder-brand-text-secondary/50 focus:border-brand-red focus:outline-none resize-none"
-              placeholder="Additional details..."
+              placeholder={t('company.bookings.additional_details')}
             />
           </div>
 
@@ -703,7 +711,7 @@ function ExternalBlockModal({
             {loading ? (
               <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
             ) : (
-              'Block Slot'
+              t('company.bookings.block_slot')
             )}
           </button>
         </form>

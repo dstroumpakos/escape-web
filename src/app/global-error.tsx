@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslation } from '@/lib/i18n';
+
 export default function GlobalError({
   error,
   reset,
@@ -7,10 +9,12 @@ export default function GlobalError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  const { t } = useTranslation();
+
   return (
     <html>
       <body style={{ padding: '2rem', fontFamily: 'monospace', background: '#111', color: '#fff' }}>
-        <h2>Something went wrong!</h2>
+        <h2>{t('error.title')}</h2>
         <pre style={{ whiteSpace: 'pre-wrap', color: '#ff6b6b' }}>
           {error.message}
         </pre>
@@ -29,7 +33,7 @@ export default function GlobalError({
             cursor: 'pointer',
           }}
         >
-          Try again
+          {t('error.try_again')}
         </button>
       </body>
     </html>

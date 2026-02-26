@@ -12,62 +12,65 @@ import {
   HelpCircle,
   ArrowRight,
 } from 'lucide-react';
-
-const contactInfo = [
-  {
-    icon: Mail,
-    label: 'Email',
-    value: 'hello@unlocked.app',
-    href: 'mailto:hello@unlocked.app',
-  },
-  {
-    icon: Phone,
-    label: 'Phone',
-    value: '+30 210 1234567',
-    href: 'tel:+302101234567',
-  },
-  {
-    icon: MapPin,
-    label: 'Location',
-    value: 'Athens, Greece',
-    href: '#',
-  },
-  {
-    icon: Clock,
-    label: 'Hours',
-    value: 'Mon-Fri 9:00-18:00',
-    href: '#',
-  },
-];
-
-const faqs = [
-  {
-    q: 'How do I book an escape room?',
-    a: 'Simply browse our rooms, pick your date and time, select the number of players, and complete the booking. You\'ll receive a QR code ticket instantly.',
-  },
-  {
-    q: 'Can I cancel or reschedule?',
-    a: 'Yes! You can cancel or reschedule up to 24 hours before your booking. Go to "My Tickets" in the app or website to manage your bookings.',
-  },
-  {
-    q: 'How does the leaderboard work?',
-    a: 'Every time you escape a room, your stats are updated. You earn points based on difficulty, time, and hints used. Climb the leaderboard and collect badges!',
-  },
-  {
-    q: 'I own an escape room business. How do I list my rooms?',
-    a: 'Register as a business partner through our portal. After accepting terms and selecting a plan, our team will review and approve your listing within 48 hours.',
-  },
-  {
-    q: 'What payment methods are accepted?',
-    a: 'We support credit/debit cards and various payment options. Some venues also accept pay-on-arrival or a 20% deposit to secure your booking.',
-  },
-  {
-    q: 'Is the app available on iOS and Android?',
-    a: 'Yes! UNLOCKED is available on both the App Store and Google Play. Simply search for "UNLOCKED" and download the app.',
-  },
-];
+import { useTranslation } from '@/lib/i18n';
 
 export default function ContactPage() {
+  const { t } = useTranslation();
+
+  const contactInfo = [
+    {
+      icon: Mail,
+      label: t('contact.info_email'),
+      value: 'hello@unlocked.app',
+      href: 'mailto:hello@unlocked.app',
+    },
+    {
+      icon: Phone,
+      label: t('contact.info_phone'),
+      value: '+30 210 1234567',
+      href: 'tel:+302101234567',
+    },
+    {
+      icon: MapPin,
+      label: t('contact.info_location'),
+      value: 'Athens, Greece',
+      href: '#',
+    },
+    {
+      icon: Clock,
+      label: t('contact.info_hours'),
+      value: 'Mon-Fri 9:00-18:00',
+      href: '#',
+    },
+  ];
+
+  const faqs = [
+    {
+      q: t('contact.faq1_q'),
+      a: t('contact.faq1_a'),
+    },
+    {
+      q: t('contact.faq2_q'),
+      a: t('contact.faq2_a'),
+    },
+    {
+      q: t('contact.faq3_q'),
+      a: t('contact.faq3_a'),
+    },
+    {
+      q: t('contact.faq4_q'),
+      a: t('contact.faq4_a'),
+    },
+    {
+      q: t('contact.faq5_q'),
+      a: t('contact.faq5_a'),
+    },
+    {
+      q: t('contact.faq6_q'),
+      a: t('contact.faq6_a'),
+    },
+  ];
+
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -109,11 +112,10 @@ export default function ContactPage() {
             <MessageSquare className="w-8 h-8 text-brand-red" />
           </div>
           <h1 className="section-heading mb-4">
-            Get in <span className="text-gradient">Touch</span>
+            {t('contact.title')}
           </h1>
           <p className="text-lg text-brand-text-secondary max-w-xl mx-auto">
-            Have a question, want to partner with us, or just want to say hello?
-            We&apos;d love to hear from you.
+            {t('contact.subtitle')}
           </p>
         </div>
       </section>
@@ -154,11 +156,10 @@ export default function ContactPage() {
                       <Send className="w-7 h-7 text-green-400" />
                     </div>
                     <h3 className="text-xl font-semibold mb-2">
-                      Message Sent!
+                      {t('contact.sent')}
                     </h3>
                     <p className="text-brand-text-secondary text-sm mb-6">
-                      Thank you for reaching out. We&apos;ll get back to you
-                      within 24 hours.
+                      {t('contact.sent_desc')}
                     </p>
                     <button
                       onClick={() => {
@@ -172,19 +173,19 @@ export default function ContactPage() {
                       }}
                       className="btn-ghost"
                     >
-                      Send another message
+                      {t('contact.send_another')}
                     </button>
                   </div>
                 ) : (
                   <>
                     <h2 className="text-xl font-semibold mb-6">
-                      Send us a message
+                      {t('contact.form_title')}
                     </h2>
                     <form onSubmit={handleSubmit} className="space-y-5">
                       <div className="grid sm:grid-cols-2 gap-5">
                         <div>
                           <label className="block text-sm font-medium mb-2 text-brand-text-secondary">
-                            Your Name
+                            {t('contact.form_name')}
                           </label>
                           <input
                             type="text"
@@ -192,14 +193,14 @@ export default function ContactPage() {
                             onChange={(e) =>
                               setFormData({ ...formData, name: e.target.value })
                             }
-                            placeholder="John Doe"
+                            placeholder={t('contact.form_name_placeholder')}
                             className="input-field"
                             required
                           />
                         </div>
                         <div>
                           <label className="block text-sm font-medium mb-2 text-brand-text-secondary">
-                            Email Address
+                            {t('contact.form_email')}
                           </label>
                           <input
                             type="email"
@@ -210,7 +211,7 @@ export default function ContactPage() {
                                 email: e.target.value,
                               })
                             }
-                            placeholder="you@example.com"
+                            placeholder={t('contact.form_email_placeholder')}
                             className="input-field"
                             required
                           />
@@ -219,7 +220,7 @@ export default function ContactPage() {
 
                       <div>
                         <label className="block text-sm font-medium mb-2 text-brand-text-secondary">
-                          Subject
+                          {t('contact.form_subject')}
                         </label>
                         <select
                           value={formData.subject}
@@ -231,17 +232,17 @@ export default function ContactPage() {
                           }
                           className="input-field"
                         >
-                          <option value="general">General Inquiry</option>
-                          <option value="booking">Booking Help</option>
-                          <option value="business">Business Partnership</option>
-                          <option value="feedback">Feedback</option>
-                          <option value="bug">Report a Bug</option>
+                          <option value="general">{t('contact.subject_general')}</option>
+                          <option value="booking">{t('contact.subject_booking')}</option>
+                          <option value="business">{t('contact.subject_business')}</option>
+                          <option value="feedback">{t('contact.subject_feedback')}</option>
+                          <option value="bug">{t('contact.subject_bug')}</option>
                         </select>
                       </div>
 
                       <div>
                         <label className="block text-sm font-medium mb-2 text-brand-text-secondary">
-                          Message
+                          {t('contact.form_message')}
                         </label>
                         <textarea
                           value={formData.message}
@@ -251,7 +252,7 @@ export default function ContactPage() {
                               message: e.target.value,
                             })
                           }
-                          placeholder="Tell us how we can help..."
+                          placeholder={t('contact.form_message_placeholder')}
                           rows={5}
                           className="input-field resize-none"
                           required
@@ -267,7 +268,7 @@ export default function ContactPage() {
                           <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                         ) : (
                           <>
-                            Send Message
+                            {t('contact.send')}
                             <Send className="w-5 h-5" />
                           </>
                         )}
@@ -286,17 +287,16 @@ export default function ContactPage() {
                   <div className="w-10 h-10 rounded-xl bg-brand-red/10 flex items-center justify-center">
                     <Building2 className="w-5 h-5 text-brand-red" />
                   </div>
-                  <h3 className="font-semibold">For Businesses</h3>
+                  <h3 className="font-semibold">{t('contact.for_businesses')}</h3>
                 </div>
                 <p className="text-sm text-brand-text-secondary mb-4">
-                  Own an escape room? Partner with UNLOCKED and reach thousands
-                  of new customers.
+                  {t('contact.for_businesses_desc')}
                 </p>
                 <a
                   href="/about#for-businesses"
                   className="text-brand-red text-sm font-medium hover:text-brand-red-light flex items-center gap-1 transition-colors"
                 >
-                  Learn more
+                  {t('contact.learn_more')}
                   <ArrowRight className="w-4 h-4" />
                 </a>
               </div>
@@ -325,7 +325,7 @@ export default function ContactPage() {
               <HelpCircle className="w-6 h-6 text-brand-red" />
             </div>
             <h2 className="section-heading mb-4">
-              Frequently Asked <span className="text-gradient">Questions</span>
+              {t('contact.faq_title')}
             </h2>
           </div>
 

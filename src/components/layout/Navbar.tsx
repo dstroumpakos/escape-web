@@ -5,15 +5,8 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { Menu, X, Lock, Unlock, LogOut, User, Bell, Ticket, Building2 } from 'lucide-react';
 import { useAuth } from '@/lib/auth';
-
-const navLinks = [
-  { href: '/', label: 'Home' },
-  { href: '/discover', label: 'Discover' },
-  { href: '/map', label: 'Map' },
-  { href: '/social', label: 'Social' },
-  { href: '/leaderboard', label: 'Leaderboard' },
-  { href: '/contact', label: 'Contact' },
-];
+import { useTranslation } from '@/lib/i18n';
+import { LanguageToggle } from '@/components/LanguageToggle';
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -21,6 +14,16 @@ export function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
   const { user, isAuthenticated, logout } = useAuth();
+  const { t } = useTranslation();
+
+  const navLinks = [
+    { href: '/', label: t('nav.home') },
+    { href: '/discover', label: t('nav.discover') },
+    { href: '/map', label: t('nav.map') },
+    { href: '/social', label: t('nav.social') },
+    { href: '/leaderboard', label: t('nav.leaderboard') },
+    { href: '/contact', label: t('nav.contact') },
+  ];
 
   const handleLogout = () => {
     logout();
@@ -76,6 +79,7 @@ export function Navbar() {
 
           {/* Desktop Auth */}
           <div className="hidden md:flex items-center gap-2">
+            <LanguageToggle />
             {isAuthenticated ? (
               <>
                 <Link
@@ -109,13 +113,13 @@ export function Navbar() {
                   href="/company/login"
                   className="text-sm text-brand-text-secondary hover:text-white transition-colors flex items-center gap-1"
                 >
-                  <Building2 className="w-4 h-4" /> Business
+                  <Building2 className="w-4 h-4" /> {t('nav.business')}
                 </Link>
                 <Link href="/login" className="btn-ghost text-sm">
-                  Log In
+                  {t('nav.login')}
                 </Link>
                 <Link href="/signup" className="btn-primary text-sm !py-2.5 !px-6">
-                  Sign Up
+                  {t('nav.signup')}
                 </Link>
               </>
             )}
@@ -152,29 +156,30 @@ export function Navbar() {
               </Link>
             ))}
             <div className="flex flex-col gap-1 mt-2 px-4">
+              <div className="mb-2"><LanguageToggle /></div>
               {isAuthenticated ? (
                 <>
                   <Link href="/tickets" className="px-4 py-3 rounded-lg text-sm font-medium text-brand-text-secondary hover:text-white hover:bg-brand-surface/50 flex items-center gap-2">
-                    <Ticket className="w-4 h-4" /> My Tickets
+                    <Ticket className="w-4 h-4" /> {t('nav.tickets')}
                   </Link>
                   <Link href="/profile" className="px-4 py-3 rounded-lg text-sm font-medium text-brand-text-secondary hover:text-white hover:bg-brand-surface/50 flex items-center gap-2">
-                    <User className="w-4 h-4" /> Profile
+                    <User className="w-4 h-4" /> {t('nav.profile')}
                   </Link>
                   <Link href="/notifications" className="px-4 py-3 rounded-lg text-sm font-medium text-brand-text-secondary hover:text-white hover:bg-brand-surface/50 flex items-center gap-2">
-                    <Bell className="w-4 h-4" /> Notifications
+                    <Bell className="w-4 h-4" /> {t('nav.notifications')}
                   </Link>
                   <button onClick={handleLogout} className="btn-ghost text-sm flex-1 text-center flex items-center justify-center gap-1.5 mt-2">
                     <LogOut className="w-4 h-4" />
-                    Log Out
+                    {t('nav.logout')}
                   </button>
                 </>
               ) : (
                 <div className="flex gap-3">
                   <Link href="/login" className="btn-ghost text-sm flex-1 text-center">
-                    Log In
+                    {t('nav.login')}
                   </Link>
                   <Link href="/signup" className="btn-primary text-sm !py-2.5 flex-1 text-center">
-                    Sign Up
+                    {t('nav.signup')}
                   </Link>
                 </div>
               )}

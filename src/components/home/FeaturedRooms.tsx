@@ -3,6 +3,7 @@
 import { Star, Clock, Users, Zap, DoorOpen } from 'lucide-react';
 import { useSafeQuery } from '@/lib/useSafeQuery';
 import { api } from '../../../convex/_generated/api';
+import { useTranslation } from '@/lib/i18n';
 
 interface RoomCardProps {
   title: string;
@@ -114,6 +115,7 @@ function DifficultyDots({ level, max }: { level: number; max: number }) {
 }
 
 function RoomCard({ room }: { room: RoomCardProps }) {
+  const { t } = useTranslation();
   const themeColors: Record<string, string> = {
     Horror: 'bg-red-900/30 text-red-400',
     Adventure: 'bg-amber-900/30 text-amber-400',
@@ -137,12 +139,12 @@ function RoomCard({ room }: { room: RoomCardProps }) {
         <div className="absolute top-3 left-3 z-20 flex gap-2">
           {room.isNew && (
             <span className="bg-brand-red text-white text-xs font-bold px-2.5 py-1 rounded-full flex items-center gap-1">
-              <Zap className="w-3 h-3" /> NEW
+              <Zap className="w-3 h-3" /> {t('featured.new')}
             </span>
           )}
           {room.isTrending && (
             <span className="bg-brand-gold text-black text-xs font-bold px-2.5 py-1 rounded-full">
-              🔥 TRENDING
+              {t('featured.trending')}
             </span>
           )}
         </div>
@@ -151,7 +153,7 @@ function RoomCard({ room }: { room: RoomCardProps }) {
         <div className="absolute top-3 right-3 z-20">
           <span className="bg-brand-card/90 backdrop-blur-sm text-white text-sm font-bold px-3 py-1.5 rounded-lg border border-brand-border/50">
             €{room.price}
-            <span className="text-brand-text-muted font-normal text-xs">/person</span>
+            <span className="text-brand-text-muted font-normal text-xs">{t('featured.per_person')}</span>
           </span>
         </div>
       </div>
@@ -175,7 +177,7 @@ function RoomCard({ room }: { room: RoomCardProps }) {
         <div className="flex items-center gap-2 mb-3">
           <Star className="w-4 h-4 text-brand-gold fill-brand-gold" />
           <span className="text-sm font-medium">{room.rating}</span>
-          <span className="text-sm text-brand-text-muted">({room.reviews} reviews)</span>
+          <span className="text-sm text-brand-text-muted">({room.reviews} {t('featured.reviews')})</span>
         </div>
 
         {/* Meta */}
@@ -189,7 +191,7 @@ function RoomCard({ room }: { room: RoomCardProps }) {
             {room.players}
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-xs">Difficulty</span>
+            <span className="text-xs">{t('featured.difficulty')}</span>
             <DifficultyDots level={room.difficulty} max={room.maxDifficulty} />
           </div>
         </div>
@@ -199,6 +201,7 @@ function RoomCard({ room }: { room: RoomCardProps }) {
 }
 
 export function FeaturedRooms() {
+  const { t } = useTranslation();
   const convexRooms = useSafeQuery<any[]>(api.rooms.list);
 
   // Map Convex rooms to our card format, fallback to sample data
@@ -226,10 +229,10 @@ export function FeaturedRooms() {
         {/* Header */}
         <div className="text-center mb-14">
           <h2 className="section-heading mb-4">
-            Featured <span className="text-gradient">Escape Rooms</span>
+            {t('featured.title')} <span className="text-gradient">{t('featured.title_highlight')}</span>
           </h2>
           <p className="section-subheading mx-auto">
-            Handpicked rooms with the highest ratings and most thrilling experiences.
+            {t('featured.subtitle')}
           </p>
         </div>
 
@@ -242,7 +245,7 @@ export function FeaturedRooms() {
 
         {/* CTA */}
         <div className="text-center mt-12">
-          <button className="btn-outline">View All Rooms →</button>
+          <button className="btn-outline">{t('featured.view_all')}</button>
         </div>
       </div>
     </section>

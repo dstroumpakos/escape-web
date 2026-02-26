@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useMemo } from 'react';
+import { useTranslation } from '@/lib/i18n';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
@@ -45,6 +46,7 @@ function MapUpdater({ center }: { center: [number, number] }) {
 }
 
 export default function MapView() {
+  const { t } = useTranslation();
   const [userLoc, setUserLoc] = useState<{ latitude: number; longitude: number } | null>(null);
   const [locLoading, setLocLoading] = useState(true);
 
@@ -112,7 +114,7 @@ export default function MapView() {
         {userLoc && (
           <Marker position={[userLoc.latitude, userLoc.longitude]}>
             <Popup>
-              <div className="font-semibold text-white p-2">You are here</div>
+              <div className="font-semibold text-white p-2">{t('map.you_are_here')}</div>
             </Popup>
           </Marker>
         )}
@@ -137,7 +139,7 @@ export default function MapView() {
                   <div className="flex items-center justify-between text-xs text-brand-text-secondary mb-3">
                     <div className="flex items-center">
                       <Star className="w-3 h-3 text-yellow-400 mr-1" />
-                      <span>{room.rating?.toFixed(1) || 'New'}</span>
+                      <span>{room.rating?.toFixed(1) || t('map.new_rating')}</span>
                     </div>
                     <div className="flex items-center">
                       <Clock className="w-3 h-3 mr-1" />
@@ -148,7 +150,7 @@ export default function MapView() {
                     href={`/rooms/${room._id}`}
                     className="block w-full text-center bg-brand-red text-white py-1.5 rounded text-xs font-medium hover:bg-brand-red-hover transition-colors"
                   >
-                    View Details
+                    {t('map.view_details')}
                   </Link>
                 </div>
               </div>

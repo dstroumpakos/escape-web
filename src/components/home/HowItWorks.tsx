@@ -1,48 +1,47 @@
 'use client';
 
 import { Search, CalendarCheck, KeyRound, PartyPopper } from 'lucide-react';
-
-const steps = [
-  {
-    icon: Search,
-    title: 'Discover Rooms',
-    description:
-      'Browse our curated collection of escape rooms. Filter by theme, difficulty, location, and more.',
-    step: '01',
-  },
-  {
-    icon: CalendarCheck,
-    title: 'Book Instantly',
-    description:
-      'Pick your date and time, choose payment options, and secure your spot in seconds.',
-    step: '02',
-  },
-  {
-    icon: KeyRound,
-    title: 'Play & Escape',
-    description:
-      'Show your QR code at the venue, solve puzzles with your team, and race against the clock.',
-    step: '03',
-  },
-  {
-    icon: PartyPopper,
-    title: 'Earn Badges',
-    description:
-      'Climb the leaderboard, collect achievement badges, and share your victories on the social feed.',
-    step: '04',
-  },
-];
+import { useTranslation } from '@/lib/i18n';
 
 export function HowItWorks() {
+  const { t } = useTranslation();
+
+  const steps = [
+    {
+      icon: Search,
+      title: t('how.step1.title'),
+      description: t('how.step1.desc'),
+      step: '01',
+    },
+    {
+      icon: CalendarCheck,
+      title: t('how.step2.title'),
+      description: t('how.step2.desc'),
+      step: '02',
+    },
+    {
+      icon: KeyRound,
+      title: t('how.step3.title'),
+      description: t('how.step3.desc'),
+      step: '03',
+    },
+    {
+      icon: PartyPopper,
+      title: t('how.step4.title'),
+      description: t('how.step4.desc'),
+      step: '04',
+    },
+  ];
+
   return (
     <section id="how-it-works" className="py-20 md:py-28">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-14">
           <h2 className="section-heading mb-4">
-            How It <span className="text-gradient">Works</span>
+            {t('how.title')} <span className="text-gradient">{t('how.title_highlight')}</span>
           </h2>
           <p className="section-subheading mx-auto">
-            From discovery to escape in four simple steps.
+            {t('how.subtitle')}
           </p>
         </div>
 

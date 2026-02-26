@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useQuery, useMutation } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
 import { useAuth } from '@/lib/auth';
+import { useTranslation } from '@/lib/i18n';
 import {
   CreditCard,
   Shield,
@@ -20,6 +21,7 @@ function CheckoutContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const { user, isAuthenticated } = useAuth();
+  const { t } = useTranslation();
 
   const roomId = searchParams.get('roomId') || '';
   const date = searchParams.get('date') || '';
@@ -77,7 +79,7 @@ function CheckoutContent() {
       });
       router.push(`/booking/confirmation?${params.toString()}`);
     } catch (err: any) {
-      setError(err?.message || 'Failed to create booking. Please try again.');
+      setError(err?.message || t('checkout.error'));
     } finally {
       setIsLoading(false);
     }
@@ -107,14 +109,14 @@ function CheckoutContent() {
           className="inline-flex items-center gap-2 text-brand-text-secondary hover:text-white transition-colors mb-8"
         >
           <ArrowLeft className="w-4 h-4" />
-          Back to date selection
+          {t('checkout.back')}
         </Link>
 
         <h1 className="section-heading mb-2">
-          Check<span className="text-gradient">out</span>
+          {t('checkout.title')}
         </h1>
         <p className="text-brand-text-secondary mb-10">
-          Review your booking and complete payment.
+          {t('checkout.subtitle')}
         </p>
 
         <div className="grid lg:grid-cols-3 gap-8">
@@ -124,19 +126,19 @@ function CheckoutContent() {
             <div className="card p-6">
               <h3 className="font-semibold mb-4 flex items-center gap-2">
                 <DoorOpen className="w-5 h-5 text-brand-red" />
-                Booking Details
+                {t('checkout.booking_details')}
               </h3>
               <div className="grid sm:grid-cols-2 gap-4 text-sm">
                 <div>
-                  <span className="text-brand-text-muted block mb-1">Room</span>
+                  <span className="text-brand-text-muted block mb-1">{t('checkout.room')}</span>
                   <span className="font-medium">{room.title}</span>
                 </div>
                 <div>
-                  <span className="text-brand-text-muted block mb-1">Location</span>
+                  <span className="text-brand-text-muted block mb-1">{t('checkout.location')}</span>
                   <span className="font-medium">{room.location}</span>
                 </div>
                 <div>
-                  <span className="text-brand-text-muted block mb-1">Date</span>
+                  <span className="text-brand-text-muted block mb-1">{t('checkout.date')}</span>
                   <span className="font-medium">
                     {new Date(date + 'T00:00:00').toLocaleDateString('en-GB', {
                       weekday: 'long',
@@ -147,16 +149,16 @@ function CheckoutContent() {
                   </span>
                 </div>
                 <div>
-                  <span className="text-brand-text-muted block mb-1">Time</span>
+                  <span className="text-brand-text-muted block mb-1">{t('checkout.time')}</span>
                   <span className="font-medium">{time}</span>
                 </div>
                 <div>
-                  <span className="text-brand-text-muted block mb-1">Players</span>
-                  <span className="font-medium">{players} players</span>
+                  <span className="text-brand-text-muted block mb-1">{t('checkout.players', { count: String(players) })}</span>
+                  <span className="font-medium">{t('checkout.players', { count: String(players) })}</span>
                 </div>
                 <div>
-                  <span className="text-brand-text-muted block mb-1">Duration</span>
-                  <span className="font-medium">{room.duration} minutes</span>
+                  <span className="text-brand-text-muted block mb-1">{t('checkout.duration')}</span>
+                  <span className="font-medium">{t('checkout.minutes', { count: String(room.duration) })}</span>
                 </div>
               </div>
             </div>
@@ -165,7 +167,7 @@ function CheckoutContent() {
             <div className="card p-6">
               <h3 className="font-semibold mb-4 flex items-center gap-2">
                 <CreditCard className="w-5 h-5 text-brand-red" />
-                Payment Option
+                {t('checkout.payment_option')}
               </h3>
               <div className="space-y-3">
                 {(availableTerms as string[]).includes('full') && (
@@ -184,8 +186,8 @@ function CheckoutContent() {
                       className="accent-[#FF1E1E]"
                     />
                     <div className="flex-1">
-                      <div className="font-medium">Pay in Full</div>
-                      <div className="text-xs text-brand-text-muted">Complete payment now</div>
+                      <div className="font-medium">{t('checkout.pay_full')}</div>
+                      <div className="text-xs text-brand-text-muted">{t('checkout.pay_full_desc')}</div>
                     </div>
                     <span className="font-bold">€{(total + serviceFee).toFixed(2)}</span>
                   </label>
@@ -206,8 +208,8 @@ function CheckoutContent() {
                       className="accent-[#FF1E1E]"
                     />
                     <div className="flex-1">
-                      <div className="font-medium">20% Deposit</div>
-                      <div className="text-xs text-brand-text-muted">Pay the rest on arrival</div>
+                      <div className="font-medium">{t('checkout.pay_deposit')}</div>
+                      <div className="text-xs text-brand-text-muted">{t('checkout.pay_deposit_desc')}</div>
                     </div>
                     <span className="font-bold">€{(deposit + serviceFee).toFixed(2)}</span>
                   </label>
@@ -228,8 +230,8 @@ function CheckoutContent() {
                       className="accent-[#FF1E1E]"
                     />
                     <div className="flex-1">
-                      <div className="font-medium">Pay on Arrival</div>
-                      <div className="text-xs text-brand-text-muted">Only service fee now</div>
+                      <div className="font-medium">{t('checkout.pay_arrival')}</div>
+                      <div className="text-xs text-brand-text-muted">{t('checkout.pay_arrival_desc')}</div>
                     </div>
                     <span className="font-bold">€{serviceFee.toFixed(2)}</span>
                   </label>
@@ -241,17 +243,17 @@ function CheckoutContent() {
             <div className="card p-6">
               <h3 className="font-semibold mb-4 flex items-center gap-2">
                 <Tag className="w-5 h-5 text-brand-red" />
-                Promo Code
+                {t('checkout.promo_code')}
               </h3>
               <div className="flex gap-3">
                 <input
                   type="text"
-                  placeholder="Enter promo code"
+                  placeholder={t('checkout.promo_placeholder')}
                   value={promoCode}
                   onChange={(e) => setPromoCode(e.target.value)}
                   className="input-field flex-1"
                 />
-                <button className="btn-outline !py-3 !px-6">Apply</button>
+                <button className="btn-outline !py-3 !px-6">{t('checkout.promo_apply')}</button>
               </div>
             </div>
           </div>
@@ -259,22 +261,22 @@ function CheckoutContent() {
           {/* Right: Summary */}
           <div className="lg:col-span-1">
             <div className="card p-6 sticky top-24">
-              <h3 className="font-semibold mb-4">Order Summary</h3>
+              <h3 className="font-semibold mb-4">{t('checkout.order_summary')}</h3>
 
               <div className="space-y-3 text-sm">
                 <div className="flex justify-between">
                   <span className="text-brand-text-muted">
-                    {players}x Tickets
+                    {players}x {t('checkout.tickets')}
                   </span>
                   <span>€{total.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-brand-text-muted">Service fee</span>
+                  <span className="text-brand-text-muted">{t('checkout.service_fee')}</span>
                   <span>€{serviceFee.toFixed(2)}</span>
                 </div>
                 {paymentTerms === 'deposit_20' && (
                   <div className="flex justify-between text-brand-text-muted">
-                    <span>Deposit (20%)</span>
+                    <span>{t('checkout.deposit_label')}</span>
                     <span>€{deposit.toFixed(2)}</span>
                   </div>
                 )}
@@ -282,15 +284,15 @@ function CheckoutContent() {
 
               <div className="border-t border-brand-border mt-4 pt-4">
                 <div className="flex justify-between items-baseline mb-1">
-                  <span className="text-brand-text-muted">Pay now</span>
+                  <span className="text-brand-text-muted">{t('checkout.pay_now')}</span>
                   <span className="text-2xl font-display font-bold">
                     €{payNow.toFixed(2)}
                   </span>
                 </div>
                 {paymentTerms !== 'full' && (
                   <div className="flex justify-between text-xs text-brand-text-muted">
-                    <span>Remaining</span>
-                    <span>€{(total + serviceFee - payNow).toFixed(2)} on arrival</span>
+                    <span>{t('checkout.remaining')}</span>
+                    <span>€{(total + serviceFee - payNow).toFixed(2)} {t('checkout.on_arrival')}</span>
                   </div>
                 )}
               </div>
@@ -311,14 +313,14 @@ function CheckoutContent() {
                 ) : (
                   <>
                     <Lock className="w-4 h-4" />
-                    Confirm & Pay
+                    {t('checkout.confirm_pay')}
                   </>
                 )}
               </button>
 
               <div className="flex items-center justify-center gap-2 mt-4 text-xs text-brand-text-muted">
                 <Shield className="w-3.5 h-3.5" />
-                Secure payment processing
+                {t('checkout.secure_payment')}
               </div>
             </div>
           </div>

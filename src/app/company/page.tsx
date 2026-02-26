@@ -29,12 +29,13 @@ import {
   ArrowUpRight,
   Circle,
 } from 'lucide-react';
+import { useTranslation } from '@/lib/i18n';
 
-function getGreeting() {
+function getGreeting(t: (key: string) => string) {
   const h = new Date().getHours();
-  if (h < 12) return 'Good morning';
-  if (h < 18) return 'Good afternoon';
-  return 'Good evening';
+  if (h < 12) return t('company.greeting.morning');
+  if (h < 18) return t('company.greeting.afternoon');
+  return t('company.greeting.evening');
 }
 
 function formatDate() {
@@ -47,6 +48,7 @@ function formatDate() {
 }
 
 export default function CompanyDashboardPage() {
+  const { t } = useTranslation();
   const { company } = useCompanyAuth();
   const companyId = company?.id;
 
@@ -92,28 +94,28 @@ export default function CompanyDashboardPage() {
           <div>
             <p className="text-sm text-brand-text-secondary mb-1">{formatDate()}</p>
             <h1 className="text-2xl md:text-3xl font-bold">
-              {getGreeting()}, <span className="text-brand-red">{company?.name}</span>
+              {getGreeting(t)}, <span className="text-brand-red">{company?.name}</span>
             </h1>
             <p className="text-brand-text-secondary mt-1.5 text-sm">
               {todayBookings
                 ? todayBookings.length > 0
-                  ? `You have ${todayBookings.length} booking${todayBookings.length !== 1 ? 's' : ''} today — ${upcomingCount} upcoming, ${completedCount} completed`
-                  : 'No bookings yet today. A quiet day to prepare!'
-                : 'Loading your schedule...'}
+                  ? `${t('company.dashboard.you_have')} ${todayBookings.length} ${todayBookings.length !== 1 ? t('company.dashboard.bookings_plural') : t('company.dashboard.booking_singular')} ${t('company.dashboard.today')} — ${upcomingCount} ${t('company.dashboard.upcoming')}, ${completedCount} ${t('company.dashboard.completed')}`
+                  : t('company.dashboard.no_bookings_today')
+                : t('company.dashboard.loading_schedule')}
             </p>
           </div>
           <div className="flex items-center gap-3 shrink-0">
             <Link href="/company/bookings" className="btn-ghost text-sm flex items-center gap-2 !py-2.5 !px-4">
-              <CalendarDays className="w-4 h-4" /> Bookings
+              <CalendarDays className="w-4 h-4" /> {t('company.nav.bookings')}
             </Link>
             {atLimit ? (
               <div className="flex items-center gap-2 text-sm text-brand-text-secondary bg-brand-bg border border-white/5 rounded-xl px-4 py-2.5">
                 <Lock className="w-4 h-4 text-yellow-400" />
-                <span>Room limit</span>
+                <span>{t('company.dashboard.room_limit')}</span>
               </div>
             ) : (
               <Link href="/company/rooms/new" className="btn-primary text-sm flex items-center gap-2">
-                <Plus className="w-4 h-4" /> Add Room
+                <Plus className="w-4 h-4" /> {t('company.dashboard.add_room')}
               </Link>
             )}
           </div>
@@ -124,31 +126,31 @@ export default function CompanyDashboardPage() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <MetricCard
           icon={CalendarDays}
-          label="Today&apos;s Bookings"
+          label={t('company.dashboard.todays_bookings')}
           value={todayStats?.totalBookings ?? '-'}
           accent="blue"
-          detail={upcomingCount > 0 ? `${upcomingCount} upcoming` : undefined}
+          detail={upcomingCount > 0 ? `${upcomingCount} ${t('company.dashboard.upcoming')}` : undefined}
         />
         <MetricCard
           icon={DollarSign}
-          label="Today&apos;s Revenue"
+          label={t('company.dashboard.todays_revenue')}
           value={todayStats ? `€${todayStats.revenue.toFixed(0)}` : '-'}
           accent="green"
-          detail={todayStats && todayStats.revenue > 0 ? 'from bookings' : undefined}
+          detail={todayStats && todayStats.revenue > 0 ? t('company.dashboard.from_bookings') : undefined}
         />
         <MetricCard
           icon={Eye}
-          label="Available Slots"
+          label={t('company.dashboard.available_slots')}
           value={todayStats?.availableSlots ?? '-'}
           accent="yellow"
-          detail="remaining today"
+          detail={t('company.dashboard.remaining_today')}
         />
         <MetricCard
           icon={Activity}
-          label="Active Rooms"
+          label={t('company.dashboard.active_rooms')}
           value={`${activeRooms}/${roomCount}`}
           accent="red"
-          detail={roomLimit !== Infinity ? `${roomLimit} max (${plan})` : `${plan} plan`}
+          detail={roomLimit !== Infinity ? `${roomLimit} max (${plan})` : `${plan} ${t('company.plan.plan_label')}`}
         />
       </div>
 
@@ -159,43 +161,43 @@ export default function CompanyDashboardPage() {
           <div className="bg-brand-surface rounded-2xl border border-white/5 p-5">
             <div className="flex items-center justify-between mb-5">
               <h2 className="font-bold flex items-center gap-2">
-                <TrendingUp className="w-4 h-4 text-brand-red" /> Overview
+                <TrendingUp className="w-4 h-4 text-brand-red" /> {t('company.dashboard.overview')}
               </h2>
-              <span className="text-xs text-brand-text-secondary">All time</span>
+              <span className="text-xs text-brand-text-secondary">{t('company.dashboard.all_time')}</span>
             </div>
             <div className="space-y-4">
               <OverviewRow
                 icon={DoorOpen}
-                label="Rooms"
+                label={t('company.nav.rooms')}
                 value={String(roomCount)}
-                sub={roomLimit !== Infinity ? `of ${roomLimit}` : 'unlimited'}
+                sub={roomLimit !== Infinity ? `${t('company.dashboard.of')} ${roomLimit}` : t('company.dashboard.unlimited')}
                 color="text-purple-400"
                 progress={roomLimit !== Infinity ? (roomCount / roomLimit) * 100 : undefined}
               />
               <OverviewRow
                 icon={CalendarDays}
-                label="Total Bookings"
+                label={t('company.dashboard.total_bookings')}
                 value={String(stats?.totalBookings ?? 0)}
                 color="text-cyan-400"
               />
               <OverviewRow
                 icon={DollarSign}
-                label="Revenue"
+                label={t('company.dashboard.revenue')}
                 value={stats ? `€${stats.totalRevenue.toFixed(0)}` : '€0'}
                 color="text-emerald-400"
               />
               <OverviewRow
                 icon={CheckCircle}
-                label="Completed"
+                label={t('company.dashboard.completed')}
                 value={String(stats?.advanced?.completedBookings ?? 0)}
-                sub="bookings"
+                sub={t('company.dashboard.bookings_plural')}
                 color="text-orange-400"
               />
               <OverviewRow
                 icon={CalendarDays}
-                label="Upcoming"
+                label={t('company.dashboard.upcoming')}
                 value={String(stats?.upcomingBookings ?? 0)}
-                sub="bookings"
+                sub={t('company.dashboard.bookings_plural')}
                 color="text-blue-400"
               />
             </div>
@@ -204,7 +206,7 @@ export default function CompanyDashboardPage() {
           {/* Room Capacity Card */}
           {roomLimit !== Infinity && (
             <div className="bg-brand-surface rounded-2xl border border-white/5 p-5">
-              <h3 className="text-sm font-semibold text-brand-text-secondary mb-3">Room Capacity</h3>
+              <h3 className="text-sm font-semibold text-brand-text-secondary mb-3">{t('company.dashboard.room_capacity')}</h3>
               <div className="flex items-center gap-4">
                 <div className="relative w-20 h-20">
                   <svg viewBox="0 0 36 36" className="w-full h-full -rotate-90">
@@ -221,13 +223,13 @@ export default function CompanyDashboardPage() {
                   </div>
                 </div>
                 <div className="flex-1">
-                  <p className="text-sm font-medium">{roomCount} of {roomLimit} rooms used</p>
+                  <p className="text-sm font-medium">{roomCount} {t('company.dashboard.of')} {roomLimit} {t('company.dashboard.rooms_used')}</p>
                   <p className="text-xs text-brand-text-secondary mt-0.5">
-                    {atLimit ? 'Upgrade to add more rooms' : `${roomLimit - roomCount} room${roomLimit - roomCount !== 1 ? 's' : ''} available`}
+                    {atLimit ? t('company.dashboard.upgrade_to_add') : `${roomLimit - roomCount} ${roomLimit - roomCount !== 1 ? t('company.dashboard.rooms_available') : t('company.dashboard.room_available')}`}
                   </p>
                   {atLimit && (
                     <Link href="/company/settings" className="text-xs text-brand-red hover:underline mt-1 inline-block">
-                      Upgrade plan →
+                      {t('company.dashboard.upgrade_plan')} →
                     </Link>
                   )}
                 </div>
@@ -241,21 +243,21 @@ export default function CompanyDashboardPage() {
           <div className="bg-brand-surface rounded-2xl border border-white/5 p-5 h-full">
             <div className="flex items-center justify-between mb-5">
               <h2 className="font-bold flex items-center gap-2">
-                <Clock className="w-4 h-4 text-brand-red" /> Today&apos;s Schedule
+                <Clock className="w-4 h-4 text-brand-red" /> {t('company.dashboard.todays_schedule')}
               </h2>
               <Link href="/company/bookings" className="text-xs text-brand-red hover:underline flex items-center gap-1">
-                View All <ArrowRight className="w-3 h-3" />
+                {t('company.dashboard.view_all')} <ArrowRight className="w-3 h-3" />
               </Link>
             </div>
 
             {!todayBookings ? (
-              <div className="text-center py-12 text-brand-text-secondary text-sm">Loading...</div>
+              <div className="text-center py-12 text-brand-text-secondary text-sm">{t('company.dashboard.loading')}</div>
             ) : todayBookings.length === 0 ? (
               <div className="text-center py-12">
                 <CalendarDays className="w-10 h-10 mx-auto mb-3 text-brand-text-secondary/20" />
-                <p className="text-brand-text-secondary text-sm">No bookings for today</p>
+                <p className="text-brand-text-secondary text-sm">{t('company.dashboard.no_bookings_for_today')}</p>
                 <Link href="/company/bookings" className="text-xs text-brand-red hover:underline mt-2 inline-block">
-                  Go to Bookings →
+                  {t('company.dashboard.go_to_bookings')} →
                 </Link>
               </div>
             ) : (
@@ -285,7 +287,7 @@ export default function CompanyDashboardPage() {
                     <div className="flex-1 min-w-0">
                       <p className="font-medium text-sm truncate">{booking.roomTitle}</p>
                       <p className="text-xs text-brand-text-secondary mt-0.5">
-                        {booking.playerName} · {booking.players} players
+                        {booking.playerName} · {booking.players} {t('company.dashboard.players')}
                       </p>
                     </div>
 
@@ -305,7 +307,7 @@ export default function CompanyDashboardPage() {
                           ? 'bg-orange-500/10 text-orange-400'
                           : 'bg-brand-red/10 text-brand-red'
                       }`}>
-                        {booking.source === 'external' ? 'External' : 'UNLOCKED'}
+                        {booking.source === 'external' ? t('company.dashboard.external') : 'UNLOCKED'}
                       </span>
                     </div>
                   </div>
@@ -321,15 +323,15 @@ export default function CompanyDashboardPage() {
         <div className="bg-brand-surface rounded-2xl border border-white/5 p-5">
           <div className="flex items-center gap-2 mb-5">
             <BarChart3 className="w-5 h-5 text-brand-red" />
-            <h2 className="font-bold">Advanced Analytics</h2>
-            <span className="text-[10px] bg-brand-red/10 text-brand-red px-2 py-0.5 rounded-full font-semibold tracking-wide uppercase">Pro</span>
+            <h2 className="font-bold">{t('company.dashboard.advanced_analytics')}</h2>
+            <span className="text-[10px] bg-brand-red/10 text-brand-red px-2 py-0.5 rounded-full font-semibold tracking-wide uppercase">{t('company.plan.pro')}</span>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-            <MiniStat icon={CheckCircle} label="Completed" value={(stats as any).advanced.completedBookings} color="text-green-400" />
-            <MiniStat icon={XCircle} label="Cancelled" value={(stats as any).advanced.cancelledBookings} color="text-red-400" />
-            <MiniStat icon={Star} label="Avg Rating" value={(stats as any).advanced.avgRating || '—'} color="text-yellow-400" />
-            <MiniStat icon={Percent} label="Conversion" value={`${(stats as any).advanced.conversionRate}%`} color="text-cyan-400" />
-            <MiniStat icon={CreditCard} label="Avg €/Booking" value={`€${(stats as any).advanced.avgRevenuePerBooking}`} color="text-emerald-400" />
+            <MiniStat icon={CheckCircle} label={t('company.dashboard.completed')} value={(stats as any).advanced.completedBookings} color="text-green-400" />
+            <MiniStat icon={XCircle} label={t('company.dashboard.cancelled')} value={(stats as any).advanced.cancelledBookings} color="text-red-400" />
+            <MiniStat icon={Star} label={t('company.dashboard.avg_rating')} value={(stats as any).advanced.avgRating || '—'} color="text-yellow-400" />
+            <MiniStat icon={Percent} label={t('company.dashboard.conversion')} value={`${(stats as any).advanced.conversionRate}%`} color="text-cyan-400" />
+            <MiniStat icon={CreditCard} label={t('company.dashboard.avg_per_booking')} value={`€${(stats as any).advanced.avgRevenuePerBooking}`} color="text-emerald-400" />
           </div>
         </div>
       )}
@@ -339,19 +341,19 @@ export default function CompanyDashboardPage() {
         <div className="bg-brand-surface rounded-2xl border border-white/5 p-5">
           <div className="flex items-center gap-2 mb-5">
             <Crown className="w-5 h-5 text-purple-400" />
-            <h2 className="font-bold">Enterprise Insights</h2>
-            <span className="text-[10px] bg-purple-500/10 text-purple-400 px-2 py-0.5 rounded-full font-semibold tracking-wide uppercase">Enterprise</span>
+            <h2 className="font-bold">{t('company.dashboard.enterprise_insights')}</h2>
+            <span className="text-[10px] bg-purple-500/10 text-purple-400 px-2 py-0.5 rounded-full font-semibold tracking-wide uppercase">{t('company.plan.enterprise')}</span>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="bg-brand-bg/50 rounded-xl p-4 border border-white/[0.03]">
               <p className="text-2xl font-bold">{(stats as any).fullAnalytics.totalSubscribers}</p>
-              <p className="text-xs text-brand-text-secondary mt-1">Total Subscribers</p>
+              <p className="text-xs text-brand-text-secondary mt-1">{t('company.dashboard.total_subscribers')}</p>
               <div className="flex items-center gap-3 mt-3">
                 <span className="flex items-center gap-1 text-xs text-green-400">
-                  <Circle className="w-2 h-2 fill-current" /> {(stats as any).fullAnalytics.activeSubscribers} active
+                  <Circle className="w-2 h-2 fill-current" /> {(stats as any).fullAnalytics.activeSubscribers} {t('company.dashboard.active')}
                 </span>
                 <span className="flex items-center gap-1 text-xs text-red-400">
-                  <Circle className="w-2 h-2 fill-current" /> {(stats as any).fullAnalytics.churnedSubscribers} churned
+                  <Circle className="w-2 h-2 fill-current" /> {(stats as any).fullAnalytics.churnedSubscribers} {t('company.dashboard.churned')}
                 </span>
               </div>
             </div>
@@ -359,7 +361,7 @@ export default function CompanyDashboardPage() {
               <div key={r.roomId} className="bg-brand-bg/50 rounded-xl p-4 border border-white/[0.03]">
                 <p className="text-lg font-bold text-emerald-400">€{r.revenue}</p>
                 <p className="text-xs text-brand-text-secondary mt-1 truncate">{r.title}</p>
-                <p className="text-[10px] text-brand-text-secondary mt-2">Revenue from room</p>
+                <p className="text-[10px] text-brand-text-secondary mt-2">{t('company.dashboard.revenue_from_room')}</p>
               </div>
             ))}
           </div>
@@ -375,13 +377,13 @@ export default function CompanyDashboardPage() {
               <Sparkles className="w-6 h-6 text-brand-red" />
             </div>
             <div className="flex-1">
-              <h3 className="font-bold">Unlock Advanced Analytics</h3>
+              <h3 className="font-bold">{t('company.dashboard.unlock_analytics')}</h3>
               <p className="text-sm text-brand-text-secondary mt-0.5">
-                See completion rates, ratings, conversion metrics, revenue breakdowns and more.
+                {t('company.dashboard.unlock_analytics_desc')}
               </p>
             </div>
             <Link href="/company/settings" className="btn-primary text-sm shrink-0 flex items-center gap-1.5">
-              Upgrade <ArrowUpRight className="w-3.5 h-3.5" />
+              {t('company.dashboard.upgrade')} <ArrowUpRight className="w-3.5 h-3.5" />
             </Link>
           </div>
         </div>
@@ -390,36 +392,36 @@ export default function CompanyDashboardPage() {
       {/* ── Quick Actions ── */}
       <div>
         <h2 className="font-bold mb-3 flex items-center gap-2">
-          <Zap className="w-4 h-4 text-brand-red" /> Quick Actions
+          <Zap className="w-4 h-4 text-brand-red" /> {t('company.dashboard.quick_actions')}
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
           <QuickAction
             href="/company/rooms/new"
             icon={Plus}
-            label="Add Room"
-            desc="New escape room"
+            label={t('company.dashboard.add_room')}
+            desc={t('company.dashboard.new_escape_room')}
             color="text-brand-red"
             disabled={atLimit}
           />
           <QuickAction
             href="/company/bookings"
             icon={CalendarDays}
-            label="Bookings"
-            desc="Manage reservations"
+            label={t('company.nav.bookings')}
+            desc={t('company.dashboard.manage_reservations')}
             color="text-blue-400"
           />
           <QuickAction
             href="/company/rooms"
             icon={DoorOpen}
-            label="Rooms"
-            desc="Edit your listings"
+            label={t('company.nav.rooms')}
+            desc={t('company.dashboard.edit_listings')}
             color="text-purple-400"
           />
           <QuickAction
             href="/company/settings"
             icon={Settings}
-            label="Settings"
-            desc="Plan & preferences"
+            label={t('company.nav.settings')}
+            desc={t('company.dashboard.plan_preferences')}
             color="text-green-400"
           />
         </div>
@@ -499,12 +501,13 @@ function MiniStat({ icon: Icon, label, value, color }: {
 function QuickAction({ href, icon: Icon, label, desc, color, disabled }: {
   href: string; icon: any; label: string; desc: string; color: string; disabled?: boolean;
 }) {
+  const { t } = useTranslation();
   if (disabled) {
     return (
       <div className="p-4 rounded-2xl bg-brand-surface/50 border border-white/5 opacity-50 cursor-not-allowed">
         <Lock className="w-5 h-5 text-brand-text-secondary mb-2" />
         <p className="text-sm font-medium text-brand-text-secondary">{label}</p>
-        <p className="text-[10px] text-brand-text-secondary mt-0.5">Limit reached</p>
+        <p className="text-[10px] text-brand-text-secondary mt-0.5">{t('company.dashboard.limit_reached')}</p>
       </div>
     );
   }
@@ -524,6 +527,7 @@ function OnboardingBanner({
   status: string;
   companyId: string;
 }) {
+  const { t } = useTranslation();
   const acceptTerms = useMutation(api.companies.acceptTerms);
   const selectPlan = useMutation(api.companies.selectPlan);
   const resubmit = useMutation(api.companies.resubmitForReview);
@@ -532,26 +536,21 @@ function OnboardingBanner({
     return (
       <div className="p-6 md:p-8 max-w-2xl mx-auto mt-12">
         <div className="bg-brand-surface rounded-2xl border border-white/5 p-8 text-center">
-          <h1 className="text-2xl font-bold mb-4">Welcome to UNLOCKED</h1>
+          <h1 className="text-2xl font-bold mb-4">{t('company.onboarding.welcome')}</h1>
           <p className="text-brand-text-secondary mb-6">
-            Before you get started, please accept our terms of service and
-            business agreement.
+            {t('company.onboarding.terms_intro')}
           </p>
           <div className="bg-brand-bg rounded-xl p-4 mb-6 text-left text-sm text-brand-text-secondary max-h-48 overflow-y-auto">
-            <p className="font-semibold text-white mb-2">Terms of Service</p>
+            <p className="font-semibold text-white mb-2">{t('company.onboarding.terms_title')}</p>
             <p>
-              By using the UNLOCKED Business Portal, you agree to list your
-              escape rooms accurately, honor all bookings made through the
-              platform, and maintain up-to-date availability. UNLOCKED charges a
-              service fee per booking. Cancellation policies apply as per the
-              platform guidelines.
+              {t('company.onboarding.terms_body')}
             </p>
           </div>
           <button
             onClick={() => acceptTerms({ companyId: companyId as any })}
             className="btn-primary !py-3 px-8"
           >
-            Accept Terms & Continue
+            {t('company.onboarding.accept_terms')}
           </button>
         </div>
       </div>
@@ -562,40 +561,40 @@ function OnboardingBanner({
     return (
       <div className="p-6 md:p-8 max-w-4xl mx-auto mt-12">
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold">Choose Your Plan</h1>
+          <h1 className="text-2xl font-bold">{t('company.onboarding.choose_plan')}</h1>
           <p className="text-brand-text-secondary mt-2">
-            Select the plan that best fits your business
+            {t('company.onboarding.choose_plan_desc')}
           </p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {[
             {
-              name: 'Starter',
+              name: t('company.plan.starter'),
               value: 'starter' as const,
-              price: 'Free',
-              features: ['Up to 3 rooms', 'Basic analytics', 'Email support'],
+              price: t('company.onboarding.free'),
+              features: [t('company.onboarding.starter_f1'), t('company.onboarding.starter_f2'), t('company.onboarding.starter_f3')],
             },
             {
-              name: 'Pro',
+              name: t('company.plan.pro'),
               value: 'pro' as const,
-              price: '€49/mo',
+              price: '€49/' + t('company.onboarding.mo'),
               features: [
-                'Unlimited rooms',
-                'Advanced analytics',
-                'Priority support',
-                'Subscription system',
+                t('company.onboarding.pro_f1'),
+                t('company.onboarding.pro_f2'),
+                t('company.onboarding.pro_f3'),
+                t('company.onboarding.pro_f4'),
               ],
               popular: true,
             },
             {
-              name: 'Enterprise',
+              name: t('company.plan.enterprise'),
               value: 'enterprise' as const,
-              price: '€99/mo',
+              price: '€99/' + t('company.onboarding.mo'),
               features: [
-                'Everything in Pro',
-                'Custom branding',
-                'API access',
-                'Dedicated manager',
+                t('company.onboarding.ent_f1'),
+                t('company.onboarding.ent_f2'),
+                t('company.onboarding.ent_f3'),
+                t('company.onboarding.ent_f4'),
               ],
             },
           ].map((plan) => (
@@ -609,7 +608,7 @@ function OnboardingBanner({
             >
               {plan.popular && (
                 <span className="text-xs bg-brand-red text-white px-3 py-1 rounded-full font-medium">
-                  Most Popular
+                  {t('company.onboarding.most_popular')}
                 </span>
               )}
               <h3 className="text-xl font-bold mt-3">{plan.name}</h3>
@@ -639,7 +638,7 @@ function OnboardingBanner({
                     : 'bg-white/5 hover:bg-white/10 text-white'
                 }`}
               >
-                Select {plan.name}
+                {t('company.onboarding.select')} {plan.name}
               </button>
             </div>
           ))}
@@ -655,10 +654,9 @@ function OnboardingBanner({
           <div className="w-16 h-16 bg-yellow-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
             <Clock className="w-8 h-8 text-yellow-400" />
           </div>
-          <h1 className="text-2xl font-bold mb-2">Under Review</h1>
+          <h1 className="text-2xl font-bold mb-2">{t('company.onboarding.under_review')}</h1>
           <p className="text-brand-text-secondary">
-            Your account is being reviewed by our team. You&apos;ll be notified
-            once approved. This usually takes 1-2 business days.
+            {t('company.onboarding.under_review_desc')}
           </p>
         </div>
       </div>
@@ -672,16 +670,15 @@ function OnboardingBanner({
           <div className="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
             <span className="text-3xl">✗</span>
           </div>
-          <h1 className="text-2xl font-bold mb-2">Application Declined</h1>
+          <h1 className="text-2xl font-bold mb-2">{t('company.onboarding.declined')}</h1>
           <p className="text-brand-text-secondary mb-6">
-            Your application was not approved. Please review the feedback and
-            resubmit.
+            {t('company.onboarding.declined_desc')}
           </p>
           <button
             onClick={() => resubmit({ companyId: companyId as any })}
             className="btn-primary !py-3 px-8"
           >
-            Resubmit for Review
+            {t('company.onboarding.resubmit')}
           </button>
         </div>
       </div>

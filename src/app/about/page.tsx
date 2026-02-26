@@ -1,3 +1,5 @@
+'use client';
+
 import {
   Unlock,
   Users,
@@ -14,45 +16,48 @@ import {
   ArrowRight,
 } from 'lucide-react';
 import Link from 'next/link';
-
-const values = [
-  {
-    icon: Heart,
-    title: 'Passion for Puzzles',
-    desc: 'We live and breathe escape rooms. Our team of enthusiasts curates only the best experiences.',
-  },
-  {
-    icon: Shield,
-    title: 'Trust & Transparency',
-    desc: 'Real reviews, verified ratings, and honest listings. What you see is what you get.',
-  },
-  {
-    icon: Zap,
-    title: 'Seamless Experience',
-    desc: 'From discovery to escape — we focus on making every step effortless and enjoyable.',
-  },
-  {
-    icon: Globe,
-    title: 'Community First',
-    desc: 'We build for the escape room community — players and businesses alike — with features driven by real needs.',
-  },
-];
-
-const timeline = [
-  { year: '2024', title: 'The Idea', desc: 'Two escape room enthusiasts dreamed of a better way to discover and book rooms.' },
-  { year: '2024', title: 'First Prototype', desc: 'Built the mobile app with real-time booking, QR tickets, and social features.' },
-  { year: '2025', title: 'Partner Network', desc: 'Onboarded 20+ escape room venues across Greece with our business portal.' },
-  { year: '2025', title: 'Web Launch', desc: 'Expanded to the web — making UNLOCKED accessible from any device, anywhere.' },
-];
-
-const businessFeats = [
-  { icon: Calendar, title: 'Smart Scheduling', desc: 'Manage time slots, availability, and bookings with our real-time dashboard.' },
-  { icon: QrCode, title: 'QR Check-In', desc: 'Validate bookings instantly by scanning QR codes — zero paperwork.' },
-  { icon: BarChart2, title: 'Business Analytics', desc: 'Revenue reports, booking trends, and fill rates at your fingertips.' },
-  { icon: Building2, title: 'Website Widget', desc: 'Embed our booking widget on your website and let customers book directly.' },
-];
+import { useTranslation } from '@/lib/i18n';
 
 export default function AboutPage() {
+  const { t } = useTranslation();
+
+  const values = [
+    {
+      icon: Heart,
+      title: t('about.value1_title'),
+      desc: t('about.value1_desc'),
+    },
+    {
+      icon: Shield,
+      title: t('about.value2_title'),
+      desc: t('about.value2_desc'),
+    },
+    {
+      icon: Zap,
+      title: t('about.value3_title'),
+      desc: t('about.value3_desc'),
+    },
+    {
+      icon: Globe,
+      title: t('about.value4_title'),
+      desc: t('about.value4_desc'),
+    },
+  ];
+
+  const timeline = [
+    { year: t('about.timeline1_year'), title: t('about.timeline1_title'), desc: t('about.timeline1_desc') },
+    { year: t('about.timeline2_year'), title: t('about.timeline2_title'), desc: t('about.timeline2_desc') },
+    { year: t('about.timeline3_year'), title: t('about.timeline3_title'), desc: t('about.timeline3_desc') },
+    { year: t('about.timeline4_year'), title: t('about.timeline4_title'), desc: t('about.timeline4_desc') },
+  ];
+
+  const businessFeats = [
+    { icon: Calendar, title: t('about.biz_feature1_title'), desc: t('about.biz_feature1_desc') },
+    { icon: QrCode, title: t('about.biz_feature2_title'), desc: t('about.biz_feature2_desc') },
+    { icon: BarChart2, title: t('about.biz_feature3_title'), desc: t('about.biz_feature3_desc') },
+    { icon: Building2, title: t('about.biz_feature4_title'), desc: t('about.biz_feature4_desc') },
+  ];
+
   return (
     <>
       {/* Hero */}
@@ -65,11 +70,10 @@ export default function AboutPage() {
             <Unlock className="w-8 h-8 text-brand-red" />
           </div>
           <h1 className="section-heading mb-6">
-            About <span className="text-gradient">UNLOCKED</span>
+            {t('about.title')} <span className="text-gradient">{t('about.title_highlight')}</span>
           </h1>
           <p className="text-lg md:text-xl text-brand-text-secondary max-w-2xl mx-auto leading-relaxed">
-            We&apos;re on a mission to revolutionize how people discover, book, and
-            experience escape rooms. One puzzle at a time.
+            {t('about.hero_subtitle')}
           </p>
         </div>
       </section>
@@ -82,23 +86,18 @@ export default function AboutPage() {
               <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-brand-red/10 mb-4">
                 <Target className="w-6 h-6 text-brand-red" />
               </div>
-              <h2 className="text-2xl md:text-3xl font-display font-bold mb-4">Our Mission</h2>
+              <h2 className="text-2xl md:text-3xl font-display font-bold mb-4">{t('about.our_mission')}</h2>
               <p className="text-brand-text-secondary leading-relaxed">
-                To create the ultimate platform connecting escape room
-                enthusiasts with unforgettable experiences. We believe every
-                puzzle solved and every room escaped brings people closer
-                together.
+                {t('about.mission_text')}
               </p>
             </div>
             <div>
               <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-brand-red/10 mb-4">
                 <Award className="w-6 h-6 text-brand-red" />
               </div>
-              <h2 className="text-2xl md:text-3xl font-display font-bold mb-4">Our Vision</h2>
+              <h2 className="text-2xl md:text-3xl font-display font-bold mb-4">{t('about.our_vision')}</h2>
               <p className="text-brand-text-secondary leading-relaxed">
-                To become the global go-to platform for escape room discovery
-                and booking — empowering both players to find their next
-                adventure and businesses to reach new audiences.
+                {t('about.vision_text')}
               </p>
             </div>
           </div>
@@ -110,7 +109,7 @@ export default function AboutPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-14">
             <h2 className="section-heading mb-4">
-              What We <span className="text-gradient">Stand For</span>
+              {t('about.what_we_stand_for')}
             </h2>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -134,7 +133,7 @@ export default function AboutPage() {
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-14">
             <h2 className="section-heading mb-4">
-              Our <span className="text-gradient">Journey</span>
+              {t('about.our_journey')}
             </h2>
           </div>
 
@@ -177,14 +176,13 @@ export default function AboutPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-14">
             <span className="text-brand-red text-sm font-semibold uppercase tracking-wider">
-              For Escape Room Businesses
+              {t('about.for_businesses_label')}
             </span>
             <h2 className="section-heading mt-3 mb-4">
-              Partner With <span className="text-gradient">UNLOCKED</span>
+              {t('about.partner_title')} <span className="text-gradient">{t('about.partner_title_highlight')}</span>
             </h2>
             <p className="section-subheading mx-auto">
-              Everything you need to manage and grow your escape room business,
-              all in one platform.
+              {t('about.partner_subtitle')}
             </p>
           </div>
 
@@ -204,7 +202,7 @@ export default function AboutPage() {
 
           <div className="text-center">
             <Link href="/contact" className="btn-primary inline-flex items-center gap-2">
-              Become a Partner
+              {t('about.become_partner')}
               <ArrowRight className="w-5 h-5" />
             </Link>
           </div>
@@ -217,14 +215,12 @@ export default function AboutPage() {
           <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-brand-red/10 border border-brand-red/20 mb-6">
             <Users className="w-7 h-7 text-brand-red" />
           </div>
-          <h2 className="section-heading mb-4">Join the Team</h2>
+          <h2 className="section-heading mb-4">{t('about.join_team')}</h2>
           <p className="text-brand-text-secondary mb-8 leading-relaxed">
-            We&apos;re always looking for passionate people to help us build the
-            future of escape room experiences. If you love puzzles and
-            technology, we&apos;d love to hear from you.
+            {t('about.join_team_desc')}
           </p>
           <Link href="/contact" className="btn-outline">
-            Get in Touch
+            {t('about.get_in_touch')}
           </Link>
         </div>
       </section>

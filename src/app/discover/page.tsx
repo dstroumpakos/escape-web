@@ -15,22 +15,37 @@ import {
   Zap,
   X,
 } from 'lucide-react';
+import { useTranslation } from '@/lib/i18n';
 
 const themes = ['All', 'Horror', 'Sci-Fi', 'Mystery', 'Historical', 'Fantasy', 'Adventure'];
-
-const difficultyLabels: Record<number, string> = {
-  1: 'Easy',
-  2: 'Moderate',
-  3: 'Challenging',
-  4: 'Hard',
-  5: 'Extreme',
-};
 
 export default function DiscoverPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedTheme, setSelectedTheme] = useState('All');
   const [sortBy, setSortBy] = useState<'rating' | 'price' | 'duration'>('rating');
   const [showFilters, setShowFilters] = useState(false);
+  const { t } = useTranslation();
+
+  const difficultyLabels: Record<number, string> = {
+    1: t('difficulty.easy'),
+    2: t('difficulty.moderate'),
+    3: t('difficulty.challenging'),
+    4: t('difficulty.hard'),
+    5: t('difficulty.extreme'),
+  };
+
+  const themeLabel = (theme: string): string => {
+    const map: Record<string, string> = {
+      'All': t('discover.filter_all'),
+      'Horror': t('theme.horror'),
+      'Adventure': t('theme.adventure'),
+      'Mystery': t('theme.mystery'),
+      'Sci-Fi': t('theme.scifi'),
+      'Historical': t('discover.theme_historical'),
+      'Fantasy': t('discover.theme_fantasy'),
+    };
+    return map[theme] || theme;
+  };
 
   const allRooms = useQuery(api.rooms.list);
 
@@ -71,10 +86,10 @@ export default function DiscoverPage() {
 
         <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <h1 className="section-heading mb-4 text-center">
-            Discover <span className="text-gradient">Escape Rooms</span>
+            {t('discover.title')} <span className="text-gradient">{t('discover.title_highlight')}</span>
           </h1>
           <p className="text-brand-text-secondary text-center mb-8 max-w-xl mx-auto">
-            Browse all available rooms, filter by theme, and find your next adventure.
+            {t('discover.subtitle')}
           </p>
 
           {/* Search */}
@@ -82,7 +97,7 @@ export default function DiscoverPage() {
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-brand-text-muted" />
             <input
               type="text"
-              placeholder="Search rooms by name, location, or theme..."
+              placeholder={t('discover.search_placeholder')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="input-field !pl-12 !pr-12"
@@ -109,7 +124,7 @@ export default function DiscoverPage() {
                     : 'bg-brand-card border border-brand-border text-brand-text-secondary hover:text-white hover:border-brand-red/30'
                 }`}
               >
-                {theme}
+                {themeLabel(theme)}
               </button>
             ))}
             <button
@@ -117,16 +132,16 @@ export default function DiscoverPage() {
               className="px-4 py-2 rounded-xl text-sm font-medium bg-brand-card border border-brand-border text-brand-text-secondary hover:text-white hover:border-brand-red/30 flex items-center gap-1.5"
             >
               <SlidersHorizontal className="w-4 h-4" />
-              Sort
+              {t('discover.sort')}
             </button>
           </div>
 
           {showFilters && (
             <div className="flex justify-center gap-2 mb-4">
               {[
-                { value: 'rating' as const, label: 'Top Rated' },
-                { value: 'price' as const, label: 'Lowest Price' },
-                { value: 'duration' as const, label: 'Shortest' },
+                { value: 'rating' as const, label: t('discover.sort_top_rated') },
+                { value: 'price' as const, label: t('discover.sort_lowest_price') },
+                { value: 'duration' as const, label: t('discover.sort_shortest') },
               ].map((s) => (
                 <button
                   key={s.value}
@@ -151,20 +166,20 @@ export default function DiscoverPage() {
           {!allRooms ? (
             <div className="text-center py-20">
               <div className="w-8 h-8 border-2 border-brand-red/30 border-t-brand-red rounded-full animate-spin mx-auto mb-4" />
-              <p className="text-brand-text-muted">Loading rooms...</p>
+              <p className="text-brand-text-muted">{t('discover.loading')}</p>
             </div>
           ) : filteredRooms.length === 0 ? (
             <div className="text-center py-20">
               <DoorOpen className="w-16 h-16 text-brand-border mx-auto mb-4" />
-              <h3 className="text-xl font-semibold mb-2">No rooms found</h3>
+              <h3 className="text-xl font-semibold mb-2">{t('discover.no_results')}</h3>
               <p className="text-brand-text-muted">
-                Try adjusting your search or filters.
+                {t('discover.no_results_hint')}
               </p>
             </div>
           ) : (
             <>
               <p className="text-sm text-brand-text-muted mb-6">
-                {filteredRooms.length} room{filteredRooms.length !== 1 ? 's' : ''} found
+                {t('discover.rooms_found', { count: String(filteredRooms.length) })}
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filteredRooms.map((room: any) => (
@@ -192,12 +207,12 @@ export default function DiscoverPage() {
                       <div className="absolute top-3 left-3 z-20 flex gap-2">
                         {room.isNew && (
                           <span className="bg-brand-red text-white text-xs font-bold px-2.5 py-1 rounded-full flex items-center gap-1">
-                            <Zap className="w-3 h-3" /> NEW
+                            <Zap className="w-3 h-3" /> {t('featured.new')}
                           </span>
                         )}
                         {room.isTrending && (
                           <span className="bg-brand-gold text-black text-xs font-bold px-2.5 py-1 rounded-full">
-                            🔥 TRENDING
+                            {t('featured.trending')}
                           </span>
                         )}
                       </div>
@@ -206,7 +221,7 @@ export default function DiscoverPage() {
                       <div className="absolute top-3 right-3 z-20">
                         <span className="bg-brand-card/90 backdrop-blur-sm text-white text-sm font-bold px-3 py-1.5 rounded-lg border border-brand-border/50">
                           €{room.price}
-                          <span className="text-brand-text-muted font-normal text-xs">/person</span>
+                          <span className="text-brand-text-muted font-normal text-xs">{t('featured.per_person')}</span>
                         </span>
                       </div>
                     </div>
@@ -230,14 +245,14 @@ export default function DiscoverPage() {
                         <Star className="w-4 h-4 text-brand-gold fill-brand-gold" />
                         <span className="text-sm font-medium">{room.rating}</span>
                         <span className="text-sm text-brand-text-muted">
-                          ({room.reviews} reviews)
+                          ({room.reviews} {t('featured.reviews')})
                         </span>
                       </div>
 
                       <div className="flex items-center justify-between text-sm text-brand-text-secondary">
                         <div className="flex items-center gap-1.5">
                           <Clock className="w-4 h-4" />
-                          {room.duration} min
+                          {room.duration} {t('featured.min')}
                         </div>
                         <div className="flex items-center gap-1.5">
                           <Users className="w-4 h-4" />

@@ -1,3 +1,5 @@
+'use client';
+
 import Link from 'next/link';
 import {
   Unlock,
@@ -8,28 +10,31 @@ import {
   Facebook,
   Twitter,
 } from 'lucide-react';
-
-const footerLinks = {
-  product: [
-    { label: 'Browse Rooms', href: '/#rooms' },
-    { label: 'How It Works', href: '/#how-it-works' },
-    { label: 'Leaderboard', href: '/leaderboard' },
-    { label: 'Download App', href: '/#download' },
-  ],
-  company: [
-    { label: 'About Us', href: '/about' },
-    { label: 'For Businesses', href: '/about#for-businesses' },
-    { label: 'Contact', href: '/contact' },
-    { label: 'Careers', href: '/contact' },
-  ],
-  legal: [
-    { label: 'Privacy Policy', href: '#' },
-    { label: 'Terms of Service', href: '#' },
-    { label: 'Cookie Policy', href: '#' },
-  ],
-};
+import { useTranslation } from '@/lib/i18n';
 
 export function Footer() {
+  const { t } = useTranslation();
+
+  const footerLinks = {
+    product: [
+      { label: t('footer.browse_rooms'), href: '/#rooms' },
+      { label: t('footer.how_it_works'), href: '/#how-it-works' },
+      { label: t('footer.leaderboard'), href: '/leaderboard' },
+      { label: t('footer.download_app'), href: '/#download' },
+    ],
+    company: [
+      { label: t('footer.about_us'), href: '/about' },
+      { label: t('footer.for_businesses'), href: '/about#for-businesses' },
+      { label: t('footer.contact'), href: '/contact' },
+      { label: t('footer.careers'), href: '/contact' },
+    ],
+    legal: [
+      { label: t('footer.privacy'), href: '#' },
+      { label: t('footer.terms'), href: '#' },
+      { label: t('footer.cookies'), href: '#' },
+    ],
+  };
+
   return (
     <footer className="bg-brand-dark border-t border-brand-border/50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
@@ -45,8 +50,7 @@ export function Footer() {
               </span>
             </Link>
             <p className="text-brand-text-secondary text-sm leading-relaxed mb-6">
-              Discover, book, and conquer the best escape rooms. Challenge your
-              team and unlock unforgettable experiences.
+              {t('footer.description')}
             </p>
             <div className="flex gap-3">
               {[Instagram, Facebook, Twitter].map((Icon, i) => (
@@ -64,7 +68,7 @@ export function Footer() {
           {/* Product */}
           <div>
             <h4 className="font-semibold text-sm uppercase tracking-wider text-brand-text-muted mb-4">
-              Product
+              {t('footer.product')}
             </h4>
             <ul className="space-y-3">
               {footerLinks.product.map((link) => (
@@ -83,7 +87,7 @@ export function Footer() {
           {/* Company */}
           <div>
             <h4 className="font-semibold text-sm uppercase tracking-wider text-brand-text-muted mb-4">
-              Company
+              {t('footer.company')}
             </h4>
             <ul className="space-y-3">
               {footerLinks.company.map((link) => (
@@ -102,7 +106,7 @@ export function Footer() {
           {/* Contact */}
           <div>
             <h4 className="font-semibold text-sm uppercase tracking-wider text-brand-text-muted mb-4">
-              Contact
+              {t('footer.contact_heading')}
             </h4>
             <ul className="space-y-3">
               <li className="flex items-center gap-2 text-brand-text-secondary text-sm">
@@ -124,7 +128,7 @@ export function Footer() {
         {/* Bottom */}
         <div className="mt-12 pt-8 border-t border-brand-border/30 flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-brand-text-muted text-sm">
-            © {new Date().getFullYear()} UNLOCKED. All rights reserved.
+            © {new Date().getFullYear()} UNLOCKED. {t('footer.rights')}
           </p>
           <div className="flex gap-6">
             {footerLinks.legal.map((link) => (

@@ -2,31 +2,36 @@
 
 import { Building2, BarChart2, Calendar, QrCode, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
-
-const features = [
-  {
-    icon: Calendar,
-    title: 'Smart Booking System',
-    desc: 'Manage availability, time slots, and bookings in real-time with our intuitive dashboard.',
-  },
-  {
-    icon: QrCode,
-    title: 'QR Code Validation',
-    desc: 'Scan customer QR codes at the door for instant booking verification — no paperwork needed.',
-  },
-  {
-    icon: BarChart2,
-    title: 'Analytics Dashboard',
-    desc: 'Track bookings, revenue, and player stats to grow your escape room business.',
-  },
-  {
-    icon: Building2,
-    title: 'Embeddable Widget',
-    desc: 'Add our booking widget to your website and let customers book directly from your site.',
-  },
-];
+import { useTranslation } from '@/lib/i18n';
 
 export function ForBusinesses() {
+  const { t } = useTranslation();
+
+  const features = [
+    {
+      icon: Calendar,
+      title: t('business.feature1.title'),
+      desc: t('business.feature1.desc'),
+    },
+    {
+      icon: QrCode,
+      title: t('business.feature2.title'),
+      desc: t('business.feature2.desc'),
+    },
+    {
+      icon: BarChart2,
+      title: t('business.feature3.title'),
+      desc: t('business.feature3.desc'),
+    },
+    {
+      icon: Building2,
+      title: t('business.feature4.title'),
+      desc: t('business.feature4.desc'),
+    },
+  ];
+
+  const dayKeys = ['business.mon', 'business.tue', 'business.wed', 'business.thu', 'business.fri', 'business.sat', 'business.sun'];
+
   return (
     <section id="for-businesses" className="py-20 md:py-28">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -34,16 +39,14 @@ export function ForBusinesses() {
           {/* Left content */}
           <div>
             <span className="inline-block text-brand-red text-sm font-semibold uppercase tracking-wider mb-3">
-              For Businesses
+              {t('business.label')}
             </span>
             <h2 className="section-heading mb-6">
-              Grow Your Escape Room{' '}
-              <span className="text-gradient">Business</span>
+              {t('business.title')}{' '}
+              <span className="text-gradient">{t('business.title_highlight')}</span>
             </h2>
             <p className="text-brand-text-secondary mb-8 leading-relaxed">
-              Join UNLOCKED as a partner venue and reach thousands of new
-              customers. Our platform handles bookings, payments, and marketing
-              — so you can focus on creating amazing escape experiences.
+              {t('business.subtitle')}
             </p>
 
             <div className="space-y-5 mb-8">
@@ -66,7 +69,7 @@ export function ForBusinesses() {
               href="/contact"
               className="btn-primary inline-flex items-center gap-2"
             >
-              Partner With Us
+              {t('business.cta')}
               <ArrowRight className="w-5 h-5" />
             </Link>
           </div>
@@ -78,16 +81,16 @@ export function ForBusinesses() {
               {/* Mock dashboard */}
               <div className="space-y-4">
                 <div className="flex items-center justify-between mb-6">
-                  <h3 className="font-semibold">Business Dashboard</h3>
-                  <span className="text-xs text-brand-text-muted">Today</span>
+                  <h3 className="font-semibold">{t('business.dashboard')}</h3>
+                  <span className="text-xs text-brand-text-muted">{t('business.today')}</span>
                 </div>
 
                 {/* Stats row */}
                 <div className="grid grid-cols-3 gap-3">
                   {[
-                    { label: 'Bookings', value: '24' },
-                    { label: 'Revenue', value: '€1,240' },
-                    { label: 'Fill Rate', value: '87%' },
+                    { label: t('business.bookings'), value: '24' },
+                    { label: t('business.revenue'), value: '€1,240' },
+                    { label: t('business.fill_rate'), value: '87%' },
                   ].map((s, i) => (
                     <div
                       key={i}
@@ -106,7 +109,7 @@ export function ForBusinesses() {
                 {/* Mock chart bars */}
                 <div className="bg-brand-surface rounded-xl p-4">
                   <div className="text-xs text-brand-text-muted mb-3">
-                    Weekly Bookings
+                    {t('business.weekly_bookings')}
                   </div>
                   <div className="flex items-end gap-2 h-24">
                     {[40, 65, 55, 80, 90, 70, 95].map((h, i) => (
@@ -118,11 +121,9 @@ export function ForBusinesses() {
                     ))}
                   </div>
                   <div className="flex justify-between mt-2 text-[10px] text-brand-text-muted">
-                    {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(
-                      (d) => (
-                        <span key={d}>{d}</span>
-                      )
-                    )}
+                    {dayKeys.map((d) => (
+                      <span key={d}>{t(d)}</span>
+                    ))}
                   </div>
                 </div>
 
@@ -144,7 +145,7 @@ export function ForBusinesses() {
                         <span className="text-sm">{b.room}</span>
                       </div>
                       <span className="text-xs text-brand-text-muted">
-                        {b.players} players
+                        {b.players} {t('business.players')}
                       </span>
                     </div>
                   ))}

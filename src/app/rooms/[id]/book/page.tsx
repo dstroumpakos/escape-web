@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useQuery } from 'convex/react';
 import { api } from '../../../../../convex/_generated/api';
 import { useAuth } from '@/lib/auth';
+import { useTranslation } from '@/lib/i18n';
 import {
   ArrowLeft,
   Calendar,
@@ -16,17 +17,22 @@ import {
   DoorOpen,
 } from 'lucide-react';
 
-const MONTHS = [
-  'January', 'February', 'March', 'April', 'May', 'June',
-  'July', 'August', 'September', 'October', 'November', 'December',
-];
-const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-
 export default function BookingPage() {
   const params = useParams();
   const router = useRouter();
   const roomId = params.id as string;
   const { user, isAuthenticated } = useAuth();
+  const { t } = useTranslation();
+
+  const MONTHS = [
+    t('common.month_1'), t('common.month_2'), t('common.month_3'), t('common.month_4'),
+    t('common.month_5'), t('common.month_6'), t('common.month_7'), t('common.month_8'),
+    t('common.month_9'), t('common.month_10'), t('common.month_11'), t('common.month_12'),
+  ];
+  const DAYS = [
+    t('common.day_sun'), t('common.day_mon'), t('common.day_tue'), t('common.day_wed'),
+    t('common.day_thu'), t('common.day_fri'), t('common.day_sat'),
+  ];
 
   const room = useQuery(api.rooms.getById, roomId ? { id: roomId as any } : 'skip');
 
@@ -163,14 +169,14 @@ export default function BookingPage() {
             className="inline-flex items-center gap-2 text-brand-text-secondary hover:text-white transition-colors mb-8"
           >
             <ArrowLeft className="w-4 h-4" />
-            Back to {room.title}
+            {t('book.back_to_room', { room: room.title })}
           </Link>
 
           <h1 className="section-heading mb-2">
-            Book <span className="text-gradient">{room.title}</span>
+            {t('book.title')} <span className="text-gradient">{room.title}</span>
           </h1>
           <p className="text-brand-text-secondary mb-10">
-            Select your preferred date, time, and number of players.
+            {t('book.subtitle')}
           </p>
 
           <div className="grid lg:grid-cols-3 gap-8">
@@ -181,7 +187,7 @@ export default function BookingPage() {
                 <div className="flex items-center justify-between mb-6">
                   <h3 className="flex items-center gap-2 font-semibold">
                     <Calendar className="w-5 h-5 text-brand-red" />
-                    Select Date
+                    {t('book.select_date')}
                   </h3>
                   <div className="flex items-center gap-2">
                     <button onClick={prevMonth} className="p-2 rounded-lg hover:bg-brand-surface transition-colors">
@@ -239,7 +245,7 @@ export default function BookingPage() {
                 <div className="card p-6">
                   <h3 className="flex items-center gap-2 font-semibold mb-4">
                     <Clock className="w-5 h-5 text-brand-red" />
-                    Select Time
+                    {t('book.select_time')}
                   </h3>
                   <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
                     {availableSlots.map((slot: any) => (
@@ -267,7 +273,7 @@ export default function BookingPage() {
                 <div className="card p-6">
                   <h3 className="flex items-center gap-2 font-semibold mb-4">
                     <Users className="w-5 h-5 text-brand-red" />
-                    Number of Players
+                    {t('book.num_players')}
                   </h3>
                   <div className="flex items-center gap-4">
                     <button
@@ -288,7 +294,7 @@ export default function BookingPage() {
                       +
                     </button>
                     <span className="text-sm text-brand-text-muted">
-                      ({room.players} allowed)
+                      {t('book.players_allowed', { range: room.players })}
                     </span>
                   </div>
                 </div>
@@ -298,16 +304,16 @@ export default function BookingPage() {
             {/* Right: Summary */}
             <div className="lg:col-span-1">
               <div className="card p-6 sticky top-24">
-                <h3 className="font-semibold mb-4">Booking Summary</h3>
+                <h3 className="font-semibold mb-4">{t('book.summary')}</h3>
 
                 <div className="space-y-3 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-brand-text-muted">Room</span>
+                    <span className="text-brand-text-muted">{t('book.room')}</span>
                     <span className="font-medium text-right max-w-[160px] truncate">{room.title}</span>
                   </div>
                   {selectedDate && (
                     <div className="flex justify-between">
-                      <span className="text-brand-text-muted">Date</span>
+                      <span className="text-brand-text-muted">{t('book.date')}</span>
                       <span className="font-medium">
                         {new Date(selectedDate + 'T00:00:00').toLocaleDateString('en-GB', {
                           weekday: 'short',
@@ -319,13 +325,13 @@ export default function BookingPage() {
                   )}
                   {selectedTime && (
                     <div className="flex justify-between">
-                      <span className="text-brand-text-muted">Time</span>
+                      <span className="text-brand-text-muted">{t('book.time')}</span>
                       <span className="font-medium">{selectedTime}</span>
                     </div>
                   )}
                   {selectedTime && (
                     <div className="flex justify-between">
-                      <span className="text-brand-text-muted">Players</span>
+                      <span className="text-brand-text-muted">{t('book.players')}</span>
                       <span className="font-medium">{playerCount}</span>
                     </div>
                   )}
@@ -333,14 +339,14 @@ export default function BookingPage() {
 
                 <div className="border-t border-brand-border mt-4 pt-4">
                   <div className="flex justify-between items-baseline">
-                    <span className="text-brand-text-muted">Total</span>
+                    <span className="text-brand-text-muted">{t('book.total')}</span>
                     <span className="text-2xl font-display font-bold">€{totalPrice}</span>
                   </div>
                 </div>
 
                 {!isAuthenticated ? (
                   <Link href="/login" className="btn-primary w-full text-center mt-6 block">
-                    Log in to Book
+                    {t('book.login_to_book')}
                   </Link>
                 ) : (
                   <button
@@ -348,7 +354,7 @@ export default function BookingPage() {
                     onClick={handleProceed}
                     className="btn-primary w-full mt-6 flex items-center justify-center gap-2 disabled:opacity-30"
                   >
-                    Proceed to Checkout
+                    {t('book.proceed_checkout')}
                     <DoorOpen className="w-5 h-5" />
                   </button>
                 )}

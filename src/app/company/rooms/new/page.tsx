@@ -18,17 +18,12 @@ import {
   FileText,
   X,
 } from 'lucide-react';
+import { useTranslation } from '@/lib/i18n';
 
 const PLAN_ROOM_LIMITS: Record<string, number> = { starter: 3, pro: 10, enterprise: Infinity };
 
 const THEMES = ['Horror', 'Adventure', 'Sci-Fi', 'Mystery', 'Fantasy', 'Historical', 'Comedy', 'Thriller'];
 const TAG_OPTIONS = ['Beginner Friendly', 'Team Building', 'Couples', 'Family', 'Intense', 'Immersive', 'Physical', 'Mental', 'Story Driven', 'Competitive'];
-const PAYMENT_OPTIONS = [
-  { value: 'full', label: 'Full Payment' },
-  { value: 'deposit_20', label: '20% Deposit' },
-  { value: 'pay_on_arrival', label: 'Pay on Arrival' },
-] as const;
-const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 const TERMS_TEMPLATES = [
   {
@@ -95,6 +90,17 @@ export default function NewRoomPage() {
 
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const { t } = useTranslation();
+
+  const PAYMENT_OPTIONS = [
+    { value: 'full' as const, label: t('company.rooms.new.payment_full') },
+    { value: 'deposit_20' as const, label: t('company.rooms.new.payment_deposit') },
+    { value: 'pay_on_arrival' as const, label: t('company.rooms.new.payment_arrival') },
+  ];
+  const WEEKDAYS = [
+    t('common.day_sun'), t('common.day_mon'), t('common.day_tue'),
+    t('common.day_wed'), t('common.day_thu'), t('common.day_fri'), t('common.day_sat')
+  ];
 
   const updateField = (field: string, value: any) => {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -178,7 +184,7 @@ export default function NewRoomPage() {
     setError('');
     if (!company?.id) return;
     if (form.paymentTerms.length === 0) {
-      setError('Select at least one payment term');
+      setError(t('company.rooms.new.error_payment_terms'));
       return;
     }
     setLoading(true);
@@ -214,7 +220,7 @@ export default function NewRoomPage() {
       });
       router.push('/company/rooms');
     } catch (err: any) {
-      setError(err?.message || 'Failed to create room');
+      setError(err?.message || t('company.rooms.new.failed_create'));
     } finally {
       setLoading(false);
     }
@@ -230,9 +236,9 @@ export default function NewRoomPage() {
           <ArrowLeft className="w-5 h-5" />
         </Link>
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold">New Room</h1>
+          <h1 className="text-2xl md:text-3xl font-bold">{t('company.rooms.new.title')}</h1>
           <p className="text-brand-text-secondary mt-1">
-            Create a new escape room listing
+            {t('company.rooms.new.subtitle')}
           </p>
         </div>
       </div>
@@ -247,11 +253,11 @@ export default function NewRoomPage() {
         <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-xl p-5 mb-6 flex items-start gap-3">
           <Lock className="w-5 h-5 text-yellow-400 mt-0.5 shrink-0" />
           <div>
-            <p className="font-semibold text-yellow-400">Room limit reached</p>
+            <p className="font-semibold text-yellow-400">{t('company.rooms.new.limit_warning')}</p>
             <p className="text-sm text-brand-text-secondary mt-1">
-              Your {plan} plan allows up to {roomLimit === Infinity ? 'unlimited' : roomLimit} rooms. You currently have {roomCount}.
+              {t('company.rooms.new.limit_plan_info', { plan, limit: roomLimit === Infinity ? 'unlimited' : String(roomLimit), count: String(roomCount) })}
               {plan !== 'enterprise' && (
-                <> Upgrade your plan in <Link href="/company/settings" className="text-brand-red hover:underline">Settings</Link> to add more rooms.</>
+                <> {t('company.rooms.new.upgrade_in_settings')} <Link href="/company/settings" className="text-brand-red hover:underline">{t('company.rooms.new.settings_link')}</Link> {t('company.rooms.new.to_add_more')}</>
               )}
             </p>
           </div>
@@ -260,28 +266,28 @@ export default function NewRoomPage() {
 
       <form onSubmit={handleSubmit} className="space-y-8">
         {/* Basic Info */}
-        <Section title="Basic Information">
+        <Section title={t('company.rooms.new.basic_info')}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="md:col-span-2">
-              <Label>Room Title</Label>
+              <Label>{t('company.rooms.new.room_title')}</Label>
               <Input
                 value={form.title}
                 onChange={(v) => updateField('title', v)}
-                placeholder="The Haunted Laboratory"
+                placeholder={t('company.rooms.new.room_title_placeholder')}
                 required
               />
             </div>
             <div className="md:col-span-2">
-              <Label>Location / Address</Label>
+              <Label>{t('company.rooms.new.location')}</Label>
               <Input
                 value={form.location}
                 onChange={(v) => updateField('location', v)}
-                placeholder="123 Adventure St, Athens"
+                placeholder={t('company.rooms.new.location_placeholder')}
                 required
               />
             </div>
             <div>
-              <Label>Theme</Label>
+              <Label>{t('company.rooms.new.theme')}</Label>
               <select
                 value={form.theme}
                 onChange={(e) => updateField('theme', e.target.value)}
@@ -293,7 +299,7 @@ export default function NewRoomPage() {
               </select>
             </div>
             <div>
-              <Label>Duration (minutes)</Label>
+              <Label>{t('company.rooms.new.duration_min')}</Label>
               <Input
                 type="number"
                 value={form.duration}
@@ -307,13 +313,13 @@ export default function NewRoomPage() {
         </Section>
 
         {/* Images */}
-        <Section title="Images">
+        <Section title={t('company.rooms.new.images')}>
           <div>
-            <Label>Main Image URL</Label>
+            <Label>{t('company.rooms.new.main_image')}</Label>
             <Input
               value={form.image}
               onChange={(v) => updateField('image', v)}
-              placeholder="https://example.com/room-image.jpg"
+              placeholder={t('company.rooms.new.image_placeholder')}
             />
           </div>
           {form.image && (
@@ -324,10 +330,10 @@ export default function NewRoomPage() {
         </Section>
 
         {/* Difficulty & Players */}
-        <Section title="Difficulty & Players">
+        <Section title={t('company.rooms.new.difficulty_players')}>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <Label>Difficulty ({form.difficulty}/{form.maxDifficulty})</Label>
+              <Label>{t('company.rooms.new.difficulty_label', { current: String(form.difficulty), max: String(form.maxDifficulty) })}</Label>
               <input
                 type="range"
                 min="1"
@@ -341,7 +347,7 @@ export default function NewRoomPage() {
               </div>
             </div>
             <div>
-              <Label>Min Players</Label>
+              <Label>{t('company.rooms.new.min_players')}</Label>
               <Input
                 type="number"
                 value={form.playersMin}
@@ -351,7 +357,7 @@ export default function NewRoomPage() {
               />
             </div>
             <div>
-              <Label>Max Players</Label>
+              <Label>{t('company.rooms.new.max_players')}</Label>
               <Input
                 type="number"
                 value={form.playersMax}
@@ -364,9 +370,9 @@ export default function NewRoomPage() {
         </Section>
 
         {/* Pricing */}
-        <Section title="Pricing">
+        <Section title={t('company.rooms.new.pricing')}>
           <div>
-            <Label>Base Price (€ per person)</Label>
+            <Label>{t('company.rooms.new.base_price')}</Label>
             <Input
               type="number"
               value={form.price}
@@ -379,13 +385,13 @@ export default function NewRoomPage() {
 
           <div className="mt-4">
             <div className="flex items-center justify-between mb-2">
-              <Label>Group Pricing (optional)</Label>
+              <Label>{t('company.rooms.new.group_pricing')}</Label>
               <button
                 type="button"
                 onClick={addGroupPrice}
                 className="text-sm text-brand-red hover:underline flex items-center gap-1"
               >
-                <Plus className="w-3 h-3" /> Add
+                <Plus className="w-3 h-3" /> {t('company.rooms.new.add_group_price')}
               </button>
             </div>
             {form.pricePerGroup.map((g, idx) => (
@@ -419,7 +425,7 @@ export default function NewRoomPage() {
         </Section>
 
         {/* Tags */}
-        <Section title="Tags">
+        <Section title={t('company.rooms.new.tags')}>
           <div className="flex flex-wrap gap-2">
             {TAG_OPTIONS.map((tag) => (
               <button
@@ -439,33 +445,33 @@ export default function NewRoomPage() {
         </Section>
 
         {/* Story & Description */}
-        <Section title="Story & Description">
+        <Section title={t('company.rooms.new.story_desc')}>
           <div>
-            <Label>Story (immersive intro)</Label>
+            <Label>{t('company.rooms.new.story_label')}</Label>
             <textarea
               value={form.story}
               onChange={(e) => updateField('story', e.target.value)}
               rows={3}
               className="w-full bg-brand-bg border border-white/10 rounded-xl px-4 py-3 text-white placeholder-brand-text-secondary/50 focus:border-brand-red focus:outline-none resize-none"
-              placeholder="The year is 1923. A mysterious letter arrives at your door..."
+              placeholder={t('company.rooms.new.story_placeholder')}
               required
             />
           </div>
           <div className="mt-4">
-            <Label>Description (practical details)</Label>
+            <Label>{t('company.rooms.new.description_label')}</Label>
             <textarea
               value={form.description}
               onChange={(e) => updateField('description', e.target.value)}
               rows={3}
               className="w-full bg-brand-bg border border-white/10 rounded-xl px-4 py-3 text-white placeholder-brand-text-secondary/50 focus:border-brand-red focus:outline-none resize-none"
-              placeholder="A 60-minute immersive experience perfect for groups of 2-6..."
+              placeholder={t('company.rooms.new.description_placeholder')}
               required
             />
           </div>
         </Section>
 
         {/* Payment Terms */}
-        <Section title="Payment Terms">
+        <Section title={t('company.rooms.new.payment_terms')}>
           <div className="flex flex-wrap gap-3">
             {PAYMENT_OPTIONS.map((opt) => (
               <button
@@ -485,7 +491,7 @@ export default function NewRoomPage() {
         </Section>
 
         {/* Operating Days */}
-        <Section title="Operating Days">
+        <Section title={t('company.rooms.new.operating_days')}>
           <div className="flex flex-wrap gap-2">
             {WEEKDAYS.map((day, idx) => (
               <button
@@ -505,9 +511,9 @@ export default function NewRoomPage() {
         </Section>
 
         {/* Default Time Slots */}
-        <Section title="Default Time Slots">
+        <Section title={t('company.rooms.new.default_time_slots')}>
           <p className="text-sm text-brand-text-secondary mb-3">
-            These time slots will be auto-generated daily for operating days
+            {t('company.rooms.new.time_slots_desc')}
           </p>
           {form.defaultTimeSlots.map((slot, idx) => (
             <div key={idx} className="flex items-center gap-3 mb-2">
@@ -541,24 +547,24 @@ export default function NewRoomPage() {
             onClick={addTimeSlot}
             className="text-sm text-brand-red hover:underline flex items-center gap-1 mt-2"
           >
-            <Plus className="w-3 h-3" /> Add Time Slot
+            <Plus className="w-3 h-3" /> {t('company.rooms.new.add_time_slot')}
           </button>
         </Section>
 
         {/* Release Date (Early Access) */}
-        <Section title="Release Date">
+        <Section title={t('company.rooms.new.release_date')}>
           <div className="flex items-start gap-3 mb-4 p-4 bg-purple-500/5 border border-purple-500/10 rounded-xl">
             <CalendarClock className="w-5 h-5 text-purple-400 mt-0.5 shrink-0" />
             <div>
-              <p className="text-sm font-medium text-purple-300">Early Access for Premium Players</p>
+              <p className="text-sm font-medium text-purple-300">{t('company.rooms.new.early_access_title')}</p>
               <p className="text-xs text-brand-text-secondary mt-1">
-                Set a future release date and UNLOCKED Premium subscribers will be able to book this room up to 3 days before it goes public.
+                {t('company.rooms.new.early_access_desc')}
               </p>
             </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <Label>Public Release Date (optional)</Label>
+              <Label>{t('company.rooms.new.public_release_date')}</Label>
               <input
                 type="date"
                 value={form.releaseDate}
@@ -570,7 +576,7 @@ export default function NewRoomPage() {
             {form.releaseDate && (
               <div className="flex items-center gap-3">
                 <div className="bg-brand-surface rounded-xl p-4 border border-white/5 flex-1">
-                  <p className="text-xs text-brand-text-muted">Premium early access starts</p>
+                  <p className="text-xs text-brand-text-muted">{t('company.rooms.new.premium_access_starts')}</p>
                   <p className="text-sm font-bold mt-1">
                     {(() => {
                       const d = new Date(form.releaseDate);
@@ -592,13 +598,13 @@ export default function NewRoomPage() {
         </Section>
 
         {/* Advanced */}
-        <Section title="Advanced Settings">
+        <Section title={t('company.rooms.new.advanced_settings')}>
           <div className="space-y-4">
             <div className="flex items-center justify-between p-4 bg-brand-bg rounded-xl border border-white/5">
               <div>
-                <p className="font-medium">Subscription Only</p>
+                <p className="font-medium">{t('company.rooms.new.subscription_only')}</p>
                 <p className="text-sm text-brand-text-secondary">
-                  Only subscribers can book this room
+                  {t('company.rooms.new.subscription_only_desc')}
                 </p>
               </div>
               <button
@@ -616,7 +622,7 @@ export default function NewRoomPage() {
 
             {/* Terms of Use */}
             <div>
-              <Label>Terms of Use</Label>
+              <Label>{t('company.rooms.new.terms_of_use')}</Label>
               <div className="flex flex-wrap gap-2 mb-3">
                 {TERMS_TEMPLATES.map((tpl) => (
                   <button
@@ -624,7 +630,7 @@ export default function NewRoomPage() {
                     type="button"
                     onClick={() => {
                       if (form.termsOfUse.trim()) {
-                        if (confirm('You already have terms written. Replace with this template?')) {
+                        if (confirm(t('company.rooms.new.replace_template'))) {
                           updateField('termsOfUse', tpl.body);
                         }
                       } else {
@@ -634,7 +640,7 @@ export default function NewRoomPage() {
                     className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-white/10 text-brand-text-secondary hover:border-brand-red/40 hover:text-brand-red transition-all"
                   >
                     <FileText className="w-3.5 h-3.5" />
-                    {tpl.label}
+                    {t(`company.rooms.new.terms_${tpl.key}`)}
                   </button>
                 ))}
               </div>
@@ -643,7 +649,7 @@ export default function NewRoomPage() {
                 onChange={(e) => updateField('termsOfUse', e.target.value)}
                 rows={6}
                 className="w-full bg-brand-bg border border-white/10 rounded-xl px-4 py-3 text-white text-sm placeholder-brand-text-secondary/50 focus:border-brand-red focus:outline-none resize-none leading-relaxed"
-                placeholder="Select a template above or write your room-specific booking terms, cancellation policy, age requirements..."
+                placeholder={t('company.rooms.new.terms_placeholder')}
               />
               {form.termsOfUse.trim() && (
                 <button
@@ -652,7 +658,7 @@ export default function NewRoomPage() {
                   className="flex items-center gap-1 text-xs text-brand-text-secondary hover:text-red-400 mt-2 transition-colors"
                 >
                   <X className="w-3.5 h-3.5" />
-                  Clear terms
+                  {t('company.rooms.new.clear_terms')}
                 </button>
               )}
             </div>
@@ -665,7 +671,7 @@ export default function NewRoomPage() {
             href="/company/rooms"
             className="btn-ghost text-sm flex-1 text-center"
           >
-            Cancel
+            {t('company.rooms.new.cancel')}
           </Link>
           <button
             type="submit"
@@ -678,11 +684,11 @@ export default function NewRoomPage() {
               <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
             ) : atLimit ? (
               <>
-                <Lock className="w-4 h-4" /> Room Limit Reached
+                <Lock className="w-4 h-4" /> {t('company.rooms.new.room_limit_reached')}
               </>
             ) : (
               <>
-                <Save className="w-4 h-4" /> Create Room
+                <Save className="w-4 h-4" /> {t('company.rooms.new.create_room')}
               </>
             )}
           </button>

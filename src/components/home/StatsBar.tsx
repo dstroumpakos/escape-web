@@ -4,6 +4,7 @@ import { Users, DoorOpen, Trophy, Building2 } from 'lucide-react';
 import { useSafeQuery } from '@/lib/useSafeQuery';
 import { api } from '../../../convex/_generated/api';
 import { useEffect, useState } from 'react';
+import { useTranslation } from '@/lib/i18n';
 
 function formatStat(value: number): string {
   if (value >= 1000) {
@@ -35,6 +36,7 @@ function useCountUp(target: number, duration = 1200) {
 }
 
 export function StatsBar() {
+  const { t } = useTranslation();
   const platformStats = useSafeQuery<{ totalPlayers: number; totalRooms: number; completedEscapes: number; partnerVenues: number }>(
     api.stats.getPlatformStats
   );
@@ -45,10 +47,10 @@ export function StatsBar() {
   const venues = useCountUp(platformStats?.partnerVenues ?? 0);
 
   const stats = [
-    { icon: Users,     value: formatStat(players),  label: 'Active Players' },
-    { icon: DoorOpen,  value: formatStat(rooms),     label: 'Escape Rooms' },
-    { icon: Trophy,    value: formatStat(escapes),   label: 'Escapes Completed' },
-    { icon: Building2, value: formatStat(venues),    label: 'Partner Venues' },
+    { icon: Users,     value: formatStat(players),  label: t('stats.active_players') },
+    { icon: DoorOpen,  value: formatStat(rooms),     label: t('stats.escape_rooms') },
+    { icon: Trophy,    value: formatStat(escapes),   label: t('stats.escapes_completed') },
+    { icon: Building2, value: formatStat(venues),    label: t('stats.partner_venues') },
   ];
 
   return (

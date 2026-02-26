@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useMutation, useQuery } from 'convex/react';
 import { api } from '../../../../convex/_generated/api';
 import { useAuth } from '@/lib/auth';
+import { useTranslation } from '@/lib/i18n';
 import {
   ArrowLeft,
   Star,
@@ -17,6 +18,7 @@ import {
 export default function CreatePostPage() {
   const router = useRouter();
   const { user, isAuthenticated } = useAuth();
+  const { t } = useTranslation();
   const [text, setText] = useState('');
   const [rating, setRating] = useState(0);
   const [selectedRoomId, setSelectedRoomId] = useState('');
@@ -45,7 +47,7 @@ export default function CreatePostPage() {
       });
       router.push('/social');
     } catch (err: any) {
-      setError(err?.message || 'Failed to create post.');
+      setError(err?.message || t('social.create_error'));
     } finally {
       setIsSubmitting(false);
     }
@@ -59,28 +61,28 @@ export default function CreatePostPage() {
           className="inline-flex items-center gap-2 text-brand-text-secondary hover:text-white transition-colors mb-8"
         >
           <ArrowLeft className="w-4 h-4" />
-          Back to Feed
+          {t('social.create_back')}
         </Link>
 
         <h1 className="section-heading mb-2">
-          Create <span className="text-gradient">Post</span>
+          {t('social.create_title')} <span className="text-gradient">{t('social.create_title_highlight')}</span>
         </h1>
         <p className="text-brand-text-secondary mb-8">
-          Share your escape room experience with the community.
+          {t('social.create_subtitle')}
         </p>
 
         <div className="card p-6 space-y-6">
           {/* Room selector */}
           <div>
             <label className="block text-sm font-medium mb-2 text-brand-text-secondary">
-              Which room did you play? (optional)
+              {t('social.create_room_label')}
             </label>
             <select
               value={selectedRoomId}
               onChange={(e) => setSelectedRoomId(e.target.value)}
               className="input-field"
             >
-              <option value="">No specific room</option>
+              <option value="">{t('social.create_no_room')}</option>
               {rooms?.map((r: any) => (
                 <option key={r._id} value={r._id}>
                   {r.title} — {r.location}
@@ -92,7 +94,7 @@ export default function CreatePostPage() {
           {/* Rating */}
           <div>
             <label className="block text-sm font-medium mb-2 text-brand-text-secondary">
-              Your Rating (optional)
+              {t('social.create_rating_label')}
             </label>
             <div className="flex gap-1">
               {[1, 2, 3, 4, 5].map((s) => (
@@ -116,12 +118,12 @@ export default function CreatePostPage() {
           {/* Text */}
           <div>
             <label className="block text-sm font-medium mb-2 text-brand-text-secondary">
-              Your Experience
+              {t('social.create_experience_label')}
             </label>
             <textarea
               value={text}
               onChange={(e) => setText(e.target.value)}
-              placeholder="Tell us about your escape room experience..."
+              placeholder={t('social.create_placeholder')}
               rows={6}
               className="input-field resize-none"
               required
@@ -144,7 +146,7 @@ export default function CreatePostPage() {
             ) : (
               <>
                 <Send className="w-5 h-5" />
-                Post
+                {t('social.create_submit')}
               </>
             )}
           </button>

@@ -16,18 +16,20 @@ import {
 import { ConvexClientProvider } from '@/components/providers/ConvexClientProvider';
 import { CompanyAuthProvider, useCompanyAuth } from '@/lib/companyAuth';
 import { PlanBadge } from './PlanBadge';
-
-const sidebarLinks = [
-  { href: '/company', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/company/bookings', label: 'Bookings', icon: CalendarDays },
-  { href: '/company/rooms', label: 'Rooms', icon: DoorOpen },
-  { href: '/company/settings', label: 'Settings', icon: Settings },
-];
+import { useTranslation } from '@/lib/i18n';
 
 function CompanyShell({ children }: { children: React.ReactNode }) {
+  const { t } = useTranslation();
   const { company, isLoading, isAuthenticated, logout } = useCompanyAuth();
   const router = useRouter();
   const pathname = usePathname();
+
+  const sidebarLinks = [
+    { href: '/company', label: t('company.nav.dashboard'), icon: LayoutDashboard },
+    { href: '/company/bookings', label: t('company.nav.bookings'), icon: CalendarDays },
+    { href: '/company/rooms', label: t('company.nav.rooms'), icon: DoorOpen },
+    { href: '/company/settings', label: t('company.nav.settings'), icon: Settings },
+  ];
 
   // Allow auth pages without redirect
   const isAuthPage =
@@ -132,13 +134,13 @@ function CompanyShell({ children }: { children: React.ReactNode }) {
             className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-brand-text-secondary hover:text-white hover:bg-white/5 transition-all w-full"
           >
             <LogOut className="w-5 h-5" />
-            Log Out
+            {t('company.nav.logout')}
           </button>
           <Link
             href="/"
             className="flex items-center gap-3 px-3 py-2 mt-1 rounded-xl text-xs text-brand-text-secondary/60 hover:text-brand-text-secondary transition-all"
           >
-            ← Back to UNLOCKED
+            {t('company.nav.back_to_site')}
           </Link>
         </div>
       </aside>

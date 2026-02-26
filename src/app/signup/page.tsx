@@ -5,8 +5,10 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Unlock, Mail, Lock, User, Eye, EyeOff, ArrowRight, Check } from 'lucide-react';
 import { useAuth } from '@/lib/auth';
+import { useTranslation } from '@/lib/i18n';
 
 export default function SignupPage() {
+  const { t } = useTranslation();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -26,10 +28,10 @@ export default function SignupPage() {
   }, [isAuthenticated, router]);
 
   const passwordChecks = [
-    { label: 'At least 8 characters', met: password.length >= 8 },
-    { label: 'Contains a number', met: /\d/.test(password) },
-    { label: 'Contains uppercase letter', met: /[A-Z]/.test(password) },
-    { label: 'Passwords match', met: password.length > 0 && password === confirmPassword },
+    { label: t('auth.check_length'), met: password.length >= 8 },
+    { label: t('auth.check_number'), met: /\d/.test(password) },
+    { label: t('auth.check_uppercase'), met: /[A-Z]/.test(password) },
+    { label: t('auth.check_match'), met: password.length > 0 && password === confirmPassword },
   ];
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -37,11 +39,11 @@ export default function SignupPage() {
     setError('');
 
     if (password !== confirmPassword) {
-      setError('Passwords do not match.');
+      setError(t('auth.error_password_mismatch'));
       return;
     }
     if (!agreed) {
-      setError('Please accept the terms and conditions.');
+      setError(t('auth.error_accept_terms'));
       return;
     }
 
@@ -50,7 +52,7 @@ export default function SignupPage() {
       await signup(name, email, password);
       // Redirect handled by useEffect above
     } catch (err: any) {
-      setError(err?.message || 'Something went wrong. Please try again.');
+      setError(err?.message || t('auth.error_generic'));
     } finally {
       setIsLoading(false);
     }
@@ -72,9 +74,9 @@ export default function SignupPage() {
               UN<span className="text-brand-red">LOCKED</span>
             </span>
           </Link>
-          <h1 className="text-2xl font-display font-bold mb-2">Create Account</h1>
+          <h1 className="text-2xl font-display font-bold mb-2">{t('auth.create_account')}</h1>
           <p className="text-brand-text-secondary text-sm">
-            Join the community and start your escape journey
+            {t('auth.signup_subtitle')}
           </p>
         </div>
 
@@ -90,7 +92,7 @@ export default function SignupPage() {
             {/* Name */}
             <div>
               <label className="block text-sm font-medium mb-2 text-brand-text-secondary">
-                Full Name
+                {t('auth.full_name')}
               </label>
               <div className="relative">
                 <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-brand-text-muted" />
@@ -98,7 +100,7 @@ export default function SignupPage() {
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="John Doe"
+                  placeholder={t('auth.name_placeholder')}
                   className="input-field !pl-12"
                   required
                 />
@@ -108,7 +110,7 @@ export default function SignupPage() {
             {/* Email */}
             <div>
               <label className="block text-sm font-medium mb-2 text-brand-text-secondary">
-                Email Address
+                {t('auth.email')}
               </label>
               <div className="relative">
                 <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-brand-text-muted" />
@@ -116,7 +118,7 @@ export default function SignupPage() {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="you@example.com"
+                  placeholder={t('auth.email_placeholder')}
                   className="input-field !pl-12"
                   required
                 />
@@ -126,7 +128,7 @@ export default function SignupPage() {
             {/* Password */}
             <div>
               <label className="block text-sm font-medium mb-2 text-brand-text-secondary">
-                Password
+                {t('auth.password')}
               </label>
               <div className="relative">
                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-brand-text-muted" />
@@ -134,7 +136,7 @@ export default function SignupPage() {
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Create a strong password"
+                  placeholder={t('auth.password_hint')}
                   className="input-field !pl-12 !pr-12"
                   required
                 />
@@ -151,7 +153,7 @@ export default function SignupPage() {
             {/* Confirm Password */}
             <div>
               <label className="block text-sm font-medium mb-2 text-brand-text-secondary">
-                Confirm Password
+                {t('auth.confirm_password')}
               </label>
               <div className="relative">
                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-brand-text-muted" />
@@ -159,7 +161,7 @@ export default function SignupPage() {
                   type={showPassword ? 'text' : 'password'}
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  placeholder="Confirm your password"
+                  placeholder={t('auth.confirm_password_placeholder')}
                   className="input-field !pl-12"
                   required
                 />
@@ -201,13 +203,13 @@ export default function SignupPage() {
                 className="w-4 h-4 mt-0.5 rounded border-brand-border bg-brand-surface text-brand-red focus:ring-brand-red/50"
               />
               <span className="text-sm text-brand-text-secondary">
-                I agree to the{' '}
+                {t('auth.agree_to')}{' '}
                 <Link href="#" className="text-brand-red hover:underline">
-                  Terms of Service
+                  {t('auth.terms_of_service')}
                 </Link>{' '}
-                and{' '}
+                {t('auth.and')}{' '}
                 <Link href="#" className="text-brand-red hover:underline">
-                  Privacy Policy
+                  {t('auth.privacy_policy')}
                 </Link>
               </span>
             </label>
@@ -222,7 +224,7 @@ export default function SignupPage() {
                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
               ) : (
                 <>
-                  Create Account
+                  {t('auth.create_account')}
                   <ArrowRight className="w-5 h-5" />
                 </>
               )}
@@ -232,7 +234,7 @@ export default function SignupPage() {
           {/* Divider */}
           <div className="flex items-center gap-4 my-6">
             <div className="flex-1 h-px bg-brand-border" />
-            <span className="text-xs text-brand-text-muted uppercase">or</span>
+            <span className="text-xs text-brand-text-muted uppercase">{t('auth.or')}</span>
             <div className="flex-1 h-px bg-brand-border" />
           </div>
 
@@ -241,29 +243,29 @@ export default function SignupPage() {
             <svg viewBox="0 0 24 24" className="w-5 h-5" fill="currentColor">
               <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z" />
             </svg>
-            Sign up with Apple
+            {t('auth.signup_apple')}
           </button>
 
           {/* Login link */}
           <p className="text-center text-sm text-brand-text-secondary mt-6">
-            Already have an account?{' '}
+            {t('auth.has_account')}{' '}
             <Link
               href="/login"
               className="text-brand-red hover:text-brand-red-light font-medium transition-colors"
             >
-              Log in
+              {t('auth.login_link')}
             </Link>
           </p>
         </div>
 
         {/* Business signup */}
         <p className="text-center text-sm text-brand-text-muted mt-6">
-          Want to list your escape rooms?{' '}
+          {t('auth.business_cta')}{' '}
           <Link
             href="/signup?type=company"
             className="text-brand-text-secondary hover:text-white transition-colors underline"
           >
-            Register as a business
+            {t('auth.register_business')}
           </Link>
         </p>
       </div>

@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useQuery, useMutation } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
 import { useAuth } from '@/lib/auth';
+import { useTranslation } from '@/lib/i18n';
 import {
   Heart,
   MessageCircle,
@@ -22,6 +23,7 @@ import {
 export default function SocialPage() {
   const router = useRouter();
   const { user, isAuthenticated } = useAuth();
+  const { t } = useTranslation();
 
   const feed = useQuery(api.posts.getFeed);
   const userLikes = useQuery(
@@ -65,10 +67,10 @@ export default function SocialPage() {
         <div className="absolute inset-0 bg-gradient-to-b from-brand-bg via-brand-bg to-brand-dark" />
         <div className="relative z-10 max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="section-heading mb-2">
-            Social <span className="text-gradient">Feed</span>
+            {t('social.title')} <span className="text-gradient">{t('social.title_highlight')}</span>
           </h1>
           <p className="text-brand-text-secondary mb-6">
-            See what the community is saying about their escape room experiences.
+            {t('social.subtitle')}
           </p>
         </div>
       </section>
@@ -86,7 +88,7 @@ export default function SocialPage() {
                 <Plus className="w-5 h-5 text-brand-red" />
               </div>
               <span className="text-brand-text-muted text-sm">
-                Share your escape room experience...
+                {t('social.share_prompt')}
               </span>
             </Link>
           )}
@@ -94,14 +96,14 @@ export default function SocialPage() {
           {!feed ? (
             <div className="text-center py-20">
               <div className="w-8 h-8 border-2 border-brand-red/30 border-t-brand-red rounded-full animate-spin mx-auto mb-4" />
-              <p className="text-brand-text-muted">Loading feed...</p>
+              <p className="text-brand-text-muted">{t('social.loading')}</p>
             </div>
           ) : feed.length === 0 ? (
             <div className="text-center py-20">
               <MessageCircle className="w-16 h-16 text-brand-border mx-auto mb-4" />
-              <h3 className="text-xl font-semibold mb-2">No posts yet</h3>
+              <h3 className="text-xl font-semibold mb-2">{t('social.no_posts')}</h3>
               <p className="text-brand-text-muted">
-                Be the first to share your escape room experience!
+                {t('social.no_posts_desc')}
               </p>
             </div>
           ) : (
@@ -133,7 +135,7 @@ export default function SocialPage() {
                         )}
                         {post.authorType === 'company' && (
                           <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-brand-red/20 text-brand-red">
-                            Business
+                            {t('social.business_badge')}
                           </span>
                         )}
                       </div>
@@ -248,6 +250,7 @@ export default function SocialPage() {
 }
 
 function CommentsSection({ postId, userId }: { postId: string; userId?: string }) {
+  const { t } = useTranslation();
   const comments = useQuery(api.posts.getComments, { postId: postId as any });
   const addComment = useMutation(api.posts.addComment);
   const [text, setText] = useState('');
@@ -298,7 +301,7 @@ function CommentsSection({ postId, userId }: { postId: string; userId?: string }
         <div className="flex items-center gap-2">
           <input
             type="text"
-            placeholder="Write a comment..."
+            placeholder={t('social.comment_placeholder')}
             value={text}
             onChange={(e) => setText(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}

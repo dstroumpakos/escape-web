@@ -3,6 +3,7 @@ import './globals.css';
 import { LayoutShell } from '@/components/layout/LayoutShell';
 import { ConvexClientProvider } from '@/components/providers/ConvexClientProvider';
 import { AuthProvider } from '@/lib/auth';
+import { I18nProvider } from '@/lib/i18n';
 import { SafeConvex } from '@/components/SafeConvex';
 
 // Force all pages to be dynamically rendered (SSR on-demand)
@@ -30,9 +31,11 @@ export default function RootLayout({
     <html lang="en" className="dark">
       <body className="min-h-screen flex flex-col">
         <ConvexClientProvider>
-          <AuthProvider>
-            <LayoutShell>{children}</LayoutShell>
-          </AuthProvider>
+          <I18nProvider>
+            <AuthProvider>
+              <LayoutShell>{children}</LayoutShell>
+            </AuthProvider>
+          </I18nProvider>
         </ConvexClientProvider>
       </body>
     </html>

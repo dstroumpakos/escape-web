@@ -4,20 +4,22 @@ import Link from 'next/link';
 import { Search, ArrowRight, Sparkles } from 'lucide-react';
 import { useSafeQuery } from '@/lib/useSafeQuery';
 import { api } from '../../../convex/_generated/api';
+import { useTranslation } from '@/lib/i18n';
 
 export function HeroSection() {
+  const { t } = useTranslation();
   const platformStats = useSafeQuery<{ totalPlayers: number; totalRooms: number; averageRating: number }>(
     api.stats.getPlatformStats
   );
 
   const playersLabel = platformStats
-    ? `${platformStats.totalPlayers.toLocaleString()}+ Players`
+    ? `${platformStats.totalPlayers.toLocaleString()}${t('hero.players')}`
     : '…';
   const ratingLabel = platformStats
-    ? `⭐ ${platformStats.averageRating} Average Rating`
+    ? `⭐ ${platformStats.averageRating} ${t('hero.avg_rating')}`
     : '…';
   const roomsLabel = platformStats
-    ? `${platformStats.totalRooms}+ Rooms`
+    ? `${platformStats.totalRooms}${t('hero.rooms')}`
     : '…';
 
   return (
@@ -42,21 +44,20 @@ export function HeroSection() {
         <div className="inline-flex items-center gap-2 bg-brand-red/10 border border-brand-red/20 rounded-full px-4 py-1.5 mb-8 animate-fade-up">
           <Sparkles className="w-4 h-4 text-brand-red" />
           <span className="text-brand-red text-sm font-medium">
-            The #1 Escape Room Platform
+            {t('hero.badge')}
           </span>
         </div>
 
         {/* Heading */}
         <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-display font-bold tracking-tight leading-[1.1] mb-6 animate-fade-up animate-delay-100">
-          Discover. Escape.
+          {t('hero.title1')}
           <br />
-          <span className="text-gradient">Get UNLOCKED.</span>
+          <span className="text-gradient">{t('hero.title2')}</span>
         </h1>
 
         {/* Subheading */}
         <p className="text-lg md:text-xl text-brand-text-secondary max-w-2xl mx-auto mb-10 animate-fade-up animate-delay-200">
-          Find and book the best escape rooms near you. Challenge your team,
-          solve puzzles, and create memories that last a lifetime.
+          {t('hero.subtitle')}
         </p>
 
         {/* Search Bar */}
@@ -67,11 +68,11 @@ export function HeroSection() {
               <Search className="w-5 h-5 text-brand-text-muted ml-5 shrink-0" />
               <input
                 type="text"
-                placeholder="Search escape rooms, themes, or locations..."
+                placeholder={t('hero.search_placeholder')}
                 className="w-full bg-transparent px-4 py-4 text-white placeholder-brand-text-muted focus:outline-none"
               />
               <button className="btn-primary !rounded-l-none !rounded-r-xl shrink-0 !py-4 !px-6">
-                Search
+                {t('hero.search')}
               </button>
             </div>
           </div>
@@ -80,11 +81,11 @@ export function HeroSection() {
         {/* CTA Buttons */}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-fade-up animate-delay-400">
           <Link href="/signup" className="btn-primary flex items-center gap-2 text-lg !py-4 !px-10">
-            Get Started Free
+            {t('hero.get_started')}
             <ArrowRight className="w-5 h-5" />
           </Link>
           <Link href="/about" className="btn-outline text-lg !py-4 !px-10">
-            Learn More
+            {t('hero.learn_more')}
           </Link>
         </div>
 

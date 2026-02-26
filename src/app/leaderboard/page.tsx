@@ -14,6 +14,7 @@ import {
   TrendingUp,
   Award,
 } from 'lucide-react';
+import { useTranslation } from '@/lib/i18n';
 
 type Tab = 'players' | 'rooms' | 'teams';
 
@@ -36,17 +37,6 @@ const fallbackRooms = [
   { rank: 3, name: 'The Haunted Mansion', venue: 'Dark Rooms', rating: 4.8, reviews: 142, escapeRate: 45, theme: 'Horror' },
   { rank: 4, name: 'Cyber Heist', venue: 'TechEscape', rating: 4.8, reviews: 134, escapeRate: 38, theme: 'Sci-Fi' },
   { rank: 5, name: 'Da Vinci Code', venue: 'Mystery Rooms', rating: 4.7, reviews: 98, escapeRate: 52, theme: 'Mystery' },
-];
-
-const badges = [
-  { icon: '🏆', name: 'Champion', desc: 'Escape 50+ rooms' },
-  { icon: '🔥', name: 'On Fire', desc: '10 escapes in a row' },
-  { icon: '🧠', name: 'Mastermind', desc: 'Escape 5 hard rooms' },
-  { icon: '⚡', name: 'Speed Demon', desc: 'Escape in under 30 min' },
-  { icon: '👥', name: 'Team Leader', desc: 'Play with 20+ unique teammates' },
-  { icon: '🌍', name: 'Explorer', desc: 'Try all room themes' },
-  { icon: '🎯', name: 'Perfectionist', desc: 'No hints used in 10 rooms' },
-  { icon: '🌙', name: 'Night Owl', desc: '10 late-night escapes' },
 ];
 
 function RankBadge({ rank }: { rank: number }) {
@@ -76,7 +66,19 @@ function RankBadge({ rank }: { rank: number }) {
 }
 
 export default function LeaderboardPage() {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<Tab>('players');
+
+  const badges = [
+    { icon: '🏆', name: t('leaderboard.badge_champion'), desc: t('leaderboard.badge_champion_desc') },
+    { icon: '🔥', name: t('leaderboard.badge_on_fire'), desc: t('leaderboard.badge_on_fire_desc') },
+    { icon: '🧠', name: t('leaderboard.badge_mastermind'), desc: t('leaderboard.badge_mastermind_desc') },
+    { icon: '⚡', name: t('leaderboard.badge_speed_demon'), desc: t('leaderboard.badge_speed_demon_desc') },
+    { icon: '👥', name: t('leaderboard.badge_team_leader'), desc: t('leaderboard.badge_team_leader_desc') },
+    { icon: '🌍', name: t('leaderboard.badge_explorer'), desc: t('leaderboard.badge_explorer_desc') },
+    { icon: '🎯', name: t('leaderboard.badge_perfectionist'), desc: t('leaderboard.badge_perfectionist_desc') },
+    { icon: '🌙', name: t('leaderboard.badge_night_owl'), desc: t('leaderboard.badge_night_owl_desc') },
+  ];
 
   // Query real data from Convex
   const convexRooms = useQuery(api.rooms.list);
@@ -115,11 +117,10 @@ export default function LeaderboardPage() {
             <Trophy className="w-8 h-8 text-brand-gold" />
           </div>
           <h1 className="section-heading mb-4">
-            Leader<span className="text-gradient">board</span>
+            {t('leaderboard.title')}
           </h1>
           <p className="text-lg text-brand-text-secondary max-w-xl mx-auto">
-            See who&apos;s dominating the escape room scene. Climb the ranks,
-            earn badges, and prove you&apos;re the ultimate escape artist.
+            {t('leaderboard.subtitle')}
           </p>
         </div>
       </section>
@@ -130,10 +131,10 @@ export default function LeaderboardPage() {
           <div className="glass rounded-2xl p-6 md:p-8">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
               {[
-                { icon: DoorOpen, label: 'Total Escapes', value: '5,247', color: 'text-brand-red' },
-                { icon: Clock, label: 'Avg. Escape Time', value: '47 min', color: 'text-cyan-400' },
-                { icon: TrendingUp, label: 'Success Rate', value: '68%', color: 'text-green-400' },
-                { icon: Award, label: 'Badges Earned', value: '1,832', color: 'text-brand-gold' },
+                { icon: DoorOpen, label: t('leaderboard.total_escapes'), value: '5,247', color: 'text-brand-red' },
+                { icon: Clock, label: t('leaderboard.avg_escape_time'), value: '47 min', color: 'text-cyan-400' },
+                { icon: TrendingUp, label: t('leaderboard.success_rate'), value: '68%', color: 'text-green-400' },
+                { icon: Award, label: t('leaderboard.badges_earned'), value: '1,832', color: 'text-brand-gold' },
               ].map((s, i) => (
                 <div key={i} className="text-center">
                   <s.icon className={`w-6 h-6 ${s.color} mx-auto mb-2`} />
@@ -156,9 +157,9 @@ export default function LeaderboardPage() {
           {/* Tab buttons */}
           <div className="flex gap-2 mb-8 overflow-x-auto pb-2">
             {[
-              { id: 'players' as Tab, label: 'Top Players', icon: Trophy },
-              { id: 'rooms' as Tab, label: 'Top Rooms', icon: Star },
-              { id: 'teams' as Tab, label: 'Badges', icon: Award },
+              { id: 'players' as Tab, label: t('leaderboard.top_players'), icon: Trophy },
+              { id: 'rooms' as Tab, label: t('leaderboard.top_rooms'), icon: Star },
+              { id: 'teams' as Tab, label: t('leaderboard.badges'), icon: Award },
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -202,7 +203,7 @@ export default function LeaderboardPage() {
                             {player.name}
                           </h3>
                           <p className="text-xs text-brand-text-muted">
-                            {player.escaped} escapes
+                            {player.escaped} {t('leaderboard.escapes')}
                           </p>
                         </div>
                         <div
@@ -221,13 +222,13 @@ export default function LeaderboardPage() {
               {/* Full list */}
               <div className="card overflow-hidden">
                 <div className="hidden md:grid grid-cols-[60px_1fr_80px_80px_80px_80px_80px] gap-4 p-4 bg-brand-surface/50 text-xs font-medium text-brand-text-muted uppercase">
-                  <span>Rank</span>
-                  <span>Player</span>
-                  <span className="text-center">Played</span>
-                  <span className="text-center">Escaped</span>
-                  <span className="text-center">Rate</span>
-                  <span className="text-center">Badges</span>
-                  <span className="text-center">Streak</span>
+                  <span>{t('leaderboard.rank')}</span>
+                  <span>{t('leaderboard.player')}</span>
+                  <span className="text-center">{t('leaderboard.played')}</span>
+                  <span className="text-center">{t('leaderboard.escaped')}</span>
+                  <span className="text-center">{t('leaderboard.rate')}</span>
+                  <span className="text-center">{t('leaderboard.badges_col')}</span>
+                  <span className="text-center">{t('leaderboard.streak')}</span>
                 </div>
                 {topPlayers.map((player) => (
                   <div
@@ -248,7 +249,7 @@ export default function LeaderboardPage() {
                           {player.name}
                         </span>
                         <div className="md:hidden text-xs text-brand-text-muted">
-                          {player.escaped} escapes · {player.rate}%
+                          {player.escaped} {t('leaderboard.escapes')} · {player.rate}%
                         </div>
                       </div>
                     </div>
@@ -301,7 +302,7 @@ export default function LeaderboardPage() {
                       </span>
                     </div>
                     <div className="text-brand-text-secondary">
-                      {room.escapeRate}% escape rate
+                      {room.escapeRate}% {t('leaderboard.escape_rate')}
                     </div>
                   </div>
                 </div>

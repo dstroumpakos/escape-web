@@ -19,11 +19,13 @@ import {
   Lock,
   AlertTriangle,
 } from 'lucide-react';
+import { useTranslation } from '@/lib/i18n';
 
 const PLAN_ROOM_LIMITS: Record<string, number> = { starter: 3, pro: 10, enterprise: Infinity };
 
 export default function CompanyRoomsPage() {
   const { company } = useCompanyAuth();
+  const { t } = useTranslation();
   const companyId = company?.id;
 
   const rooms = useQuery(
@@ -50,7 +52,7 @@ export default function CompanyRoomsPage() {
   };
 
   const handleDelete = async (roomId: string, title: string) => {
-    if (!confirm(`Delete "${title}"? This will also remove all time slots. This cannot be undone.`))
+    if (!confirm(t('company.rooms.delete_confirm', { title })))
       return;
     await deleteRoom({ roomId: roomId as any });
   };
@@ -59,22 +61,22 @@ export default function CompanyRoomsPage() {
     <div className="p-6 md:p-8 max-w-7xl mx-auto">
       <div className="flex items-center justify-between mb-4">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold">Rooms</h1>
+          <h1 className="text-2xl md:text-3xl font-bold">{t('company.rooms.title')}</h1>
           <p className="text-brand-text-secondary mt-1">
-            Manage your escape room listings
+            {t('company.rooms.subtitle')}
           </p>
         </div>
         {atLimit ? (
           <div className="flex items-center gap-2 text-sm text-brand-text-secondary bg-brand-surface border border-white/5 rounded-xl px-4 py-2.5">
             <Lock className="w-4 h-4 text-yellow-400" />
-            <span>Limit reached</span>
+            <span>{t('company.rooms.limit_reached')}</span>
           </div>
         ) : (
           <Link
             href="/company/rooms/new"
             className="btn-primary text-sm flex items-center gap-2"
           >
-            <Plus className="w-4 h-4" /> Add Room
+            <Plus className="w-4 h-4" /> {t('company.rooms.add_room')}
           </Link>
         )}
       </div>
@@ -84,9 +86,9 @@ export default function CompanyRoomsPage() {
         <div className="mb-8">
           <div className="flex items-center justify-between text-sm mb-2">
             <span className="text-brand-text-secondary">
-              Rooms used: <span className="text-white font-semibold">{roomCount}</span> / {limitLabel}
+              {t('company.rooms.rooms_used_prefix')} <span className="text-white font-semibold">{roomCount}</span> / {limitLabel}
             </span>
-            <span className="text-xs text-brand-text-secondary capitalize">{plan} plan</span>
+            <span className="text-xs text-brand-text-secondary capitalize">{plan} {t('company.plan.label').toLowerCase()}</span>
           </div>
           <div className="h-2 bg-brand-bg rounded-full overflow-hidden border border-white/5">
             <div
@@ -100,8 +102,8 @@ export default function CompanyRoomsPage() {
             <div className="flex items-center gap-2 mt-2 text-xs text-yellow-400">
               <AlertTriangle className="w-3.5 h-3.5" />
               <span>
-                You&apos;ve reached your {plan} plan limit of {limitLabel} rooms.
-                {plan !== 'enterprise' && ' Upgrade your plan to add more.'}
+                {t('company.rooms.upgrade_warning', { plan, limit: String(limitLabel) })}
+                {plan !== 'enterprise' && t('company.rooms.upgrade_hint')}
               </span>
             </div>
           )}
@@ -110,17 +112,17 @@ export default function CompanyRoomsPage() {
 
       {!rooms ? (
         <div className="text-center py-16 text-brand-text-secondary">
-          Loading rooms...
+          {t('company.rooms.loading')}
         </div>
       ) : rooms.length === 0 ? (
         <div className="text-center py-16">
           <DoorOpen className="w-16 h-16 mx-auto mb-4 text-brand-text-secondary/30" />
-          <h2 className="text-xl font-bold mb-2">No rooms yet</h2>
+          <h2 className="text-xl font-bold mb-2">{t('company.rooms.no_rooms')}</h2>
           <p className="text-brand-text-secondary mb-6">
-            Create your first escape room to start accepting bookings
+            {t('company.rooms.no_rooms_desc')}
           </p>
           <Link href="/company/rooms/new" className="btn-primary">
-            <Plus className="w-4 h-4 inline mr-2" /> Create Room
+            <Plus className="w-4 h-4 inline mr-2" /> {t('company.rooms.create_room')}
           </Link>
         </div>
       ) : (
@@ -156,7 +158,7 @@ export default function CompanyRoomsPage() {
                         : 'bg-red-500/20 text-red-400'
                     }`}
                   >
-                    {room.isActive !== false ? 'Active' : 'Inactive'}
+                    {room.isActive !== false ? t('company.rooms.active') : t('company.rooms.inactive')}
                   </span>
                 </div>
               </div>
@@ -170,7 +172,7 @@ export default function CompanyRoomsPage() {
 
                 <div className="flex flex-wrap gap-3 text-sm text-brand-text-secondary mb-4">
                   <span className="flex items-center gap-1">
-                    <Clock className="w-3.5 h-3.5" /> {room.duration}min
+                    <Clock className="w-3.5 h-3.5" /> {room.duration}{t('company.rooms.min_suffix')}
                   </span>
                   <span className="flex items-center gap-1">
                     <Users className="w-3.5 h-3.5" /> {room.players || `${room.playersMin}-${room.playersMax}`}
@@ -199,7 +201,7 @@ export default function CompanyRoomsPage() {
                     {room.theme}
                   </span>
                   <span className="text-xs text-brand-text-secondary">
-                    Difficulty: {'★'.repeat(room.difficulty)}{'☆'.repeat((room.maxDifficulty || 5) - room.difficulty)}
+                    {t('company.rooms.difficulty')} {'★'.repeat(room.difficulty)}{'☆'.repeat((room.maxDifficulty || 5) - room.difficulty)}
                   </span>
                 </div>
 
@@ -223,14 +225,14 @@ export default function CompanyRoomsPage() {
                     href={`/company/rooms/${room._id}/edit`}
                     className="flex items-center gap-1.5 text-sm px-3 py-2 rounded-xl hover:bg-white/5 transition-colors"
                   >
-                    <Pencil className="w-4 h-4" /> Edit
+                    <Pencil className="w-4 h-4" /> {t('company.rooms.edit')}
                   </Link>
 
                   <Link
                     href={`/company/rooms/${room._id}/availability`}
                     className="flex items-center gap-1.5 text-sm px-3 py-2 rounded-xl hover:bg-white/5 transition-colors"
                   >
-                    <CalendarDays className="w-4 h-4" /> Slots
+                    <CalendarDays className="w-4 h-4" /> {t('company.rooms.slots')}
                   </Link>
 
                   <button

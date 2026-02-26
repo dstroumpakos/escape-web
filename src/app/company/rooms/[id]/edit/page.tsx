@@ -19,15 +19,10 @@ import {
   FileText,
   X,
 } from 'lucide-react';
+import { useTranslation } from '@/lib/i18n';
 
 const THEMES = ['Horror', 'Adventure', 'Sci-Fi', 'Mystery', 'Fantasy', 'Historical', 'Comedy', 'Thriller'];
 const TAG_OPTIONS = ['Beginner Friendly', 'Team Building', 'Couples', 'Family', 'Intense', 'Immersive', 'Physical', 'Mental', 'Story Driven', 'Competitive'];
-const PAYMENT_OPTIONS = [
-  { value: 'full', label: 'Full Payment' },
-  { value: 'deposit_20', label: '20% Deposit' },
-  { value: 'pay_on_arrival', label: 'Pay on Arrival' },
-] as const;
-const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 const TERMS_TEMPLATES = [
   {
@@ -87,6 +82,17 @@ export default function EditRoomPage() {
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const { t } = useTranslation();
+
+  const PAYMENT_OPTIONS = [
+    { value: 'full' as const, label: t('company.rooms.edit.payment_full') },
+    { value: 'deposit_20' as const, label: t('company.rooms.edit.payment_deposit') },
+    { value: 'pay_on_arrival' as const, label: t('company.rooms.edit.payment_arrival') },
+  ];
+  const WEEKDAYS = [
+    t('common.day_sun'), t('common.day_mon'), t('common.day_tue'),
+    t('common.day_wed'), t('common.day_thu'), t('common.day_fri'), t('common.day_sat')
+  ];
 
   // Populate form from room data
   useEffect(() => {
@@ -179,7 +185,7 @@ export default function EditRoomPage() {
       });
       router.push('/company/rooms');
     } catch (err: any) {
-      setError(err?.message || 'Failed to update room');
+      setError(err?.message || t('company.rooms.edit.failed_update'));
     } finally {
       setLoading(false);
     }
@@ -187,7 +193,7 @@ export default function EditRoomPage() {
 
   if (!room) {
     return (
-      <div className="p-8 text-center text-brand-text-secondary">Loading room...</div>
+      <div className="p-8 text-center text-brand-text-secondary">{t('company.rooms.edit.loading')}</div>
     );
   }
 
@@ -198,7 +204,7 @@ export default function EditRoomPage() {
           <ArrowLeft className="w-5 h-5" />
         </Link>
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold">Edit Room</h1>
+          <h1 className="text-2xl md:text-3xl font-bold">{t('company.rooms.edit.title')}</h1>
           <p className="text-brand-text-secondary mt-1">{form.title}</p>
         </div>
       </div>
@@ -211,18 +217,18 @@ export default function EditRoomPage() {
 
       <form onSubmit={handleSubmit} className="space-y-8">
         {/* Basic Info */}
-        <SectionCard title="Basic Information">
+        <SectionCard title={t('company.rooms.edit.basic_info')}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="md:col-span-2">
-              <FieldLabel>Room Title</FieldLabel>
+              <FieldLabel>{t('company.rooms.edit.room_title')}</FieldLabel>
               <FieldInput value={form.title} onChange={(v) => updateField('title', v)} required />
             </div>
             <div className="md:col-span-2">
-              <FieldLabel>Location</FieldLabel>
+              <FieldLabel>{t('company.rooms.edit.location')}</FieldLabel>
               <FieldInput value={form.location} onChange={(v) => updateField('location', v)} required />
             </div>
             <div>
-              <FieldLabel>Theme</FieldLabel>
+              <FieldLabel>{t('company.rooms.edit.theme')}</FieldLabel>
               <select
                 value={form.theme}
                 onChange={(e) => updateField('theme', e.target.value)}
@@ -232,15 +238,15 @@ export default function EditRoomPage() {
               </select>
             </div>
             <div>
-              <FieldLabel>Duration (min)</FieldLabel>
+              <FieldLabel>{t('company.rooms.edit.duration_min')}</FieldLabel>
               <FieldInput type="number" value={form.duration} onChange={(v) => updateField('duration', parseInt(v) || 0)} min={15} required />
             </div>
           </div>
         </SectionCard>
 
         {/* Image */}
-        <SectionCard title="Image">
-          <FieldLabel>Image URL</FieldLabel>
+        <SectionCard title={t('company.rooms.edit.image')}>
+          <FieldLabel>{t('company.rooms.edit.image_url')}</FieldLabel>
           <FieldInput value={form.image} onChange={(v) => updateField('image', v)} />
           {form.image && (
             <div className="mt-3 w-32 h-20 rounded-xl overflow-hidden bg-brand-bg">
@@ -250,10 +256,10 @@ export default function EditRoomPage() {
         </SectionCard>
 
         {/* Difficulty & Players */}
-        <SectionCard title="Difficulty & Players">
+        <SectionCard title={t('company.rooms.edit.difficulty_players')}>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <FieldLabel>Difficulty ({form.difficulty}/5)</FieldLabel>
+              <FieldLabel>{t('company.rooms.edit.difficulty_label', { value: String(form.difficulty) })}</FieldLabel>
               <input
                 type="range" min="1" max="5" value={form.difficulty}
                 onChange={(e) => updateField('difficulty', parseInt(e.target.value))}
@@ -261,30 +267,30 @@ export default function EditRoomPage() {
               />
             </div>
             <div>
-              <FieldLabel>Min Players</FieldLabel>
+              <FieldLabel>{t('company.rooms.edit.min_players')}</FieldLabel>
               <FieldInput type="number" value={form.playersMin} onChange={(v) => updateField('playersMin', parseInt(v) || 1)} min={1} required />
             </div>
             <div>
-              <FieldLabel>Max Players</FieldLabel>
+              <FieldLabel>{t('company.rooms.edit.max_players')}</FieldLabel>
               <FieldInput type="number" value={form.playersMax} onChange={(v) => updateField('playersMax', parseInt(v) || 1)} min={form.playersMin} required />
             </div>
           </div>
         </SectionCard>
 
         {/* Pricing */}
-        <SectionCard title="Pricing">
-          <FieldLabel>Base Price (€)</FieldLabel>
+        <SectionCard title={t('company.rooms.edit.pricing')}>
+          <FieldLabel>{t('company.rooms.edit.base_price')}</FieldLabel>
           <FieldInput type="number" value={form.price} onChange={(v) => updateField('price', parseFloat(v) || 0)} min={0} step={0.5} required />
 
           <div className="mt-4">
             <div className="flex items-center justify-between mb-2">
-              <FieldLabel>Group Pricing</FieldLabel>
+              <FieldLabel>{t('company.rooms.edit.group_pricing')}</FieldLabel>
               <button
                 type="button"
                 onClick={() => setForm((p) => ({ ...p, pricePerGroup: [...p.pricePerGroup, { players: p.playersMin, price: p.price }] }))}
                 className="text-sm text-brand-red hover:underline flex items-center gap-1"
               >
-                <Plus className="w-3 h-3" /> Add
+                <Plus className="w-3 h-3" /> {t('company.rooms.edit.add_group_price')}
               </button>
             </div>
             {form.pricePerGroup.map((g, idx) => (
@@ -309,7 +315,7 @@ export default function EditRoomPage() {
         </SectionCard>
 
         {/* Tags */}
-        <SectionCard title="Tags">
+        <SectionCard title={t('company.rooms.edit.tags')}>
           <div className="flex flex-wrap gap-2">
             {TAG_OPTIONS.map((tag) => (
               <button
@@ -327,13 +333,13 @@ export default function EditRoomPage() {
         </SectionCard>
 
         {/* Story & Description */}
-        <SectionCard title="Story & Description">
-          <FieldLabel>Story</FieldLabel>
+        <SectionCard title={t('company.rooms.edit.story_desc')}>
+          <FieldLabel>{t('company.rooms.edit.story')}</FieldLabel>
           <textarea value={form.story} onChange={(e) => updateField('story', e.target.value)} rows={3}
             className="w-full bg-brand-bg border border-white/10 rounded-xl px-4 py-3 text-white focus:border-brand-red focus:outline-none resize-none" required
           />
           <div className="mt-4">
-            <FieldLabel>Description</FieldLabel>
+            <FieldLabel>{t('company.rooms.edit.description')}</FieldLabel>
             <textarea value={form.description} onChange={(e) => updateField('description', e.target.value)} rows={3}
               className="w-full bg-brand-bg border border-white/10 rounded-xl px-4 py-3 text-white focus:border-brand-red focus:outline-none resize-none" required
             />
@@ -341,7 +347,7 @@ export default function EditRoomPage() {
         </SectionCard>
 
         {/* Payment & Schedule */}
-        <SectionCard title="Payment Terms">
+        <SectionCard title={t('company.rooms.edit.payment_terms')}>
           <div className="flex flex-wrap gap-3">
             {PAYMENT_OPTIONS.map((opt) => (
               <button key={opt.value} type="button" onClick={() => togglePaymentTerm(opt.value)}
@@ -355,7 +361,7 @@ export default function EditRoomPage() {
           </div>
         </SectionCard>
 
-        <SectionCard title="Operating Days">
+        <SectionCard title={t('company.rooms.edit.operating_days')}>
           <div className="flex flex-wrap gap-2">
             {WEEKDAYS.map((day, idx) => (
               <button key={idx} type="button" onClick={() => toggleOperatingDay(idx)}
@@ -370,7 +376,7 @@ export default function EditRoomPage() {
         </SectionCard>
 
         {/* Time Slots */}
-        <SectionCard title="Default Time Slots">
+        <SectionCard title={t('company.rooms.edit.default_time_slots')}>
           {form.defaultTimeSlots.map((slot, idx) => (
             <div key={idx} className="flex items-center gap-3 mb-2">
               <input type="time" value={slot.time} onChange={(e) => {

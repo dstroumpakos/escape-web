@@ -1,10 +1,7 @@
-import dynamic from 'next/dynamic';
-import { Metadata } from 'next';
+'use client';
 
-export const metadata: Metadata = {
-  title: 'Map | UNLOCKED',
-  description: 'Find escape rooms near you on the map.',
-};
+import dynamic from 'next/dynamic';
+import { useTranslation } from '@/lib/i18n';
 
 const MapView = dynamic(() => import('@/components/map/MapView'), {
   ssr: false,
@@ -16,6 +13,8 @@ const MapView = dynamic(() => import('@/components/map/MapView'), {
 });
 
 export default function MapPage() {
+  const { t } = useTranslation();
+
   return (
     <div className="pt-16 md:pt-20 h-screen w-full flex flex-col">
       <div className="flex-1 w-full relative z-0">

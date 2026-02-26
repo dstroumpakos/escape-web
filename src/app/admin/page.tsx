@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useQuery, useMutation } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
 import { useAuth } from '@/lib/auth';
+import { useTranslation } from '@/lib/i18n';
 import {
   Shield,
   Building2,
@@ -24,6 +25,7 @@ import {
 
 export default function AdminPage() {
   const { user, isAuthenticated, isLoading } = useAuth();
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<'pending' | 'all'>('pending');
 
   const pendingCompanies = useQuery(
@@ -52,9 +54,9 @@ export default function AdminPage() {
       <div className="min-h-screen bg-brand-bg flex items-center justify-center px-4">
         <div className="bg-brand-surface rounded-2xl border border-white/5 p-8 text-center max-w-md">
           <Shield className="w-12 h-12 text-brand-red mx-auto mb-4" />
-          <h1 className="text-2xl font-bold mb-2">Admin Access Required</h1>
+          <h1 className="text-2xl font-bold mb-2">{t('admin.access_required')}</h1>
           <p className="text-brand-text-secondary">
-            Please log in with an admin account to access this page.
+            {t('admin.access_desc')}
           </p>
         </div>
       </div>
@@ -70,9 +72,9 @@ export default function AdminPage() {
             <Shield className="w-5 h-5 text-brand-red" />
           </div>
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold">Admin Panel</h1>
+            <h1 className="text-2xl md:text-3xl font-bold">{t('admin.title')}</h1>
             <p className="text-brand-text-secondary text-sm">
-              Manage company registrations and approvals
+              {t('admin.subtitle')}
             </p>
           </div>
         </div>
@@ -87,7 +89,7 @@ export default function AdminPage() {
                 : 'text-brand-text-secondary hover:text-white'
             }`}
           >
-            Pending Review
+            {t('admin.tab_pending')}
           </button>
           <button
             onClick={() => setActiveTab('all')}
@@ -97,7 +99,7 @@ export default function AdminPage() {
                 : 'text-brand-text-secondary hover:text-white'
             }`}
           >
-            All Companies
+            {t('admin.tab_all')}
           </button>
         </div>
 
@@ -106,14 +108,14 @@ export default function AdminPage() {
           <div className="space-y-4">
             {!pendingCompanies ? (
               <div className="text-center py-12 text-brand-text-secondary">
-                Loading...
+                {t('admin.loading')}
               </div>
             ) : pendingCompanies.length === 0 ? (
               <div className="bg-brand-surface rounded-2xl border border-white/5 p-12 text-center">
                 <Check className="w-12 h-12 text-green-400 mx-auto mb-3" />
-                <h2 className="text-xl font-bold mb-2">All caught up!</h2>
+                <h2 className="text-xl font-bold mb-2">{t('admin.all_caught_up')}</h2>
                 <p className="text-brand-text-secondary">
-                  No companies pending review
+                  {t('admin.no_pending')}
                 </p>
               </div>
             ) : (
@@ -135,11 +137,11 @@ export default function AdminPage() {
           <div className="space-y-3">
             {!allCompanies ? (
               <div className="text-center py-12 text-brand-text-secondary">
-                Loading...
+                {t('admin.loading')}
               </div>
             ) : allCompanies.length === 0 ? (
               <div className="text-center py-12 text-brand-text-secondary">
-                No companies registered yet
+                {t('admin.no_companies')}
               </div>
             ) : (
               <div className="bg-brand-surface rounded-2xl border border-white/5 overflow-hidden">
@@ -148,19 +150,19 @@ export default function AdminPage() {
                     <thead>
                       <tr className="border-b border-white/5">
                         <th className="text-left text-xs text-brand-text-secondary font-medium px-4 py-3">
-                          Company
+                          {t('admin.col_company')}
                         </th>
                         <th className="text-left text-xs text-brand-text-secondary font-medium px-4 py-3">
-                          City
+                          {t('admin.col_city')}
                         </th>
                         <th className="text-left text-xs text-brand-text-secondary font-medium px-4 py-3">
-                          Status
+                          {t('admin.col_status')}
                         </th>
                         <th className="text-left text-xs text-brand-text-secondary font-medium px-4 py-3">
-                          Plan
+                          {t('admin.col_plan')}
                         </th>
                         <th className="text-left text-xs text-brand-text-secondary font-medium px-4 py-3">
-                          Registered
+                          {t('admin.col_registered')}
                         </th>
                       </tr>
                     </thead>
@@ -223,6 +225,7 @@ function CompanyReviewCard({
   const [declineNotes, setDeclineNotes] = useState('');
   const [showDeclineForm, setShowDeclineForm] = useState(false);
   const [loading, setLoading] = useState(false);
+  const { t } = useTranslation();
 
   const handleApprove = async () => {
     setLoading(true);
@@ -264,7 +267,7 @@ function CompanyReviewCard({
         </div>
         <div className="flex items-center gap-3">
           <span className="text-xs px-2.5 py-1 rounded-full bg-yellow-500/10 text-yellow-400 font-medium">
-            Pending Review
+            {t('admin.pending_review')}
           </span>
           {expanded ? (
             <ChevronUp className="w-5 h-5 text-brand-text-secondary" />
@@ -277,35 +280,35 @@ function CompanyReviewCard({
       {expanded && (
         <div className="px-5 pb-5 border-t border-white/5 pt-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-            <InfoItem icon={Mail} label="Email" value={company.email} />
-            <InfoItem icon={Phone} label="Phone" value={company.phone} />
-            <InfoItem icon={MapPin} label="Address" value={`${company.address}, ${company.city}`} />
+            <InfoItem icon={Mail} label={t('admin.email_label')} value={company.email} />
+            <InfoItem icon={Phone} label={t('admin.phone_label')} value={company.phone} />
+            <InfoItem icon={MapPin} label={t('admin.address_label')} value={`${company.address}, ${company.city}`} />
             <InfoItem
               icon={Building2}
-              label="VAT"
-              value={company.vatNumber || 'N/A'}
+              label={t('admin.vat')}
+              value={company.vatNumber || t('admin.na')}
             />
             <InfoItem
               icon={Clock}
-              label="Plan"
-              value={company.platformPlan ? `${company.platformPlan.charAt(0).toUpperCase()}${company.platformPlan.slice(1)}` : 'Not selected'}
+              label={t('admin.plan_label')}
+              value={company.platformPlan ? `${company.platformPlan.charAt(0).toUpperCase()}${company.platformPlan.slice(1)}` : t('admin.not_selected')}
             />
             {company.platformPlan && (
               <div className="flex items-start gap-3">
                 <CreditCard className="w-4 h-4 text-brand-text-secondary mt-0.5 shrink-0" />
                 <div>
-                  <p className="text-xs text-brand-text-secondary">Plan Level</p>
+                  <p className="text-xs text-brand-text-secondary">{t('admin.plan_level')}</p>
                   <PlanBadgeInline plan={company.platformPlan} />
                 </div>
               </div>
             )}
             <InfoItem
               icon={Clock}
-              label="Registered"
+              label={t('admin.registered')}
               value={
                 company.createdAt
                   ? new Date(company.createdAt).toLocaleString()
-                  : 'Unknown'
+                  : t('admin.unknown')
               }
             />
           </div>
@@ -313,7 +316,7 @@ function CompanyReviewCard({
           {company.description && (
             <div className="mb-6">
               <p className="text-sm text-brand-text-secondary mb-1">
-                Description
+                {t('admin.description')}
               </p>
               <p className="text-sm bg-brand-bg rounded-xl p-3 border border-white/5">
                 {company.description}
@@ -328,7 +331,7 @@ function CompanyReviewCard({
               disabled={loading}
               className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-green-500/10 text-green-400 hover:bg-green-500/20 font-medium transition-colors"
             >
-              <Check className="w-4 h-4" /> Approve
+              <Check className="w-4 h-4" /> {t('admin.approve')}
             </button>
 
             {!showDeclineForm ? (
@@ -336,14 +339,14 @@ function CompanyReviewCard({
                 onClick={() => setShowDeclineForm(true)}
                 className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-red-500/10 text-red-400 hover:bg-red-500/20 font-medium transition-colors"
               >
-                <X className="w-4 h-4" /> Decline
+                <X className="w-4 h-4" /> {t('admin.decline')}
               </button>
             ) : (
               <div className="flex-1 space-y-2">
                 <textarea
                   value={declineNotes}
                   onChange={(e) => setDeclineNotes(e.target.value)}
-                  placeholder="Reason for declining..."
+                  placeholder={t('admin.decline_reason')}
                   rows={2}
                   className="w-full bg-brand-bg border border-white/10 rounded-xl px-4 py-3 text-white placeholder-brand-text-secondary/50 focus:border-brand-red focus:outline-none resize-none text-sm"
                   autoFocus
@@ -354,7 +357,7 @@ function CompanyReviewCard({
                     disabled={loading || !declineNotes.trim()}
                     className="flex items-center gap-2 px-4 py-2 rounded-xl bg-red-500/10 text-red-400 hover:bg-red-500/20 font-medium text-sm transition-colors disabled:opacity-50"
                   >
-                    <X className="w-4 h-4" /> Confirm Decline
+                    <X className="w-4 h-4" /> {t('admin.confirm_decline')}
                   </button>
                   <button
                     onClick={() => {
@@ -363,7 +366,7 @@ function CompanyReviewCard({
                     }}
                     className="text-sm text-brand-text-secondary hover:text-white"
                   >
-                    Cancel
+                    {t('admin.cancel')}
                   </button>
                 </div>
               </div>
@@ -396,26 +399,28 @@ function InfoItem({
 }
 
 function StatusBadge({ status }: { status: string }) {
-  const config: Record<string, { bg: string; text: string; label: string }> = {
-    approved: { bg: 'bg-green-500/10', text: 'text-green-400', label: 'Approved' },
-    pending_review: { bg: 'bg-yellow-500/10', text: 'text-yellow-400', label: 'Pending' },
-    pending_terms: { bg: 'bg-blue-500/10', text: 'text-blue-400', label: 'Terms' },
-    pending_plan: { bg: 'bg-purple-500/10', text: 'text-purple-400', label: 'Plan' },
-    declined: { bg: 'bg-red-500/10', text: 'text-red-400', label: 'Declined' },
+  const { t } = useTranslation();
+  const config: Record<string, { bg: string; text: string; key: string }> = {
+    approved: { bg: 'bg-green-500/10', text: 'text-green-400', key: 'admin.status_approved' },
+    pending_review: { bg: 'bg-yellow-500/10', text: 'text-yellow-400', key: 'admin.status_pending' },
+    pending_terms: { bg: 'bg-blue-500/10', text: 'text-blue-400', key: 'admin.status_terms' },
+    pending_plan: { bg: 'bg-purple-500/10', text: 'text-purple-400', key: 'admin.status_plan' },
+    declined: { bg: 'bg-red-500/10', text: 'text-red-400', key: 'admin.status_declined' },
   };
   const c = config[status] || config.approved;
   return (
     <span className={`text-xs px-2 py-1 rounded-full font-medium ${c.bg} ${c.text}`}>
-      {c.label}
+      {t(c.key)}
     </span>
   );
 }
 
 function PlanBadgeInline({ plan }: { plan?: string }) {
-  const config: Record<string, { bg: string; text: string; label: string; Icon: any }> = {
-    starter: { bg: 'bg-emerald-500/10', text: 'text-emerald-400', label: 'Starter', Icon: Rocket },
-    pro: { bg: 'bg-red-500/10', text: 'text-red-400', label: 'Pro', Icon: Diamond },
-    enterprise: { bg: 'bg-purple-500/10', text: 'text-purple-400', label: 'Enterprise', Icon: Crown },
+  const { t } = useTranslation();
+  const config: Record<string, { bg: string; text: string; key: string; Icon: any }> = {
+    starter: { bg: 'bg-emerald-500/10', text: 'text-emerald-400', key: 'admin.plan_starter', Icon: Rocket },
+    pro: { bg: 'bg-red-500/10', text: 'text-red-400', key: 'admin.plan_pro', Icon: Diamond },
+    enterprise: { bg: 'bg-purple-500/10', text: 'text-purple-400', key: 'admin.plan_enterprise', Icon: Crown },
   };
   if (!plan || !config[plan]) {
     return <span className="text-xs text-brand-text-secondary">—</span>;
@@ -424,7 +429,7 @@ function PlanBadgeInline({ plan }: { plan?: string }) {
   return (
     <span className={`inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full font-medium ${c.bg} ${c.text}`}>
       <c.Icon className="w-3 h-3" />
-      {c.label}
+      {t(c.key)}
     </span>
   );
 }

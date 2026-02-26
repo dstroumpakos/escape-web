@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useQuery, useMutation } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
 import { useAuth } from '@/lib/auth';
+import { useTranslation } from '@/lib/i18n';
 import {
   Ticket,
   Calendar,
@@ -23,6 +24,7 @@ type TabType = 'upcoming' | 'past';
 export default function TicketsPage() {
   const router = useRouter();
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<TabType>('upcoming');
   const [showQR, setShowQR] = useState<string | null>(null);
   const [cancelling, setCancelling] = useState<string | null>(null);
@@ -65,9 +67,9 @@ export default function TicketsPage() {
   };
 
   const paymentBadge: Record<string, { label: string; color: string }> = {
-    paid: { label: 'Paid', color: 'bg-green-500/20 text-green-400' },
-    deposit: { label: 'Deposit', color: 'bg-yellow-500/20 text-yellow-400' },
-    unpaid: { label: 'Pay on Arrival', color: 'bg-orange-500/20 text-orange-400' },
+    paid: { label: t('tickets.paid'), color: 'bg-green-500/20 text-green-400' },
+    deposit: { label: t('tickets.deposit'), color: 'bg-yellow-500/20 text-yellow-400' },
+    unpaid: { label: t('tickets.pay_on_arrival'), color: 'bg-orange-500/20 text-orange-400' },
     na: { label: '', color: '' },
   };
 
@@ -83,10 +85,10 @@ export default function TicketsPage() {
             <Ticket className="w-8 h-8 text-brand-red" />
           </div>
           <h1 className="section-heading mb-4">
-            My <span className="text-gradient">Tickets</span>
+            {t('tickets.title')}
           </h1>
           <p className="text-lg text-brand-text-secondary max-w-xl mx-auto">
-            View and manage your escape room bookings.
+            {t('tickets.subtitle')}
           </p>
         </div>
       </section>
@@ -103,7 +105,7 @@ export default function TicketsPage() {
                   : 'bg-brand-card border border-brand-border text-brand-text-secondary hover:text-white'
               }`}
             >
-              Upcoming ({upcoming.length})
+              {t('tickets.upcoming', { count: String(upcoming.length) })}
             </button>
             <button
               onClick={() => setActiveTab('past')}
@@ -113,20 +115,20 @@ export default function TicketsPage() {
                   : 'bg-brand-card border border-brand-border text-brand-text-secondary hover:text-white'
               }`}
             >
-              Past ({past.length})
+              {t('tickets.past', { count: String(past.length) })}
             </button>
           </div>
 
           {!bookings ? (
             <div className="text-center py-20">
               <div className="w-8 h-8 border-2 border-brand-red/30 border-t-brand-red rounded-full animate-spin mx-auto mb-4" />
-              <p className="text-brand-text-muted">Loading bookings...</p>
+              <p className="text-brand-text-muted">{t('tickets.loading')}</p>
             </div>
           ) : displayed.length === 0 ? (
             <div className="text-center py-20">
               <Ticket className="w-16 h-16 text-brand-border mx-auto mb-4" />
               <h3 className="text-xl font-semibold mb-2">
-                No {activeTab} bookings
+                {activeTab === 'upcoming' ? t('tickets.no_upcoming') : t('tickets.no_past')}
               </h3>
               <p className="text-brand-text-muted mb-6">
                 {activeTab === 'upcoming'
@@ -135,7 +137,7 @@ export default function TicketsPage() {
               </p>
               <Link href="/discover" className="btn-primary inline-flex items-center gap-2">
                 <DoorOpen className="w-5 h-5" />
-                Discover Rooms
+                {t('tickets.discover_rooms')}
               </Link>
             </div>
           ) : (
@@ -158,7 +160,7 @@ export default function TicketsPage() {
                           </h3>
                           {booking.status === 'cancelled' && (
                             <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-red-500/20 text-red-400">
-                              Cancelled
+                              {t('tickets.cancelled')}
                             </span>
                           )}
                           {badge.label && (
@@ -188,7 +190,7 @@ export default function TicketsPage() {
                           </div>
                           <div className="flex items-center gap-1.5">
                             <Users className="w-4 h-4" />
-                            {booking.players} players
+                            {booking.players} {t('tickets.players')}
                           </div>
                         </div>
                       </div>
@@ -204,7 +206,7 @@ export default function TicketsPage() {
                               className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-brand-surface border border-brand-border text-sm font-medium hover:border-brand-red/30 transition-all"
                             >
                               <QrCode className="w-4 h-4" />
-                              QR
+                              {t('tickets.qr')}
                             </button>
                             <button
                               disabled={cancelling === booking._id}
@@ -216,7 +218,7 @@ export default function TicketsPage() {
                               ) : (
                                 <XIcon className="w-4 h-4" />
                               )}
-                              Cancel
+                              {t('tickets.cancel')}
                             </button>
                           </>
                         )}
@@ -233,7 +235,7 @@ export default function TicketsPage() {
                           </div>
                         </div>
                         <div className="mt-3">
-                          <div className="text-xs text-brand-text-muted">Booking Code</div>
+                          <div className="text-xs text-brand-text-muted">{t('tickets.booking_code')}</div>
                           <div className="text-lg font-mono font-bold tracking-wider text-brand-red">
                             {booking.bookingCode}
                           </div>

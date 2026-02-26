@@ -1,41 +1,44 @@
 'use client';
 
 import { Star, Quote } from 'lucide-react';
-
-const testimonials = [
-  {
-    name: 'Maria K.',
-    avatar: 'MK',
-    role: 'Escape Enthusiast',
-    rating: 5,
-    text: "UNLOCKED completely changed how we find escape rooms! The booking is seamless and the variety of rooms is incredible. Can't recommend it enough.",
-  },
-  {
-    name: 'Dimitris P.',
-    avatar: 'DP',
-    role: 'Team Leader',
-    rating: 5,
-    text: 'We use UNLOCKED for all our team building events. The leaderboard feature keeps everyone competitive and engaged. Brilliant platform!',
-  },
-  {
-    name: 'Sophie L.',
-    avatar: 'SL',
-    role: 'Puzzle Solver',
-    rating: 5,
-    text: "The social feed is such a fun touch — love seeing other teams' reactions and sharing our escape times. It's like a community of adventurers.",
-  },
-];
+import { useTranslation } from '@/lib/i18n';
 
 export function TestimonialsSection() {
+  const { t } = useTranslation();
+
+  const testimonials = [
+    {
+      name: t('testimonials.t1.name'),
+      avatar: 'MK',
+      role: t('testimonials.t1.role'),
+      rating: 5,
+      text: t('testimonials.t1.text'),
+    },
+    {
+      name: t('testimonials.t2.name'),
+      avatar: 'DP',
+      role: t('testimonials.t2.role'),
+      rating: 5,
+      text: t('testimonials.t2.text'),
+    },
+    {
+      name: t('testimonials.t3.name'),
+      avatar: 'SL',
+      role: t('testimonials.t3.role'),
+      rating: 5,
+      text: t('testimonials.t3.text'),
+    },
+  ];
+
   return (
     <section className="py-20 md:py-28 bg-brand-dark">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-14">
           <h2 className="section-heading mb-4">
-            What Players <span className="text-gradient">Say</span>
+            {t('testimonials.title')} <span className="text-gradient">{t('testimonials.title_highlight')}</span>
           </h2>
           <p className="section-subheading mx-auto">
-            Join thousands of happy escape room enthusiasts.
+            {t('testimonials.subtitle')}
           </p>
         </div>
 

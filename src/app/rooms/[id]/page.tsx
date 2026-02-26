@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useQuery, useMutation } from 'convex/react';
 import { api } from '../../../../convex/_generated/api';
 import { useAuth } from '@/lib/auth';
+import { useTranslation } from '@/lib/i18n';
 import {
   Star,
   Clock,
@@ -24,6 +25,7 @@ export default function RoomDetailsPage() {
   const params = useParams();
   const roomId = params.id as string;
   const { user, isAuthenticated } = useAuth();
+  const { t } = useTranslation();
 
   const room = useQuery(api.rooms.getById, roomId ? { id: roomId as any } : 'skip');
   const toggleWishlist = useMutation(api.users.toggleWishlist);
@@ -47,7 +49,7 @@ export default function RoomDetailsPage() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="w-8 h-8 border-2 border-brand-red/30 border-t-brand-red rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-brand-text-muted">Loading room...</p>
+          <p className="text-brand-text-muted">{t('room.loading')}</p>
         </div>
       </div>
     );
@@ -86,7 +88,7 @@ export default function RoomDetailsPage() {
             className="flex items-center gap-2 bg-brand-card/80 backdrop-blur-sm px-4 py-2 rounded-xl border border-brand-border/50 text-sm hover:border-brand-red/30 transition-all"
           >
             <ArrowLeft className="w-4 h-4" />
-            Back
+            {t('room.back')}
           </Link>
         </div>
 
@@ -108,12 +110,12 @@ export default function RoomDetailsPage() {
         <div className="absolute bottom-6 left-4 z-20 flex gap-2">
           {room.isNew && (
             <span className="bg-brand-red text-white text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-1">
-              <Zap className="w-3 h-3" /> NEW
+              <Zap className="w-3 h-3" /> {t('featured.new')}
             </span>
           )}
           {room.isTrending && (
             <span className="bg-brand-gold text-black text-xs font-bold px-3 py-1.5 rounded-full">
-              🔥 TRENDING
+              {t('featured.trending')}
             </span>
           )}
         </div>
@@ -131,7 +133,7 @@ export default function RoomDetailsPage() {
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-1">
                   <Diamond className="w-4 h-4 text-yellow-400" />
-                  <span className="text-sm font-bold text-yellow-400">Early Access</span>
+                  <span className="text-sm font-bold text-yellow-400">{t('room.early_access')}</span>
                 </div>
                 <p className="text-sm text-purple-200">
                   This room launches <span className="font-bold text-white">{releaseCountdown.releaseDateStr}</span>
@@ -139,7 +141,7 @@ export default function RoomDetailsPage() {
               </div>
               <div className="text-right">
                 <div className="text-2xl font-bold text-white">{releaseCountdown.days}</div>
-                <div className="text-xs text-purple-300">days left</div>
+                <div className="text-xs text-purple-300">{t('room.days_left')}</div>
               </div>
             </div>
           )}
@@ -164,28 +166,28 @@ export default function RoomDetailsPage() {
               <div className="bg-brand-surface rounded-xl p-4 text-center">
                 <Star className="w-5 h-5 text-brand-gold fill-brand-gold mx-auto mb-1" />
                 <div className="text-lg font-bold">{room.rating}</div>
-                <div className="text-xs text-brand-text-muted">{room.reviews} reviews</div>
+                <div className="text-xs text-brand-text-muted">{room.reviews} {t('featured.reviews')}</div>
               </div>
               <div className="bg-brand-surface rounded-xl p-4 text-center">
                 <Clock className="w-5 h-5 text-cyan-400 mx-auto mb-1" />
-                <div className="text-lg font-bold">{room.duration} min</div>
-                <div className="text-xs text-brand-text-muted">Duration</div>
+                <div className="text-lg font-bold">{room.duration} {t('featured.min')}</div>
+                <div className="text-xs text-brand-text-muted">{t('room.duration')}</div>
               </div>
               <div className="bg-brand-surface rounded-xl p-4 text-center">
                 <Users className="w-5 h-5 text-green-400 mx-auto mb-1" />
                 <div className="text-lg font-bold">{room.players}</div>
-                <div className="text-xs text-brand-text-muted">Players</div>
+                <div className="text-xs text-brand-text-muted">{t('room.players')}</div>
               </div>
               <div className="bg-brand-surface rounded-xl p-4 text-center">
                 <Shield className="w-5 h-5 text-brand-red mx-auto mb-1" />
                 <div className="text-lg font-bold">{room.difficulty}/{room.maxDifficulty}</div>
-                <div className="text-xs text-brand-text-muted">Difficulty</div>
+                <div className="text-xs text-brand-text-muted">{t('featured.difficulty')}</div>
               </div>
             </div>
 
             {/* Difficulty dots */}
             <div className="flex items-center gap-2 mb-6">
-              <span className="text-sm text-brand-text-secondary">Difficulty:</span>
+              <span className="text-sm text-brand-text-secondary">{t('featured.difficulty')}:</span>
               <div className="flex gap-1">
                 {Array.from({ length: room.maxDifficulty || 5 }).map((_, i) => (
                   <div
@@ -217,7 +219,7 @@ export default function RoomDetailsPage() {
               <div className="mb-6">
                 <h3 className="flex items-center gap-2 text-lg font-semibold mb-3">
                   <BookOpen className="w-5 h-5 text-brand-red" />
-                  The Story
+                  {t('room.the_story')}
                 </h3>
                 <p className="text-brand-text-secondary leading-relaxed italic">
                   &ldquo;{room.story}&rdquo;
@@ -228,7 +230,7 @@ export default function RoomDetailsPage() {
             {/* Description */}
             {room.description && (
               <div className="mb-8">
-                <h3 className="text-lg font-semibold mb-3">About This Room</h3>
+                <h3 className="text-lg font-semibold mb-3">{t('room.about')}</h3>
                 <p className="text-brand-text-secondary leading-relaxed">
                   {room.description}
                 </p>
@@ -238,14 +240,14 @@ export default function RoomDetailsPage() {
             {/* Price & Book */}
             <div className="flex items-center justify-between border-t border-brand-border pt-6">
               <div>
-                <div className="text-sm text-brand-text-muted">Starting from</div>
+                <div className="text-sm text-brand-text-muted">{t('room.starting_from')}</div>
                 <div className="text-3xl font-display font-bold">
                   €{room.price}
-                  <span className="text-base font-normal text-brand-text-muted">/person</span>
+                  <span className="text-base font-normal text-brand-text-muted">{t('featured.per_person')}</span>
                 </div>
                 {room.pricePerGroup && room.pricePerGroup.length > 0 && (
                   <div className="text-xs text-brand-text-muted mt-1">
-                    Group pricing available
+                    {t('room.group_pricing')}
                   </div>
                 )}
               </div>
@@ -253,7 +255,7 @@ export default function RoomDetailsPage() {
                 href={`/rooms/${roomId}/book`}
                 className="btn-primary flex items-center gap-2"
               >
-                Book Now
+                {t('room.book_now')}
                 <DoorOpen className="w-5 h-5" />
               </Link>
             </div>
@@ -261,7 +263,7 @@ export default function RoomDetailsPage() {
             {/* Per-group pricing */}
             {room.pricePerGroup && room.pricePerGroup.length > 0 && (
               <div className="mt-6 border-t border-brand-border pt-6">
-                <h4 className="text-sm font-semibold mb-3">Price per group size</h4>
+                <h4 className="text-sm font-semibold mb-3">{t('room.price_per_group')}</h4>
                 <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
                   {room.pricePerGroup.map((pg: any) => (
                     <div
@@ -269,7 +271,7 @@ export default function RoomDetailsPage() {
                       className="bg-brand-surface rounded-lg p-3 text-center"
                     >
                       <div className="text-xs text-brand-text-muted">
-                        {pg.players} player{pg.players > 1 ? 's' : ''}
+                        {pg.players} {t('common.players')}
                       </div>
                       <div className="text-sm font-bold">€{pg.price}</div>
                     </div>

@@ -34,9 +34,11 @@ import {
   Check,
 } from 'lucide-react';
 import { PlanBadge } from '../PlanBadge';
+import { useTranslation } from '@/lib/i18n';
 
 export default function CompanySettingsPage() {
   const { company, refreshCompany } = useCompanyAuth();
+  const { t } = useTranslation();
   const companyId = company?.id;
 
   const companyData = useQuery(
@@ -100,10 +102,10 @@ export default function CompanySettingsPage() {
         description: profile.description,
       });
       refreshCompany({ name: profile.name });
-      setProfileMsg('Profile updated successfully');
+      setProfileMsg(t('company.settings.profile_success'));
       setTimeout(() => setProfileMsg(''), 3000);
     } catch (err: any) {
-      setProfileMsg('Failed to update profile');
+      setProfileMsg(t('company.settings.profile_error'));
     } finally {
       setProfileSaving(false);
     }
@@ -119,11 +121,11 @@ export default function CompanySettingsPage() {
         id: companyId as any,
         subscriptionEnabled: newValue,
       });
-      setEaMsg(newValue ? 'Early Access Partner Program joined!' : 'Early Access Partner Program left');
+      setEaMsg(newValue ? t('company.settings.ea_joined') : t('company.settings.ea_left'));
       setTimeout(() => setEaMsg(''), 3000);
     } catch (err: any) {
       setEarlyAccessEnabled(!newValue); // rollback
-      setEaMsg('Failed to update');
+      setEaMsg(t('company.settings.ea_error'));
     } finally {
       setEaSaving(false);
     }
@@ -132,33 +134,33 @@ export default function CompanySettingsPage() {
   const companyBenefits = [
     {
       icon: BadgeCheck,
-      title: 'Early Access Partner Badge',
-      desc: 'A verified badge displayed on all your rooms, building trust and visibility with players.',
+      title: t('company.settings.benefit1_title'),
+      desc: t('company.settings.benefit1_desc'),
     },
     {
       icon: TrendingUp,
-      title: 'Priority Placement',
-      desc: 'Your rooms rank higher in Discover and search results, giving you more exposure.',
+      title: t('company.settings.benefit2_title'),
+      desc: t('company.settings.benefit2_desc'),
     },
     {
       icon: Bell,
-      title: 'Premium Player Notifications',
-      desc: 'When you add a new room, all premium subscribers are notified instantly.',
+      title: t('company.settings.benefit3_title'),
+      desc: t('company.settings.benefit3_desc'),
     },
     {
       icon: BarChart3,
-      title: 'Advanced Analytics',
-      desc: 'Access detailed booking insights, early access conversion rates, and player demographics.',
+      title: t('company.settings.benefit4_title'),
+      desc: t('company.settings.benefit4_desc'),
     },
     {
       icon: Gift,
-      title: 'Reduced Platform Fee',
-      desc: 'Enjoy a reduced commission rate on all bookings made through the platform.',
+      title: t('company.settings.benefit5_title'),
+      desc: t('company.settings.benefit5_desc'),
     },
     {
       icon: Star,
-      title: 'Featured Spotlight',
-      desc: 'Early Access partners are periodically featured on the homepage carousel.',
+      title: t('company.settings.benefit6_title'),
+      desc: t('company.settings.benefit6_desc'),
     },
   ];
 
@@ -167,34 +169,34 @@ export default function CompanySettingsPage() {
 
   const PLAN_DETAILS: Record<string, { label: string; price: string; yearlyPrice: string; color: string; bg: string; border: string; Icon: any; features: string[] }> = {
     starter: {
-      label: 'Starter',
+      label: t('company.plan.starter'),
       price: '€29/mo',
       yearlyPrice: '€290/yr',
       color: 'text-emerald-400',
       bg: 'bg-emerald-500/10',
       border: 'border-emerald-500/20',
       Icon: Rocket,
-      features: ['Up to 3 rooms', 'Basic analytics', 'Email support', 'UNLOCKED listing'],
+      features: [t('company.settings.feature_3_rooms'), t('company.settings.feature_basic_analytics'), t('company.settings.feature_email_support'), t('company.settings.feature_unlocked_listing')],
     },
     pro: {
-      label: 'Pro',
+      label: t('company.plan.pro'),
       price: '€59/mo',
       yearlyPrice: '€590/yr',
       color: 'text-brand-red',
       bg: 'bg-brand-red/10',
       border: 'border-brand-red/20',
       Icon: Diamond,
-      features: ['Up to 10 rooms', 'Advanced analytics', 'Priority support', 'Featured listing', 'Push notifications'],
+      features: [t('company.settings.feature_10_rooms'), t('company.settings.feature_advanced_analytics'), t('company.settings.feature_priority_support'), t('company.settings.feature_featured_listing'), t('company.settings.feature_push_notifications')],
     },
     enterprise: {
-      label: 'Enterprise',
+      label: t('company.plan.enterprise'),
       price: '€99/mo',
       yearlyPrice: '€990/yr',
       color: 'text-purple-400',
       bg: 'bg-purple-500/10',
       border: 'border-purple-500/20',
       Icon: Crown,
-      features: ['Unlimited rooms', 'Full analytics suite', 'Dedicated account manager', 'Custom branding', 'API access', 'White-label options'],
+      features: [t('company.settings.feature_unlimited_rooms'), t('company.settings.feature_full_analytics'), t('company.settings.feature_dedicated_manager'), t('company.settings.feature_custom_branding'), t('company.settings.feature_api_access'), t('company.settings.feature_white_label')],
     },
   };
 
@@ -203,9 +205,9 @@ export default function CompanySettingsPage() {
 
   return (
     <div className="p-6 md:p-8 max-w-4xl mx-auto">
-      <h1 className="text-2xl md:text-3xl font-bold mb-2">Settings</h1>
+      <h1 className="text-2xl md:text-3xl font-bold mb-2">{t('company.settings.title')}</h1>
       <p className="text-brand-text-secondary mb-6">
-        Manage your company profile and programs
+        {t('company.settings.subtitle')}
       </p>
 
       {/* Current Plan Card */}
@@ -221,7 +223,7 @@ export default function CompanySettingsPage() {
                   <plan.Icon className={`w-6 h-6 ${plan.color}`} />
                 </div>
                 <div>
-                  <p className="text-xs text-brand-text-secondary font-medium uppercase tracking-wide mb-0.5">Current Plan</p>
+                  <p className="text-xs text-brand-text-secondary font-medium uppercase tracking-wide mb-0.5">{t('company.settings.current_plan')}</p>
                   <div className="flex items-baseline gap-2">
                     <span className={`text-xl font-bold ${plan.color}`}>{plan.label}</span>
                     <span className="text-sm text-brand-text-secondary">{plan.price}</span>
@@ -240,7 +242,7 @@ export default function CompanySettingsPage() {
                     onClick={() => setPlanExpanded(!planExpanded)}
                     className={`text-xs font-medium ${plan.color} hover:underline self-center transition-all`}
                   >
-                    {planExpanded ? 'Show less' : `+${plan.features.length - 3} more`}
+                    {planExpanded ? t('company.settings.show_less') : t('company.settings.show_more', { count: String(plan.features.length - 3) })}
                   </button>
                 )}
               </div>
@@ -252,8 +254,8 @@ export default function CompanySettingsPage() {
       {/* Tabs */}
       <div className="flex gap-1 mb-8 bg-brand-surface rounded-xl p-1 border border-white/5">
         {[
-          { key: 'profile', label: 'Profile', icon: Building2 },
-          { key: 'early-access', label: 'Early Access', icon: Zap },
+          { key: 'profile', label: t('company.settings.tab_profile'), icon: Building2 },
+          { key: 'early-access', label: t('company.settings.tab_early_access'), icon: Zap },
         ].map(({ key, label, icon: Icon }) => (
           <button
             key={key}
@@ -272,12 +274,12 @@ export default function CompanySettingsPage() {
       {/* Profile Tab */}
       {activeTab === 'profile' && (
         <div className="bg-brand-surface rounded-2xl border border-white/5 p-6">
-          <h2 className="text-lg font-bold mb-4">Company Profile</h2>
+          <h2 className="text-lg font-bold mb-4">{t('company.settings.company_profile')}</h2>
 
           {profileMsg && (
             <div
               className={`rounded-xl p-3 mb-4 text-sm ${
-                profileMsg.includes('success')
+                profileMsg === t('company.settings.profile_success')
                   ? 'bg-green-500/10 text-green-400'
                   : 'bg-red-500/10 text-red-400'
               }`}
@@ -289,7 +291,7 @@ export default function CompanySettingsPage() {
           <form onSubmit={handleSaveProfile} className="space-y-4">
             <div>
               <label className="block text-sm text-brand-text-secondary mb-1.5">
-                Company Name
+                {t('company.settings.company_name')}
               </label>
               <div className="relative">
                 <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-brand-text-secondary" />
@@ -304,7 +306,7 @@ export default function CompanySettingsPage() {
             </div>
 
             <div>
-              <label className="block text-sm text-brand-text-secondary mb-1.5">Phone</label>
+              <label className="block text-sm text-brand-text-secondary mb-1.5">{t('company.settings.phone')}</label>
               <div className="relative">
                 <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-brand-text-secondary" />
                 <input
@@ -319,7 +321,7 @@ export default function CompanySettingsPage() {
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-sm text-brand-text-secondary mb-1.5">Address</label>
+                <label className="block text-sm text-brand-text-secondary mb-1.5">{t('company.settings.address')}</label>
                 <div className="relative">
                   <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-brand-text-secondary" />
                   <input
@@ -332,7 +334,7 @@ export default function CompanySettingsPage() {
                 </div>
               </div>
               <div>
-                <label className="block text-sm text-brand-text-secondary mb-1.5">City</label>
+                <label className="block text-sm text-brand-text-secondary mb-1.5">{t('company.settings.city')}</label>
                 <input
                   type="text"
                   value={profile.city}
@@ -345,7 +347,7 @@ export default function CompanySettingsPage() {
 
             <div>
               <label className="block text-sm text-brand-text-secondary mb-1.5">
-                VAT Number (optional)
+                {t('company.settings.vat')}
               </label>
               <div className="relative">
                 <FileText className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-brand-text-secondary" />
@@ -359,7 +361,7 @@ export default function CompanySettingsPage() {
             </div>
 
             <div>
-              <label className="block text-sm text-brand-text-secondary mb-1.5">Description</label>
+              <label className="block text-sm text-brand-text-secondary mb-1.5">{t('company.settings.description')}</label>
               <textarea
                 value={profile.description}
                 onChange={(e) => setProfile({ ...profile, description: e.target.value })}
@@ -371,7 +373,7 @@ export default function CompanySettingsPage() {
 
             <div className="pt-2">
               <p className="text-xs text-brand-text-secondary mb-3">
-                Email: {company?.email} (cannot be changed)
+                {t('company.settings.email_readonly', { email: company?.email || '' })}
               </p>
               <button
                 type="submit"
@@ -382,7 +384,7 @@ export default function CompanySettingsPage() {
                   <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                 ) : (
                   <>
-                    <Save className="w-4 h-4" /> Save Profile
+                    <Save className="w-4 h-4" /> {t('company.settings.save_profile')}
                   </>
                 )}
               </button>
@@ -401,26 +403,25 @@ export default function CompanySettingsPage() {
               <div className="inline-flex items-center gap-2 bg-brand-red/10 border border-brand-red/30 rounded-full px-3 py-1 mb-4">
                 <Zap className="w-3.5 h-3.5 text-brand-red" />
                 <span className="text-xs font-semibold text-brand-red uppercase tracking-wide">
-                  Partner Program
+                  {t('company.settings.partner_program')}
                 </span>
               </div>
 
               <h2 className="text-xl md:text-2xl font-bold mb-3">
-                Early Access Partner Program
+                {t('company.settings.ea_title')}
               </h2>
               <p className="text-brand-text-secondary max-w-xl mb-6 leading-relaxed">
-                When you add a new room, UNLOCKED Premium subscribers will be able to
-                <span className="text-white font-medium"> discover and book it 3 days before </span>
-                it goes live to the public. This gives your rooms a head start with the most
-                engaged players on the platform.
+                {t('company.settings.ea_desc_before')}
+                <span className="text-white font-medium">{t('company.settings.ea_desc_highlight')}</span>
+                {t('company.settings.ea_desc_after')}
               </p>
 
               {/* How it works */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
                 {[
-                  { icon: Plus, step: '1', text: 'You create a new room and set a release date' },
-                  { icon: Eye, step: '2', text: 'Premium players see it 3 days early' },
-                  { icon: Clock, step: '3', text: 'Room goes live to everyone on release date' },
+                  { icon: Plus, step: '1', text: t('company.settings.ea_step1') },
+                  { icon: Eye, step: '2', text: t('company.settings.ea_step2') },
+                  { icon: Clock, step: '3', text: t('company.settings.ea_step3') },
                 ].map((item) => (
                   <div key={item.step} className="flex items-start gap-3 p-3 bg-brand-bg/50 rounded-xl border border-white/5">
                     <div className="w-7 h-7 shrink-0 rounded-full bg-brand-red/20 flex items-center justify-center text-xs font-bold text-brand-red">
@@ -434,7 +435,7 @@ export default function CompanySettingsPage() {
               {eaMsg && (
                 <div
                   className={`rounded-xl p-3 mb-4 text-sm ${
-                    eaMsg.includes('joined') || eaMsg.includes('left')
+                    eaMsg === t('company.settings.ea_joined') || eaMsg === t('company.settings.ea_left')
                       ? 'bg-green-500/10 text-green-400'
                       : 'bg-red-500/10 text-red-400'
                   }`}
@@ -451,12 +452,12 @@ export default function CompanySettingsPage() {
                   </div>
                   <div>
                     <p className="font-semibold">
-                      {earlyAccessEnabled ? 'You\'re an Early Access Partner' : 'Join the Early Access Program'}
+                      {earlyAccessEnabled ? t('company.settings.ea_active') : t('company.settings.ea_inactive')}
                     </p>
                     <p className="text-sm text-brand-text-secondary">
                       {earlyAccessEnabled
-                        ? 'Your new rooms will be shown early to premium players'
-                        : 'Allow premium players to see your new rooms before release'}
+                        ? t('company.settings.ea_active_desc')
+                        : t('company.settings.ea_inactive_desc')}
                     </p>
                   </div>
                 </div>
@@ -483,10 +484,10 @@ export default function CompanySettingsPage() {
           <div className="bg-brand-surface rounded-2xl border border-white/5 p-6">
             <div className="flex items-center gap-2 mb-1">
               <Gift className="w-5 h-5 text-brand-red" />
-              <h3 className="text-lg font-bold">What You Get As a Thank You</h3>
+              <h3 className="text-lg font-bold">{t('company.settings.benefits_title')}</h3>
             </div>
             <p className="text-sm text-brand-text-secondary mb-6">
-              As a partner, UNLOCKED gives your company these perks — no cost, no catch.
+              {t('company.settings.benefits_subtitle')}
             </p>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -516,7 +517,7 @@ export default function CompanySettingsPage() {
 
             {!earlyAccessEnabled && (
               <p className="text-center text-sm text-brand-text-secondary mt-6">
-                Enable the Early Access Program above to unlock all these perks.
+                {t('company.settings.enable_ea')}
               </p>
             )}
           </div>
@@ -525,17 +526,17 @@ export default function CompanySettingsPage() {
           <div className="bg-brand-surface rounded-2xl border border-white/5 p-6">
             <div className="flex items-center gap-2 mb-1">
               <Users className="w-5 h-5 text-brand-red" />
-              <h3 className="text-lg font-bold">What Premium Players Get</h3>
+              <h3 className="text-lg font-bold">{t('company.settings.premium_title')}</h3>
             </div>
             <p className="text-sm text-brand-text-secondary mb-4">
-              Players subscribe to UNLOCKED Premium (platform-wide) and receive:
+              {t('company.settings.premium_subtitle')}
             </p>
             <div className="space-y-2">
               {[
-                'Book new rooms 3 days before public release',
-                'Early access to rooms from all partner companies',
-                'Exclusive "Premium" profile badge',
-                'Priority customer support',
+                t('company.settings.perk1'),
+                t('company.settings.perk2'),
+                t('company.settings.perk3'),
+                t('company.settings.perk4'),
               ].map((perk, i) => (
                 <div key={i} className="flex items-center gap-3 text-sm">
                   <div className="w-5 h-5 rounded-full bg-brand-red/15 flex items-center justify-center shrink-0">

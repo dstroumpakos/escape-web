@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useQuery, useMutation } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
 import { useAuth } from '@/lib/auth';
+import { useTranslation } from '@/lib/i18n';
 import {
   User,
   Mail,
@@ -25,6 +26,7 @@ import {
 export default function ProfilePage() {
   const router = useRouter();
   const { user, isAuthenticated, isLoading: authLoading, logout } = useAuth();
+  const { t } = useTranslation();
   const [showEditName, setShowEditName] = useState(false);
   const [newName, setNewName] = useState('');
 
@@ -120,17 +122,17 @@ export default function ProfilePage() {
               <div className="text-center">
                 <DoorOpen className="w-5 h-5 text-brand-red mx-auto mb-1" />
                 <div className="text-2xl font-display font-bold">{profile.played ?? 0}</div>
-                <div className="text-xs text-brand-text-muted">Rooms Played</div>
+                <div className="text-xs text-brand-text-muted">{t('profile.rooms_played')}</div>
               </div>
               <div className="text-center">
                 <Trophy className="w-5 h-5 text-green-400 mx-auto mb-1" />
                 <div className="text-2xl font-display font-bold">{profile.escaped ?? 0}</div>
-                <div className="text-xs text-brand-text-muted">Escaped</div>
+                <div className="text-xs text-brand-text-muted">{t('profile.escaped')}</div>
               </div>
               <div className="text-center">
                 <Award className="w-5 h-5 text-brand-gold mx-auto mb-1" />
                 <div className="text-2xl font-display font-bold">{profile.awards ?? 0}</div>
-                <div className="text-xs text-brand-text-muted">Awards</div>
+                <div className="text-xs text-brand-text-muted">{t('profile.awards')}</div>
               </div>
             </div>
           </div>
@@ -142,7 +144,7 @@ export default function ProfilePage() {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
             <Shield className="w-5 h-5 text-brand-gold" />
-            Badges
+            {t('profile.badges')}
           </h2>
           {userBadges.length > 0 ? (
             <div className="flex gap-3 overflow-x-auto pb-2">
@@ -165,7 +167,7 @@ export default function ProfilePage() {
             <div className="card p-6 text-center">
               <Award className="w-8 h-8 text-brand-border mx-auto mb-2" />
               <p className="text-sm text-brand-text-muted">
-                Play escape rooms to earn badges!
+                {t('profile.no_badges')}
               </p>
             </div>
           )}
@@ -177,7 +179,7 @@ export default function ProfilePage() {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
             <Heart className="w-5 h-5 text-brand-red" />
-            Wishlist
+            {t('profile.wishlist')}
           </h2>
           {wishlistRooms.length > 0 ? (
             <div className="space-y-3">
@@ -209,7 +211,7 @@ export default function ProfilePage() {
             <div className="card p-6 text-center">
               <Heart className="w-8 h-8 text-brand-border mx-auto mb-2" />
               <p className="text-sm text-brand-text-muted">
-                Rooms you love will appear here. Tap the heart icon on any room!
+                {t('profile.no_wishlist')}
               </p>
             </div>
           )}
@@ -228,13 +230,13 @@ export default function ProfilePage() {
               className="flex items-center gap-4 w-full p-4 hover:bg-brand-surface/30 transition-colors text-left"
             >
               <User className="w-5 h-5 text-brand-text-muted" />
-              <span className="flex-1">Edit Profile</span>
+              <span className="flex-1">{t('profile.edit')}</span>
               <ChevronRight className="w-4 h-4 text-brand-text-muted" />
             </button>
 
             {showEditName && (
               <div className="p-4 bg-brand-surface/20">
-                <label className="block text-sm text-brand-text-muted mb-2">Name</label>
+                <label className="block text-sm text-brand-text-muted mb-2">{t('profile.name')}</label>
                 <div className="flex gap-2">
                   <input
                     type="text"
@@ -243,7 +245,7 @@ export default function ProfilePage() {
                     className="input-field flex-1"
                   />
                   <button onClick={handleSaveName} className="btn-primary !py-3 !px-6">
-                    Save
+                    {t('profile.save')}
                   </button>
                 </div>
               </div>
@@ -254,7 +256,7 @@ export default function ProfilePage() {
               className="flex items-center gap-4 w-full p-4 hover:bg-brand-surface/30 transition-colors"
             >
               <DoorOpen className="w-5 h-5 text-brand-text-muted" />
-              <span className="flex-1">My Bookings</span>
+              <span className="flex-1">{t('profile.my_bookings')}</span>
               <ChevronRight className="w-4 h-4 text-brand-text-muted" />
             </Link>
 
@@ -263,7 +265,7 @@ export default function ProfilePage() {
               className="flex items-center gap-4 w-full p-4 hover:bg-brand-surface/30 transition-colors"
             >
               <Mail className="w-5 h-5 text-brand-text-muted" />
-              <span className="flex-1">Notifications</span>
+              <span className="flex-1">{t('profile.notifications')}</span>
               <ChevronRight className="w-4 h-4 text-brand-text-muted" />
             </Link>
 
@@ -272,7 +274,7 @@ export default function ProfilePage() {
               className="flex items-center gap-4 w-full p-4 hover:bg-brand-surface/30 transition-colors"
             >
               <Trophy className="w-5 h-5 text-brand-text-muted" />
-              <span className="flex-1">Leaderboard</span>
+              <span className="flex-1">{t('profile.leaderboard')}</span>
               <ChevronRight className="w-4 h-4 text-brand-text-muted" />
             </Link>
 
@@ -281,7 +283,7 @@ export default function ProfilePage() {
               className="flex items-center gap-4 w-full p-4 hover:bg-red-900/10 transition-colors text-left text-red-400"
             >
               <LogOut className="w-5 h-5" />
-              <span className="flex-1">Sign Out</span>
+              <span className="flex-1">{t('profile.sign_out')}</span>
             </button>
           </div>
         </div>

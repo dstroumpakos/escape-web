@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation';
 import { useQuery, useMutation } from 'convex/react';
 import { api } from '../../../../../../convex/_generated/api';
 import { useCompanyAuth } from '@/lib/companyAuth';
+import { useTranslation } from '@/lib/i18n';
 import Link from 'next/link';
 import {
   ArrowLeft,
@@ -18,15 +19,12 @@ import {
   Clock,
 } from 'lucide-react';
 
-const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-const MONTHS = [
-  'January', 'February', 'March', 'April', 'May', 'June',
-  'July', 'August', 'September', 'October', 'November', 'December',
-];
+const DAYS = ['common.day_sun', 'common.day_mon', 'common.day_tue', 'common.day_wed', 'common.day_thu', 'common.day_fri', 'common.day_sat'];
 
 export default function RoomAvailabilityPage() {
   const params = useParams();
   const { company } = useCompanyAuth();
+  const { t } = useTranslation();
   const roomId = params.id as string;
 
   const room = useQuery(api.rooms.getById, roomId ? { id: roomId as any } : 'skip');
@@ -126,7 +124,7 @@ export default function RoomAvailabilityPage() {
       });
       setEditing(false);
     } catch (err) {
-      alert('Failed to save slots');
+      alert(t('company.availability.failed_save'));
     } finally {
       setSaving(false);
     }
@@ -143,9 +141,9 @@ export default function RoomAvailabilityPage() {
           <ArrowLeft className="w-5 h-5" />
         </Link>
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold">Availability</h1>
+          <h1 className="text-2xl md:text-3xl font-bold">{t('company.availability.title')}</h1>
           <p className="text-brand-text-secondary mt-1">
-            {room?.title || 'Loading...'}
+            {room?.title || t('common.loading')}
           </p>
         </div>
       </div>
@@ -161,7 +159,7 @@ export default function RoomAvailabilityPage() {
               <ChevronLeft className="w-5 h-5" />
             </button>
             <h2 className="font-semibold">
-              {MONTHS[month]} {year}
+              {t(`common.month_${month + 1}`)} {year}
             </h2>
             <button
               onClick={() => setCurrentDate(new Date(year, month + 1, 1))}
@@ -177,7 +175,7 @@ export default function RoomAvailabilityPage() {
                 key={d}
                 className="text-center text-xs text-brand-text-secondary py-1"
               >
-                {d}
+                {t(d)}
               </div>
             ))}
           </div>
@@ -220,7 +218,7 @@ export default function RoomAvailabilityPage() {
                   )}
                 </h2>
                 <p className="text-sm text-brand-text-secondary">
-                  {editSlots.length} time slots
+                  {t('company.availability.time_slots', { count: String(editSlots.length) })}
                 </p>
               </div>
               {!editing ? (
@@ -228,7 +226,7 @@ export default function RoomAvailabilityPage() {
                   onClick={handleStartEdit}
                   className="btn-primary text-sm"
                 >
-                  Edit Slots
+                  {t('company.availability.edit_slots')}
                 </button>
               ) : (
                 <div className="flex gap-2">
@@ -247,7 +245,7 @@ export default function RoomAvailabilityPage() {
                       <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                     ) : (
                       <>
-                        <Save className="w-3.5 h-3.5" /> Save
+                        <Save className="w-3.5 h-3.5" /> {t('company.availability.save')}
                       </>
                     )}
                   </button>
@@ -258,12 +256,12 @@ export default function RoomAvailabilityPage() {
             {editSlots.length === 0 && !editing ? (
               <div className="text-center py-12 text-brand-text-secondary">
                 <Clock className="w-12 h-12 mx-auto mb-3 opacity-30" />
-                <p>No slots configured for this date</p>
+                <p>{t('company.availability.no_slots')}</p>
                 <button
                   onClick={handleStartEdit}
                   className="mt-4 text-sm text-brand-red hover:underline"
                 >
-                  Set up time slots
+                  {t('company.availability.setup_slots')}
                 </button>
               </div>
             ) : (
@@ -315,7 +313,7 @@ export default function RoomAvailabilityPage() {
                               : 'bg-red-500/10 text-red-400'
                           }`}
                         >
-                          {slot.available ? 'Open' : 'Closed'}
+                          {slot.available ? t('company.availability.open') : t('company.availability.closed')}
                         </button>
                         <button
                           type="button"
@@ -340,7 +338,7 @@ export default function RoomAvailabilityPage() {
                               : 'bg-red-500/10 text-red-400'
                           }`}
                         >
-                          {slot.available ? 'Available' : 'Unavailable'}
+                          {slot.available ? t('company.availability.available') : t('company.availability.unavailable')}
                         </span>
                       </>
                     )}
@@ -353,7 +351,7 @@ export default function RoomAvailabilityPage() {
                     onClick={addSlot}
                     className="w-full flex items-center justify-center gap-2 p-3 rounded-xl border border-dashed border-white/10 text-sm text-brand-text-secondary hover:text-white hover:border-white/20 transition-all"
                   >
-                    <Plus className="w-4 h-4" /> Add Time Slot
+                    <Plus className="w-4 h-4" /> {t('company.availability.add_slot')}
                   </button>
                 )}
               </div>
