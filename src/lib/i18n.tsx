@@ -1588,7 +1588,6 @@ const translations: Record<Language, Record<string, string>> = {
     'profile.awards': 'Βραβεία',
     'profile.badges': 'Σήματα',
     'profile.premium_badge': 'Premium',
-    'profile.premium_badge': 'Premium',
     'profile.no_badges': 'Παίξε escape rooms για να κερδίσεις σήματα!',
     'profile.wishlist': 'Αγαπημένα',
     'profile.no_wishlist': 'Τα δωμάτια που αγαπάς θα εμφανιστούν εδώ. Πάτησε το εικονίδιο καρδιάς σε οποιοδήποτε δωμάτιο!',
