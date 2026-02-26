@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation } from 'convex/react';
+import { useSearchParams } from 'next/navigation';
 import { api } from '../../../../convex/_generated/api';
 import { useCompanyAuth } from '@/lib/companyAuth';
 import {
@@ -32,6 +33,14 @@ import {
   Diamond,
   Crown,
   Check,
+  Code,
+  Copy,
+  CheckCircle,
+  Smartphone,
+  Globe,
+  BellRing,
+  Wallet,
+  Info,
 } from 'lucide-react';
 import { PlanBadge } from '../PlanBadge';
 import { useTranslation } from '@/lib/i18n';
@@ -68,7 +77,19 @@ export default function CompanySettingsPage() {
   const [eaMsg, setEaMsg] = useState('');
 
   // Active tab
-  const [activeTab, setActiveTab] = useState<'profile' | 'early-access'>('profile');
+  const searchParams = useSearchParams();
+  const [activeTab, setActiveTab] = useState<'profile' | 'early-access' | 'widget'>('profile');
+
+  // Widget copy state
+  const [widgetCopied, setWidgetCopied] = useState(false);
+
+  // Respect ?tab= query param
+  useEffect(() => {
+    const tab = searchParams.get('tab');
+    if (tab === 'widget' || tab === 'early-access' || tab === 'profile') {
+      setActiveTab(tab);
+    }
+  }, [searchParams]);
 
   // Populate forms
   useEffect(() => {
@@ -256,6 +277,7 @@ export default function CompanySettingsPage() {
         {[
           { key: 'profile', label: t('company.settings.tab_profile'), icon: Building2 },
           { key: 'early-access', label: t('company.settings.tab_early_access'), icon: Zap },
+          { key: 'widget', label: t('company.settings.tab_widget'), icon: Code },
         ].map(({ key, label, icon: Icon }) => (
           <button
             key={key}
@@ -545,6 +567,143 @@ export default function CompanySettingsPage() {
                   <span className="text-brand-text-secondary">{perk}</span>
                 </div>
               ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Widget Tab */}
+      {activeTab === 'widget' && (
+        <div className="space-y-6">
+          {/* Hero */}
+          <div className="relative overflow-hidden bg-gradient-to-br from-brand-red/20 via-brand-surface to-brand-surface rounded-2xl border border-brand-red/20 p-6 md:p-8">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-brand-red/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+            <div className="relative">
+              <div className="inline-flex items-center gap-2 bg-brand-red/10 border border-brand-red/30 rounded-full px-3 py-1 mb-4">
+                <Code className="w-3.5 h-3.5 text-brand-red" />
+                <span className="text-xs font-semibold text-brand-red uppercase tracking-wide">
+                  {t('company.settings.tab_widget')}
+                </span>
+              </div>
+              <h2 className="text-xl md:text-2xl font-bold mb-3">
+                {t('company.widget.title')}
+              </h2>
+              <p className="text-brand-text-secondary max-w-xl leading-relaxed">
+                {t('company.widget.subtitle')}
+              </p>
+            </div>
+          </div>
+
+          {/* How It Works */}
+          <div className="bg-brand-surface rounded-2xl border border-white/5 p-6">
+            <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
+              <Info className="w-5 h-5 text-brand-red" />
+              {t('company.widget.how_it_works')}
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              {[
+                { step: '1', text: t('company.widget.step1'), icon: Copy },
+                { step: '2', text: t('company.widget.step2'), icon: Code },
+                { step: '3', text: t('company.widget.step3'), icon: Globe },
+              ].map((item) => (
+                <div key={item.step} className="flex items-start gap-3 p-4 bg-brand-bg/50 rounded-xl border border-white/5">
+                  <div className="w-8 h-8 shrink-0 rounded-full bg-brand-red/20 flex items-center justify-center text-sm font-bold text-brand-red">
+                    {item.step}
+                  </div>
+                  <p className="text-sm text-brand-text-secondary leading-snug">{item.text}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Embed Code */}
+          <div className="bg-brand-surface rounded-2xl border border-white/5 p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-bold flex items-center gap-2">
+                <Code className="w-5 h-5 text-brand-red" />
+                {t('company.widget.embed_code')}
+              </h3>
+              <button
+                onClick={() => {
+                  const code = `<!-- UNLOCKED Booking Widget -->\n<div id="unlocked-widget" data-company-id="${companyId}"></div>\n<script src="https://hidden-roadrunner-559.eu-west-1.convex.site/booking-widget.js" defer></script>`;
+                  navigator.clipboard.writeText(code);
+                  setWidgetCopied(true);
+                  setTimeout(() => setWidgetCopied(false), 2500);
+                }}
+                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all ${
+                  widgetCopied
+                    ? 'bg-green-500/10 text-green-400 border border-green-500/20'
+                    : 'bg-brand-red/10 text-brand-red border border-brand-red/20 hover:bg-brand-red/20'
+                }`}
+              >
+                {widgetCopied ? (
+                  <><CheckCircle className="w-4 h-4" /> {t('company.widget.copied')}</>
+                ) : (
+                  <><Copy className="w-4 h-4" /> {t('company.widget.copy')}</>
+                )}
+              </button>
+            </div>
+
+            <div className="relative">
+              <pre className="bg-brand-bg rounded-xl p-5 overflow-x-auto text-sm font-mono text-brand-text-secondary border border-white/5 leading-relaxed">
+                <code>{`<!-- UNLOCKED Booking Widget -->\n<div id="unlocked-widget"\n     data-company-id="${companyId || 'YOUR_COMPANY_ID'}"></div>\n<script\n  src="https://hidden-roadrunner-559.eu-west-1.convex.site/booking-widget.js"\n  defer></script>`}</code>
+              </pre>
+            </div>
+
+            <p className="text-xs text-brand-text-secondary/60 mt-3 flex items-start gap-2">
+              <Info className="w-3.5 h-3.5 mt-0.5 shrink-0" />
+              {t('company.widget.preview_note')}
+            </p>
+          </div>
+
+          {/* Widget Features */}
+          <div className="bg-brand-surface rounded-2xl border border-white/5 p-6">
+            <div className="flex items-center gap-2 mb-1">
+              <Star className="w-5 h-5 text-brand-red" />
+              <h3 className="text-lg font-bold">{t('company.widget.features_title')}</h3>
+            </div>
+            <p className="text-sm text-brand-text-secondary mb-6">
+              {t('company.widget.subtitle')}
+            </p>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {[
+                { icon: Clock, title: t('company.widget.feature1_title'), desc: t('company.widget.feature1_desc') },
+                { icon: Users, title: t('company.widget.feature2_title'), desc: t('company.widget.feature2_desc') },
+                { icon: Mail, title: t('company.widget.feature3_title'), desc: t('company.widget.feature3_desc') },
+                { icon: Smartphone, title: t('company.widget.feature4_title'), desc: t('company.widget.feature4_desc') },
+                { icon: BellRing, title: t('company.widget.feature5_title'), desc: t('company.widget.feature5_desc') },
+                { icon: Wallet, title: t('company.widget.feature6_title'), desc: t('company.widget.feature6_desc') },
+              ].map((feat, i) => (
+                <div key={i} className="flex items-start gap-4 p-4 rounded-xl bg-brand-bg border border-white/5">
+                  <div className="w-10 h-10 shrink-0 rounded-xl bg-brand-red/15 flex items-center justify-center">
+                    <feat.icon className="w-5 h-5 text-brand-red" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-sm mb-0.5">{feat.title}</p>
+                    <p className="text-xs text-brand-text-secondary leading-relaxed">{feat.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Customization note */}
+          <div className="bg-brand-surface rounded-2xl border border-white/5 p-6">
+            <div className="flex items-center gap-2 mb-2">
+              <Shield className="w-5 h-5 text-brand-red" />
+              <h3 className="text-lg font-bold">{t('company.widget.customization')}</h3>
+            </div>
+            <p className="text-sm text-brand-text-secondary leading-relaxed">
+              {t('company.widget.custom_desc')}
+            </p>
+            <div className="mt-4 p-3 bg-brand-bg/50 rounded-xl border border-white/5">
+              <p className="text-xs text-brand-text-secondary">
+                {t('company.widget.need_help')}{' '}
+                <a href="mailto:support@unlockedescapes.com" className="text-brand-red hover:underline">
+                  support@unlockedescapes.com
+                </a>
+              </p>
             </div>
           </div>
         </div>

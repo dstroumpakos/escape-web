@@ -28,6 +28,7 @@ import {
   Sparkles,
   ArrowUpRight,
   Circle,
+  Code,
 } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
 
@@ -394,7 +395,7 @@ export default function CompanyDashboardPage() {
         <h2 className="font-bold mb-3 flex items-center gap-2">
           <Zap className="w-4 h-4 text-brand-red" /> {t('company.dashboard.quick_actions')}
         </h2>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
           <QuickAction
             href="/company/rooms/new"
             icon={Plus}
@@ -423,6 +424,13 @@ export default function CompanyDashboardPage() {
             label={t('company.nav.settings')}
             desc={t('company.dashboard.plan_preferences')}
             color="text-green-400"
+          />
+          <QuickAction
+            href="/company/settings?tab=widget"
+            icon={Code}
+            label={t('company.dashboard.widget_title')}
+            desc={t('company.dashboard.widget_desc')}
+            color="text-orange-400"
           />
         </div>
       </div>
