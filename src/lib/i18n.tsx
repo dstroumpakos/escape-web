@@ -27,8 +27,8 @@ const translations: Record<Language, Record<string, string>> = {
     'nav.tickets': 'My Tickets',
 
     // ── Hero ──
-    'hero.badge': 'The #1 Escape Room Platform',
-    'hero.title1': 'Discover. Escape.',
+    'hero.badge': 'Your Next Adventure Awaits',
+    'hero.title1': 'Discover. Escape.,
     'hero.title2': 'Get UNLOCKED.',
     'hero.subtitle': 'Find and book the best escape rooms near you. Challenge your team, solve puzzles, and create memories that last a lifetime.',
     'hero.search_placeholder': 'Search escape rooms, themes, or locations...',
@@ -1030,7 +1030,7 @@ const translations: Record<Language, Record<string, string>> = {
     'nav.tickets': 'Τα Εισιτήριά μου',
 
     // ── Hero ──
-    'hero.badge': 'Η #1 Πλατφόρμα Escape Room',
+    'hero.badge': 'Η Επόμενη Περιπέτειά σου Ξεκινάει Εδώ',
     'hero.title1': 'Ανακάλυψε. Δραπέτευσε.',
     'hero.title2': 'UNLOCKED.',
     'hero.subtitle': 'Βρες και κλείσε τα καλύτερα escape rooms κοντά σου. Προκάλεσε την ομάδα σου, λύσε γρίφους και δημιούργησε αξέχαστες αναμνήσεις.',
