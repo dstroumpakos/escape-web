@@ -28,7 +28,7 @@ const translations: Record<Language, Record<string, string>> = {
 
     // ── Hero ──
     'hero.badge': 'Your Next Adventure Awaits',
-    'hero.title1': 'Discover. Escape.,
+    'hero.title1': 'Discover. Escape.',
     'hero.title2': 'Get UNLOCKED.',
     'hero.subtitle': 'Find and book the best escape rooms near you. Challenge your team, solve puzzles, and create memories that last a lifetime.',
     'hero.search_placeholder': 'Search escape rooms, themes, or locations...',
