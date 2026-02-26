@@ -132,9 +132,9 @@ const translations: Record<Language, Record<string, string>> = {
     'download.title_end': 'Everywhere',
     'download.subtitle': 'Download the app for iOS and Android. Get push notifications for new rooms, flash deals, and when your favorite time slots open up.',
     'download.cta': 'Start Playing Now',
-    'download.appstore_label': 'Download on the',
+    'download.appstore_label': 'Coming Soon on',
     'download.appstore': 'App Store',
-    'download.playstore_label': 'GET IT ON',
+    'download.playstore_label': 'COMING SOON ON',
     'download.playstore': 'Google Play',
 
     // ── Footer ──
@@ -1135,9 +1135,9 @@ const translations: Record<Language, Record<string, string>> = {
     'download.title_end': 'Παντού',
     'download.subtitle': 'Κατέβασε την εφαρμογή για iOS και Android. Λάβε ειδοποιήσεις για νέα δωμάτια, flash προσφορές και όταν ανοίγουν οι αγαπημένες σου θυρίδες.',
     'download.cta': 'Ξεκίνα Τώρα',
-    'download.appstore_label': 'Κατέβασε από το',
+    'download.appstore_label': 'Έρχεται σύντομα στο',
     'download.appstore': 'App Store',
-    'download.playstore_label': 'ΑΠΟΚΤΗΣΕ ΤΟ ΑΠΟ ΤΟ',
+    'download.playstore_label': 'ΕΡΧΕΤΑΙ ΣΥΝΤΟΜΑ ΣΤΟ',
     'download.playstore': 'Google Play',
 
     // ── Footer ──
