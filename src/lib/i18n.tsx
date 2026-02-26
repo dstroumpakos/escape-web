@@ -1116,10 +1116,6 @@ const translations: Record<Language, Record<string, string>> = {
     // ── Badges ──
     'badge.early_access': 'Πρόωρη Πρόσβαση',
     'badge.premium': 'Premium',
-
-    // ── Badges ──
-    'badge.early_access': 'Πρόωρη Πρόσβαση',
-    'badge.premium': 'Premium',
     'featured.reviews': 'κριτικές',
     'featured.difficulty': 'Δυσκολία',
     'featured.view_all': 'Δες Όλα τα Δωμάτια →',
