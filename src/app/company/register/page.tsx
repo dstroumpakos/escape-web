@@ -37,7 +37,7 @@ export default function CompanyRegisterPage() {
     setError('');
 
     if (form.password !== form.confirmPassword) {
-      setError(t('company.register.passwords_mismatch'));
+      setError(t('company.register.error_password_mismatch'));
       return;
     }
 
@@ -62,7 +62,7 @@ export default function CompanyRegisterPage() {
       // Registration successful — redirect to login
       router.push('/company/login?registered=true');
     } catch (err: any) {
-      setError(err?.message || t('company.register.error'));
+      setError(err?.message || t('company.register.error_failed'));
     } finally {
       setLoading(false);
     }
@@ -111,7 +111,7 @@ export default function CompanyRegisterPage() {
                   value={form.name}
                   onChange={(e) => updateField('name', e.target.value)}
                   className="w-full bg-brand-bg border border-white/10 rounded-xl pl-11 pr-4 py-3 text-white placeholder-brand-text-secondary/50 focus:border-brand-red focus:outline-none transition-colors"
-                  placeholder={t('company.register.company_placeholder')}
+                  placeholder={t('company.register.company_name_placeholder')}
                   required
                 />
               </div>
@@ -180,7 +180,7 @@ export default function CompanyRegisterPage() {
 
             {/* VAT */}
             <div>
-              <label className="block text-sm text-brand-text-secondary mb-1.5">{t('company.register.vat_label')}</label>
+              <label className="block text-sm text-brand-text-secondary mb-1.5">{t('company.register.vat')}</label>
               <div className="relative">
                 <FileText className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-brand-text-secondary" />
                 <input
@@ -265,7 +265,7 @@ export default function CompanyRegisterPage() {
           <p className="text-center text-sm text-brand-text-secondary mt-6">
             {t('company.register.has_account')}{' '}
             <Link href="/company/login" className="text-brand-red hover:underline">
-              {t('company.register.login')}
+              {t('company.register.sign_in')}
             </Link>
           </p>
         </div>

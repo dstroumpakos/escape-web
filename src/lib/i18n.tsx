@@ -630,6 +630,9 @@ const translations: Record<Language, Record<string, string>> = {
     'company.register.sign_in': 'Sign in',
     'company.register.error_password_mismatch': 'Passwords do not match',
     'company.register.error_failed': 'Registration failed',
+    'company.register.email_placeholder': 'company@example.com',
+    'company.register.phone_placeholder': '+30 210 1234567',
+    'company.register.back_to_site': '← Back to site',
 
     // ── Company Nav ──
     'company.nav.dashboard': 'Dashboard',
@@ -1681,6 +1684,9 @@ const translations: Record<Language, Record<string, string>> = {
     'company.register.sign_in': 'Σύνδεση',
     'company.register.error_password_mismatch': 'Οι κωδικοί δεν ταιριάζουν',
     'company.register.error_failed': 'Η εγγραφή απέτυχε',
+    'company.register.email_placeholder': 'company@example.com',
+    'company.register.phone_placeholder': '+30 210 1234567',
+    'company.register.back_to_site': '← Πίσω στο site',
 
     // ── Company Nav ──
     'company.nav.dashboard': 'Πίνακας Ελέγχου',
