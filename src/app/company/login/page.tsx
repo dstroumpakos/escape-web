@@ -30,7 +30,7 @@ export default function CompanyLoginPage() {
       await login(email, password);
       router.replace('/company');
     } catch (err: any) {
-      setError(err?.message || t('company.auth.error'));
+      setError(err?.message || t('company.auth.login_failed'));
     } finally {
       setLoading(false);
     }
@@ -51,13 +51,13 @@ export default function CompanyLoginPage() {
           </div>
           <div className="flex items-center justify-center gap-2 text-brand-text-secondary">
             <Building2 className="w-4 h-4" />
-            <span className="text-sm font-medium">{t('company.auth.title')}</span>
+            <span className="text-sm font-medium">{t('company.auth.portal')}</span>
           </div>
         </div>
 
         {/* Form */}
         <div className="bg-brand-surface rounded-2xl p-8 border border-white/5">
-          <h1 className="text-2xl font-bold mb-2">{t('company.auth.welcome_back')}</h1>
+          <h1 className="text-2xl font-bold mb-2">{t('company.auth.welcome')}</h1>
           <p className="text-brand-text-secondary text-sm mb-6">
             {t('company.auth.subtitle')}
           </p>
@@ -78,7 +78,7 @@ export default function CompanyLoginPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="w-full bg-brand-bg border border-white/10 rounded-xl pl-11 pr-4 py-3 text-white placeholder-brand-text-secondary/50 focus:border-brand-red focus:outline-none transition-colors"
-                  placeholder={t('company.auth.email_placeholder')}
+                  placeholder={t('company.auth.email')}
                   required
                 />
               </div>
@@ -124,14 +124,14 @@ export default function CompanyLoginPage() {
           <p className="text-center text-sm text-brand-text-secondary mt-6">
             {t('company.auth.no_account')}{' '}
             <Link href="/company/register" className="text-brand-red hover:underline">
-              {t('company.auth.register')}
+              {t('company.auth.register_link')}
             </Link>
           </p>
         </div>
 
         <p className="text-center text-xs text-brand-text-secondary mt-6">
           <Link href="/" className="hover:text-white transition-colors">
-            {t('company.auth.back_to_site')}
+            {t('company.auth.back_to_unlocked')}
           </Link>
         </p>
       </div>
