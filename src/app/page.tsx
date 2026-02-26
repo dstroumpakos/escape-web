@@ -4,7 +4,6 @@ import { HowItWorks } from '@/components/home/HowItWorks';
 import { ThemesSection } from '@/components/home/ThemesSection';
 import { StatsBar } from '@/components/home/StatsBar';
 import { TestimonialsSection } from '@/components/home/TestimonialsSection';
-import { DownloadCTA } from '@/components/home/DownloadCTA';
 import { ForBusinesses } from '@/components/home/ForBusinesses';
 import { SafeConvex } from '@/components/SafeConvex';
 
@@ -18,7 +17,6 @@ export default function Home() {
       <HowItWorks />
       <TestimonialsSection />
       <ForBusinesses />
-      <DownloadCTA />
     </>
   );
 }
