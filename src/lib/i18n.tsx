@@ -499,6 +499,8 @@ const translations: Record<Language, Record<string, string>> = {
     'leaderboard.badge_perfectionist_desc': 'No hints used in 10 rooms',
     'leaderboard.badge_night_owl': 'Night Owl',
     'leaderboard.badge_night_owl_desc': '10 late-night escapes',
+    'leaderboard.no_players_yet': 'No players on the leaderboard yet. Start playing to claim the top spot!',
+    'leaderboard.no_rooms_yet': 'No rooms ranked yet.',
 
     // ── Social ──
     'social.title': 'Social',
@@ -646,6 +648,7 @@ const translations: Record<Language, Record<string, string>> = {
     'company.nav.rooms': 'Rooms',
     'company.nav.settings': 'Settings',
     'company.nav.logout': 'Log Out',
+    'company.nav.back_to_site': '← Back to site',
 
     // ── Company Dashboard ──
     'company.greeting.morning': 'Good morning',
@@ -668,6 +671,10 @@ const translations: Record<Language, Record<string, string>> = {
     'company.dashboard.revenue': 'Revenue',
     'company.dashboard.completed': 'Completed',
     'company.dashboard.bookings_label': 'bookings',
+    'company.dashboard.bookings_plural': 'bookings',
+    'company.dashboard.booking_singular': 'booking',
+    'company.dashboard.you_have': 'You have',
+    'company.dashboard.today': 'today',
     'company.dashboard.of': 'of',
     'company.dashboard.unlimited': 'unlimited',
     'company.dashboard.room_capacity': 'Room Capacity',
@@ -1026,6 +1033,7 @@ const translations: Record<Language, Record<string, string>> = {
     'company.plan.pro': 'Pro',
     'company.plan.enterprise': 'Enterprise',
     'company.plan.label': 'Plan',
+    'company.plan.plan_label': 'Plan',
 
     // ── Admin ──
     'admin.title': 'Admin Panel',
@@ -1559,6 +1567,8 @@ const translations: Record<Language, Record<string, string>> = {
     'leaderboard.badge_perfectionist_desc': 'Χωρίς βοήθεια σε 10 δωμάτια',
     'leaderboard.badge_night_owl': 'Νυχτοπούλι',
     'leaderboard.badge_night_owl_desc': '10 νυχτερινές αποδράσεις',
+    'leaderboard.no_players_yet': 'Δεν υπάρχουν παίκτες στο leaderboard ακόμα. Άρχισε να παίζεις για να κατακτήσεις την κορυφή!',
+    'leaderboard.no_rooms_yet': 'Δεν υπάρχουν δωμάτια στην κατάταξη ακόμα.',
 
     // ── Social ──
     'social.title': 'Κοινωνικό',
@@ -1706,6 +1716,7 @@ const translations: Record<Language, Record<string, string>> = {
     'company.nav.rooms': 'Δωμάτια',
     'company.nav.settings': 'Ρυθμίσεις',
     'company.nav.logout': 'Αποσύνδεση',
+    'company.nav.back_to_site': '← Πίσω στο site',
 
     // ── Company Dashboard ──
     'company.greeting.morning': 'Καλημέρα',
@@ -1728,6 +1739,10 @@ const translations: Record<Language, Record<string, string>> = {
     'company.dashboard.revenue': 'Έσοδα',
     'company.dashboard.completed': 'Ολοκληρωμένες',
     'company.dashboard.bookings_label': 'κρατήσεις',
+    'company.dashboard.bookings_plural': 'κρατήσεις',
+    'company.dashboard.booking_singular': 'κράτηση',
+    'company.dashboard.you_have': 'Έχεις',
+    'company.dashboard.today': 'σήμερα',
     'company.dashboard.of': 'από',
     'company.dashboard.unlimited': 'απεριόριστα',
     'company.dashboard.room_capacity': 'Χωρητικότητα Δωματίων',
@@ -2086,6 +2101,7 @@ const translations: Record<Language, Record<string, string>> = {
     'company.plan.pro': 'Pro',
     'company.plan.enterprise': 'Enterprise',
     'company.plan.label': 'Πλάνο',
+    'company.plan.plan_label': 'Πλάνο',
 
     // ── Admin ──
     'admin.title': 'Πίνακας Διαχείρισης',

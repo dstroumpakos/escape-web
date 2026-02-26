@@ -7,37 +7,16 @@ import {
   Trophy,
   Medal,
   Crown,
-  Flame,
   Star,
   Clock,
   DoorOpen,
   TrendingUp,
   Award,
+  Loader2,
 } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
 
 type Tab = 'players' | 'rooms' | 'teams';
-
-const fallbackPlayers = [
-  { rank: 1, name: 'Alex M.', avatar: 'AM', played: 87, escaped: 82, rate: 94, badges: 23, streak: 12 },
-  { rank: 2, name: 'Maria K.', avatar: 'MK', played: 72, escaped: 67, rate: 93, badges: 19, streak: 8 },
-  { rank: 3, name: 'Nikos P.', avatar: 'NP', played: 65, escaped: 59, rate: 91, badges: 17, streak: 15 },
-  { rank: 4, name: 'Sophie L.', avatar: 'SL', played: 58, escaped: 52, rate: 90, badges: 14, streak: 6 },
-  { rank: 5, name: 'Dimitris T.', avatar: 'DT', played: 53, escaped: 47, rate: 89, badges: 12, streak: 4 },
-  { rank: 6, name: 'Elena V.', avatar: 'EV', played: 49, escaped: 44, rate: 90, badges: 11, streak: 7 },
-  { rank: 7, name: 'Kostas A.', avatar: 'KA', played: 45, escaped: 39, rate: 87, badges: 10, streak: 3 },
-  { rank: 8, name: 'Christina D.', avatar: 'CD', played: 41, escaped: 36, rate: 88, badges: 9, streak: 5 },
-  { rank: 9, name: 'George F.', avatar: 'GF', played: 38, escaped: 33, rate: 87, badges: 8, streak: 2 },
-  { rank: 10, name: 'Anna R.', avatar: 'AR', played: 35, escaped: 30, rate: 86, badges: 7, streak: 9 },
-];
-
-const fallbackRooms = [
-  { rank: 1, name: 'Egyptian Tomb', venue: 'Escape Athens', rating: 4.9, reviews: 256, escapeRate: 32, theme: 'History' },
-  { rank: 2, name: 'Prison Break', venue: 'Room Escape GR', rating: 4.9, reviews: 203, escapeRate: 28, theme: 'Adventure' },
-  { rank: 3, name: 'The Haunted Mansion', venue: 'Dark Rooms', rating: 4.8, reviews: 142, escapeRate: 45, theme: 'Horror' },
-  { rank: 4, name: 'Cyber Heist', venue: 'TechEscape', rating: 4.8, reviews: 134, escapeRate: 38, theme: 'Sci-Fi' },
-  { rank: 5, name: 'Da Vinci Code', venue: 'Mystery Rooms', rating: 4.7, reviews: 98, escapeRate: 52, theme: 'Mystery' },
-];
 
 function RankBadge({ rank }: { rank: number }) {
   if (rank === 1)
@@ -81,28 +60,33 @@ export default function LeaderboardPage() {
   ];
 
   // Query real data from Convex
+  const leaderboardData = useQuery(api.users.leaderboard, { limit: 20 });
   const convexRooms = useQuery(api.rooms.list);
 
-  // Build top players: we don't have a dedicated leaderboard query, so use fallback
-  // In the future this could be a server-side query that sorts users by escaped count
-  const topPlayers = fallbackPlayers;
+  const isLoading = leaderboardData === undefined;
 
-  // Build top rooms from real data when available
+  // Live players from Convex
+  const topPlayers = leaderboardData?.players ?? [];
+
+  // Live stats from Convex
+  const globalStats = leaderboardData?.stats;
+
+  // Build top rooms from real data
   const topRooms =
     convexRooms && convexRooms.length > 0
       ? [...convexRooms]
           .sort((a: any, b: any) => (b.rating ?? 0) - (a.rating ?? 0))
-          .slice(0, 5)
+          .slice(0, 10)
           .map((r: any, i: number) => ({
             rank: i + 1,
             name: r.title || 'Untitled',
-            venue: r.location || 'Unknown',
+            venue: r.companyName || r.location || 'Unknown',
             rating: r.rating ?? 0,
             reviews: r.reviews ?? 0,
             escapeRate: r.escapeRate ?? 0,
             theme: r.theme || 'Mystery',
           }))
-      : fallbackRooms;
+      : [];
 
   return (
     <>
@@ -131,10 +115,10 @@ export default function LeaderboardPage() {
           <div className="glass rounded-2xl p-6 md:p-8">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
               {[
-                { icon: DoorOpen, label: t('leaderboard.total_escapes'), value: '5,247', color: 'text-brand-red' },
-                { icon: Clock, label: t('leaderboard.avg_escape_time'), value: '47 min', color: 'text-cyan-400' },
-                { icon: TrendingUp, label: t('leaderboard.success_rate'), value: '68%', color: 'text-green-400' },
-                { icon: Award, label: t('leaderboard.badges_earned'), value: '1,832', color: 'text-brand-gold' },
+                { icon: DoorOpen, label: t('leaderboard.total_escapes'), value: globalStats ? globalStats.totalEscapes.toLocaleString() : '—', color: 'text-brand-red' },
+                { icon: Clock, label: t('leaderboard.avg_escape_time'), value: globalStats ? `${globalStats.totalPlayed.toLocaleString()} ${t('leaderboard.played')}` : '—', color: 'text-cyan-400' },
+                { icon: TrendingUp, label: t('leaderboard.success_rate'), value: globalStats ? `${globalStats.successRate}%` : '—', color: 'text-green-400' },
+                { icon: Award, label: t('leaderboard.badges_earned'), value: globalStats ? globalStats.totalBadges.toLocaleString() : '—', color: 'text-brand-gold' },
               ].map((s, i) => (
                 <div key={i} className="text-center">
                   <s.icon className={`w-6 h-6 ${s.color} mx-auto mb-2`} />
@@ -179,7 +163,19 @@ export default function LeaderboardPage() {
           {/* Players Table */}
           {activeTab === 'players' && (
             <div className="space-y-3">
+              {isLoading ? (
+                <div className="flex items-center justify-center py-20">
+                  <Loader2 className="w-8 h-8 text-brand-red animate-spin" />
+                </div>
+              ) : topPlayers.length === 0 ? (
+                <div className="card p-12 text-center">
+                  <Trophy className="w-12 h-12 text-brand-text-muted mx-auto mb-4" />
+                  <p className="text-brand-text-secondary">{t('leaderboard.no_players_yet')}</p>
+                </div>
+              ) : (
+                <>
               {/* Top 3 podium */}
+              {topPlayers.length >= 3 && (
               <div className="grid grid-cols-3 gap-4 mb-8">
                 {[topPlayers[1], topPlayers[0], topPlayers[2]].map(
                   (player, i) => {
@@ -188,6 +184,19 @@ export default function LeaderboardPage() {
                     return (
                       <div key={player.rank} className="text-center">
                         <div className="mb-3">
+                          {player.avatar ? (
+                            <img
+                              src={player.avatar}
+                              alt={player.name}
+                              className={`w-14 h-14 md:w-16 md:h-16 rounded-full mx-auto object-cover ${
+                                order === 1
+                                  ? 'ring-4 ring-yellow-400/30'
+                                  : order === 2
+                                  ? 'ring-4 ring-gray-400/20'
+                                  : 'ring-4 ring-amber-600/20'
+                              }`}
+                            />
+                          ) : (
                           <div
                             className={`w-14 h-14 md:w-16 md:h-16 rounded-full mx-auto flex items-center justify-center text-lg font-bold ${
                               order === 1
@@ -197,8 +206,9 @@ export default function LeaderboardPage() {
                                 : 'bg-gradient-to-br from-amber-600 to-amber-800 text-amber-200 ring-4 ring-amber-600/20'
                             }`}
                           >
-                            {player.avatar}
+                            {player.initials}
                           </div>
+                          )}
                           <h3 className="font-semibold text-sm mt-2">
                             {player.name}
                           </h3>
@@ -218,22 +228,22 @@ export default function LeaderboardPage() {
                   }
                 )}
               </div>
+              )}
 
               {/* Full list */}
               <div className="card overflow-hidden">
-                <div className="hidden md:grid grid-cols-[60px_1fr_80px_80px_80px_80px_80px] gap-4 p-4 bg-brand-surface/50 text-xs font-medium text-brand-text-muted uppercase">
+                <div className="hidden md:grid grid-cols-[60px_1fr_80px_80px_80px_80px] gap-4 p-4 bg-brand-surface/50 text-xs font-medium text-brand-text-muted uppercase">
                   <span>{t('leaderboard.rank')}</span>
                   <span>{t('leaderboard.player')}</span>
                   <span className="text-center">{t('leaderboard.played')}</span>
                   <span className="text-center">{t('leaderboard.escaped')}</span>
                   <span className="text-center">{t('leaderboard.rate')}</span>
                   <span className="text-center">{t('leaderboard.badges_col')}</span>
-                  <span className="text-center">{t('leaderboard.streak')}</span>
                 </div>
                 {topPlayers.map((player) => (
                   <div
                     key={player.rank}
-                    className={`grid grid-cols-[60px_1fr_auto] md:grid-cols-[60px_1fr_80px_80px_80px_80px_80px] gap-4 p-4 items-center border-t border-brand-border/30 hover:bg-brand-surface/30 transition-colors ${
+                    className={`grid grid-cols-[60px_1fr_auto] md:grid-cols-[60px_1fr_80px_80px_80px_80px] gap-4 p-4 items-center border-t border-brand-border/30 hover:bg-brand-surface/30 transition-colors ${
                       player.rank <= 3 ? 'bg-brand-surface/10' : ''
                     }`}
                   >
@@ -241,9 +251,13 @@ export default function LeaderboardPage() {
                       <RankBadge rank={player.rank} />
                     </div>
                     <div className="flex items-center gap-3">
+                      {player.avatar ? (
+                        <img src={player.avatar} alt={player.name} className="w-9 h-9 rounded-full object-cover" />
+                      ) : (
                       <div className="w-9 h-9 rounded-full bg-brand-red/20 flex items-center justify-center text-brand-red text-sm font-bold">
-                        {player.avatar}
+                        {player.initials}
                       </div>
+                      )}
                       <div>
                         <span className="font-medium text-sm">
                           {player.name}
@@ -267,20 +281,24 @@ export default function LeaderboardPage() {
                     <div className="hidden md:block text-center text-sm text-brand-gold">
                       {player.badges}
                     </div>
-                    <div className="hidden md:flex items-center justify-center gap-1 text-sm">
-                      <Flame className="w-3.5 h-3.5 text-orange-400" />
-                      <span className="text-orange-400">{player.streak}</span>
-                    </div>
                   </div>
                 ))}
               </div>
+                </>
+              )}
             </div>
           )}
 
           {/* Top Rooms */}
           {activeTab === 'rooms' && (
             <div className="space-y-3">
-              {topRooms.map((room) => (
+              {topRooms.length === 0 ? (
+                <div className="card p-12 text-center">
+                  <Star className="w-12 h-12 text-brand-text-muted mx-auto mb-4" />
+                  <p className="text-brand-text-secondary">{t('leaderboard.no_rooms_yet')}</p>
+                </div>
+              ) : (
+              topRooms.map((room) => (
                 <div
                   key={room.rank}
                   className="card p-5 flex items-center gap-4 hover:border-brand-red/30"
@@ -306,7 +324,8 @@ export default function LeaderboardPage() {
                     </div>
                   </div>
                 </div>
-              ))}
+              ))
+              )}
             </div>
           )}
 

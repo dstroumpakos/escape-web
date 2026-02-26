@@ -285,3 +285,82 @@ export const updateLocation = mutation({
     return args.userId;
   },
 });
+
+// ── Leaderboard ──
+
+export const leaderboard = query({
+  args: { limit: v.optional(v.number()) },
+  handler: async (ctx, args) => {
+    const max = args.limit ?? 20;
+
+    // Fetch all users
+    const allUsers = await ctx.db.query("users").collect();
+
+    // Sort by escaped count descending, then by played ascending (fewer games = better rate)
+    const sorted = allUsers
+      .filter((u) => u.played > 0)
+      .sort((a, b) => {
+        if (b.escaped !== a.escaped) return b.escaped - a.escaped;
+        return a.played - b.played;
+      });
+
+    const topUsers = sorted.slice(0, max);
+
+    // Fetch badges for each top user
+    const players = await Promise.all(
+      topUsers.map(async (user, i) => {
+        const badges = await ctx.db
+          .query("badges")
+          .withIndex("by_user", (q) => q.eq("userId", user._id))
+          .collect();
+
+        // Resolve avatar
+        let avatar = user.avatar;
+        if (user.avatarStorageId) {
+          const freshUrl = await ctx.storage.getUrl(user.avatarStorageId);
+          if (freshUrl) avatar = freshUrl;
+        }
+
+        const rate = user.played > 0 ? Math.round((user.escaped / user.played) * 100) : 0;
+        const initials = user.name
+          .split(" ")
+          .map((w: string) => w[0])
+          .join("")
+          .toUpperCase()
+          .slice(0, 2);
+
+        return {
+          rank: i + 1,
+          id: user._id,
+          name: user.name,
+          avatar,
+          initials,
+          played: user.played,
+          escaped: user.escaped,
+          rate,
+          badges: badges.length,
+          isPremium: user.isPremium ?? false,
+        };
+      })
+    );
+
+    // Aggregate stats across ALL users
+    const totalEscapes = allUsers.reduce((sum, u) => sum + u.escaped, 0);
+    const totalPlayed = allUsers.reduce((sum, u) => sum + u.played, 0);
+    const successRate = totalPlayed > 0 ? Math.round((totalEscapes / totalPlayed) * 100) : 0;
+
+    // Total badges
+    const allBadges = await ctx.db.query("badges").collect();
+    const totalBadges = allBadges.length;
+
+    return {
+      players,
+      stats: {
+        totalEscapes,
+        totalPlayed,
+        successRate,
+        totalBadges,
+      },
+    };
+  },
+});
