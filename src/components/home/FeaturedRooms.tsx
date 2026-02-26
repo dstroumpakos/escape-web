@@ -1,6 +1,6 @@
 'use client';
 
-import { Star, Clock, Users, Zap, DoorOpen } from 'lucide-react';
+import { Star, Clock, Users, Zap, DoorOpen, BadgeCheck } from 'lucide-react';
 import { useSafeQuery } from '@/lib/useSafeQuery';
 import { api } from '../../../convex/_generated/api';
 import { useTranslation } from '@/lib/i18n';
@@ -18,6 +18,8 @@ interface RoomCardProps {
   image: string;
   isNew?: boolean;
   isTrending?: boolean;
+  isEarlyAccessPartner?: boolean;
+  companyName?: string;
 }
 
 const sampleRooms: RoomCardProps[] = [
@@ -137,6 +139,11 @@ function RoomCard({ room }: { room: RoomCardProps }) {
 
         {/* Badges */}
         <div className="absolute top-3 left-3 z-20 flex gap-2">
+          {room.isEarlyAccessPartner && (
+            <span className="bg-emerald-600/90 backdrop-blur-sm text-white text-xs font-bold px-2.5 py-1 rounded-full flex items-center gap-1">
+              <BadgeCheck className="w-3 h-3" /> {t('badge.early_access')}
+            </span>
+          )}
           {room.isNew && (
             <span className="bg-brand-red text-white text-xs font-bold px-2.5 py-1 rounded-full flex items-center gap-1">
               <Zap className="w-3 h-3" /> {t('featured.new')}
@@ -173,6 +180,13 @@ function RoomCard({ room }: { room: RoomCardProps }) {
           {room.title}
         </h3>
 
+        {room.companyName && (
+          <div className="flex items-center gap-1 text-xs text-brand-text-muted mb-2">
+            {room.isEarlyAccessPartner && <BadgeCheck className="w-3 h-3 text-emerald-400" />}
+            <span>{room.companyName}</span>
+          </div>
+        )}
+
         {/* Rating */}
         <div className="flex items-center gap-2 mb-3">
           <Star className="w-4 h-4 text-brand-gold fill-brand-gold" />
@@ -205,22 +219,34 @@ export function FeaturedRooms() {
   const convexRooms = useSafeQuery<any[]>(api.rooms.list);
 
   // Map Convex rooms to our card format, fallback to sample data
+  // EA partner rooms get priority (Featured Spotlight benefit)
   const rooms: RoomCardProps[] =
     convexRooms && convexRooms.length > 0
-      ? convexRooms.slice(0, 6).map((r: any) => ({
-          title: r.title || 'Untitled Room',
-          theme: r.theme || 'Mystery',
-          rating: r.rating ?? 0,
-          reviews: r.reviews ?? 0,
-          duration: typeof r.duration === 'number' ? `${r.duration} min` : r.duration || '60 min',
-          difficulty: r.difficulty ?? 3,
-          maxDifficulty: r.maxDifficulty ?? 5,
-          players: r.players || '2-6',
-          price: r.price ?? 0,
-          image: r.image || '',
-          isNew: r.isNew,
-          isTrending: r.isTrending,
-        }))
+      ? [...convexRooms]
+          .sort((a: any, b: any) => {
+            // EA partner rooms first
+            const aEA = a.isEarlyAccessPartner ? 1 : 0;
+            const bEA = b.isEarlyAccessPartner ? 1 : 0;
+            if (aEA !== bEA) return bEA - aEA;
+            return (b.rating ?? 0) - (a.rating ?? 0);
+          })
+          .slice(0, 6)
+          .map((r: any) => ({
+            title: r.title || 'Untitled Room',
+            theme: r.theme || 'Mystery',
+            rating: r.rating ?? 0,
+            reviews: r.reviews ?? 0,
+            duration: typeof r.duration === 'number' ? `${r.duration} min` : r.duration || '60 min',
+            difficulty: r.difficulty ?? 3,
+            maxDifficulty: r.maxDifficulty ?? 5,
+            players: r.players || '2-6',
+            price: r.price ?? 0,
+            image: r.image || '',
+            isNew: r.isNew,
+            isTrending: r.isTrending,
+            isEarlyAccessPartner: r.isEarlyAccessPartner,
+            companyName: r.companyName,
+          }))
       : sampleRooms;
 
   return (

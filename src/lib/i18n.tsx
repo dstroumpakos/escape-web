@@ -52,6 +52,10 @@ const translations: Record<Language, Record<string, string>> = {
     'featured.new': 'NEW',
     'featured.trending': '🔥 TRENDING',
     'featured.per_person': '/person',
+
+    // ── Badges ──
+    'badge.early_access': 'Early Access',
+    'badge.premium': 'Premium',
     'featured.reviews': 'reviews',
     'featured.difficulty': 'Difficulty',
     'featured.view_all': 'View All Rooms →',
@@ -276,6 +280,7 @@ const translations: Record<Language, Record<string, string>> = {
     'room.players': 'Players',
     'room.the_story': 'The Story',
     'room.about': 'About This Room',
+    'room.by_company': 'by',
     'room.starting_from': 'Starting from',
     'room.group_pricing': 'Group pricing available',
     'room.book_now': 'Book Now',
@@ -522,6 +527,7 @@ const translations: Record<Language, Record<string, string>> = {
     'profile.escaped': 'Escaped',
     'profile.awards': 'Awards',
     'profile.badges': 'Badges',
+    'profile.premium_badge': 'Premium',
     'profile.no_badges': 'Play escape rooms to earn badges!',
     'profile.wishlist': 'Wishlist',
     'profile.no_wishlist': 'Rooms you love will appear here. Tap the heart icon on any room!',
@@ -1106,6 +1112,14 @@ const translations: Record<Language, Record<string, string>> = {
     'featured.new': 'ΝΕΟ',
     'featured.trending': '🔥 ΔΗΜΟΦΙΛΕΣ',
     'featured.per_person': '/άτομο',
+
+    // ── Badges ──
+    'badge.early_access': 'Πρόωρη Πρόσβαση',
+    'badge.premium': 'Premium',
+
+    // ── Badges ──
+    'badge.early_access': 'Πρόωρη Πρόσβαση',
+    'badge.premium': 'Premium',
     'featured.reviews': 'κριτικές',
     'featured.difficulty': 'Δυσκολία',
     'featured.view_all': 'Δες Όλα τα Δωμάτια →',
@@ -1330,6 +1344,7 @@ const translations: Record<Language, Record<string, string>> = {
     'room.players': 'Παίκτες',
     'room.the_story': 'Η Ιστορία',
     'room.about': 'Σχετικά με το Δωμάτιο',
+    'room.by_company': 'από',
     'room.starting_from': 'Από',
     'room.group_pricing': 'Διαθέσιμη τιμολόγηση ομάδας',
     'room.book_now': 'Κράτηση Τώρα',
@@ -1576,6 +1591,8 @@ const translations: Record<Language, Record<string, string>> = {
     'profile.escaped': 'Αποδράσεις',
     'profile.awards': 'Βραβεία',
     'profile.badges': 'Σήματα',
+    'profile.premium_badge': 'Premium',
+    'profile.premium_badge': 'Premium',
     'profile.no_badges': 'Παίξε escape rooms για να κερδίσεις σήματα!',
     'profile.wishlist': 'Αγαπημένα',
     'profile.no_wishlist': 'Τα δωμάτια που αγαπάς θα εμφανιστούν εδώ. Πάτησε το εικονίδιο καρδιάς σε οποιοδήποτε δωμάτιο!',

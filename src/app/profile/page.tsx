@@ -21,6 +21,7 @@ import {
   Globe,
   ChevronRight,
   Shield,
+  Diamond,
 } from 'lucide-react';
 
 export default function ProfilePage() {
@@ -103,11 +104,18 @@ export default function ProfilePage() {
           {/* Name & info */}
           <h1 className="text-2xl font-display font-bold mb-1">{profile.name}</h1>
           <p className="text-brand-text-muted text-sm mb-1">{profile.email}</p>
-          {profile.title && (
-            <span className="inline-block text-xs font-medium px-3 py-1 rounded-full bg-brand-red/10 text-brand-red border border-brand-red/20 mb-2">
-              {profile.title}
-            </span>
-          )}
+          <div className="flex items-center justify-center gap-2 flex-wrap mb-2">
+            {profile.title && (
+              <span className="inline-block text-xs font-medium px-3 py-1 rounded-full bg-brand-red/10 text-brand-red border border-brand-red/20">
+                {profile.title}
+              </span>
+            )}
+            {(convexUser as any)?.isPremium && (
+              <span className="inline-flex items-center gap-1 text-xs font-bold px-3 py-1 rounded-full bg-yellow-500/10 text-yellow-400 border border-yellow-500/20">
+                <Diamond className="w-3 h-3" /> {t('profile.premium_badge')}
+              </span>
+            )}
+          </div>
           {(profile as any).memberSince && (
             <p className="text-xs text-brand-text-muted">{(profile as any).memberSince}</p>
           )}

@@ -279,6 +279,24 @@ export const createRoom = mutation({
       isTrending: false,
       isActive: true,
     });
+
+    // ── Notify premium users about the new room (EA Partner Benefit) ──
+    if (company.subscriptionEnabled) {
+      const allUsers = await ctx.db.query("users").collect();
+      const premiumUsers = allUsers.filter((u) => u.isPremium);
+      for (const premiumUser of premiumUsers) {
+        await ctx.db.insert("notifications", {
+          userId: premiumUser._id,
+          type: "new_room" as any,
+          title: `🆕 New Room: ${args.title}`,
+          message: `${company.name} just added a new escape room! As a Premium member, you can book it before anyone else.`,
+          read: false,
+          createdAt: Date.now(),
+          data: { roomId: id },
+        });
+      }
+    }
+
     return id;
   },
 });

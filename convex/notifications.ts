@@ -11,7 +11,8 @@ export const create = mutation({
       v.literal("reminder"),
       v.literal("promo"),
       v.literal("system"),
-      v.literal("slot_available")
+      v.literal("slot_available"),
+      v.literal("new_room")
     ),
     title: v.string(),
     message: v.string(),

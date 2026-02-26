@@ -14,8 +14,10 @@ import {
   DoorOpen,
   Zap,
   X,
+  BadgeCheck,
 } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
+import { useAuth } from '@/lib/auth';
 
 const themes = ['All', 'Horror', 'Sci-Fi', 'Mystery', 'Historical', 'Fantasy', 'Adventure'];
 
@@ -25,6 +27,14 @@ export default function DiscoverPage() {
   const [sortBy, setSortBy] = useState<'rating' | 'price' | 'duration'>('rating');
   const [showFilters, setShowFilters] = useState(false);
   const { t } = useTranslation();
+  const { user } = useAuth();
+
+  // Query user's premium status from Convex
+  const convexUser = useQuery(
+    api.users.getById,
+    user?.id ? { userId: user.id as any } : 'skip'
+  );
+  const isPremium = !!(convexUser as any)?.isPremium;
 
   const difficultyLabels: Record<number, string> = {
     1: t('difficulty.easy'),
@@ -53,6 +63,21 @@ export default function DiscoverPage() {
     if (!allRooms) return [];
     let rooms = [...allRooms];
 
+    // Early Access Visibility: hide rooms with future releaseDate
+    // Premium users can see them 3 days early; non-premium users only after release
+    const now = new Date();
+    rooms = rooms.filter((r: any) => {
+      if (!r.releaseDate) return true; // no release date = always visible
+      const release = new Date(r.releaseDate + 'T00:00:00');
+      if (isPremium) {
+        // Premium users see it 3 days before release
+        const earlyDate = new Date(release);
+        earlyDate.setDate(earlyDate.getDate() - 3);
+        return now >= earlyDate;
+      }
+      return now >= release;
+    });
+
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
       rooms = rooms.filter(
@@ -67,7 +92,12 @@ export default function DiscoverPage() {
       rooms = rooms.filter((r: any) => r.theme === selectedTheme);
     }
 
+    // Priority Placement: EA partner rooms always sort first, then normal sort
     rooms.sort((a: any, b: any) => {
+      const aEA = a.isEarlyAccessPartner ? 1 : 0;
+      const bEA = b.isEarlyAccessPartner ? 1 : 0;
+      if (aEA !== bEA) return bEA - aEA; // EA partners first
+
       if (sortBy === 'rating') return (b.rating ?? 0) - (a.rating ?? 0);
       if (sortBy === 'price') return (a.price ?? 0) - (b.price ?? 0);
       if (sortBy === 'duration') return (a.duration ?? 0) - (b.duration ?? 0);
@@ -75,7 +105,7 @@ export default function DiscoverPage() {
     });
 
     return rooms;
-  }, [allRooms, searchQuery, selectedTheme, sortBy]);
+  }, [allRooms, searchQuery, selectedTheme, sortBy, isPremium]);
 
   return (
     <>
@@ -205,6 +235,11 @@ export default function DiscoverPage() {
 
                       {/* Badges */}
                       <div className="absolute top-3 left-3 z-20 flex gap-2">
+                        {room.isEarlyAccessPartner && (
+                          <span className="bg-emerald-600/90 backdrop-blur-sm text-white text-xs font-bold px-2.5 py-1 rounded-full flex items-center gap-1">
+                            <BadgeCheck className="w-3 h-3" /> {t('badge.early_access')}
+                          </span>
+                        )}
                         {room.isNew && (
                           <span className="bg-brand-red text-white text-xs font-bold px-2.5 py-1 rounded-full flex items-center gap-1">
                             <Zap className="w-3 h-3" /> {t('featured.new')}
@@ -235,6 +270,13 @@ export default function DiscoverPage() {
                       <h3 className="text-lg font-semibold mb-1 group-hover:text-brand-red transition-colors">
                         {room.title}
                       </h3>
+
+                      {room.companyName && (
+                        <div className="flex items-center gap-1.5 text-xs text-brand-text-muted mb-1">
+                          {room.isEarlyAccessPartner && <BadgeCheck className="w-3 h-3 text-emerald-400" />}
+                          <span>{room.companyName}</span>
+                        </div>
+                      )}
 
                       <div className="flex items-center gap-1.5 text-sm text-brand-text-muted mb-3">
                         <MapPin className="w-3.5 h-3.5" />

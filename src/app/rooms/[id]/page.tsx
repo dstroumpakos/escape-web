@@ -19,6 +19,7 @@ import {
   Shield,
   Diamond,
   CalendarClock,
+  BadgeCheck,
 } from 'lucide-react';
 
 export default function RoomDetailsPage() {
@@ -108,6 +109,11 @@ export default function RoomDetailsPage() {
 
         {/* Badges */}
         <div className="absolute bottom-6 left-4 z-20 flex gap-2">
+          {(room as any).isEarlyAccessPartner && (
+            <span className="bg-emerald-600/90 backdrop-blur-sm text-white text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-1">
+              <BadgeCheck className="w-3.5 h-3.5" /> {t('badge.early_access')}
+            </span>
+          )}
           {room.isNew && (
             <span className="bg-brand-red text-white text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-1">
               <Zap className="w-3 h-3" /> {t('featured.new')}
@@ -155,6 +161,12 @@ export default function RoomDetailsPage() {
               <h1 className="text-2xl md:text-3xl font-display font-bold mb-2">
                 {room.title}
               </h1>
+              {(room as any).companyName && (
+                <div className="flex items-center gap-1.5 text-sm text-brand-text-secondary mb-2">
+                  {(room as any).isEarlyAccessPartner && <BadgeCheck className="w-4 h-4 text-emerald-400" />}
+                  <span>{t('room.by_company')} {(room as any).companyName}</span>
+                </div>
+              )}
               <div className="flex items-center gap-1.5 text-brand-text-secondary">
                 <MapPin className="w-4 h-4" />
                 <span>{room.location}</span>

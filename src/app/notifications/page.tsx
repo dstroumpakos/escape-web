@@ -15,6 +15,7 @@ import {
   Info,
   CalendarCheck,
   CheckCheck,
+  DoorOpen,
 } from 'lucide-react';
 
 const typeIcons: Record<string, any> = {
@@ -24,6 +25,7 @@ const typeIcons: Record<string, any> = {
   promo: Tag,
   system: Info,
   slot_available: CalendarCheck,
+  new_room: DoorOpen,
 };
 
 const typeColors: Record<string, string> = {
@@ -33,6 +35,7 @@ const typeColors: Record<string, string> = {
   promo: 'bg-purple-500/20 text-purple-400',
   system: 'bg-blue-500/20 text-blue-400',
   slot_available: 'bg-cyan-500/20 text-cyan-400',
+  new_room: 'bg-brand-red/20 text-brand-red',
 };
 
 export default function NotificationsPage() {
