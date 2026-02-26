@@ -625,7 +625,7 @@ export default function CompanySettingsPage() {
               </h3>
               <button
                 onClick={() => {
-                  const code = `<!-- UNLOCKED Booking Widget -->\n<div id="booking-widget"></div>\n<script\n  src="https://widget.unlocked.gr/booking-widget.js"\n  data-convex-url="https://resilient-crocodile-943.convex.cloud"\n  data-company-id="${companyId}"\n  data-container="#booking-widget"\n  defer></script>`;
+                  const code = `<!-- UNLOCKED Booking Widget -->\n<div id="booking-widget"></div>\n<script\n  src="https://widget.unlocked.gr/booking-widget.js"\n  data-company-id="${companyId}"\n  defer></script>`;
                   navigator.clipboard.writeText(code);
                   setWidgetCopied(true);
                   setTimeout(() => setWidgetCopied(false), 2500);
@@ -646,7 +646,7 @@ export default function CompanySettingsPage() {
 
             <div className="relative">
               <pre className="bg-brand-bg rounded-xl p-5 overflow-x-auto text-sm font-mono text-brand-text-secondary border border-white/5 leading-relaxed">
-                <code>{`<!-- UNLOCKED Booking Widget -->\n<div id="booking-widget"></div>\n<script\n  src="https://widget.unlocked.gr/booking-widget.js"\n  data-convex-url="https://resilient-crocodile-943.convex.cloud"\n  data-company-id="${companyId || 'YOUR_COMPANY_ID'}"\n  data-container="#booking-widget"\n  defer></script>`}</code>
+                <code>{`<!-- UNLOCKED Booking Widget -->\n<div id="booking-widget"></div>\n<script\n  src="https://widget.unlocked.gr/booking-widget.js"\n  data-company-id="${companyId || 'YOUR_COMPANY_ID'}"\n  defer></script>`}</code>
               </pre>
             </div>
 
