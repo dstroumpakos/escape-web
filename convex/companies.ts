@@ -75,6 +75,53 @@ export const register = mutation({
   },
 });
 
+// ─── Full Registration with Onboarding (matches app flow) ───
+export const registerWithOnboarding = mutation({
+  args: {
+    name: v.string(),
+    email: v.string(),
+    phone: v.string(),
+    address: v.string(),
+    city: v.string(),
+    vatNumber: v.optional(v.string()),
+    description: v.string(),
+    password: v.string(),
+    plan: v.union(v.literal("starter"), v.literal("pro"), v.literal("enterprise")),
+  },
+  handler: async (ctx, args) => {
+    // Validate inputs
+    requireNonEmpty(args.name, "Company name");
+    if (!validateEmail(args.email)) return { error: "Invalid email format" };
+    const pwError = validatePassword(args.password);
+    if (pwError) return { error: pwError };
+    requireNonEmpty(args.phone, "Phone");
+    requireNonEmpty(args.address, "Address");
+    requireNonEmpty(args.city, "City");
+
+    const existing = await ctx.db
+      .query("companies")
+      .withIndex("by_email", (q) => q.eq("email", args.email))
+      .first();
+    if (existing) return { error: "Email already registered" };
+
+    const hashedPw = await hashPassword(args.password);
+
+    const { plan, ...rest } = args;
+    const id = await ctx.db.insert("companies", {
+      ...rest,
+      password: hashedPw,
+      logo: "",
+      verified: false,
+      createdAt: Date.now(),
+      onboardingStatus: "pending_review",
+      termsAcceptedAt: Date.now(),
+      platformPlan: plan,
+      platformSubscribedAt: Date.now(),
+    });
+    return { id };
+  },
+});
+
 // ─── Company Profile ───
 export const getById = query({
   args: { id: v.id("companies") },

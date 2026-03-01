@@ -34,6 +34,7 @@ function CompanyShell({ children }: { children: React.ReactNode }) {
   // Allow auth pages without redirect
   const isAuthPage =
     pathname === '/company/login' || pathname === '/company/register';
+  const isOnboardingPage = pathname === '/company/onboarding';
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated && !isAuthPage) {
@@ -41,8 +42,22 @@ function CompanyShell({ children }: { children: React.ReactNode }) {
     }
   }, [isLoading, isAuthenticated, isAuthPage, router]);
 
-  // Auth pages render without sidebar
-  if (isAuthPage) {
+  // Redirect non-approved companies to onboarding
+  useEffect(() => {
+    if (
+      !isLoading &&
+      isAuthenticated &&
+      company?.onboardingStatus &&
+      company.onboardingStatus !== 'approved' &&
+      !isAuthPage &&
+      !isOnboardingPage
+    ) {
+      router.replace('/company/onboarding');
+    }
+  }, [isLoading, isAuthenticated, company?.onboardingStatus, isAuthPage, isOnboardingPage, router]);
+
+  // Auth & onboarding pages render without sidebar
+  if (isAuthPage || isOnboardingPage) {
     return <>{children}</>;
   }
 
@@ -55,17 +70,6 @@ function CompanyShell({ children }: { children: React.ReactNode }) {
   }
 
   if (!isAuthenticated) return null;
-
-  // Handle onboarding states
-  const onboardingStatus = company?.onboardingStatus;
-  if (
-    onboardingStatus &&
-    onboardingStatus !== 'approved' &&
-    pathname !== '/company/onboarding'
-  ) {
-    // Redirect to onboarding for non-approved companies
-    // (except if already on login/register)
-  }
 
   const handleLogout = () => {
     logout();
