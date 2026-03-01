@@ -126,7 +126,7 @@ export default function ProfilePage() {
       <section className="pb-6">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="glass rounded-2xl p-6">
-            <div className="grid grid-cols-3 gap-6">
+            <div className="grid grid-cols-3 gap-3 sm:gap-6">
               <div className="text-center">
                 <DoorOpen className="w-5 h-5 text-brand-red mx-auto mb-1" />
                 <div className="text-2xl font-display font-bold">{profile.played ?? 0}</div>

@@ -138,7 +138,7 @@ export function Navbar() {
         {/* Mobile Nav */}
         <div
           className={`md:hidden overflow-hidden transition-all duration-300 ease-in-out ${
-            isOpen ? 'max-h-80 pb-4' : 'max-h-0'
+            isOpen ? 'max-h-[80vh] pb-4 overflow-y-auto' : 'max-h-0'
           }`}
         >
           <div className="flex flex-col gap-1 pt-2">

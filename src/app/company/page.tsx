@@ -327,7 +327,7 @@ export default function CompanyDashboardPage() {
             <h2 className="font-bold">{t('company.dashboard.advanced_analytics')}</h2>
             <span className="text-[10px] bg-brand-red/10 text-brand-red px-2 py-0.5 rounded-full font-semibold tracking-wide uppercase">{t('company.plan.pro')}</span>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
             <MiniStat icon={CheckCircle} label={t('company.dashboard.completed')} value={(stats as any).advanced.completedBookings} color="text-green-400" />
             <MiniStat icon={XCircle} label={t('company.dashboard.cancelled')} value={(stats as any).advanced.cancelledBookings} color="text-red-400" />
             <MiniStat icon={Star} label={t('company.dashboard.avg_rating')} value={(stats as any).advanced.avgRating || '—'} color="text-yellow-400" />
@@ -395,7 +395,7 @@ export default function CompanyDashboardPage() {
         <h2 className="font-bold mb-3 flex items-center gap-2">
           <Zap className="w-4 h-4 text-brand-red" /> {t('company.dashboard.quick_actions')}
         </h2>
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
           <QuickAction
             href="/company/rooms/new"
             icon={Plus}

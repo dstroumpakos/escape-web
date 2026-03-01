@@ -176,7 +176,7 @@ export default function LeaderboardPage() {
                 <>
               {/* Top 3 podium */}
               {topPlayers.length >= 3 && (
-              <div className="grid grid-cols-3 gap-4 mb-8">
+              <div className="grid grid-cols-3 gap-2 sm:gap-4 mb-8">
                 {[topPlayers[1], topPlayers[0], topPlayers[2]].map(
                   (player, i) => {
                     const order = [2, 1, 3][i];

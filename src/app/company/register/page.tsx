@@ -150,7 +150,7 @@ export default function CompanyRegisterPage() {
             </div>
 
             {/* Address & City */}
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label className="block text-sm text-brand-text-secondary mb-1.5">{t('company.register.address')}</label>
                 <div className="relative">

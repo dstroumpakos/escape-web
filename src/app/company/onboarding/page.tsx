@@ -168,7 +168,7 @@ export default function CompanyOnboardingPage() {
               )}
             </div>
             <span
-              className={`text-sm font-semibold ${
+              className={`text-sm font-semibold hidden sm:inline ${
                 i <= stepIndex ? 'text-white' : 'text-brand-text-secondary'
               }`}
             >

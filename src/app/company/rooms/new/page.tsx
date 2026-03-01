@@ -482,7 +482,7 @@ export default function NewRoomPage() {
               </button>
             </div>
             {form.pricePerGroup.map((g, idx) => (
-              <div key={idx} className="flex items-center gap-3 mb-2">
+              <div key={idx} className="flex flex-wrap items-center gap-3 mb-2">
                 <div className="flex-1">
                   <Input
                     type="number"
@@ -603,7 +603,7 @@ export default function NewRoomPage() {
             {t('company.rooms.new.time_slots_desc')}
           </p>
           {form.defaultTimeSlots.map((slot, idx) => (
-            <div key={idx} className="flex items-center gap-3 mb-2">
+            <div key={idx} className="flex flex-wrap items-center gap-3 mb-2">
               <input
                 type="time"
                 value={slot.time}

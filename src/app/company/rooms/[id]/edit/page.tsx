@@ -374,7 +374,7 @@ export default function EditRoomPage() {
               </button>
             </div>
             {form.pricePerGroup.map((g, idx) => (
-              <div key={idx} className="flex items-center gap-3 mb-2">
+              <div key={idx} className="flex flex-wrap items-center gap-3 mb-2">
                 <FieldInput type="number" value={g.players} onChange={(v) => {
                   const updated = [...form.pricePerGroup];
                   updated[idx] = { ...g, players: parseInt(v) || 0 };
@@ -458,7 +458,7 @@ export default function EditRoomPage() {
         {/* Time Slots */}
         <SectionCard title={t('company.rooms.edit.default_time_slots')}>
           {form.defaultTimeSlots.map((slot, idx) => (
-            <div key={idx} className="flex items-center gap-3 mb-2">
+            <div key={idx} className="flex flex-wrap items-center gap-3 mb-2">
               <input type="time" value={slot.time} onChange={(e) => {
                 const slots = [...form.defaultTimeSlots];
                 slots[idx] = { ...slot, time: e.target.value };
@@ -605,7 +605,7 @@ export default function EditRoomPage() {
         </SectionCard>
 
         {/* Submit - Save */}
-        <div className="flex gap-3 pt-4">
+        <div className="flex flex-col sm:flex-row gap-3 pt-4">
           <Link href="/company/rooms" className="btn-ghost text-sm flex-1 text-center">Cancel</Link>
           <button type="submit" disabled={loading}
             className="btn-primary text-sm flex-1 flex items-center justify-center gap-2"

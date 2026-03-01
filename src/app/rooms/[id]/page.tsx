@@ -250,7 +250,7 @@ export default function RoomDetailsPage() {
             )}
 
             {/* Price & Book */}
-            <div className="flex items-center justify-between border-t border-brand-border pt-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-t border-brand-border pt-6">
               <div>
                 <div className="text-sm text-brand-text-muted">{t('room.starting_from')}</div>
                 <div className="text-3xl font-display font-bold">
@@ -276,7 +276,7 @@ export default function RoomDetailsPage() {
             {room.pricePerGroup && room.pricePerGroup.length > 0 && (
               <div className="mt-6 border-t border-brand-border pt-6">
                 <h4 className="text-sm font-semibold mb-3">{t('room.price_per_group')}</h4>
-                <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
                   {room.pricePerGroup.map((pg: any) => (
                     <div
                       key={pg.players}

@@ -209,7 +209,7 @@ export default function RoomAvailabilityPage() {
         {/* Slot Editor */}
         <div className="lg:col-span-2">
           <div className="bg-brand-surface rounded-2xl border border-white/5 p-6">
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
               <div>
                 <h2 className="font-semibold">
                   {new Date(selectedDate + 'T00:00:00').toLocaleDateString(
@@ -269,7 +269,7 @@ export default function RoomAvailabilityPage() {
                 {editSlots.map((slot, idx) => (
                   <div
                     key={idx}
-                    className={`flex items-center gap-4 p-3 rounded-xl border transition-all ${
+                    className={`flex flex-wrap items-center gap-2 sm:gap-4 p-3 rounded-xl border transition-all ${
                       slot.available
                         ? 'bg-brand-bg border-white/5'
                         : 'bg-red-900/10 border-red-500/10'

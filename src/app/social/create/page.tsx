@@ -146,7 +146,7 @@ export default function CreatePostPage() {
                 <button
                   key={s}
                   onClick={() => setRating(rating === s ? 0 : s)}
-                  className="p-1"
+                  className="p-2"
                 >
                   <Star
                     className={`w-7 h-7 transition-colors ${
@@ -195,7 +195,7 @@ export default function CreatePostPage() {
                   <button
                     type="button"
                     onClick={() => removeMedia(i)}
-                    className="absolute top-1 right-1 w-5 h-5 bg-black/70 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                    className="absolute top-1 right-1 w-6 h-6 bg-black/70 rounded-full flex items-center justify-center sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
                   >
                     <X className="w-3 h-3 text-white" />
                   </button>

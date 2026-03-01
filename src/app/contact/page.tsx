@@ -123,7 +123,7 @@ export default function ContactPage() {
       {/* Contact info cards */}
       <section className="pb-12">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
             {contactInfo.map((info, i) => (
               <a
                 key={i}

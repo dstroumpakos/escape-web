@@ -90,7 +90,7 @@ export function HeroSection() {
         </div>
 
         {/* Trust indicators */}
-        <div className="mt-16 flex items-center justify-center gap-8 text-brand-text-muted text-sm animate-fade-up animate-delay-500">
+        <div className="mt-16 flex items-center justify-center gap-4 sm:gap-8 text-brand-text-muted text-sm animate-fade-up animate-delay-500">
           <div className="flex items-center gap-2">
             <div className="flex -space-x-2">
               {[...Array(4)].map((_, i) => (

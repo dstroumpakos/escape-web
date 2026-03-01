@@ -201,7 +201,7 @@ function RoomCard({ room }: { room: RoomCardProps }) {
         </div>
 
         {/* Meta */}
-        <div className="flex items-center justify-between text-sm text-brand-text-secondary">
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-brand-text-secondary">
           <div className="flex items-center gap-1.5">
             <Clock className="w-4 h-4" />
             {room.duration}
