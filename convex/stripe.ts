@@ -210,3 +210,109 @@ export const getSubscriptionDetails = action({
     }
   },
 });
+
+// ─────────────────────────────────────────────────
+// Player-side Stripe Checkout for room bookings
+// ─────────────────────────────────────────────────
+
+/**
+ * Create a Stripe Checkout Session for a player booking.
+ * The amount depends on the company's payment terms:
+ *  - full: charge 100% of booking total + service fee
+ *  - deposit_20: charge 20% of booking total + service fee
+ *  - pay_on_arrival: charge only the service fee (no Stripe needed, booking created directly)
+ *
+ * Returns the checkout URL and bookingId.
+ */
+export const createBookingCheckout = action({
+  args: {
+    userId: v.id("users"),
+    roomId: v.id("rooms"),
+    date: v.string(),
+    time: v.string(),
+    players: v.number(),
+    total: v.number(),
+    paymentTerms: v.union(
+      v.literal("full"),
+      v.literal("deposit_20"),
+    ),
+    successUrl: v.string(),
+    cancelUrl: v.string(),
+  },
+  handler: async (ctx, args): Promise<{ url: string; bookingId: string }> => {
+    const stripe = getStripe();
+
+    // Get room + user info
+    const room = await ctx.runQuery(api.rooms.getById, { id: args.roomId });
+    if (!room) throw new Error("Room not found");
+
+    const user = await ctx.runQuery(api.users.getById, { userId: args.userId });
+    if (!user) throw new Error("User not found");
+
+    // Calculate charge amount
+    const serviceFee = 399; // €3.99 in cents
+    let chargeAmount: number; // in cents
+    let description: string;
+
+    if (args.paymentTerms === "full") {
+      chargeAmount = Math.round(args.total * 100) + serviceFee;
+      description = `Full payment for ${room.title}`;
+    } else {
+      // deposit_20
+      const deposit = Math.round(args.total * 0.2 * 100);
+      chargeAmount = deposit + serviceFee;
+      description = `20% deposit for ${room.title}`;
+    }
+
+    // Create the booking in "pending" state first
+    const { id: bookingId, bookingCode } = await ctx.runMutation(api.bookings.create, {
+      userId: args.userId,
+      roomId: args.roomId,
+      date: args.date,
+      time: args.time,
+      players: args.players,
+      total: args.total,
+      paymentTerms: args.paymentTerms,
+    }) as { id: string; bookingCode: string };
+
+    // Create Stripe checkout session (one-time payment)
+    const session = await stripe.checkout.sessions.create({
+      mode: "payment",
+      payment_method_types: ["card"],
+      customer_email: user.email,
+      line_items: [
+        {
+          price_data: {
+            currency: "eur",
+            product_data: {
+              name: room.title,
+              description,
+            },
+            unit_amount: chargeAmount,
+          },
+          quantity: 1,
+        },
+      ],
+      metadata: {
+        type: "booking",
+        bookingId,
+        bookingCode,
+        paymentTerms: args.paymentTerms,
+        userId: args.userId,
+        roomId: args.roomId,
+      },
+      success_url: args.successUrl,
+      cancel_url: args.cancelUrl,
+    });
+
+    if (!session.url) throw new Error("Failed to create checkout session");
+
+    // Store session ID on the booking
+    await ctx.runMutation(api.bookings.updateStripeSession, {
+      bookingId: bookingId as any,
+      stripeSessionId: session.id,
+    });
+
+    return { url: session.url, bookingId };
+  },
+});

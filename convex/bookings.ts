@@ -196,3 +196,72 @@ export const getBookedTimes = query({
       .map((b) => b.time);
   },
 });
+
+// ── Update booking with Stripe session ID (marks payment as pending) ──
+export const updateStripeSession = mutation({
+  args: {
+    bookingId: v.id("bookings"),
+    stripeSessionId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    await ctx.db.patch(args.bookingId, {
+      stripeSessionId: args.stripeSessionId,
+      paymentStatus: "unpaid", // Will be updated to paid/deposit by webhook
+    });
+  },
+});
+
+// ── Confirm booking payment after Stripe checkout succeeds ──
+export const confirmBookingPayment = mutation({
+  args: {
+    bookingId: v.string(),
+    paymentTerms: v.string(),
+    stripePaymentIntentId: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    // Find the booking - bookingId is stored as string from Stripe metadata
+    const booking = await ctx.db.get(args.bookingId as any);
+    if (!booking) return;
+
+    // Check that this is a booking record
+    if (!('total' in booking)) return;
+    const bookingDoc = booking as any;
+
+    const updates: Record<string, any> = {
+      stripePaymentIntentId: args.stripePaymentIntentId,
+    };
+
+    if (args.paymentTerms === "full") {
+      updates.paymentStatus = "paid";
+    } else if (args.paymentTerms === "deposit_20") {
+      updates.paymentStatus = "deposit";
+      updates.depositPaid = Math.round(bookingDoc.total * 0.2 * 100) / 100;
+    }
+
+    await ctx.db.patch(booking._id as any, updates);
+  },
+});
+
+// ── Cancel booking and refund if it was paid (called if Stripe checkout is abandoned) ──
+export const cancelUnpaidBooking = mutation({
+  args: { bookingId: v.id("bookings") },
+  handler: async (ctx, args) => {
+    const booking = await ctx.db.get(args.bookingId);
+    if (!booking) return;
+    // Only cancel if payment hasn't been confirmed yet
+    if (booking.paymentStatus === "paid" || booking.paymentStatus === "deposit") return;
+    await ctx.db.patch(args.bookingId, { status: "cancelled" });
+  },
+});
+
+// ── Get booking by Stripe session ID (used after Stripe redirect) ──
+export const getByStripeSession = query({
+  args: { stripeSessionId: v.string() },
+  handler: async (ctx, args) => {
+    const all = await ctx.db.query("bookings").collect();
+    const booking = all.find((b) => b.stripeSessionId === args.stripeSessionId);
+    if (!booking) return null;
+    const room = await ctx.db.get(booking.roomId);
+    return { ...booking, room };
+  },
+});

@@ -58,18 +58,35 @@ const stripeWebhook = httpAction(async (ctx, request) => {
 
   if (eventType === "checkout.session.completed") {
     const session = event.data.object;
-    const companyId = session.metadata?.companyId;
-    const plan = session.metadata?.plan;
-    const period = session.metadata?.period;
-    const subscriptionId = session.subscription;
 
-    if (companyId && plan && period && subscriptionId) {
-      await ctx.runMutation(api.companies.completeStripePayment, {
-        companyId,
-        stripeSubscriptionId: subscriptionId,
-        plan,
-        period,
-      });
+    // ── Booking payment checkout ──
+    if (session.metadata?.type === "booking") {
+      const bookingId = session.metadata.bookingId;
+      const paymentTerms = session.metadata.paymentTerms;
+      const paymentIntentId = session.payment_intent;
+
+      if (bookingId) {
+        await ctx.runMutation(api.bookings.confirmBookingPayment, {
+          bookingId,
+          paymentTerms: paymentTerms || "full",
+          stripePaymentIntentId: paymentIntentId || undefined,
+        });
+      }
+    } else {
+      // ── Company subscription checkout ──
+      const companyId = session.metadata?.companyId;
+      const plan = session.metadata?.plan;
+      const period = session.metadata?.period;
+      const subscriptionId = session.subscription;
+
+      if (companyId && plan && period && subscriptionId) {
+        await ctx.runMutation(api.companies.completeStripePayment, {
+          companyId,
+          stripeSubscriptionId: subscriptionId,
+          plan,
+          period,
+        });
+      }
     }
   } else if (eventType === "customer.subscription.updated") {
     // Handles: plan changes, cancel_at_period_end, reactivation from portal

@@ -27,17 +27,50 @@ function ConfirmationContent() {
   const time = searchParams.get('time') || '';
   const players = searchParams.get('players') || '2';
   const total = searchParams.get('total') || '0';
-  const paymentStatus = searchParams.get('paymentStatus') || 'paid';
+  const paymentStatus = searchParams.get('paymentStatus') || '';
+  const sessionId = searchParams.get('session_id') || '';
 
-  const room = useQuery(api.rooms.getById, roomId ? { id: roomId as any } : 'skip');
+  // If returning from Stripe, fetch booking by session ID
+  const stripeBooking = useQuery(
+    api.bookings.getByStripeSession,
+    sessionId ? { stripeSessionId: sessionId } : 'skip'
+  );
+
+  // Determine values — Stripe return takes priority over URL params
+  const finalBookingCode = stripeBooking?.bookingCode || bookingCode;
+  const finalRoomId = stripeBooking?.roomId || roomId;
+  const finalDate = stripeBooking?.date || date;
+  const finalTime = stripeBooking?.time || time;
+  const finalPlayers = stripeBooking?.players?.toString() || players;
+  const finalTotal = stripeBooking?.total?.toString() || total;
+  const finalPaymentStatus =
+    stripeBooking?.paymentStatus ||
+    paymentStatus ||
+    (sessionId ? 'paid' : 'paid');
+
+  const room = useQuery(
+    api.rooms.getById,
+    stripeBooking?.room ? 'skip' : (finalRoomId ? { id: finalRoomId as any } : 'skip')
+  );
+  const roomData = stripeBooking?.room || room;
 
   const paymentBadge: Record<string, { label: string; color: string }> = {
     paid: { label: t('confirmation.paid_full'), color: 'bg-green-500/20 text-green-400 border-green-500/30' },
     deposit: { label: t('confirmation.deposit_paid'), color: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30' },
     unpaid: { label: t('confirmation.pay_arrival'), color: 'bg-orange-500/20 text-orange-400 border-orange-500/30' },
+    na: { label: t('confirmation.pay_arrival'), color: 'bg-orange-500/20 text-orange-400 border-orange-500/30' },
   };
 
-  const badge = paymentBadge[paymentStatus] || paymentBadge.paid;
+  const badge = paymentBadge[finalPaymentStatus] || paymentBadge.paid;
+
+  // Show loading if we're waiting for Stripe booking data
+  if (sessionId && !stripeBooking) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-brand-red/30 border-t-brand-red rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <section className="pt-28 pb-20">
@@ -58,8 +91,8 @@ function ConfirmationContent() {
           {/* Room title */}
           <div className="flex items-start justify-between mb-6">
             <div>
-              <h2 className="text-xl font-semibold">{room?.title || 'Escape Room'}</h2>
-              <p className="text-sm text-brand-text-muted">{room?.location}</p>
+              <h2 className="text-xl font-semibold">{roomData?.title || 'Escape Room'}</h2>
+              <p className="text-sm text-brand-text-muted">{roomData?.location}</p>
             </div>
             <span className={`text-xs font-medium px-3 py-1.5 rounded-full border ${badge.color}`}>
               {badge.label}
@@ -72,7 +105,7 @@ function ConfirmationContent() {
               <Calendar className="w-4 h-4 text-brand-red mb-1" />
               <div className="text-xs text-brand-text-muted">{t('confirmation.date')}</div>
               <div className="text-sm font-medium">
-                {date ? new Date(date + 'T00:00:00').toLocaleDateString('en-GB', {
+                {finalDate ? new Date(finalDate + 'T00:00:00').toLocaleDateString('en-GB', {
                   weekday: 'short',
                   day: 'numeric',
                   month: 'short',
@@ -83,17 +116,17 @@ function ConfirmationContent() {
             <div className="bg-brand-surface rounded-xl p-4">
               <Clock className="w-4 h-4 text-brand-red mb-1" />
               <div className="text-xs text-brand-text-muted">{t('confirmation.time')}</div>
-              <div className="text-sm font-medium">{time}</div>
+              <div className="text-sm font-medium">{finalTime}</div>
             </div>
             <div className="bg-brand-surface rounded-xl p-4">
               <Users className="w-4 h-4 text-brand-red mb-1" />
               <div className="text-xs text-brand-text-muted">{t('confirmation.players')}</div>
-              <div className="text-sm font-medium">{players} players</div>
+              <div className="text-sm font-medium">{finalPlayers} players</div>
             </div>
             <div className="bg-brand-surface rounded-xl p-4">
               <CreditCard className="w-4 h-4 text-brand-red mb-1" />
               <div className="text-xs text-brand-text-muted">{t('confirmation.total')}</div>
-              <div className="text-sm font-medium">€{total}</div>
+              <div className="text-sm font-medium">€{finalTotal}</div>
             </div>
           </div>
 
@@ -102,7 +135,7 @@ function ConfirmationContent() {
             <QrCode className="w-12 h-12 text-brand-red mx-auto mb-3" />
             <div className="text-xs text-brand-text-muted mb-1">{t('confirmation.booking_code')}</div>
             <div className="text-2xl font-mono font-bold tracking-wider text-brand-red">
-              {bookingCode}
+              {finalBookingCode}
             </div>
             <p className="text-xs text-brand-text-muted mt-2">
               {t('confirmation.code_hint')}

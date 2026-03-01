@@ -196,6 +196,9 @@ export default defineSchema({
       v.literal("unpaid"),
       v.literal("na")
     )),
+    // Stripe session for player-side payments
+    stripeSessionId: v.optional(v.string()),
+    stripePaymentIntentId: v.optional(v.string()),
   })
     .index("by_user", ["userId"])
     .index("by_user_status", ["userId", "status"])

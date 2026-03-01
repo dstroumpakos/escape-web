@@ -3,7 +3,7 @@
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { useQuery, useMutation } from 'convex/react';
+import { useQuery, useMutation, useAction } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
 import { useAuth } from '@/lib/auth';
 import { useTranslation } from '@/lib/i18n';
@@ -31,6 +31,7 @@ function CheckoutContent() {
 
   const room = useQuery(api.rooms.getById, roomId ? { id: roomId as any } : 'skip');
   const createBooking = useMutation(api.bookings.create);
+  const createBookingCheckout = useAction(api.stripe.createBookingCheckout);
 
   const [paymentTerms, setPaymentTerms] = useState<'full' | 'deposit_20' | 'pay_on_arrival'>('full');
   const [promoCode, setPromoCode] = useState('');
@@ -58,29 +59,58 @@ function CheckoutContent() {
     setError('');
 
     try {
-      const result = await createBooking({
-        userId: user.id as any,
-        roomId: roomId as any,
-        date,
-        time,
-        players,
-        total,
-        paymentTerms,
-      });
+      if (paymentTerms === 'pay_on_arrival') {
+        // No Stripe needed — create booking directly
+        const result = await createBooking({
+          userId: user.id as any,
+          roomId: roomId as any,
+          date,
+          time,
+          players,
+          total,
+          paymentTerms,
+        });
 
-      const params = new URLSearchParams({
-        bookingCode: (result as any).bookingCode,
-        roomId,
-        date,
-        time,
-        players: String(players),
-        total: String(total),
-        paymentStatus: paymentTerms === 'full' ? 'paid' : paymentTerms === 'deposit_20' ? 'deposit' : 'unpaid',
-      });
-      router.push(`/booking/confirmation?${params.toString()}`);
+        const params = new URLSearchParams({
+          bookingCode: (result as any).bookingCode,
+          roomId,
+          date,
+          time,
+          players: String(players),
+          total: String(total),
+          paymentStatus: 'unpaid',
+        });
+        router.push(`/booking/confirmation?${params.toString()}`);
+      } else {
+        // Stripe checkout for full or deposit_20
+        const baseUrl = window.location.origin;
+        const confirmParams = new URLSearchParams({
+          roomId,
+          date,
+          time,
+          players: String(players),
+          total: String(total),
+        });
+        const successUrl = `${baseUrl}/booking/confirmation?${confirmParams.toString()}&session_id={CHECKOUT_SESSION_ID}`;
+        const cancelUrl = `${baseUrl}/checkout?${new URLSearchParams({ roomId, date, time, players: String(players), total: String(total) }).toString()}`;
+
+        const { url } = await createBookingCheckout({
+          userId: user.id as any,
+          roomId: roomId as any,
+          date,
+          time,
+          players,
+          total,
+          paymentTerms,
+          successUrl,
+          cancelUrl,
+        });
+
+        // Redirect to Stripe Checkout
+        window.location.href = url;
+      }
     } catch (err: any) {
       setError(err?.message || t('checkout.error'));
-    } finally {
       setIsLoading(false);
     }
   };
@@ -100,6 +130,13 @@ function CheckoutContent() {
     : roomPaymentTerms
     ? [roomPaymentTerms]
     : ['full', 'deposit_20', 'pay_on_arrival'];
+
+  // Auto-select first available term if default isn't available
+  useEffect(() => {
+    if (availableTerms.length && !availableTerms.includes(paymentTerms)) {
+      setPaymentTerms(availableTerms[0] as any);
+    }
+  }, [availableTerms.join(',')]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <section className="pt-28 pb-20">
