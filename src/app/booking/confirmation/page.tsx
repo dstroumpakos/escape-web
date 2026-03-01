@@ -6,14 +6,13 @@ import Link from 'next/link';
 import { useQuery } from 'convex/react';
 import { api } from '../../../../convex/_generated/api';
 import { useTranslation } from '@/lib/i18n';
+import { QRCodeSVG } from 'qrcode.react';
 import {
   CheckCircle,
   Calendar,
   Clock,
   Users,
   DoorOpen,
-  QrCode,
-  Share2,
   Ticket,
   CreditCard,
 } from 'lucide-react';
@@ -130,9 +129,25 @@ function ConfirmationContent() {
             </div>
           </div>
 
-          {/* Booking Code */}
+          {/* Booking Code + QR */}
           <div className="bg-brand-dark rounded-xl p-6 text-center border border-brand-border">
-            <QrCode className="w-12 h-12 text-brand-red mx-auto mb-3" />
+            <div className="inline-block bg-white p-4 rounded-xl mb-4">
+              <QRCodeSVG
+                value={finalBookingCode || 'UNLOCKED'}
+                size={180}
+                level="H"
+                bgColor="#ffffff"
+                fgColor="#000000"
+                imageSettings={{
+                  src: '/favicon.svg',
+                  x: undefined,
+                  y: undefined,
+                  height: 36,
+                  width: 36,
+                  excavate: true,
+                }}
+              />
+            </div>
             <div className="text-xs text-brand-text-muted mb-1">{t('confirmation.booking_code')}</div>
             <div className="text-2xl font-mono font-bold tracking-wider text-brand-red">
               {finalBookingCode}

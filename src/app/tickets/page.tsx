@@ -7,6 +7,7 @@ import { useQuery, useMutation } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
 import { useAuth } from '@/lib/auth';
 import { useTranslation } from '@/lib/i18n';
+import { QRCodeSVG } from 'qrcode.react';
 import {
   Ticket,
   Calendar,
@@ -228,11 +229,22 @@ export default function TicketsPage() {
                     {/* QR Code section */}
                     {showQR === booking._id && (
                       <div className="mt-4 pt-4 border-t border-brand-border text-center">
-                        <div className="inline-block bg-white p-6 rounded-xl">
-                          {/* Simple QR-like display with booking code */}
-                          <div className="w-48 h-48 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iI2ZmZiIvPjx0ZXh0IHg9IjEwMCIgeT0iMTAwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSIgZm9udC1mYW1pbHk9Im1vbm9zcGFjZSIgZm9udC1zaXplPSIxMiIgZmlsbD0iIzAwMCI+UVIgQ29kZTwvdGV4dD48L3N2Zz4=')] bg-contain bg-center bg-no-repeat flex items-center justify-center">
-                            <QrCode className="w-32 h-32 text-black" />
-                          </div>
+                        <div className="inline-block bg-white p-4 rounded-xl">
+                          <QRCodeSVG
+                            value={booking.bookingCode || 'UNLOCKED'}
+                            size={180}
+                            level="H"
+                            bgColor="#ffffff"
+                            fgColor="#000000"
+                            imageSettings={{
+                              src: '/favicon.svg',
+                              x: undefined,
+                              y: undefined,
+                              height: 36,
+                              width: 36,
+                              excavate: true,
+                            }}
+                          />
                         </div>
                         <div className="mt-3">
                           <div className="text-xs text-brand-text-muted">{t('tickets.booking_code')}</div>
