@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useAction } from 'convex/react';
+import { useAction, useQuery } from 'convex/react';
 import { api } from '../../../../convex/_generated/api';
 import { useCompanyAuth } from '@/lib/companyAuth';
 import { useTranslation } from '@/lib/i18n';
@@ -30,8 +30,14 @@ const PLAN_PRICES: Record<string, { monthly: number; yearly: number }> = {
 
 export default function BillingPage() {
   const { t } = useTranslation();
-  const { company } = useCompanyAuth();
+  const { company, refreshCompany } = useCompanyAuth();
   const companyId = company?.id;
+
+  // Always read fresh data from the database, not cached localStorage
+  const companyData = useQuery(
+    api.companies.getById,
+    companyId ? { id: companyId as any } : 'skip'
+  );
 
   const createPortalSession = useAction(api.stripe.createPortalSession);
   const getSubscriptionDetails = useAction(api.stripe.getSubscriptionDetails);
@@ -79,10 +85,26 @@ export default function BillingPage() {
     }
   };
 
-  const plan = company?.platformPlan || 'starter';
-  const period = company?.billingPeriod || 'monthly';
-  const paymentStatus = company?.stripePaymentStatus || 'pending';
-  const subscribedAt = company?.platformSubscribedAt;
+  // Use fresh DB data (companyData) with localStorage fallback
+  const plan = (companyData as any)?.platformPlan || company?.platformPlan || 'starter';
+  const period = (companyData as any)?.billingPeriod || company?.billingPeriod || 'monthly';
+  const paymentStatus = (companyData as any)?.stripePaymentStatus || company?.stripePaymentStatus || 'pending';
+  const subscribedAt = (companyData as any)?.platformSubscribedAt || company?.platformSubscribedAt;
+  const hasStripeCustomer = !!(companyData as any)?.stripeCustomerId || !!company?.stripeCustomerId;
+
+  // Sync fresh DB data back into localStorage session
+  useEffect(() => {
+    if (companyData) {
+      refreshCompany({
+        platformPlan: (companyData as any).platformPlan || null,
+        billingPeriod: (companyData as any).billingPeriod || null,
+        stripePaymentStatus: (companyData as any).stripePaymentStatus || null,
+        stripeCustomerId: (companyData as any).stripeCustomerId || null,
+        platformSubscribedAt: (companyData as any).platformSubscribedAt || null,
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [companyData]);
 
   const price = PLAN_PRICES[plan]?.[period as 'monthly' | 'yearly'] ?? 0;
 
@@ -333,7 +355,7 @@ export default function BillingPage() {
           <div className="flex flex-col sm:flex-row gap-3">
             <button
               onClick={handleManageSubscription}
-              disabled={portalLoading || !company?.stripeCustomerId}
+              disabled={portalLoading || !hasStripeCustomer}
               className="flex items-center justify-center gap-2 px-6 py-3 bg-brand-red hover:bg-brand-red/90 text-white font-semibold rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {portalLoading ? (
@@ -345,7 +367,7 @@ export default function BillingPage() {
             </button>
           </div>
 
-          {!company?.stripeCustomerId && (
+          {!hasStripeCustomer && (
             <p className="text-xs text-brand-text-secondary mt-3 flex items-center gap-1.5">
               <AlertTriangle className="w-3.5 h-3.5" />
               {t('billing.no_stripe_customer')}
