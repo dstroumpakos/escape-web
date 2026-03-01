@@ -128,14 +128,20 @@ function RoomCard({ room }: { room: RoomCardProps }) {
 
   return (
     <div className="card-hover group cursor-pointer">
-      {/* Image placeholder */}
+      {/* Image */}
       <div className="relative h-48 bg-gradient-to-br from-brand-surface to-brand-card overflow-hidden">
+        {room.image ? (
+          <img
+            src={room.image}
+            alt={room.title}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+          />
+        ) : (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <DoorOpen className="w-16 h-16 text-brand-border/30 group-hover:text-brand-red/20 transition-colors duration-500" />
+          </div>
+        )}
         <div className="absolute inset-0 bg-gradient-to-t from-brand-card/80 to-transparent z-10" />
-        
-        {/* Decorative pattern */}
-        <div className="absolute inset-0 flex items-center justify-center">
-          <DoorOpen className="w-16 h-16 text-brand-border/30 group-hover:text-brand-red/20 transition-colors duration-500" />
-        </div>
 
         {/* Badges */}
         <div className="absolute top-3 left-3 z-20 flex gap-2">
