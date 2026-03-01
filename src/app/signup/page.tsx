@@ -52,22 +52,38 @@ export default function SignupPage() {
       await signup(name, email, password);
       // Redirect handled by useEffect above
     } catch (err: any) {
-      const msg = (err?.message ?? err?.data ?? '').toString();
-      // Map known server errors to translated messages
-      if (msg.includes('already exists')) {
-        setError(t('auth.error_email_exists'));
-      } else if (msg.includes('Invalid email')) {
-        setError(t('auth.error_invalid_email'));
-      } else if (msg.includes('Name is required')) {
-        setError(t('auth.error_name_required'));
-      } else if (msg.includes('at least 8 characters')) {
-        setError(t('auth.error_password_length'));
-      } else if (msg.includes('uppercase')) {
-        setError(t('auth.error_password_uppercase'));
-      } else if (msg.includes('number')) {
-        setError(t('auth.error_password_number'));
-      } else {
-        setError(t('auth.error_generic'));
+      // ConvexError puts the error code in err.data
+      const code = err?.data ?? '';
+      
+      switch (code) {
+        case 'EMAIL_EXISTS':
+          setError(t('auth.error_email_exists'));
+          break;
+        case 'INVALID_EMAIL':
+          setError(t('auth.error_invalid_email'));
+          break;
+        case 'NAME_REQUIRED':
+          setError(t('auth.error_name_required'));
+          break;
+        case 'PASSWORD_LENGTH':
+          setError(t('auth.error_password_length'));
+          break;
+        case 'PASSWORD_UPPERCASE':
+          setError(t('auth.error_password_uppercase'));
+          break;
+        case 'PASSWORD_NUMBER':
+          setError(t('auth.error_password_number'));
+          break;
+        default:
+          // Fallback: check message string for older error format
+          const msg = [err?.message, err?.data, err?.toString?.()].filter(Boolean).join(' ');
+          if (msg.includes('already exists') || msg.includes('EMAIL_EXISTS')) {
+            setError(t('auth.error_email_exists'));
+          } else if (msg.includes('Name is required')) {
+            setError(t('auth.error_name_required'));
+          } else {
+            setError(t('auth.error_generic'));
+          }
       }
     } finally {
       setIsLoading(false);

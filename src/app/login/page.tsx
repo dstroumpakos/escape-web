@@ -32,7 +32,12 @@ export default function LoginPage() {
       await login(email, password);
       // Redirect handled by useEffect above
     } catch (err: any) {
-      setError(t('auth.error_invalid'));
+      const code = err?.data ?? '';
+      if (code === 'INVALID_CREDENTIALS') {
+        setError(t('auth.error_invalid'));
+      } else {
+        setError(t('auth.error_invalid'));
+      }
     } finally {
       setIsLoading(false);
     }

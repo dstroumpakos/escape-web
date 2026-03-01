@@ -1,5 +1,5 @@
 import { query, mutation } from "./_generated/server";
-import { v } from "convex/values";
+import { v, ConvexError } from "convex/values";
 import { hashPassword, verifyPassword } from "./passwordUtils";
 import { validateEmail, validatePassword, requireNonEmpty } from "./validation";
 
@@ -60,10 +60,16 @@ export const register = mutation({
   },
   handler: async (ctx, args) => {
     // Validate inputs
-    const name = requireNonEmpty(args.name, "Name");
-    if (!validateEmail(args.email)) throw new Error("Invalid email format");
+    const trimmedName = args.name.trim();
+    if (!trimmedName) throw new ConvexError("NAME_REQUIRED");
+    if (!validateEmail(args.email)) throw new ConvexError("INVALID_EMAIL");
     const pwError = validatePassword(args.password);
-    if (pwError) throw new Error(pwError);
+    if (pwError) {
+      if (pwError.includes("8 characters")) throw new ConvexError("PASSWORD_LENGTH");
+      if (pwError.includes("uppercase")) throw new ConvexError("PASSWORD_UPPERCASE");
+      if (pwError.includes("number")) throw new ConvexError("PASSWORD_NUMBER");
+      throw new ConvexError("PASSWORD_INVALID");
+    }
 
     // Check if email already exists
     const existing = await ctx.db
@@ -71,7 +77,7 @@ export const register = mutation({
       .withIndex("by_email", (q) => q.eq("email", args.email.toLowerCase()))
       .unique();
     if (existing) {
-      throw new Error("An account with this email already exists");
+      throw new ConvexError("EMAIL_EXISTS");
     }
 
     const now = new Date();
@@ -81,7 +87,7 @@ export const register = mutation({
     const hashedPw = await hashPassword(args.password);
 
     const userId = await ctx.db.insert("users", {
-      name,
+      name: trimmedName,
       email: args.email.toLowerCase(),
       password: hashedPw,
       avatar: "",
@@ -109,16 +115,16 @@ export const login = mutation({
       .unique();
 
     if (!user) {
-      throw new Error("No account found with this email");
+      throw new ConvexError("INVALID_CREDENTIALS");
     }
 
     if (!user.password) {
-      throw new Error("Incorrect password");
+      throw new ConvexError("INVALID_CREDENTIALS");
     }
 
     const valid = await verifyPassword(args.password, user.password);
     if (!valid) {
-      throw new Error("Incorrect password");
+      throw new ConvexError("INVALID_CREDENTIALS");
     }
 
     // Upgrade legacy plaintext passwords to hashed on successful login
