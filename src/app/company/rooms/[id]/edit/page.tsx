@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useQuery, useMutation } from 'convex/react';
+import dynamic from 'next/dynamic';
 import { api } from '../../../../../../convex/_generated/api';
 import { useCompanyAuth } from '@/lib/companyAuth';
 import Link from 'next/link';
@@ -18,8 +19,19 @@ import {
   CalendarClock,
   FileText,
   X,
+  Upload,
+  Loader2,
 } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
+
+const LocationPicker = dynamic(
+  () => import('@/components/map/LocationPicker'),
+  { ssr: false, loading: () => (
+    <div className="h-[300px] bg-brand-bg border border-white/10 rounded-xl flex items-center justify-center">
+      <Loader2 className="w-6 h-6 text-brand-red animate-spin" />
+    </div>
+  )}
+);
 
 const THEMES = ['Horror', 'Adventure', 'Sci-Fi', 'Mystery', 'Fantasy', 'Historical', 'Comedy', 'Thriller'];
 const TAG_OPTIONS = ['Beginner Friendly', 'Team Building', 'Couples', 'Family', 'Intense', 'Immersive', 'Physical', 'Mental', 'Story Driven', 'Competitive'];
@@ -55,11 +67,15 @@ export default function EditRoomPage() {
 
   const room = useQuery(api.rooms.getById, roomId ? { id: roomId as any } : 'skip');
   const updateRoom = useMutation(api.companies.updateRoom);
+  const generateUploadUrl = useMutation(api.companies.generateUploadUrl);
+  const getUrlMutation = useMutation(api.companies.getUrlMutation);
 
   const [loaded, setLoaded] = useState(false);
   const [form, setForm] = useState({
     title: '',
     location: '',
+    latitude: undefined as number | undefined,
+    longitude: undefined as number | undefined,
     image: '',
     duration: 60,
     difficulty: 3,
@@ -82,6 +98,9 @@ export default function EditRoomPage() {
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [imageUploading, setImageUploading] = useState(false);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const { t } = useTranslation();
 
   const PAYMENT_OPTIONS = [
@@ -100,6 +119,8 @@ export default function EditRoomPage() {
       setForm({
         title: room.title || '',
         location: room.location || '',
+        latitude: (room as any).latitude || undefined,
+        longitude: (room as any).longitude || undefined,
         image: room.image || '',
         duration: room.duration || 60,
         difficulty: room.difficulty || 3,
@@ -163,6 +184,8 @@ export default function EditRoomPage() {
         title: form.title,
         location: form.location,
         image: form.image,
+        latitude: form.latitude,
+        longitude: form.longitude,
         duration: form.duration,
         difficulty: form.difficulty,
         players: `${form.playersMin}-${form.playersMax}`,
@@ -225,7 +248,17 @@ export default function EditRoomPage() {
             </div>
             <div className="md:col-span-2">
               <FieldLabel>{t('company.rooms.edit.location')}</FieldLabel>
-              <FieldInput value={form.location} onChange={(v) => updateField('location', v)} required />
+              <LocationPicker
+                location={form.location}
+                latitude={form.latitude}
+                longitude={form.longitude}
+                onLocationChange={(loc, lat, lng) => {
+                  setForm((prev) => ({ ...prev, location: loc, latitude: lat, longitude: lng }));
+                }}
+                placeholder={t('company.rooms.new.location_search_placeholder')}
+                searchLabel={t('company.rooms.new.location_search')}
+                pinHint={t('company.rooms.new.location_pin_hint')}
+              />
             </div>
             <div>
               <FieldLabel>{t('company.rooms.edit.theme')}</FieldLabel>
@@ -246,13 +279,58 @@ export default function EditRoomPage() {
 
         {/* Image */}
         <SectionCard title={t('company.rooms.edit.image')}>
-          <FieldLabel>{t('company.rooms.edit.image_url')}</FieldLabel>
-          <FieldInput value={form.image} onChange={(v) => updateField('image', v)} />
-          {form.image && (
-            <div className="mt-3 w-32 h-20 rounded-xl overflow-hidden bg-brand-bg">
-              <img src={form.image} alt="Preview" className="w-full h-full object-cover" />
-            </div>
-          )}
+          <FieldLabel>{t('company.rooms.new.main_image')}</FieldLabel>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={async (e) => {
+              const file = e.target.files?.[0];
+              if (!file) return;
+              const reader = new FileReader();
+              reader.onload = (ev) => setImagePreview(ev.target?.result as string);
+              reader.readAsDataURL(file);
+              setImageUploading(true);
+              try {
+                const uploadUrl = await generateUploadUrl();
+                const result = await fetch(uploadUrl, {
+                  method: 'POST',
+                  headers: { 'Content-Type': file.type },
+                  body: file,
+                });
+                const { storageId } = await result.json();
+                const url = await getUrlMutation({ storageId });
+                if (url) updateField('image', url);
+              } catch {
+                setError(t('company.rooms.new.image_upload_error'));
+              } finally {
+                setImageUploading(false);
+              }
+            }}
+          />
+          <div
+            onClick={() => fileInputRef.current?.click()}
+            className="cursor-pointer border-2 border-dashed border-white/10 hover:border-brand-red/40 rounded-xl p-6 text-center transition-all group"
+          >
+            {imageUploading ? (
+              <div className="flex flex-col items-center gap-2">
+                <Loader2 className="w-8 h-8 text-brand-red animate-spin" />
+                <p className="text-sm text-brand-text-secondary">{t('company.rooms.new.image_uploading')}</p>
+              </div>
+            ) : (imagePreview || form.image) ? (
+              <div className="flex flex-col items-center gap-3">
+                <img src={imagePreview || form.image} alt="Room preview" className="w-full max-w-xs h-40 object-cover rounded-lg" />
+                <p className="text-xs text-brand-text-secondary group-hover:text-brand-red transition-colors">{t('company.rooms.new.image_change')}</p>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center gap-2">
+                <Upload className="w-8 h-8 text-brand-text-secondary group-hover:text-brand-red transition-colors" />
+                <p className="text-sm text-brand-text-secondary group-hover:text-white transition-colors">{t('company.rooms.new.image_upload_prompt')}</p>
+                <p className="text-xs text-brand-text-secondary/60">PNG, JPG, WebP — max 5MB</p>
+              </div>
+            )}
+          </div>
         </SectionCard>
 
         {/* Difficulty & Players */}

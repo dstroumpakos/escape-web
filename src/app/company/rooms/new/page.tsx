@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useMutation, useQuery } from 'convex/react';
+import dynamic from 'next/dynamic';
 import { api } from '../../../../../convex/_generated/api';
 import { useCompanyAuth } from '@/lib/companyAuth';
 import Link from 'next/link';
@@ -17,8 +18,19 @@ import {
   CalendarClock,
   FileText,
   X,
+  Upload,
+  Loader2,
 } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
+
+const LocationPicker = dynamic(
+  () => import('@/components/map/LocationPicker'),
+  { ssr: false, loading: () => (
+    <div className="h-[300px] bg-brand-bg border border-white/10 rounded-xl flex items-center justify-center">
+      <Loader2 className="w-6 h-6 text-brand-red animate-spin" />
+    </div>
+  )}
+);
 
 const PLAN_ROOM_LIMITS: Record<string, number> = { starter: 3, pro: 10, enterprise: Infinity };
 
@@ -52,6 +64,8 @@ export default function NewRoomPage() {
   const router = useRouter();
   const { company } = useCompanyAuth();
   const createRoom = useMutation(api.companies.createRoom);
+  const generateUploadUrl = useMutation(api.companies.generateUploadUrl);
+  const getUrlMutation = useMutation(api.companies.getUrlMutation);
   const stats = useQuery(
     api.companies.getDashboardStats,
     company?.id ? { companyId: company.id as any } : 'skip'
@@ -65,6 +79,8 @@ export default function NewRoomPage() {
   const [form, setForm] = useState({
     title: '',
     location: '',
+    latitude: undefined as number | undefined,
+    longitude: undefined as number | undefined,
     image: '',
     images: [] as string[],
     duration: 60,
@@ -90,6 +106,9 @@ export default function NewRoomPage() {
 
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [imageUploading, setImageUploading] = useState(false);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const { t } = useTranslation();
 
   const PAYMENT_OPTIONS = [
@@ -211,6 +230,8 @@ export default function NewRoomPage() {
         termsOfUse: form.termsOfUse || undefined,
         isSubscriptionOnly: form.isSubscriptionOnly || undefined,
         bookingMode: form.bookingMode || undefined,
+        latitude: form.latitude,
+        longitude: form.longitude,
         operatingDays: form.operatingDays.length > 0 ? form.operatingDays : undefined,
         defaultTimeSlots: form.defaultTimeSlots.filter((s) => s.time).length > 0
           ? form.defaultTimeSlots.filter((s) => s.time)
@@ -279,11 +300,16 @@ export default function NewRoomPage() {
             </div>
             <div className="md:col-span-2">
               <Label>{t('company.rooms.new.location')}</Label>
-              <Input
-                value={form.location}
-                onChange={(v) => updateField('location', v)}
-                placeholder={t('company.rooms.new.location_placeholder')}
-                required
+              <LocationPicker
+                location={form.location}
+                latitude={form.latitude}
+                longitude={form.longitude}
+                onLocationChange={(loc, lat, lng) => {
+                  setForm((prev) => ({ ...prev, location: loc, latitude: lat, longitude: lng }));
+                }}
+                placeholder={t('company.rooms.new.location_search_placeholder')}
+                searchLabel={t('company.rooms.new.location_search')}
+                pinHint={t('company.rooms.new.location_pin_hint')}
               />
             </div>
             <div>
@@ -316,17 +342,74 @@ export default function NewRoomPage() {
         <Section title={t('company.rooms.new.images')}>
           <div>
             <Label>{t('company.rooms.new.main_image')}</Label>
-            <Input
-              value={form.image}
-              onChange={(v) => updateField('image', v)}
-              placeholder={t('company.rooms.new.image_placeholder')}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={async (e) => {
+                const file = e.target.files?.[0];
+                if (!file) return;
+
+                // Show local preview immediately
+                const reader = new FileReader();
+                reader.onload = (ev) => setImagePreview(ev.target?.result as string);
+                reader.readAsDataURL(file);
+
+                // Upload to Convex storage
+                setImageUploading(true);
+                try {
+                  const uploadUrl = await generateUploadUrl();
+                  const result = await fetch(uploadUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': file.type },
+                    body: file,
+                  });
+                  const { storageId } = await result.json();
+                  const url = await getUrlMutation({ storageId });
+                  if (url) {
+                    updateField('image', url);
+                  }
+                } catch (err) {
+                  setError(t('company.rooms.new.image_upload_error'));
+                } finally {
+                  setImageUploading(false);
+                }
+              }}
             />
-          </div>
-          {form.image && (
-            <div className="mt-3 w-32 h-20 rounded-xl overflow-hidden bg-brand-bg">
-              <img src={form.image} alt="Preview" className="w-full h-full object-cover" />
+            <div
+              onClick={() => fileInputRef.current?.click()}
+              className="cursor-pointer border-2 border-dashed border-white/10 hover:border-brand-red/40 rounded-xl p-6 text-center transition-all group"
+            >
+              {imageUploading ? (
+                <div className="flex flex-col items-center gap-2">
+                  <Loader2 className="w-8 h-8 text-brand-red animate-spin" />
+                  <p className="text-sm text-brand-text-secondary">{t('company.rooms.new.image_uploading')}</p>
+                </div>
+              ) : (imagePreview || form.image) ? (
+                <div className="flex flex-col items-center gap-3">
+                  <img
+                    src={imagePreview || form.image}
+                    alt="Room preview"
+                    className="w-full max-w-xs h-40 object-cover rounded-lg"
+                  />
+                  <p className="text-xs text-brand-text-secondary group-hover:text-brand-red transition-colors">
+                    {t('company.rooms.new.image_change')}
+                  </p>
+                </div>
+              ) : (
+                <div className="flex flex-col items-center gap-2">
+                  <Upload className="w-8 h-8 text-brand-text-secondary group-hover:text-brand-red transition-colors" />
+                  <p className="text-sm text-brand-text-secondary group-hover:text-white transition-colors">
+                    {t('company.rooms.new.image_upload_prompt')}
+                  </p>
+                  <p className="text-xs text-brand-text-secondary/60">
+                    PNG, JPG, WebP — max 5MB
+                  </p>
+                </div>
+              )}
             </div>
-          )}
+          </div>
         </Section>
 
         {/* Difficulty & Players */}
