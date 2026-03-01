@@ -5,7 +5,7 @@ import { hashPassword, verifyPassword } from "./passwordUtils";
 import { validateEmail, validatePassword, requireNonEmpty } from "./validation";
 
 // ─── Admin helper: verify the calling user has isAdmin ───
-const ADMIN_EMAILS = ['apple_001386.f@private.relay', 'apple_001386.8@private.relay'];
+const ADMIN_EMAILS = ['apple_001386.f@private.relay', 'apple_001386.8@private.relay', 'dstroumpakos@planeraai.app'];
 
 async function requireAdmin(ctx: any, userId: string) {
   const user = await ctx.db.get(userId);
@@ -975,5 +975,173 @@ export const updateBookingNotes = mutation({
   handler: async (ctx, args) => {
     await guardCompanyOwnsBooking(ctx, args.companyId, args.bookingId);
     await ctx.db.patch(args.bookingId, { notes: args.notes });
+  },
+});
+
+// ═══════════════════════════════════════════════════════════════
+// ADMIN — Platform-wide login & dashboard
+// ═══════════════════════════════════════════════════════════════
+
+/** Admin login — email-only, no password needed (email must be in ADMIN_EMAILS) */
+export const adminLogin = mutation({
+  args: { email: v.string() },
+  handler: async (ctx, args) => {
+    const email = args.email.toLowerCase().trim();
+    if (!ADMIN_EMAILS.includes(email)) {
+      throw new Error("Not an admin email");
+    }
+    return { email, isAdmin: true };
+  },
+});
+
+/** Full platform dashboard — returns every metric the admin needs */
+export const getAdminDashboard = query({
+  args: { adminEmail: v.string() },
+  handler: async (ctx, args) => {
+    const email = args.adminEmail.toLowerCase().trim();
+    if (!ADMIN_EMAILS.includes(email)) {
+      throw new Error("Unauthorized");
+    }
+
+    // ── Companies ──
+    const allCompanies = await ctx.db.query("companies").collect();
+    const companiesSafe = allCompanies.map((c) => {
+      const { password: _pw, ...safe } = c;
+      return safe;
+    });
+    const approvedCompanies = allCompanies.filter((c) => c.onboardingStatus === "approved");
+    const pendingCompanies = allCompanies.filter(
+      (c) => c.onboardingStatus === "pending_review" || c.onboardingStatus === "pending_terms" || c.onboardingStatus === "pending_plan"
+    );
+    const declinedCompanies = allCompanies.filter((c) => c.onboardingStatus === "declined");
+
+    // Plan breakdown
+    const planCounts = { starter: 0, pro: 0, enterprise: 0, none: 0 };
+    for (const c of allCompanies) {
+      if (c.platformPlan === "starter") planCounts.starter++;
+      else if (c.platformPlan === "pro") planCounts.pro++;
+      else if (c.platformPlan === "enterprise") planCounts.enterprise++;
+      else planCounts.none++;
+    }
+
+    // ── Rooms ──
+    const allRooms = await ctx.db.query("rooms").collect();
+    const activeRooms = allRooms.filter((r) => r.isActive !== false);
+    const ratedRooms = allRooms.filter((r) => r.reviews > 0);
+    const avgRating = ratedRooms.length > 0
+      ? ratedRooms.reduce((sum, r) => sum + r.rating, 0) / ratedRooms.length
+      : 0;
+
+    // ── Bookings ──
+    const allBookings = await ctx.db.query("bookings").collect();
+    const upcomingBookings = allBookings.filter((b) => b.status === "upcoming");
+    const completedBookings = allBookings.filter((b) => b.status === "completed");
+    const cancelledBookings = allBookings.filter((b) => b.status === "cancelled");
+    const totalRevenue = allBookings
+      .filter((b) => b.status !== "cancelled")
+      .reduce((sum, b) => sum + b.total, 0);
+
+    // Bookings by source
+    const unlockedBookings = allBookings.filter((b) => b.source === "unlocked" || !b.source);
+    const externalBookings = allBookings.filter((b) => b.source === "external");
+
+    // Revenue by month (last 6 months)
+    const now = Date.now();
+    const sixMonthsAgo = now - 6 * 30 * 24 * 60 * 60 * 1000;
+    const recentBookings = allBookings.filter(
+      (b) => b.createdAt > sixMonthsAgo && b.status !== "cancelled"
+    );
+    const revenueByMonth: Record<string, number> = {};
+    const bookingsByMonth: Record<string, number> = {};
+    for (const b of recentBookings) {
+      const d = new Date(b.createdAt);
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+      revenueByMonth[key] = (revenueByMonth[key] || 0) + b.total;
+      bookingsByMonth[key] = (bookingsByMonth[key] || 0) + 1;
+    }
+
+    // Recent bookings (last 20)
+    const recentBookingsList = [...allBookings]
+      .sort((a, b) => b.createdAt - a.createdAt)
+      .slice(0, 20)
+      .map((b) => {
+        const room = allRooms.find((r) => String(r._id) === String(b.roomId));
+        const company = allCompanies.find(
+          (c) => String(c._id) === String(b.companyId)
+        );
+        return {
+          ...b,
+          roomTitle: room?.title || "Deleted room",
+          companyName: company?.name || "—",
+        };
+      });
+
+    // ── Users ──
+    const allUsers = await ctx.db.query("users").collect();
+    const premiumUsers = allUsers.filter((u) => u.isPremium);
+
+    // ── Posts ──
+    const allPosts = await ctx.db.query("posts").collect();
+
+    // ── Top companies by bookings ──
+    const companyBookingCounts: Record<string, number> = {};
+    const companyRevenue: Record<string, number> = {};
+    for (const b of allBookings) {
+      if (b.companyId && b.status !== "cancelled") {
+        const cid = String(b.companyId);
+        companyBookingCounts[cid] = (companyBookingCounts[cid] || 0) + 1;
+        companyRevenue[cid] = (companyRevenue[cid] || 0) + b.total;
+      }
+    }
+    const topCompanies = Object.entries(companyBookingCounts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 10)
+      .map(([cid, count]) => {
+        const c = allCompanies.find((co) => String(co._id) === cid);
+        return {
+          name: c?.name || "Unknown",
+          city: c?.city || "",
+          bookings: count,
+          revenue: companyRevenue[cid] || 0,
+          plan: c?.platformPlan || null,
+        };
+      });
+
+    return {
+      companies: {
+        total: allCompanies.length,
+        approved: approvedCompanies.length,
+        pending: pendingCompanies.length,
+        declined: declinedCompanies.length,
+        plans: planCounts,
+        list: companiesSafe,
+      },
+      rooms: {
+        total: allRooms.length,
+        active: activeRooms.length,
+        avgRating: Math.round(avgRating * 10) / 10,
+        totalReviews: ratedRooms.reduce((s, r) => s + r.reviews, 0),
+      },
+      bookings: {
+        total: allBookings.length,
+        upcoming: upcomingBookings.length,
+        completed: completedBookings.length,
+        cancelled: cancelledBookings.length,
+        totalRevenue,
+        unlocked: unlockedBookings.length,
+        external: externalBookings.length,
+        revenueByMonth,
+        bookingsByMonth,
+        recent: recentBookingsList,
+      },
+      users: {
+        total: allUsers.length,
+        premium: premiumUsers.length,
+      },
+      social: {
+        totalPosts: allPosts.length,
+      },
+      topCompanies,
+    };
   },
 });

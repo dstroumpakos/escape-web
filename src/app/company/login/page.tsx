@@ -3,9 +3,11 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Unlock, Building2, Mail, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react';
+import { Unlock, Building2, Mail, Lock, Eye, EyeOff, ArrowRight, Shield } from 'lucide-react';
 import { useCompanyAuth } from '@/lib/companyAuth';
 import { useTranslation } from '@/lib/i18n';
+import { useMutation } from 'convex/react';
+import { api } from '../../../../convex/_generated/api';
 
 export default function CompanyLoginPage() {
   const { t } = useTranslation();
@@ -16,6 +18,7 @@ export default function CompanyLoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const adminLogin = useMutation(api.companies.adminLogin);
 
   if (isAuthenticated) {
     router.replace('/company');
@@ -27,6 +30,17 @@ export default function CompanyLoginPage() {
     setError('');
     setLoading(true);
     try {
+      // Try admin login first
+      try {
+        const adminResult = await adminLogin({ email });
+        if (adminResult?.isAdmin) {
+          localStorage.setItem('unlocked_admin', JSON.stringify(adminResult));
+          router.replace('/admin');
+          return;
+        }
+      } catch {
+        // Not an admin, continue with normal login
+      }
       await login(email, password);
       router.replace('/company');
     } catch (err: any) {
