@@ -37,6 +37,17 @@ export default defineSchema({
     platformSubscribedAt: v.optional(v.number()),
     adminNotes: v.optional(v.string()),
     reviewedAt: v.optional(v.number()),
+    // ── Stripe ──
+    stripeCustomerId: v.optional(v.string()),
+    stripeSubscriptionId: v.optional(v.string()),
+    stripePriceId: v.optional(v.string()),
+    billingPeriod: v.optional(v.union(v.literal("monthly"), v.literal("yearly"))),
+    stripePaymentStatus: v.optional(v.union(
+      v.literal("pending"),      // Checkout started but not completed
+      v.literal("active"),       // Subscription active
+      v.literal("cancelled"),    // Subscription cancelled
+      v.literal("past_due"),     // Payment failed
+    )),
   })
     .index("by_email", ["email"]),
 

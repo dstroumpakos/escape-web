@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@stripe/stripe-js": "^8.8.0",
     "convex": "^1.17.4",
     "framer-motion": "^11.15.0",
     "leaflet": "^1.9.4",
@@ -17,7 +18,8 @@
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-leaflet": "^4.2.1",
-    "resend": "^6.9.2"
+    "resend": "^6.9.2",
+    "stripe": "^20.4.0"
   },
   "devDependencies": {
     "@types/leaflet": "^1.9.21",

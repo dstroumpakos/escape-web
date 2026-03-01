@@ -1145,3 +1145,62 @@ export const getAdminDashboard = query({
     };
   },
 });
+
+// ── Stripe helpers ──────────────────────────────────────────
+
+export const updateStripeCustomer = mutation({
+  args: {
+    companyId: v.id("companies"),
+    stripeCustomerId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    await ctx.db.patch(args.companyId, {
+      stripeCustomerId: args.stripeCustomerId,
+    });
+  },
+});
+
+export const updateStripePaymentStatus = mutation({
+  args: {
+    companyId: v.id("companies"),
+    status: v.union(v.literal("pending"), v.literal("active"), v.literal("cancelled"), v.literal("past_due")),
+    plan: v.optional(v.union(v.literal("starter"), v.literal("pro"), v.literal("enterprise"))),
+    period: v.optional(v.union(v.literal("monthly"), v.literal("yearly"))),
+  },
+  handler: async (ctx, args) => {
+    const updates: any = { stripePaymentStatus: args.status };
+    if (args.plan) updates.platformPlan = args.plan;
+    if (args.period) updates.billingPeriod = args.period;
+    await ctx.db.patch(args.companyId, updates);
+  },
+});
+
+export const completeStripePayment = mutation({
+  args: {
+    companyId: v.id("companies"),
+    stripeSubscriptionId: v.string(),
+    plan: v.union(v.literal("starter"), v.literal("pro"), v.literal("enterprise")),
+    period: v.union(v.literal("monthly"), v.literal("yearly")),
+  },
+  handler: async (ctx, args) => {
+    const company = await ctx.db.get(args.companyId);
+    if (!company) throw new Error("Company not found");
+
+    await ctx.db.patch(args.companyId, {
+      stripeSubscriptionId: args.stripeSubscriptionId,
+      stripePaymentStatus: "active",
+      platformPlan: args.plan,
+      billingPeriod: args.period,
+      platformSubscribedAt: Date.now(),
+      onboardingStatus: "pending_review",
+    });
+  },
+});
+
+export const findCompanyByStripeCustomer = query({
+  args: { stripeCustomerId: v.string() },
+  handler: async (ctx, args) => {
+    const all = await ctx.db.query("companies").collect();
+    return all.find((c) => c.stripeCustomerId === args.stripeCustomerId) || null;
+  },
+});

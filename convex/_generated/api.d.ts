@@ -19,6 +19,7 @@ import type * as rooms from "../rooms.js";
 import type * as seed from "../seed.js";
 import type * as slotAlerts from "../slotAlerts.js";
 import type * as stats from "../stats.js";
+import type * as stripe from "../stripe.js";
 import type * as timeSlots from "../timeSlots.js";
 import type * as users from "../users.js";
 import type * as validation from "../validation.js";
@@ -42,6 +43,7 @@ declare const fullApi: ApiFromModules<{
   seed: typeof seed;
   slotAlerts: typeof slotAlerts;
   stats: typeof stats;
+  stripe: typeof stripe;
   timeSlots: typeof timeSlots;
   users: typeof users;
   validation: typeof validation;

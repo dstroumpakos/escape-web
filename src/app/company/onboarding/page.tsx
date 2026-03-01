@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { useQuery, useMutation } from 'convex/react';
+import { useQuery, useMutation, useAction } from 'convex/react';
 import { api } from '../../../../convex/_generated/api';
 import { useCompanyAuth } from '@/lib/companyAuth';
 import { useTranslation } from '@/lib/i18n';
@@ -18,6 +18,7 @@ import {
   RefreshCw,
   LogOut,
   ChevronDown,
+  CreditCard,
 } from 'lucide-react';
 
 const PLANS = [
@@ -75,9 +76,12 @@ export default function CompanyOnboardingPage() {
 
   const acceptTerms = useMutation(api.companies.acceptTerms);
   const selectPlan = useMutation(api.companies.selectPlan);
+  const createCheckout = useAction(api.stripe.createCheckoutSession);
   const resubmit = useMutation(api.companies.resubmitForReview);
 
   const [loading, setLoading] = useState(false);
+  const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
+  const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'yearly'>('monthly');
   const [scrolledToEnd, setScrolledToEnd] = useState(false);
   const termsRef = useRef<HTMLDivElement>(null);
 
@@ -276,6 +280,30 @@ export default function CompanyOnboardingPage() {
   //  STEP 2: Select Plan
   // ═══════════════════════════════════════════
   if (status === 'pending_plan') {
+    const handleSelectPlan = async (planId: 'starter' | 'pro' | 'enterprise') => {
+      setSelectedPlanId(planId);
+      setLoading(true);
+      try {
+        const origin = window.location.origin;
+        const successUrl = `${origin}/company/onboarding/payment-success?plan=${planId}&period=${billingPeriod}`;
+        const cancelUrl = `${origin}/company/onboarding`;
+
+        const checkoutUrl = await createCheckout({
+          companyId: companyId as any,
+          plan: planId,
+          period: billingPeriod,
+          successUrl,
+          cancelUrl,
+        });
+
+        window.location.href = checkoutUrl;
+      } catch (err: any) {
+        console.error('Stripe checkout error:', err);
+        setLoading(false);
+        setSelectedPlanId(null);
+      }
+    };
+
     return (
       <div className="min-h-screen bg-brand-bg">
         <div className="max-w-5xl mx-auto">
@@ -283,13 +311,41 @@ export default function CompanyOnboardingPage() {
           {renderSteps()}
 
           <div className="px-6 pb-12">
-            <p className="text-brand-text-secondary text-center mb-8">
+            <p className="text-brand-text-secondary text-center mb-6">
               {t('company.onboarding.choose_plan_subtitle')}
             </p>
+
+            {/* Billing period toggle */}
+            <div className="flex items-center justify-center gap-3 mb-8">
+              <button
+                onClick={() => setBillingPeriod('monthly')}
+                className={`px-5 py-2 rounded-xl text-sm font-semibold transition-all ${
+                  billingPeriod === 'monthly'
+                    ? 'bg-brand-red text-white'
+                    : 'bg-white/5 text-brand-text-secondary hover:text-white border border-white/10'
+                }`}
+              >
+                {t('company.onboarding.monthly')}
+              </button>
+              <button
+                onClick={() => setBillingPeriod('yearly')}
+                className={`px-5 py-2 rounded-xl text-sm font-semibold transition-all flex items-center gap-2 ${
+                  billingPeriod === 'yearly'
+                    ? 'bg-brand-red text-white'
+                    : 'bg-white/5 text-brand-text-secondary hover:text-white border border-white/10'
+                }`}
+              >
+                {t('company.onboarding.yearly')}
+                <span className="text-xs bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded-full font-bold">
+                  {t('company.onboarding.save_17')}
+                </span>
+              </button>
+            </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {PLANS.map((plan) => {
                 const Icon = plan.icon;
+                const isLoading = loading && selectedPlanId === plan.id;
                 return (
                   <div
                     key={plan.id}
@@ -317,14 +373,21 @@ export default function CompanyOnboardingPage() {
                     </h3>
 
                     <p className="text-3xl font-bold text-white mt-2">
-                      {plan.priceMonth}
+                      {billingPeriod === 'monthly' ? plan.priceMonth : plan.priceYear}
                       <span className="text-sm font-normal text-brand-text-secondary">
-                        /{t('company.onboarding.month')}
+                        /{billingPeriod === 'monthly' ? t('company.onboarding.month') : t('company.onboarding.year')}
                       </span>
                     </p>
-                    <p className="text-sm text-brand-text-secondary mb-2">
-                      {plan.priceYear}/{t('company.onboarding.year')}
-                    </p>
+                    {billingPeriod === 'yearly' && (
+                      <p className="text-sm text-emerald-400 mb-2 font-medium">
+                        {t('company.onboarding.yearly_savings')}
+                      </p>
+                    )}
+                    {billingPeriod === 'monthly' && (
+                      <p className="text-sm text-brand-text-secondary mb-2">
+                        {plan.priceYear}/{t('company.onboarding.year')}
+                      </p>
+                    )}
 
                     <div className="w-4/5 h-px bg-white/10 my-4" />
 
@@ -345,34 +408,30 @@ export default function CompanyOnboardingPage() {
 
                     <button
                       disabled={loading}
-                      onClick={async () => {
-                        setLoading(true);
-                        await selectPlan({
-                          companyId: companyId as any,
-                          plan: plan.id,
-                        });
-                        refreshCompany({
-                          onboardingStatus: 'pending_review',
-                          platformPlan: plan.id,
-                        });
-                        setLoading(false);
-                      }}
-                      className={`w-full py-3 rounded-xl font-semibold transition-all ${
+                      onClick={() => handleSelectPlan(plan.id)}
+                      className={`w-full py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 ${
                         plan.popular
                           ? 'bg-brand-red hover:bg-brand-red/90 text-white'
                           : 'bg-white/5 hover:bg-white/10 text-white border border-white/10'
-                      }`}
+                      } ${loading ? 'opacity-60 cursor-not-allowed' : ''}`}
                     >
-                      {loading ? (
-                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin mx-auto" />
+                      {isLoading ? (
+                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                       ) : (
-                        `${t('company.onboarding.select')} ${t(`company.onboarding.plan_${plan.id}`)}`
+                        <>
+                          <CreditCard className="w-4 h-4" />
+                          {t('company.onboarding.subscribe')} {t(`company.onboarding.plan_${plan.id}`)}
+                        </>
                       )}
                     </button>
                   </div>
                 );
               })}
             </div>
+
+            <p className="text-xs text-brand-text-secondary text-center mt-6">
+              {t('company.onboarding.stripe_secure')}
+            </p>
           </div>
         </div>
       </div>
@@ -462,6 +521,12 @@ export default function CompanyOnboardingPage() {
                         `company.onboarding.plan_${companyData?.platformPlan || 'starter'}`
                       )
                     )}
+                  </span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Check className="w-5 h-5 text-green-400 flex-shrink-0" />
+                  <span className="text-sm text-brand-text-secondary">
+                    {t('company.onboarding.check_payment')}
                   </span>
                 </div>
                 <div className="flex items-center gap-3">
