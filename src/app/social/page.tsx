@@ -189,6 +189,11 @@ export default function SocialPage() {
                               src={m.url}
                               alt=""
                               className="w-full h-full object-cover"
+                              onError={(e) => {
+                                // Hide broken images (e.g. HEIC format not supported)
+                                (e.target as HTMLImageElement).style.display = 'none';
+                                (e.target as HTMLImageElement).parentElement!.style.display = 'none';
+                              }}
                             />
                           ) : (
                             <video

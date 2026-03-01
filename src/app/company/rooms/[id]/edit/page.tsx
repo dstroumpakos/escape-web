@@ -288,16 +288,18 @@ export default function EditRoomPage() {
             onChange={async (e) => {
               const file = e.target.files?.[0];
               if (!file) return;
+              const { convertToWebFormat } = await import('@/lib/imageUtils');
+              const webFile = await convertToWebFormat(file);
               const reader = new FileReader();
               reader.onload = (ev) => setImagePreview(ev.target?.result as string);
-              reader.readAsDataURL(file);
+              reader.readAsDataURL(webFile);
               setImageUploading(true);
               try {
                 const uploadUrl = await generateUploadUrl();
                 const result = await fetch(uploadUrl, {
                   method: 'POST',
-                  headers: { 'Content-Type': file.type },
-                  body: file,
+                  headers: { 'Content-Type': webFile.type },
+                  body: webFile,
                 });
                 const { storageId } = await result.json();
                 const url = await getUrlMutation({ storageId });

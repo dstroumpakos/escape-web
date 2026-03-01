@@ -7,6 +7,7 @@ import { useMutation, useQuery } from 'convex/react';
 import { api } from '../../../../convex/_generated/api';
 import { useAuth } from '@/lib/auth';
 import { useTranslation } from '@/lib/i18n';
+import { convertToWebFormat } from '@/lib/imageUtils';
 import {
   ArrowLeft,
   Star,
@@ -35,6 +36,7 @@ export default function CreatePostPage() {
   const createPost = useMutation(api.posts.createPost);
   const generateUploadUrl = useMutation(api.posts.generateUploadUrl);
 
+
   useEffect(() => {
     if (!isAuthenticated) router.replace('/login');
   }, [isAuthenticated, router]);
@@ -45,14 +47,16 @@ export default function CreatePostPage() {
     setUploading(true);
     try {
       for (const file of Array.from(files)) {
+        // Convert to JPEG for web compatibility (handles HEIC, etc.)
+        const webFile = await convertToWebFormat(file);
         // Local preview
-        const preview = URL.createObjectURL(file);
+        const preview = URL.createObjectURL(webFile);
         // Upload to Convex
         const uploadUrl = await generateUploadUrl();
         const result = await fetch(uploadUrl, {
           method: 'POST',
-          headers: { 'Content-Type': file.type },
-          body: file,
+          headers: { 'Content-Type': webFile.type },
+          body: webFile,
         });
         const { storageId } = await result.json();
         setMediaFiles((prev) => [...prev, { preview, storageId }]);
