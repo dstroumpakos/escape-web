@@ -43,7 +43,7 @@ export function Navbar() {
   return (
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        isScrolled
+        isScrolled || isOpen
           ? 'glass shadow-lg shadow-black/20'
           : 'bg-transparent'
       }`}
@@ -137,11 +137,11 @@ export function Navbar() {
 
         {/* Mobile Nav */}
         <div
-          className={`md:hidden overflow-hidden transition-all duration-300 ease-in-out ${
-            isOpen ? 'max-h-[80vh] pb-4 overflow-y-auto' : 'max-h-0'
+          className={`md:hidden transition-all duration-300 ease-in-out ${
+            isOpen ? 'max-h-[80vh] pb-4 overflow-y-auto' : 'max-h-0 overflow-hidden'
           }`}
         >
-          <div className="flex flex-col gap-1 pt-2">
+          <div className="flex flex-col gap-1 pt-2 border-t border-white/10 mt-2">
             {navLinks.map((link) => (
               <Link
                 key={link.href}
@@ -155,7 +155,7 @@ export function Navbar() {
                 {link.label}
               </Link>
             ))}
-            <div className="flex flex-col gap-1 mt-2 px-4">
+            <div className="border-t border-white/10 mt-2 pt-3 flex flex-col gap-1 px-4">
               <div className="mb-2"><LanguageToggle /></div>
               {isAuthenticated ? (
                 <>
@@ -174,13 +174,18 @@ export function Navbar() {
                   </button>
                 </>
               ) : (
-                <div className="flex gap-3">
-                  <Link href="/login" className="btn-ghost text-sm flex-1 text-center">
-                    {t('nav.login')}
+                <div className="flex flex-col gap-2">
+                  <Link href="/company/login" className="px-4 py-3 rounded-lg text-sm font-medium text-brand-text-secondary hover:text-white hover:bg-brand-surface/50 flex items-center gap-2">
+                    <Building2 className="w-4 h-4" /> {t('nav.business')}
                   </Link>
-                  <Link href="/signup" className="btn-primary text-sm !py-2.5 flex-1 text-center">
-                    {t('nav.signup')}
-                  </Link>
+                  <div className="flex gap-3 mt-1">
+                    <Link href="/login" className="btn-ghost text-sm flex-1 text-center">
+                      {t('nav.login')}
+                    </Link>
+                    <Link href="/signup" className="btn-primary text-sm !py-2.5 flex-1 text-center">
+                      {t('nav.signup')}
+                    </Link>
+                  </div>
                 </div>
               )}
             </div>
