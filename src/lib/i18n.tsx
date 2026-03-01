@@ -529,6 +529,11 @@ const translations: Record<Language, Record<string, string>> = {
     'social.create_placeholder': 'Tell us about your escape room experience...',
     'social.create_submit': 'Post',
     'social.create_error': 'Failed to create post.',
+    'social.create_photos_label': 'Add Photos (optional)',
+    'social.create_photos_hint': 'Click or drag to add photos',
+    'social.create_photos_uploading': 'Uploading...',
+    'social.create_photos_limit': 'Max 4 photos',
+    'social.create_photos_remove': 'Remove',
 
     // ── Profile ──
     'profile.rooms_played': 'Rooms Played',
@@ -1767,6 +1772,11 @@ const translations: Record<Language, Record<string, string>> = {
     'social.create_placeholder': 'Πες μας για την escape room εμπειρία σου...',
     'social.create_submit': 'Δημοσίευση',
     'social.create_error': 'Αποτυχία δημιουργίας δημοσίευσης.',
+    'social.create_photos_label': 'Προσθήκη Φωτογραφιών (προαιρετικό)',
+    'social.create_photos_hint': 'Πατήστε ή σύρετε για προσθήκη φωτογραφιών',
+    'social.create_photos_uploading': 'Ανέβασμα...',
+    'social.create_photos_limit': 'Έως 4 φωτογραφίες',
+    'social.create_photos_remove': 'Αφαίρεση',
 
     // ── Profile ──
     'profile.rooms_played': 'Δωμάτια',

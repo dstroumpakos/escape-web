@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useMutation, useQuery } from 'convex/react';
@@ -13,6 +13,9 @@ import {
   DoorOpen,
   Image as ImageIcon,
   Send,
+  X,
+  Loader2,
+  Plus,
 } from 'lucide-react';
 
 export default function CreatePostPage() {
@@ -24,13 +27,51 @@ export default function CreatePostPage() {
   const [selectedRoomId, setSelectedRoomId] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const [mediaFiles, setMediaFiles] = useState<{ preview: string; storageId: string }[]>([]);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const rooms = useQuery(api.rooms.list);
   const createPost = useMutation(api.posts.createPost);
+  const generateUploadUrl = useMutation(api.posts.generateUploadUrl);
 
   useEffect(() => {
     if (!isAuthenticated) router.replace('/login');
   }, [isAuthenticated, router]);
+
+  const handleFileUpload = async (files: FileList | null) => {
+    if (!files || files.length === 0) return;
+    if (mediaFiles.length + files.length > 4) return;
+    setUploading(true);
+    try {
+      for (const file of Array.from(files)) {
+        // Local preview
+        const preview = URL.createObjectURL(file);
+        // Upload to Convex
+        const uploadUrl = await generateUploadUrl();
+        const result = await fetch(uploadUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': file.type },
+          body: file,
+        });
+        const { storageId } = await result.json();
+        setMediaFiles((prev) => [...prev, { preview, storageId }]);
+      }
+    } catch (err) {
+      console.error('Upload failed:', err);
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
+  const removeMedia = (index: number) => {
+    setMediaFiles((prev) => {
+      const removed = prev[index];
+      if (removed) URL.revokeObjectURL(removed.preview);
+      return prev.filter((_, i) => i !== index);
+    });
+  };
 
   const handleSubmit = async () => {
     if (!text.trim() || !user) return;
@@ -41,7 +82,7 @@ export default function CreatePostPage() {
         authorType: 'user',
         authorUserId: user.id as any,
         text: text.trim(),
-        mediaStorageIds: [],
+        mediaStorageIds: mediaFiles.map((m) => ({ type: 'image' as const, storageId: m.storageId as any })),
         roomId: selectedRoomId ? (selectedRoomId as any) : undefined,
         rating: rating > 0 ? rating : undefined,
       });
@@ -128,6 +169,52 @@ export default function CreatePostPage() {
               className="input-field resize-none"
               required
             />
+          </div>
+
+          {/* Photos */}
+          <div>
+            <label className="block text-sm font-medium mb-2 text-brand-text-secondary">
+              {t('social.create_photos_label')}
+            </label>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              multiple
+              className="hidden"
+              onChange={(e) => handleFileUpload(e.target.files)}
+            />
+            <div className="flex flex-wrap gap-3">
+              {mediaFiles.map((m, i) => (
+                <div key={i} className="relative w-24 h-24 rounded-xl overflow-hidden bg-brand-surface group">
+                  <img src={m.preview} alt="" className="w-full h-full object-cover" />
+                  <button
+                    type="button"
+                    onClick={() => removeMedia(i)}
+                    className="absolute top-1 right-1 w-5 h-5 bg-black/70 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    <X className="w-3 h-3 text-white" />
+                  </button>
+                </div>
+              ))}
+              {mediaFiles.length < 4 && (
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploading}
+                  className="w-24 h-24 rounded-xl border-2 border-dashed border-white/10 hover:border-brand-red/40 flex flex-col items-center justify-center gap-1 text-brand-text-secondary hover:text-brand-red transition-all"
+                >
+                  {uploading ? (
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                  ) : (
+                    <>
+                      <Plus className="w-5 h-5" />
+                      <span className="text-[10px]">{t('social.create_photos_limit')}</span>
+                    </>
+                  )}
+                </button>
+              )}
+            </div>
           </div>
 
           {error && (
