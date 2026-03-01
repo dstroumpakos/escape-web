@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useCompanyAuth } from '@/lib/companyAuth';
 import { useTranslation } from '@/lib/i18n';
@@ -13,18 +13,24 @@ function PaymentSuccessContent() {
   const params = useSearchParams();
   const { refreshCompany } = useCompanyAuth();
   const [countdown, setCountdown] = useState(5);
+  const initialized = useRef(false);
 
   const plan = params.get('plan') || 'starter';
   const period = params.get('period') || 'monthly';
 
+  // Update auth state once
   useEffect(() => {
-    // Update local auth to reflect new state
-    refreshCompany({
-      onboardingStatus: 'pending_review',
-      platformPlan: plan as any,
-    });
+    if (!initialized.current) {
+      initialized.current = true;
+      refreshCompany({
+        onboardingStatus: 'pending_review',
+        platformPlan: plan as any,
+      });
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-    // Auto-redirect after 5s
+  // Countdown timer - separate effect
+  useEffect(() => {
     const interval = setInterval(() => {
       setCountdown((c) => {
         if (c <= 1) {
@@ -37,7 +43,7 @@ function PaymentSuccessContent() {
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [refreshCompany, plan, router]);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const planNames: Record<string, string> = {
     starter: 'Starter',
