@@ -236,11 +236,11 @@ export default function SignupPage() {
               />
               <span className="text-sm text-brand-text-secondary">
                 {t('auth.agree_to')}{' '}
-                <Link href="#" className="text-brand-red hover:underline">
+                <Link href="/terms" target="_blank" className="text-brand-red hover:underline">
                   {t('auth.terms_of_service')}
                 </Link>{' '}
                 {t('auth.and')}{' '}
-                <Link href="#" className="text-brand-red hover:underline">
+                <Link href="/privacy" target="_blank" className="text-brand-red hover:underline">
                   {t('auth.privacy_policy')}
                 </Link>
               </span>
