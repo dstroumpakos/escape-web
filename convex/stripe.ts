@@ -118,3 +118,95 @@ export const createCheckoutSession = action({
     return session.url;
   },
 });
+
+/**
+ * Create a Stripe Customer Portal session so the company can
+ * manage their subscription (update payment method, cancel, etc.).
+ */
+export const createPortalSession = action({
+  args: {
+    companyId: v.id("companies"),
+    returnUrl: v.string(),
+  },
+  handler: async (ctx, args): Promise<string> => {
+    const stripe = getStripe();
+
+    const company = await ctx.runQuery(api.companies.getById, { id: args.companyId });
+    if (!company) throw new Error("Company not found");
+
+    const customerId = (company as any).stripeCustomerId;
+    if (!customerId) throw new Error("No Stripe customer found for this company");
+
+    const session = await stripe.billingPortal.sessions.create({
+      customer: customerId,
+      return_url: args.returnUrl,
+    });
+
+    return session.url;
+  },
+});
+
+/**
+ * Retrieve the current subscription details from Stripe
+ * so the billing page can show next billing date, amount, etc.
+ */
+export const getSubscriptionDetails = action({
+  args: {
+    companyId: v.id("companies"),
+  },
+  handler: async (ctx, args): Promise<{
+    id: string;
+    status: string;
+    currentPeriodStart: number;
+    currentPeriodEnd: number;
+    cancelAtPeriodEnd: boolean;
+    cancelAt: number | null;
+    amount: number;
+    currency: string;
+    interval: string;
+    created: number;
+    defaultPaymentMethod: { brand: string | null; last4: string | null } | null;
+  } | null> => {
+    const stripe = getStripe();
+
+    const company = await ctx.runQuery(api.companies.getById, { id: args.companyId });
+    if (!company) throw new Error("Company not found");
+
+    const subscriptionId = (company as any).stripeSubscriptionId;
+    if (!subscriptionId) return null;
+
+    try {
+      const sub: any = await stripe.subscriptions.retrieve(subscriptionId, {
+        expand: ['default_payment_method'],
+      });
+
+      const item = sub.items?.data?.[0];
+      const amount = item?.price?.unit_amount ?? 0;
+      const currency = item?.price?.currency ?? "eur";
+      const interval = item?.price?.recurring?.interval ?? "month";
+
+      return {
+        id: sub.id,
+        status: sub.status,
+        currentPeriodStart: sub.current_period_start,
+        currentPeriodEnd: sub.current_period_end,
+        cancelAtPeriodEnd: sub.cancel_at_period_end,
+        cancelAt: sub.cancel_at,
+        amount: amount / 100,
+        currency,
+        interval,
+        created: sub.created,
+        defaultPaymentMethod: sub.default_payment_method
+          ? typeof sub.default_payment_method === 'string'
+            ? null
+            : {
+                brand: sub.default_payment_method?.card?.brand ?? null,
+                last4: sub.default_payment_method?.card?.last4 ?? null,
+              }
+          : null,
+      };
+    } catch {
+      return null;
+    }
+  },
+});

@@ -17,6 +17,10 @@ export interface CompanyUser {
   email: string;
   onboardingStatus: string;
   platformPlan?: string | null;
+  billingPeriod?: string | null;
+  stripePaymentStatus?: string | null;
+  stripeCustomerId?: string | null;
+  platformSubscribedAt?: number | null;
 }
 
 interface CompanyAuthContextType {
@@ -69,6 +73,10 @@ export function CompanyAuthProvider({ children }: { children: ReactNode }) {
         email: email.toLowerCase(),
         onboardingStatus: result.onboardingStatus || 'approved',
         platformPlan: (result as any).platformPlan || null,
+        billingPeriod: (result as any).billingPeriod || null,
+        stripePaymentStatus: (result as any).stripePaymentStatus || null,
+        stripeCustomerId: (result as any).stripeCustomerId || null,
+        platformSubscribedAt: (result as any).platformSubscribedAt || null,
       };
       persistCompany(companyUser);
     },

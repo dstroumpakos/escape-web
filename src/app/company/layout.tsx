@@ -12,6 +12,7 @@ import {
   LogOut,
   Building2,
   ChevronRight,
+  CreditCard,
 } from 'lucide-react';
 import { ConvexClientProvider } from '@/components/providers/ConvexClientProvider';
 import { CompanyAuthProvider, useCompanyAuth } from '@/lib/companyAuth';
@@ -28,6 +29,7 @@ function CompanyShell({ children }: { children: React.ReactNode }) {
     { href: '/company', label: t('company.nav.dashboard'), icon: LayoutDashboard },
     { href: '/company/bookings', label: t('company.nav.bookings'), icon: CalendarDays },
     { href: '/company/rooms', label: t('company.nav.rooms'), icon: DoorOpen },
+    { href: '/company/billing', label: t('company.nav.billing'), icon: CreditCard },
     { href: '/company/settings', label: t('company.nav.settings'), icon: Settings },
   ];
 
