@@ -15,6 +15,8 @@ export const metadata: Metadata = {
   description:
     'Find the best escape rooms near you. Book instantly, challenge your team, and unlock unforgettable experiences.',
   keywords: ['escape room', 'escape game', 'team building', 'puzzle', 'adventure', 'booking'],
+  manifest: '/manifest.json',
+  themeColor: '#FF1E1E',
   openGraph: {
     title: 'UNLOCKED - Discover & Book Escape Rooms',
     description: 'Find the best escape rooms near you. Book instantly, challenge your team.',
