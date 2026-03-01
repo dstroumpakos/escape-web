@@ -126,9 +126,16 @@ export default function LocationPicker({
     [reverseGeocode]
   );
 
-  const handleSearchSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSearch = () => {
     searchAddress(searchQuery);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      e.stopPropagation();
+      handleSearch();
+    }
   };
 
   // Default center: Athens, Greece
@@ -139,26 +146,28 @@ export default function LocationPicker({
   return (
     <div className="space-y-3">
       {/* Search bar */}
-      <form onSubmit={handleSearchSubmit} className="flex gap-2">
+      <div className="flex gap-2">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-brand-text-secondary" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
+            onKeyDown={handleKeyDown}
             className="w-full bg-brand-bg border border-white/10 rounded-xl pl-10 pr-4 py-3 text-white placeholder-brand-text-secondary/50 focus:border-brand-red focus:outline-none transition-colors text-sm"
             placeholder={placeholder}
           />
         </div>
         <button
-          type="submit"
+          type="button"
+          onClick={handleSearch}
           disabled={searching || !searchQuery.trim()}
           className="px-4 py-3 bg-brand-red hover:bg-brand-red/90 text-white rounded-xl text-sm font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
         >
           {searching ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
           {searchLabel}
         </button>
-      </form>
+      </div>
 
       {/* Map */}
       <div className="rounded-xl overflow-hidden border border-white/10" style={{ height: 300 }}>
