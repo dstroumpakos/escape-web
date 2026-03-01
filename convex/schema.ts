@@ -49,7 +49,8 @@ export default defineSchema({
       v.literal("past_due"),     // Payment failed
     )),
   })
-    .index("by_email", ["email"]),
+    .index("by_email", ["email"])
+    .index("by_stripeCustomerId", ["stripeCustomerId"]),
 
   rooms: defineTable({
     title: v.string(),

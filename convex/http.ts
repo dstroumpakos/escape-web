@@ -71,14 +71,46 @@ const stripeWebhook = httpAction(async (ctx, request) => {
         period,
       });
     }
+  } else if (eventType === "customer.subscription.updated") {
+    // Handles: plan changes, cancel_at_period_end, reactivation from portal
+    const subscription = event.data.object;
+    const customerId = subscription.customer;
+    if (customerId) {
+      const company = await ctx.runQuery(api.companies.findCompanyByStripeCustomer, {
+        stripeCustomerId: customerId,
+      });
+      if (company) {
+        // Detect plan + period from the subscription items
+        const item = subscription.items?.data?.[0];
+        const interval = item?.price?.recurring?.interval; // "month" or "year"
+        const period = interval === "year" ? "yearly" : "monthly";
+        // Detect plan from metadata (set during checkout)
+        const plan = subscription.metadata?.plan || undefined;
+
+        await ctx.runMutation(api.companies.handleSubscriptionUpdated, {
+          companyId: company._id,
+          status: subscription.status === "active" ? "active"
+            : subscription.status === "past_due" ? "past_due"
+            : "active",
+          cancelAtPeriodEnd: subscription.cancel_at_period_end === true,
+          plan,
+          period,
+        });
+      }
+    }
   } else if (eventType === "customer.subscription.deleted") {
     const subscription = event.data.object;
-    const companyId = subscription.metadata?.companyId;
-    if (companyId) {
-      await ctx.runMutation(api.companies.updateStripePaymentStatus, {
-        companyId,
-        status: "cancelled",
+    const customerId = subscription.customer;
+    if (customerId) {
+      const company = await ctx.runQuery(api.companies.findCompanyByStripeCustomer, {
+        stripeCustomerId: customerId,
       });
+      if (company) {
+        await ctx.runMutation(api.companies.updateStripePaymentStatus, {
+          companyId: company._id,
+          status: "cancelled",
+        });
+      }
     }
   } else if (eventType === "invoice.payment_failed") {
     const invoice = event.data.object;

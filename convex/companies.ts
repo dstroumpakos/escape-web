@@ -1200,7 +1200,39 @@ export const completeStripePayment = mutation({
 export const findCompanyByStripeCustomer = query({
   args: { stripeCustomerId: v.string() },
   handler: async (ctx, args) => {
-    const all = await ctx.db.query("companies").collect();
-    return all.find((c) => c.stripeCustomerId === args.stripeCustomerId) || null;
+    return await ctx.db
+      .query("companies")
+      .withIndex("by_stripeCustomerId", (q) => q.eq("stripeCustomerId", args.stripeCustomerId))
+      .first();
+  },
+});
+
+// Called by the customer.subscription.updated webhook
+// Handles plan changes, cancel_at_period_end, and reactivation
+export const handleSubscriptionUpdated = mutation({
+  args: {
+    companyId: v.id("companies"),
+    status: v.union(v.literal("pending"), v.literal("active"), v.literal("cancelled"), v.literal("past_due")),
+    cancelAtPeriodEnd: v.boolean(),
+    plan: v.optional(v.union(v.literal("starter"), v.literal("pro"), v.literal("enterprise"))),
+    period: v.optional(v.union(v.literal("monthly"), v.literal("yearly"))),
+  },
+  handler: async (ctx, args) => {
+    const updates: any = {};
+
+    // Map Stripe status to our status
+    if (args.cancelAtPeriodEnd) {
+      updates.stripePaymentStatus = "cancelled";
+    } else if (args.status === "active") {
+      updates.stripePaymentStatus = "active";
+    } else if (args.status === "past_due") {
+      updates.stripePaymentStatus = "past_due";
+    }
+
+    // If plan/period changed (upgrade/downgrade via portal)
+    if (args.plan) updates.platformPlan = args.plan;
+    if (args.period) updates.billingPeriod = args.period;
+
+    await ctx.db.patch(args.companyId, updates);
   },
 });
