@@ -59,6 +59,11 @@ const PLANS = [
       'company.onboarding.ent_f2',
       'company.onboarding.ent_f3',
       'company.onboarding.ent_f4',
+      'company.onboarding.ent_f5',
+      'company.onboarding.ent_f6',
+      'company.onboarding.ent_f7',
+      'company.onboarding.ent_f8',
+      'company.onboarding.ent_f9',
     ],
   },
 ];

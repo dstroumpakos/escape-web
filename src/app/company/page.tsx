@@ -603,6 +603,11 @@ function OnboardingBanner({
                 t('company.onboarding.ent_f2'),
                 t('company.onboarding.ent_f3'),
                 t('company.onboarding.ent_f4'),
+                t('company.onboarding.ent_f5'),
+                t('company.onboarding.ent_f6'),
+                t('company.onboarding.ent_f7'),
+                t('company.onboarding.ent_f8'),
+                t('company.onboarding.ent_f9'),
               ],
             },
           ].map((plan) => (

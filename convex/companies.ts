@@ -217,13 +217,38 @@ export const getDashboardStats = query({
     } : null;
 
     // Full analytics (enterprise only)
-    const fullAnalytics = plan === "enterprise" ? {
-      revenuePerRoom: rooms.map((r) => ({
-        roomId: r._id,
-        title: r.title,
-        revenue: 0, // would aggregate per-room
-      })),
-    } : null;
+    let fullAnalytics = null;
+    if (plan === "enterprise") {
+      // Count platform subscribers (app users with isPremium)
+      const allUsers = await ctx.db.query("users").collect();
+      const premiumUsers = allUsers.filter((u) => u.isPremium === true);
+      const activeSubscribers = premiumUsers.filter(
+        (u) => !u.premiumExpiresAt || u.premiumExpiresAt > Date.now()
+      ).length;
+      const churnedSubscribers = premiumUsers.length - activeSubscribers;
+
+      // Revenue per room
+      const revenuePerRoom = [];
+      for (const room of rooms) {
+        const roomBookings = await ctx.db
+          .query("bookings")
+          .withIndex("by_room", (q) => q.eq("roomId", room._id))
+          .collect();
+        const roomRevenue = roomBookings.reduce((sum, b) => sum + b.total, 0);
+        revenuePerRoom.push({
+          roomId: room._id,
+          title: room.title,
+          revenue: roomRevenue,
+        });
+      }
+
+      fullAnalytics = {
+        totalSubscribers: premiumUsers.length,
+        activeSubscribers,
+        churnedSubscribers,
+        revenuePerRoom,
+      };
+    }
 
     return { ...base, advanced, fullAnalytics };
   },
