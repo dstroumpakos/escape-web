@@ -32,7 +32,7 @@ export default function LoginPage() {
       await login(email, password);
       // Redirect handled by useEffect above
     } catch (err: any) {
-      setError(err?.message || 'Invalid email or password. Please try again.');
+      setError(t('auth.error_invalid'));
     } finally {
       setIsLoading(false);
     }

@@ -52,7 +52,23 @@ export default function SignupPage() {
       await signup(name, email, password);
       // Redirect handled by useEffect above
     } catch (err: any) {
-      setError(err?.message || t('auth.error_generic'));
+      const msg = (err?.message ?? err?.data ?? '').toString();
+      // Map known server errors to translated messages
+      if (msg.includes('already exists')) {
+        setError(t('auth.error_email_exists'));
+      } else if (msg.includes('Invalid email')) {
+        setError(t('auth.error_invalid_email'));
+      } else if (msg.includes('Name is required')) {
+        setError(t('auth.error_name_required'));
+      } else if (msg.includes('at least 8 characters')) {
+        setError(t('auth.error_password_length'));
+      } else if (msg.includes('uppercase')) {
+        setError(t('auth.error_password_uppercase'));
+      } else if (msg.includes('number')) {
+        setError(t('auth.error_password_number'));
+      } else {
+        setError(t('auth.error_generic'));
+      }
     } finally {
       setIsLoading(false);
     }
