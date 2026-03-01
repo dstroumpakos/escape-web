@@ -49,8 +49,20 @@ export const getFeed = query({
           .withIndex("by_post", (q) => q.eq("postId", post._id))
           .collect();
 
+        // Re-resolve media storage URLs (they expire, so refresh each query)
+        const freshMedia = await Promise.all(
+          (post.media || []).map(async (m) => {
+            if (m.storageId) {
+              const freshUrl = await ctx.storage.getUrl(m.storageId);
+              return { ...m, url: freshUrl || m.url };
+            }
+            return m;
+          })
+        );
+
         return {
           ...post,
+          media: freshMedia,
           authorName,
           authorAvatar,
           authorVerified,
