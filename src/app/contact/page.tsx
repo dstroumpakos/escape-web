@@ -21,8 +21,8 @@ export default function ContactPage() {
     {
       icon: Mail,
       label: t('contact.info_email'),
-      value: 'hello@unlocked.app',
-      href: 'mailto:hello@unlocked.app',
+      value: 'hello@unlocked.gr',
+      href: 'mailto:hello@unlocked.gr',
     },
     {
       icon: Phone,
@@ -88,7 +88,7 @@ export default function ContactPage() {
       // Send via mailto as a functional fallback
       const subject = encodeURIComponent(`[${formData.subject}] Contact from ${formData.name}`);
       const body = encodeURIComponent(`From: ${formData.name} (${formData.email})\n\nSubject: ${formData.subject}\n\n${formData.message}`);
-      window.open(`mailto:hello@unlocked.app?subject=${subject}&body=${body}`, '_self');
+      window.open(`mailto:hello@unlocked.gr?subject=${subject}&body=${body}`, '_self');
       // Brief delay for UX
       await new Promise((r) => setTimeout(r, 800));
       setSubmitted(true);

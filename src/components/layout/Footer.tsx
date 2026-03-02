@@ -112,7 +112,7 @@ export function Footer() {
             <ul className="space-y-3">
               <li className="flex items-center gap-2 text-brand-text-secondary text-sm">
                 <Mail className="w-4 h-4 text-brand-red" />
-                hello@unlocked.app
+                hello@unlocked.gr
               </li>
               <li className="flex items-center gap-2 text-brand-text-secondary text-sm">
                 <Phone className="w-4 h-4 text-brand-red" />
