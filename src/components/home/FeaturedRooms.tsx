@@ -4,8 +4,10 @@ import { Star, Clock, Users, Zap, DoorOpen, BadgeCheck } from 'lucide-react';
 import { useSafeQuery } from '@/lib/useSafeQuery';
 import { api } from '../../../convex/_generated/api';
 import { useTranslation } from '@/lib/i18n';
+import Link from 'next/link';
 
 interface RoomCardProps {
+  id?: string;
   title: string;
   theme: string;
   rating: number;
@@ -126,8 +128,16 @@ function RoomCard({ room }: { room: RoomCardProps }) {
     'Sci-Fi': 'bg-cyan-900/30 text-cyan-400',
   };
 
+  const Wrapper = room.id
+    ? ({ children, className }: { children: React.ReactNode; className?: string }) => (
+        <Link href={`/rooms/${room.id}`} className={className}>{children}</Link>
+      )
+    : ({ children, className }: { children: React.ReactNode; className?: string }) => (
+        <div className={className}>{children}</div>
+      );
+
   return (
-    <div className="card-hover group cursor-pointer">
+    <Wrapper className="card-hover group cursor-pointer block">
       {/* Image */}
       <div className="relative h-48 bg-gradient-to-br from-brand-surface to-brand-card overflow-hidden">
         {room.image ? (
@@ -216,7 +226,7 @@ function RoomCard({ room }: { room: RoomCardProps }) {
           </div>
         </div>
       </div>
-    </div>
+    </Wrapper>
   );
 }
 
@@ -238,6 +248,7 @@ export function FeaturedRooms() {
           })
           .slice(0, 6)
           .map((r: any) => ({
+            id: r._id,
             title: r.title || 'Untitled Room',
             theme: r.theme || 'Mystery',
             rating: r.rating ?? 0,
