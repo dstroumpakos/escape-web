@@ -44,7 +44,8 @@ async function applyBranding(
     textTemplate?: string;
     overlayUrl?: string;
     useOverlay?: boolean;
-  } | null
+  } | null,
+  bookingContext?: { roomName?: string; time?: string; date?: string }
 ): Promise<Blob> {
   const img = await loadImage(originalUrl);
   const canvas = document.createElement('canvas');
@@ -116,13 +117,22 @@ async function applyBranding(
 
   // Text overlay (logo mode only)
   if (preset.textTemplate) {
+    // Replace placeholders with actual booking data
+    let displayText = preset.textTemplate;
+    if (bookingContext) {
+      displayText = displayText
+        .replace(/\{\{room\}\}/gi, bookingContext.roomName || '')
+        .replace(/\{\{time\}\}/gi, bookingContext.time || '')
+        .replace(/\{\{date\}\}/gi, bookingContext.date || '');
+    }
+
     const pad = img.width * 0.03;
     const fontSize = Math.max(16, img.width * 0.025);
     ctx.font = `bold ${fontSize}px sans-serif`;
     ctx.textAlign = 'center';
     const textY = img.height - pad;
 
-    const metrics = ctx.measureText(preset.textTemplate);
+    const metrics = ctx.measureText(displayText);
     const textW = metrics.width + fontSize * 2;
     const textH = fontSize * 1.8;
     ctx.fillStyle = 'rgba(0,0,0,0.5)';
@@ -131,7 +141,7 @@ async function applyBranding(
     ctx.fill();
 
     ctx.fillStyle = preset.brandColor || '#ffffff';
-    ctx.fillText(preset.textTemplate, img.width / 2, textY);
+    ctx.fillText(displayText, img.width / 2, textY);
   }
 
   return new Promise((resolve, reject) =>
@@ -236,10 +246,18 @@ export default function CompanyPhotosPage() {
     if (!companyId || !bookingPhotos) return;
     setProcessing(bookingId);
     try {
+      // Find the booking to get room/date/time context for text placeholders
+      const booking = completedBookings?.find((b: any) => b._id === bookingId);
+      const bookingContext = {
+        roomName: booking?.room?.title || '',
+        time: booking?.time || '',
+        date: booking?.date || '',
+      };
+
       const pending = bookingPhotos.filter((p: any) => p.status === 'pending');
       for (const photo of pending) {
         // 1. Apply branding on canvas
-        const branded = await applyBranding(photo.originalUrl, photoPreset || null);
+        const branded = await applyBranding(photo.originalUrl, photoPreset || null, bookingContext);
 
         // 2. Upload processed image to Convex storage
         const uploadUrl = await generateUploadUrl();
