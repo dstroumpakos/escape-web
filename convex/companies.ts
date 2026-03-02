@@ -3,6 +3,7 @@ import { v } from "convex/values";
 import { internal } from "./_generated/api";
 import { hashPassword, verifyPassword } from "./passwordUtils";
 import { validateEmail, validatePassword, requireNonEmpty } from "./validation";
+import { nt } from "./notificationTexts";
 
 // ─── Admin helper: verify the calling user has isAdmin ───
 const ADMIN_EMAILS = ['apple_001386.f@private.relay', 'apple_001386.8@private.relay', 'dstroumpakos@planeraai.app'];
@@ -357,11 +358,12 @@ export const createRoom = mutation({
       const allUsers = await ctx.db.query("users").collect();
       const premiumUsers = allUsers.filter((u) => u.isPremium);
       for (const premiumUser of premiumUsers) {
+        const lang = premiumUser.language;
         await ctx.db.insert("notifications", {
           userId: premiumUser._id,
           type: "new_room" as any,
-          title: `🆕 New Room: ${args.title}`,
-          message: `${company.name} just added a new escape room! As a Premium member, you can book it before anyone else.`,
+          title: nt(lang, "new_room.title", { room: args.title }),
+          message: nt(lang, "new_room.message", { company: company.name }),
           read: false,
           createdAt: Date.now(),
           data: { roomId: id },

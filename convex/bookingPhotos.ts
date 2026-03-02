@@ -1,6 +1,7 @@
 import { query, mutation, action, internalMutation } from "./_generated/server";
 import { v } from "convex/values";
 import { api, internal } from "./_generated/api";
+import { nt } from "./notificationTexts";
 
 // ════════════════════════════════════════════════
 // Company Photo Presets
@@ -308,12 +309,14 @@ export const checkAndNotifyBooking = mutation({
 
     const room = await ctx.db.get(booking.roomId);
     const roomName = room?.title || "Escape Room";
+    const recipientUser = await ctx.db.get(booking.userId);
+    const lang = recipientUser?.language;
 
     await ctx.db.insert("notifications", {
       userId: booking.userId,
       type: "photos_ready",
-      title: "Your Escape Moments are ready! 🎉",
-      message: `Your photos from ${roomName} are now available to view and download.`,
+      title: nt(lang, "photos_ready.title"),
+      message: nt(lang, "photos_ready.message", { room: roomName }),
       read: false,
       createdAt: Date.now(),
       data: { bookingId: args.bookingId, roomName },
@@ -333,13 +336,15 @@ export const notifyPhotosReady = mutation({
     // Get the room name for the notification
     const room = await ctx.db.get(booking.roomId);
     const roomName = room?.title || "Escape Room";
+    const recipientUser2 = await ctx.db.get(booking.userId);
+    const lang2 = recipientUser2?.language;
 
     // Create in-app notification
     await ctx.db.insert("notifications", {
       userId: booking.userId,
       type: "photos_ready",
-      title: "Your Escape Moments are ready! 🎉",
-      message: `Your photos from ${roomName} are now available to view and download.`,
+      title: nt(lang2, "photos_ready.title"),
+      message: nt(lang2, "photos_ready.message", { room: roomName }),
       read: false,
       createdAt: Date.now(),
       data: {

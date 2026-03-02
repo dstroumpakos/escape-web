@@ -145,6 +145,8 @@ export default defineSchema({
     longitude: v.optional(v.number()),
     city: v.optional(v.string()),
     isAdmin: v.optional(v.boolean()),
+    // Language preference for notifications
+    language: v.optional(v.string()), // "en" | "el"
     // UNLOCKED Premium
     isPremium: v.optional(v.boolean()),
     premiumSince: v.optional(v.number()),

@@ -14,6 +14,7 @@ import type * as companies from "../companies.js";
 import type * as email from "../email.js";
 import type * as friends from "../friends.js";
 import type * as http from "../http.js";
+import type * as notificationTexts from "../notificationTexts.js";
 import type * as notifications from "../notifications.js";
 import type * as passwordUtils from "../passwordUtils.js";
 import type * as posts from "../posts.js";
@@ -40,6 +41,7 @@ declare const fullApi: ApiFromModules<{
   email: typeof email;
   friends: typeof friends;
   http: typeof http;
+  notificationTexts: typeof notificationTexts;
   notifications: typeof notifications;
   passwordUtils: typeof passwordUtils;
   posts: typeof posts;

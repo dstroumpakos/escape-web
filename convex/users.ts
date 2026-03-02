@@ -293,6 +293,19 @@ export const updateProfile = mutation({
   },
 });
 
+// ─── Update language preference ───
+export const updateLanguage = mutation({
+  args: {
+    userId: v.id("users"),
+    language: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const user = await ctx.db.get(args.userId);
+    if (!user) throw new Error("User not found");
+    await ctx.db.patch(args.userId, { language: args.language });
+  },
+});
+
 export const generateUploadUrl = mutation({
   handler: async (ctx) => {
     return await ctx.storage.generateUploadUrl();

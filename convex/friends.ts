@@ -1,5 +1,6 @@
 import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
+import { nt } from "./notificationTexts";
 
 // ─── Search users by name (for adding friends) ───
 export const searchUsers = query({
@@ -129,11 +130,13 @@ export const sendRequest = mutation({
 
     // Send notification to receiver
     const requester = await ctx.db.get(args.requesterId);
+    const receiver = await ctx.db.get(args.receiverId);
+    const lang = receiver?.language;
     await ctx.db.insert("notifications", {
       userId: args.receiverId,
       type: "friend_request",
-      title: "Friend Request",
-      message: `${requester?.name ?? "Someone"} sent you a friend request!`,
+      title: nt(lang, "friend_request.title"),
+      message: nt(lang, "friend_request.message", { name: requester?.name ?? "Someone" }),
       read: false,
       createdAt: Date.now(),
       data: { friendshipId: id, requesterId: args.requesterId },
@@ -164,11 +167,13 @@ export const acceptRequest = mutation({
 
     // Notify the requester
     const receiver = await ctx.db.get(args.userId);
+    const requesterUser = await ctx.db.get(friendship.requesterId);
+    const lang = requesterUser?.language;
     await ctx.db.insert("notifications", {
       userId: friendship.requesterId,
       type: "friend_accepted",
-      title: "Friend Request Accepted",
-      message: `${receiver?.name ?? "Someone"} accepted your friend request!`,
+      title: nt(lang, "friend_accepted.title"),
+      message: nt(lang, "friend_accepted.message", { name: receiver?.name ?? "Someone" }),
       read: false,
       createdAt: Date.now(),
       data: { friendshipId: args.friendshipId },
@@ -350,11 +355,18 @@ export const inviteToBooking = mutation({
     });
 
     // Send notification
+    const inviteeUser = await ctx.db.get(args.inviteeId);
+    const lang = inviteeUser?.language;
     await ctx.db.insert("notifications", {
       userId: args.inviteeId,
       type: "booking_invite",
-      title: "Booking Invitation",
-      message: `${inviter?.name ?? "A friend"} invited you to ${room?.title ?? "an escape room"} on ${booking.date} at ${booking.time}!`,
+      title: nt(lang, "booking_invite.title"),
+      message: nt(lang, "booking_invite.message", {
+        name: inviter?.name ?? "A friend",
+        room: room?.title ?? "an escape room",
+        date: booking.date,
+        time: booking.time,
+      }),
       read: false,
       createdAt: Date.now(),
       data: {
@@ -394,15 +406,20 @@ export const respondToBookingInvite = mutation({
     const invitee = await ctx.db.get(args.userId);
     const booking = await ctx.db.get(invite.bookingId);
     const room = booking ? await ctx.db.get(booking.roomId) : null;
+    const inviterUser = await ctx.db.get(invite.inviterId);
+    const lang = inviterUser?.language;
+
+    const titleKey = args.response === "accepted" ? "invite_accepted.title" : "invite_declined.title";
+    const msgKey = args.response === "accepted" ? "invite_accepted.message" : "invite_declined.message";
 
     await ctx.db.insert("notifications", {
       userId: invite.inviterId,
       type: "booking",
-      title: args.response === "accepted" ? "Invite Accepted" : "Invite Declined",
-      message:
-        args.response === "accepted"
-          ? `${invitee?.name ?? "Your friend"} accepted the invite to ${room?.title ?? "the escape room"}!`
-          : `${invitee?.name ?? "Your friend"} declined the invite to ${room?.title ?? "the escape room"}.`,
+      title: nt(lang, titleKey),
+      message: nt(lang, msgKey, {
+        name: invitee?.name ?? "Your friend",
+        room: room?.title ?? "the escape room",
+      }),
       read: false,
       createdAt: Date.now(),
       data: {

@@ -2719,6 +2719,33 @@ export function I18nProvider({ children }: { children: ReactNode }) {
     if (saved === 'en' || saved === 'el') {
       setLanguageState(saved);
     }
+    // Sync initial language to DB on mount (if user is logged in)
+    const lang = saved === 'en' || saved === 'el' ? saved : 'el';
+    syncLanguageToDb(lang);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Sync language preference to Convex when user is logged in
+  const syncLanguageToDb = useCallback((lang: Language) => {
+    try {
+      const userStr = typeof window !== 'undefined' ? localStorage.getItem('unlocked_user') : null;
+      if (userStr) {
+        const user = JSON.parse(userStr);
+        if (user?.id) {
+          // Fire-and-forget: call the Convex HTTP endpoint or use the mutation directly
+          // We use fetch to the Convex API to avoid needing the mutation hook here
+          const convexUrl = process.env.NEXT_PUBLIC_CONVEX_URL;
+          if (convexUrl) {
+            fetch(`${convexUrl.replace('.cloud', '.site')}/updateLanguage`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ userId: user.id, language: lang }),
+            }).catch(() => {});
+          }
+        }
+      }
+    } catch {
+      // Ignore errors — this is a best-effort sync
+    }
   }, []);
 
   const setLanguage = useCallback((lang: Language) => {
@@ -2726,7 +2753,8 @@ export function I18nProvider({ children }: { children: ReactNode }) {
     if (typeof window !== 'undefined') {
       localStorage.setItem('unlocked-lang', lang);
     }
-  }, []);
+    syncLanguageToDb(lang);
+  }, [syncLanguageToDb]);
 
   const t = useCallback(
     (key: string, params?: Record<string, string>): string => {

@@ -162,4 +162,45 @@ http.route({ path: "/booking-widget.js", method: "OPTIONS", handler: corsHandler
 // Stripe webhook
 http.route({ path: "/stripe-webhook", method: "POST", handler: stripeWebhook });
 
+// ── Update Language Preference ──
+const updateLanguageHandler = httpAction(async (ctx, request) => {
+  try {
+    const { userId, language } = await request.json();
+    if (!userId || !language) {
+      return new Response(JSON.stringify({ error: "Missing fields" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
+      });
+    }
+    await ctx.runMutation(api.users.updateLanguage, {
+      userId,
+      language,
+    });
+    return new Response(JSON.stringify({ ok: true }), {
+      status: 200,
+      headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
+    });
+  } catch (e: any) {
+    return new Response(JSON.stringify({ error: e.message }), {
+      status: 500,
+      headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
+    });
+  }
+});
+
+const updateLanguageCors = httpAction(async () => {
+  return new Response(null, {
+    status: 204,
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "POST, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type",
+      "Access-Control-Max-Age": "86400",
+    },
+  });
+});
+
+http.route({ path: "/updateLanguage", method: "POST", handler: updateLanguageHandler });
+http.route({ path: "/updateLanguage", method: "OPTIONS", handler: updateLanguageCors });
+
 export default http;
