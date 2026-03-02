@@ -90,10 +90,12 @@ export default function WebsiteServicePage() {
         <div className="absolute bottom-1/4 right-1/4 w-64 h-64 bg-brand-gold/5 rounded-full blur-3xl" />
 
         <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-brand-red/10 border border-brand-red/20 mb-6">
-            <Globe className="w-8 h-8 text-brand-red" />
+          <div className="flex justify-center mb-6">
+            <div className="flex items-center justify-center w-16 h-16 rounded-2xl bg-brand-red/10 border border-brand-red/20">
+              <Globe className="w-8 h-8 text-brand-red" />
+            </div>
           </div>
-          <span className="inline-block text-brand-red text-sm font-semibold uppercase tracking-wider mb-4">
+          <span className="block text-brand-red text-sm font-semibold uppercase tracking-wider mb-4">
             {t('ws.label')}
           </span>
           <h1 className="section-heading mb-6">
