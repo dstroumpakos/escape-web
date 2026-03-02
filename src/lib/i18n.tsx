@@ -168,8 +168,8 @@ const translations: Record<Language, Record<string, string>> = {
     'ws.inc_booking_desc': 'UNLOCKED booking widget pre-installed — customers book directly from your site.',
     'ws.inc_domain_title': 'Domain Setup',
     'ws.inc_domain_desc': 'We help you choose and configure your domain name (e.g., yourescaperoom.com).',
-    'ws.inc_support_title': '30 Days Support',
-    'ws.inc_support_desc': 'Post-launch support included — bug fixes, content updates, and questions answered.',
+    'ws.inc_support_title': 'Ongoing Support',
+    'ws.inc_support_desc': 'Continuous support for as long as you\'re on UNLOCKED — bug fixes, content updates, and questions answered.',
 
     'ws.pricing_title': 'Simple, Transparent',
     'ws.pricing_highlight': 'Pricing',
@@ -1655,8 +1655,8 @@ const translations: Record<Language, Record<string, string>> = {
     'ws.inc_booking_desc': 'Το UNLOCKED booking widget προεγκατεστημένο — οι πελάτες κλείνουν απευθείας.',
     'ws.inc_domain_title': 'Ρύθμιση Domain',
     'ws.inc_domain_desc': 'Σας βοηθάμε να επιλέξετε και να ρυθμίσετε το domain σας (π.χ. myescaperoom.gr).',
-    'ws.inc_support_title': '30 Ημέρες Υποστήριξη',
-    'ws.inc_support_desc': 'Μετά το launch — διορθώσεις, ενημερώσεις περιεχομένου και απαντήσεις σε ερωτήσεις.',
+    'ws.inc_support_title': 'Συνεχής Υποστήριξη',
+    'ws.inc_support_desc': 'Υποστήριξη για όσο είστε στο UNLOCKED — διορθώσεις, ενημερώσεις περιεχομένου και απαντήσεις σε ερωτήσεις.',
 
     'ws.pricing_title': 'Απλές, Διαφανείς',
     'ws.pricing_highlight': 'Τιμές',
