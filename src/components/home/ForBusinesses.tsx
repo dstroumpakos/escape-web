@@ -1,6 +1,6 @@
 'use client';
 
-import { Building2, BarChart2, Calendar, QrCode, ArrowRight } from 'lucide-react';
+import { Building2, BarChart2, Calendar, QrCode, ArrowRight, Globe } from 'lucide-react';
 import Link from 'next/link';
 import { useTranslation } from '@/lib/i18n';
 
@@ -28,6 +28,12 @@ export function ForBusinesses() {
       title: t('business.feature4.title'),
       desc: t('business.feature4.desc'),
     },
+    {
+      icon: Globe,
+      title: t('business.feature5.title'),
+      desc: t('business.feature5.desc'),
+      link: '/services/website',
+    },
   ];
 
   const dayKeys = ['business.mon', 'business.tue', 'business.wed', 'business.thu', 'business.fri', 'business.sat', 'business.sun'];
@@ -50,19 +56,36 @@ export function ForBusinesses() {
             </p>
 
             <div className="space-y-5 mb-8">
-              {features.map((f, i) => (
-                <div key={i} className="flex gap-4">
-                  <div className="shrink-0 w-10 h-10 rounded-xl bg-brand-red/10 flex items-center justify-center">
-                    <f.icon className="w-5 h-5 text-brand-red" />
+              {features.map((f, i) => {
+                const content = (
+                  <div className="flex gap-4">
+                    <div className="shrink-0 w-10 h-10 rounded-xl bg-brand-red/10 flex items-center justify-center">
+                      <f.icon className="w-5 h-5 text-brand-red" />
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-sm mb-1">{f.title}</h4>
+                      <p className="text-sm text-brand-text-secondary">
+                        {f.desc}
+                      </p>
+                      {'link' in f && f.link && (
+                        <span className="inline-flex items-center gap-1 text-xs text-brand-red font-medium mt-1.5 group-hover/feat:gap-2 transition-all">
+                          {t('business.learn_more')} <ArrowRight className="w-3 h-3" />
+                        </span>
+                      )}
+                    </div>
                   </div>
-                  <div>
-                    <h4 className="font-semibold text-sm mb-1">{f.title}</h4>
-                    <p className="text-sm text-brand-text-secondary">
-                      {f.desc}
-                    </p>
-                  </div>
-                </div>
-              ))}
+                );
+
+                if ('link' in f && f.link) {
+                  return (
+                    <Link key={i} href={f.link} className="block group/feat hover:bg-brand-surface/30 -mx-3 px-3 py-2 rounded-xl transition-colors">
+                      {content}
+                    </Link>
+                  );
+                }
+
+                return <div key={i}>{content}</div>;
+              })}
             </div>
 
             <Link
