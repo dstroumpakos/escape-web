@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useQuery, useMutation } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
@@ -16,6 +16,11 @@ import {
   CalendarCheck,
   CheckCheck,
   DoorOpen,
+  UserPlus,
+  UserCheck,
+  Users,
+  Check,
+  X,
 } from 'lucide-react';
 
 const typeIcons: Record<string, any> = {
@@ -26,6 +31,10 @@ const typeIcons: Record<string, any> = {
   system: Info,
   slot_available: CalendarCheck,
   new_room: DoorOpen,
+  photos_ready: DoorOpen,
+  friend_request: UserPlus,
+  friend_accepted: UserCheck,
+  booking_invite: Users,
 };
 
 const typeColors: Record<string, string> = {
@@ -36,6 +45,10 @@ const typeColors: Record<string, string> = {
   system: 'bg-blue-500/20 text-blue-400',
   slot_available: 'bg-cyan-500/20 text-cyan-400',
   new_room: 'bg-brand-red/20 text-brand-red',
+  photos_ready: 'bg-purple-500/20 text-purple-400',
+  friend_request: 'bg-sky-500/20 text-sky-400',
+  friend_accepted: 'bg-green-500/20 text-green-400',
+  booking_invite: 'bg-amber-500/20 text-amber-400',
 };
 
 export default function NotificationsPage() {
@@ -49,6 +62,13 @@ export default function NotificationsPage() {
   );
   const markAsRead = useMutation(api.notifications.markAsRead);
   const markAllRead = useMutation(api.notifications.markAllRead);
+
+  // Friend & booking invite actions
+  const acceptFriend = useMutation(api.friends.acceptRequest);
+  const declineFriend = useMutation(api.friends.declineRequest);
+  const respondBookingInvite = useMutation(api.friends.respondToBookingInvite);
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [actionDone, setActionDone] = useState<Record<string, string>>({});
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
@@ -145,11 +165,48 @@ export default function NotificationsPage() {
               {notifications.map((n: any) => {
                 const Icon = typeIcons[n.type] || Bell;
                 const color = typeColors[n.type] || 'bg-brand-surface text-brand-text-muted';
+                const isFriendRequest = n.type === 'friend_request' && n.data?.friendshipId;
+                const isBookingInvite = n.type === 'booking_invite' && n.data?.bookingInviteId;
+                const hasAction = isFriendRequest || isBookingInvite;
+                const doneAction = actionDone[n._id];
+
+                const handleFriendAction = async (action: 'accept' | 'decline') => {
+                  if (!user?.id || !n.data?.friendshipId) return;
+                  setActionLoading(n._id + action);
+                  try {
+                    if (action === 'accept') {
+                      await acceptFriend({ friendshipId: n.data.friendshipId, userId: user.id as any });
+                    } else {
+                      await declineFriend({ friendshipId: n.data.friendshipId, userId: user.id as any });
+                    }
+                    setActionDone((prev) => ({ ...prev, [n._id]: action }));
+                    if (!n.read) await markAsRead({ id: n._id });
+                  } catch (err) {
+                    console.error(err);
+                  }
+                  setActionLoading(null);
+                };
+
+                const handleBookingInviteAction = async (action: 'accepted' | 'declined') => {
+                  if (!user?.id || !n.data?.bookingInviteId) return;
+                  setActionLoading(n._id + action);
+                  try {
+                    await respondBookingInvite({
+                      inviteId: n.data.bookingInviteId,
+                      userId: user.id as any,
+                      response: action,
+                    });
+                    setActionDone((prev) => ({ ...prev, [n._id]: action }));
+                    if (!n.read) await markAsRead({ id: n._id });
+                  } catch (err) {
+                    console.error(err);
+                  }
+                  setActionLoading(null);
+                };
 
                 return (
-                  <button
+                  <div
                     key={n._id}
-                    onClick={() => !n.read && handleMarkRead(n._id)}
                     className={`w-full text-left card p-4 flex items-start gap-4 transition-all ${
                       n.read ? 'opacity-60' : 'border-brand-red/20'
                     }`}
@@ -169,11 +226,79 @@ export default function NotificationsPage() {
                       <p className="text-sm text-brand-text-muted line-clamp-2">
                         {n.message}
                       </p>
+                      {/* Friend Request Actions */}
+                      {isFriendRequest && !doneAction && (
+                        <div className="flex gap-2 mt-3">
+                          <button
+                            onClick={() => handleFriendAction('accept')}
+                            disabled={!!actionLoading}
+                            className="flex items-center gap-1.5 text-xs bg-green-500/10 text-green-400 hover:bg-green-500/20 px-3 py-1.5 rounded-full transition-colors"
+                          >
+                            {actionLoading === n._id + 'accept' ? (
+                              <div className="w-3 h-3 border-2 border-green-400/30 border-t-green-400 rounded-full animate-spin" />
+                            ) : (
+                              <Check className="w-3.5 h-3.5" />
+                            )}
+                            {t('friends.accept')}
+                          </button>
+                          <button
+                            onClick={() => handleFriendAction('decline')}
+                            disabled={!!actionLoading}
+                            className="flex items-center gap-1.5 text-xs bg-red-500/10 text-red-400 hover:bg-red-500/20 px-3 py-1.5 rounded-full transition-colors"
+                          >
+                            <X className="w-3.5 h-3.5" />
+                            {t('friends.decline')}
+                          </button>
+                        </div>
+                      )}
+                      {isFriendRequest && doneAction === 'accept' && (
+                        <p className="text-xs text-green-400 mt-2">{t('friends.request_accepted')}</p>
+                      )}
+                      {isFriendRequest && doneAction === 'decline' && (
+                        <p className="text-xs text-brand-text-muted mt-2">{t('friends.request_declined')}</p>
+                      )}
+                      {/* Booking Invite Actions */}
+                      {isBookingInvite && !doneAction && (
+                        <div className="flex gap-2 mt-3">
+                          <button
+                            onClick={() => handleBookingInviteAction('accepted')}
+                            disabled={!!actionLoading}
+                            className="flex items-center gap-1.5 text-xs bg-green-500/10 text-green-400 hover:bg-green-500/20 px-3 py-1.5 rounded-full transition-colors"
+                          >
+                            {actionLoading === n._id + 'accepted' ? (
+                              <div className="w-3 h-3 border-2 border-green-400/30 border-t-green-400 rounded-full animate-spin" />
+                            ) : (
+                              <Check className="w-3.5 h-3.5" />
+                            )}
+                            {t('friends.accept_invite')}
+                          </button>
+                          <button
+                            onClick={() => handleBookingInviteAction('declined')}
+                            disabled={!!actionLoading}
+                            className="flex items-center gap-1.5 text-xs bg-red-500/10 text-red-400 hover:bg-red-500/20 px-3 py-1.5 rounded-full transition-colors"
+                          >
+                            <X className="w-3.5 h-3.5" />
+                            {t('friends.decline_invite')}
+                          </button>
+                        </div>
+                      )}
+                      {isBookingInvite && doneAction === 'accepted' && (
+                        <p className="text-xs text-green-400 mt-2">{t('friends.invite_accepted')}</p>
+                      )}
+                      {isBookingInvite && doneAction === 'declined' && (
+                        <p className="text-xs text-brand-text-muted mt-2">{t('friends.invite_declined')}</p>
+                      )}
                     </div>
-                    {!n.read && (
+                    {!n.read && !hasAction && (
+                      <button
+                        onClick={() => handleMarkRead(n._id)}
+                        className="w-2.5 h-2.5 rounded-full bg-brand-red shrink-0 mt-1.5"
+                      />
+                    )}
+                    {!n.read && hasAction && (
                       <div className="w-2.5 h-2.5 rounded-full bg-brand-red shrink-0 mt-1.5" />
                     )}
-                  </button>
+                  </div>
                 );
               })}
             </div>

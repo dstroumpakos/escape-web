@@ -12,6 +12,7 @@ import type * as bookingPhotos from "../bookingPhotos.js";
 import type * as bookings from "../bookings.js";
 import type * as companies from "../companies.js";
 import type * as email from "../email.js";
+import type * as friends from "../friends.js";
 import type * as http from "../http.js";
 import type * as notifications from "../notifications.js";
 import type * as passwordUtils from "../passwordUtils.js";
@@ -37,6 +38,7 @@ declare const fullApi: ApiFromModules<{
   bookings: typeof bookings;
   companies: typeof companies;
   email: typeof email;
+  friends: typeof friends;
   http: typeof http;
   notifications: typeof notifications;
   passwordUtils: typeof passwordUtils;

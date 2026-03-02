@@ -13,7 +13,10 @@ export const create = mutation({
       v.literal("system"),
       v.literal("slot_available"),
       v.literal("new_room"),
-      v.literal("photos_ready")
+      v.literal("photos_ready"),
+      v.literal("friend_request"),
+      v.literal("friend_accepted"),
+      v.literal("booking_invite")
     ),
     title: v.string(),
     message: v.string(),

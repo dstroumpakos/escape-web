@@ -284,7 +284,10 @@ export default defineSchema({
       v.literal("system"),
       v.literal("slot_available"),
       v.literal("new_room"),
-      v.literal("photos_ready")
+      v.literal("photos_ready"),
+      v.literal("friend_request"),
+      v.literal("friend_accepted"),
+      v.literal("booking_invite")
     ),
     title: v.string(),
     message: v.string(),
@@ -340,6 +343,40 @@ export default defineSchema({
   })
     .index("by_blocker", ["blockerId"])
     .index("by_blocker_blocked", ["blockerId", "blockedUserId"]),
+
+  // ─── Friendships ───
+  friendships: defineTable({
+    requesterId: v.id("users"),     // user who sent the request
+    receiverId: v.id("users"),      // user who received the request
+    status: v.union(
+      v.literal("pending"),
+      v.literal("accepted"),
+      v.literal("declined")
+    ),
+    createdAt: v.number(),
+    respondedAt: v.optional(v.number()),
+  })
+    .index("by_requester", ["requesterId"])
+    .index("by_receiver", ["receiverId"])
+    .index("by_pair", ["requesterId", "receiverId"])
+    .index("by_receiver_status", ["receiverId", "status"]),
+
+  // ─── Booking Invites (invite friends to a booking) ───
+  bookingInvites: defineTable({
+    bookingId: v.id("bookings"),
+    inviterId: v.id("users"),       // user who created the booking / sent invite
+    inviteeId: v.id("users"),       // friend being invited
+    status: v.union(
+      v.literal("pending"),
+      v.literal("accepted"),
+      v.literal("declined")
+    ),
+    createdAt: v.number(),
+    respondedAt: v.optional(v.number()),
+  })
+    .index("by_booking", ["bookingId"])
+    .index("by_invitee", ["inviteeId"])
+    .index("by_invitee_status", ["inviteeId", "status"]),
 
   // ─── Widget Bundle (serves JS from Convex site) ───
   widgetBundle: defineTable({

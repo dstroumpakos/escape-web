@@ -1,10 +1,11 @@
 'use client';
 
-import { Suspense } from 'react';
+import { Suspense, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { useQuery } from 'convex/react';
+import { useQuery, useMutation } from 'convex/react';
 import { api } from '../../../../convex/_generated/api';
+import { useAuth } from '@/lib/auth';
 import { useTranslation } from '@/lib/i18n';
 import { QRCodeSVG } from 'qrcode.react';
 import {
@@ -15,11 +16,17 @@ import {
   DoorOpen,
   Ticket,
   CreditCard,
+  UserPlus,
+  Check,
+  Send,
 } from 'lucide-react';
 
 function ConfirmationContent() {
   const { t } = useTranslation();
+  const { user } = useAuth();
   const searchParams = useSearchParams();
+  const [inviteSent, setInviteSent] = useState<Record<string, boolean>>({});
+  const [inviteLoading, setInviteLoading] = useState<string | null>(null);
   const bookingCode = searchParams.get('bookingCode') || '';
   const roomId = searchParams.get('roomId') || '';
   const date = searchParams.get('date') || '';
@@ -52,6 +59,39 @@ function ConfirmationContent() {
     stripeBooking?.room ? 'skip' : (finalRoomId ? { id: finalRoomId as any } : 'skip')
   );
   const roomData = stripeBooking?.room || room;
+
+  // Friends for invite
+  const friends = useQuery(
+    api.friends.listFriends,
+    user?.id ? { userId: user.id as any } : 'skip'
+  );
+  const bookingForInvite = stripeBooking || null;
+  const bookingIdForInvite = bookingForInvite?._id ?? null;
+  const existingInvites = useQuery(
+    api.friends.getBookingInvitesByBooking,
+    bookingIdForInvite ? { bookingId: bookingIdForInvite as any } : 'skip'
+  );
+  const inviteToBooking = useMutation(api.friends.inviteToBooking);
+
+  const handleInviteFriend = async (friendId: string) => {
+    if (!bookingIdForInvite || !user?.id) return;
+    setInviteLoading(friendId);
+    try {
+      await inviteToBooking({
+        bookingId: bookingIdForInvite as any,
+        inviterId: user.id as any,
+        inviteeId: friendId as any,
+      });
+      setInviteSent((prev) => ({ ...prev, [friendId]: true }));
+    } catch (err) {
+      console.error(err);
+    }
+    setInviteLoading(null);
+  };
+
+  const alreadyInvited = (friendId: string) =>
+    inviteSent[friendId] ||
+    existingInvites?.some((i: any) => i.inviteeId === friendId);
 
   const paymentBadge: Record<string, { label: string; color: string }> = {
     paid: { label: t('confirmation.paid_full'), color: 'bg-green-500/20 text-green-400 border-green-500/30' },
@@ -157,6 +197,57 @@ function ConfirmationContent() {
             </p>
           </div>
         </div>
+
+        {/* Invite Friends */}
+        {friends && friends.length > 0 && bookingIdForInvite && (
+          <div className="card p-6 mb-8 text-left">
+            <h3 className="font-semibold mb-3 flex items-center gap-2">
+              <UserPlus className="w-5 h-5 text-brand-red" />
+              {t('friends.invite_to_booking')}
+            </h3>
+            <p className="text-sm text-brand-text-muted mb-4">
+              {t('friends.invite_desc')}
+            </p>
+            <div className="space-y-2">
+              {friends.map((friend: any) => (
+                <div
+                  key={friend._id}
+                  className="flex items-center gap-3 p-3 rounded-xl bg-brand-surface/50"
+                >
+                  <div className="w-9 h-9 rounded-full bg-brand-surface border border-brand-border/30 flex items-center justify-center overflow-hidden shrink-0">
+                    {friend.avatar ? (
+                      <img src={friend.avatar} alt={friend.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="text-sm font-bold text-brand-red">
+                        {friend.name?.charAt(0)?.toUpperCase()}
+                      </span>
+                    )}
+                  </div>
+                  <span className="flex-1 text-sm font-medium truncate">{friend.name}</span>
+                  {alreadyInvited(friend._id) ? (
+                    <span className="flex items-center gap-1 text-xs text-green-400">
+                      <Check className="w-3.5 h-3.5" />
+                      {t('friends.invited')}
+                    </span>
+                  ) : (
+                    <button
+                      onClick={() => handleInviteFriend(friend._id)}
+                      disabled={inviteLoading === friend._id}
+                      className="flex items-center gap-1 text-xs bg-brand-red/10 text-brand-red hover:bg-brand-red/20 px-3 py-1.5 rounded-full transition-colors"
+                    >
+                      {inviteLoading === friend._id ? (
+                        <div className="w-3.5 h-3.5 border-2 border-brand-red/30 border-t-brand-red rounded-full animate-spin" />
+                      ) : (
+                        <Send className="w-3.5 h-3.5" />
+                      )}
+                      {t('friends.invite')}
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Action buttons */}
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
