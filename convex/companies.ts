@@ -1,6 +1,6 @@
 import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
-import { internal } from "./_generated/api";
+import { internal, api } from "./_generated/api";
 import { hashPassword, verifyPassword } from "./passwordUtils";
 import { validateEmail, validatePassword, requireNonEmpty } from "./validation";
 import { nt } from "./notificationTexts";
@@ -72,6 +72,13 @@ export const register = mutation({
       createdAt: Date.now(),
       onboardingStatus: "pending_terms",
     });
+
+    // Send welcome email
+    await ctx.scheduler.runAfter(0, internal.email.sendCompanyWelcome, {
+      companyName: args.name,
+      companyEmail: args.email,
+    });
+
     return { id };
   },
 });
@@ -119,6 +126,14 @@ export const registerWithOnboarding = mutation({
       platformPlan: plan,
       platformSubscribedAt: Date.now(),
     });
+
+    // Send welcome email with plan info
+    await ctx.scheduler.runAfter(0, internal.email.sendCompanyWelcome, {
+      companyName: args.name,
+      companyEmail: args.email,
+      plan,
+    });
+
     return { id };
   },
 });
@@ -614,12 +629,22 @@ export const approveCompany = mutation({
   args: { companyId: v.id("companies"), userId: v.id("users") },
   handler: async (ctx, args) => {
     await requireAdmin(ctx, args.userId);
+    const company = await ctx.db.get(args.companyId);
     await ctx.db.patch(args.companyId, {
       onboardingStatus: "approved",
       verified: true,
       reviewedAt: Date.now(),
       adminNotes: undefined,
     });
+
+    // Send approved email with plan details
+    if (company) {
+      await ctx.scheduler.runAfter(0, internal.email.sendCompanyApproved, {
+        companyName: company.name,
+        companyEmail: company.email,
+        plan: company.platformPlan || "starter",
+      });
+    }
   },
 });
 

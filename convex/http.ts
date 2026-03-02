@@ -1,6 +1,6 @@
 import { httpRouter } from "convex/server";
 import { httpAction } from "./_generated/server";
-import { api } from "./_generated/api";
+import { api, internal } from "./_generated/api";
 
 const http = httpRouter();
 
@@ -62,8 +62,11 @@ const stripeWebhook = httpAction(async (ctx, request) => {
     // ── Booking payment checkout ──
     if (session.metadata?.type === "booking") {
       const bookingId = session.metadata.bookingId;
+      const bookingCode = session.metadata.bookingCode;
       const paymentTerms = session.metadata.paymentTerms;
       const paymentIntentId = session.payment_intent;
+      const userId = session.metadata.userId;
+      const roomId = session.metadata.roomId;
 
       if (bookingId) {
         await ctx.runMutation(api.bookings.confirmBookingPayment, {
@@ -71,6 +74,41 @@ const stripeWebhook = httpAction(async (ctx, request) => {
           paymentTerms: paymentTerms || "full",
           stripePaymentIntentId: paymentIntentId || undefined,
         });
+
+        // Send Stripe payment receipt to player
+        if (userId && roomId) {
+          try {
+            const user = await ctx.runQuery(api.users.getById, { userId: userId as any });
+            const room = await ctx.runQuery(api.rooms.getById, { id: roomId as any });
+            if (user && room) {
+              const booking = await ctx.runQuery(api.bookings.getByCode, { bookingCode: bookingCode || "" });
+              const total = booking?.total ?? 0;
+              const serviceFee = 3.99;
+              let amountCharged: number;
+              if (paymentTerms === "deposit_20") {
+                amountCharged = Math.round(total * 0.2 * 100) / 100 + serviceFee;
+              } else {
+                amountCharged = total + serviceFee;
+              }
+
+              await ctx.runAction(internal.email.sendStripeReceipt, {
+                playerName: user.name,
+                playerEmail: user.email,
+                bookingCode: bookingCode || booking?.bookingCode || "",
+                roomTitle: room.title,
+                date: booking?.date || "",
+                time: booking?.time || "",
+                players: booking?.players || 0,
+                total,
+                amountCharged,
+                paymentTerms: paymentTerms || "full",
+                companyName: room.companyName || "Escape Room",
+              });
+            }
+          } catch (e) {
+            console.error("[Webhook] Failed to send player receipt:", e);
+          }
+        }
       }
     } else {
       // ── Company subscription checkout ──
@@ -78,6 +116,7 @@ const stripeWebhook = httpAction(async (ctx, request) => {
       const plan = session.metadata?.plan;
       const period = session.metadata?.period;
       const subscriptionId = session.subscription;
+      const amountTotal = session.amount_total; // in cents
 
       if (companyId && plan && period && subscriptionId) {
         await ctx.runMutation(api.companies.completeStripePayment, {
@@ -86,6 +125,22 @@ const stripeWebhook = httpAction(async (ctx, request) => {
           plan,
           period,
         });
+
+        // Send subscription receipt to company
+        try {
+          const company = await ctx.runQuery(api.companies.getById, { id: companyId as any });
+          if (company) {
+            await ctx.runAction(internal.email.sendSubscriptionReceipt, {
+              companyName: company.name,
+              companyEmail: company.email,
+              plan,
+              period,
+              amount: amountTotal ? amountTotal / 100 : 0,
+            });
+          }
+        } catch (e) {
+          console.error("[Webhook] Failed to send subscription receipt:", e);
+        }
       }
     }
   } else if (eventType === "customer.subscription.updated") {

@@ -1,5 +1,6 @@
 import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
+import { internal } from "./_generated/api";
 
 export const create = mutation({
   args: {
@@ -60,6 +61,29 @@ export const create = mutation({
       paymentTerms,
       depositPaid,
     });
+
+    // Send booking confirmation emails (player + company)
+    const user = await ctx.db.get(args.userId);
+    const company = room?.companyId ? await ctx.db.get(room.companyId) : null;
+    if (user) {
+      await ctx.scheduler.runAfter(0, internal.email.sendBookingEmails, {
+        bookingCode,
+        playerName: user.name,
+        playerContact: user.email,
+        playerPhone: "",
+        roomTitle: room?.title || "Escape Room",
+        date: args.date,
+        time: args.time,
+        players: args.players,
+        total: args.total,
+        paymentStatus,
+        depositPaid,
+        companyName: company?.name ?? "Escape Room",
+        companyPhone: company?.phone ?? "",
+        companyEmail: company?.email ?? "",
+      });
+    }
+
     return { id, bookingCode };
   },
 });

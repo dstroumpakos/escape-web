@@ -1,5 +1,6 @@
 import { query, mutation } from "./_generated/server";
 import { v, ConvexError } from "convex/values";
+import { internal } from "./_generated/api";
 import { hashPassword, verifyPassword } from "./passwordUtils";
 import { validateEmail, validatePassword, requireNonEmpty } from "./validation";
 
@@ -159,6 +160,12 @@ export const register = mutation({
       wishlist: [],
     });
 
+    // Send welcome email
+    await ctx.scheduler.runAfter(0, internal.email.sendPlayerWelcome, {
+      playerName: trimmedName,
+      playerEmail: args.email.toLowerCase(),
+    });
+
     return userId;
   },
 });
@@ -243,6 +250,15 @@ export const loginWithApple = mutation({
       awards: 0,
       wishlist: [],
     });
+
+    // Send welcome email (only if real email)
+    const userEmail = args.email || "";
+    if (userEmail && !userEmail.includes("@private.relay")) {
+      await ctx.scheduler.runAfter(0, internal.email.sendPlayerWelcome, {
+        playerName: args.fullName || "Escape Fan",
+        playerEmail: userEmail,
+      });
+    }
 
     return userId;
   },
