@@ -18,6 +18,11 @@ import {
   X as XIcon,
   Navigation,
   DoorOpen,
+  Camera,
+  Download,
+  Share2,
+  ChevronDown,
+  ChevronUp,
 } from 'lucide-react';
 
 type TabType = 'upcoming' | 'past';
@@ -29,6 +34,8 @@ export default function TicketsPage() {
   const [activeTab, setActiveTab] = useState<TabType>('upcoming');
   const [showQR, setShowQR] = useState<string | null>(null);
   const [cancelling, setCancelling] = useState<string | null>(null);
+  const [expandedPhotos, setExpandedPhotos] = useState<string | null>(null);
+  const [photoPreviewUrl, setPhotoPreviewUrl] = useState<string | null>(null);
 
   const bookings = useQuery(
     api.bookings.getByUser,
@@ -36,6 +43,12 @@ export default function TicketsPage() {
   );
 
   const cancelBooking = useMutation(api.bookings.cancel);
+
+  // Photos for completed bookings
+  const bookingsWithPhotos = useQuery(
+    api.bookingPhotos.getBookingsWithPhotos,
+    user?.id ? { userId: user.id as any } : 'skip'
+  );
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
@@ -261,6 +274,142 @@ export default function TicketsPage() {
           )}
         </div>
       </section>
+
+      {/* ═══ Your Escape Moments (Photo Gallery) ═══ */}
+      {bookingsWithPhotos && bookingsWithPhotos.length > 0 && (
+        <section className="pb-20">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-10 h-10 rounded-xl bg-brand-red/10 flex items-center justify-center">
+                <Camera className="w-5 h-5 text-brand-red" />
+              </div>
+              <div>
+                <h2 className="text-xl font-bold">{t('tickets.escape_moments')}</h2>
+                <p className="text-xs text-brand-text-muted">{t('tickets.escape_moments_desc')}</p>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              {bookingsWithPhotos.map((booking: any) => {
+                const isExpanded = expandedPhotos === booking._id;
+                return (
+                  <div key={booking._id} className="card overflow-hidden">
+                    {/* Header */}
+                    <div
+                      className="p-5 flex items-center gap-4 cursor-pointer hover:bg-white/[0.02] transition-colors"
+                      onClick={() => setExpandedPhotos(isExpanded ? null : booking._id)}
+                    >
+                      {/* Thumbnail */}
+                      {booking.photos[0] && (
+                        <img
+                          src={booking.photos[0].processedUrl || booking.photos[0].originalUrl}
+                          alt=""
+                          className="w-14 h-14 rounded-xl object-cover shrink-0"
+                        />
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold truncate">{booking.room?.title || 'Escape Room'}</h3>
+                        <div className="flex items-center gap-3 text-xs text-brand-text-muted mt-0.5">
+                          <span className="flex items-center gap-1">
+                            <Calendar className="w-3 h-3" />
+                            {new Date(booking.date + 'T00:00:00').toLocaleDateString('en-GB', {
+                              day: 'numeric', month: 'short',
+                            })}
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <Camera className="w-3 h-3" />
+                            {booking.photoCount} {t('tickets.photos')}
+                          </span>
+                        </div>
+                      </div>
+                      {isExpanded ? (
+                        <ChevronUp className="w-5 h-5 text-brand-text-muted shrink-0" />
+                      ) : (
+                        <ChevronDown className="w-5 h-5 text-brand-text-muted shrink-0" />
+                      )}
+                    </div>
+
+                    {/* Photo Grid */}
+                    {isExpanded && (
+                      <div className="border-t border-brand-border p-4">
+                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                          {booking.photos.map((photo: any) => (
+                            <div
+                              key={photo._id}
+                              className="relative group rounded-xl overflow-hidden aspect-square bg-brand-bg cursor-pointer"
+                              onClick={() => setPhotoPreviewUrl(photo.processedUrl || photo.originalUrl)}
+                            >
+                              <img
+                                src={photo.processedUrl || photo.originalUrl}
+                                alt=""
+                                className="w-full h-full object-cover"
+                              />
+                              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
+                                <a
+                                  href={photo.processedUrl || photo.originalUrl}
+                                  download
+                                  onClick={(e) => e.stopPropagation()}
+                                  className="p-2 bg-white/20 hover:bg-white/30 rounded-xl transition-colors"
+                                >
+                                  <Download className="w-5 h-5 text-white" />
+                                </a>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    if (navigator.share) {
+                                      navigator.share({
+                                        title: booking.room?.title || 'Escape Moments',
+                                        url: photo.processedUrl || photo.originalUrl,
+                                      });
+                                    }
+                                  }}
+                                  className="p-2 bg-white/20 hover:bg-white/30 rounded-xl transition-colors"
+                                >
+                                  <Share2 className="w-5 h-5 text-white" />
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Photo Preview Modal */}
+      {photoPreviewUrl && (
+        <div
+          className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4"
+          onClick={() => setPhotoPreviewUrl(null)}
+        >
+          <button
+            onClick={() => setPhotoPreviewUrl(null)}
+            className="absolute top-4 right-4 p-2 bg-white/10 hover:bg-white/20 rounded-full transition-colors z-10"
+          >
+            <XIcon className="w-6 h-6 text-white" />
+          </button>
+          <img
+            src={photoPreviewUrl}
+            alt=""
+            className="max-w-full max-h-[90vh] rounded-xl object-contain"
+            onClick={(e) => e.stopPropagation()}
+          />
+          <div className="absolute bottom-6 flex gap-3">
+            <a
+              href={photoPreviewUrl}
+              download
+              className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-xl text-white text-sm font-medium flex items-center gap-2 transition-colors"
+            >
+              <Download className="w-4 h-4" /> {t('tickets.download')}
+            </a>
+          </div>
+        </div>
+      )}
     </>
   );
 }

@@ -283,7 +283,8 @@ export default defineSchema({
       v.literal("promo"),
       v.literal("system"),
       v.literal("slot_available"),
-      v.literal("new_room")
+      v.literal("new_room"),
+      v.literal("photos_ready")
     ),
     title: v.string(),
     message: v.string(),
@@ -346,4 +347,48 @@ export default defineSchema({
     version: v.string(),
     updatedAt: v.number(),
   }),
+
+  // ─── Company Photo Presets (branding template for booking photos) ───
+  companyPhotoPresets: defineTable({
+    companyId: v.id("companies"),
+    logoUrl: v.optional(v.string()),
+    logoStorageId: v.optional(v.id("_storage")),
+    logoPosition: v.union(
+      v.literal("top-left"),
+      v.literal("top-right"),
+      v.literal("bottom-left"),
+      v.literal("bottom-right"),
+      v.literal("bottom-center")
+    ),
+    brandColor: v.string(), // hex e.g. "#FF1E1E"
+    watermarkOpacity: v.number(), // 0.0 – 1.0
+    textTemplate: v.optional(v.string()), // e.g. "You escaped in {{time}}"
+    updatedAt: v.number(),
+  })
+    .index("by_company", ["companyId"]),
+
+  // ─── Booking Photos (company-uploaded, auto-branded) ───
+  bookingPhotos: defineTable({
+    bookingId: v.id("bookings"),
+    companyId: v.id("companies"),
+    // Storage references
+    originalStorageId: v.id("_storage"),
+    originalUrl: v.string(),
+    processedStorageId: v.optional(v.id("_storage")),
+    processedUrl: v.optional(v.string()),
+    // Processing status
+    status: v.union(
+      v.literal("pending"),
+      v.literal("processing"),
+      v.literal("ready"),
+      v.literal("failed")
+    ),
+    // Metadata
+    order: v.number(), // display order
+    uploadedAt: v.number(),
+    processedAt: v.optional(v.number()),
+  })
+    .index("by_booking", ["bookingId"])
+    .index("by_company", ["companyId"])
+    .index("by_status", ["status"]),
 });
