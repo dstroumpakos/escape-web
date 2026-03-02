@@ -27,8 +27,8 @@ export default function ContactPage() {
     {
       icon: Phone,
       label: t('contact.info_phone'),
-      value: '+30 210 1234567',
-      href: 'tel:+302101234567',
+      value: '+30 698 379 5767',
+      href: 'tel:+306983795767',
     },
     {
       icon: MapPin,
