@@ -33,6 +33,9 @@ export const savePreset = mutation({
     brandColor: v.string(),
     watermarkOpacity: v.number(),
     textTemplate: v.optional(v.string()),
+    overlayUrl: v.optional(v.string()),
+    overlayStorageId: v.optional(v.id("_storage")),
+    useOverlay: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
     const existing = await ctx.db
@@ -48,6 +51,9 @@ export const savePreset = mutation({
       brandColor: args.brandColor,
       watermarkOpacity: args.watermarkOpacity,
       textTemplate: args.textTemplate,
+      overlayUrl: args.overlayUrl,
+      overlayStorageId: args.overlayStorageId,
+      useOverlay: args.useOverlay,
       updatedAt: Date.now(),
     };
 

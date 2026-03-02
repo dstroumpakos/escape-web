@@ -363,6 +363,9 @@ export default defineSchema({
     brandColor: v.string(), // hex e.g. "#FF1E1E"
     watermarkOpacity: v.number(), // 0.0 – 1.0
     textTemplate: v.optional(v.string()), // e.g. "You escaped in {{time}}"
+    overlayUrl: v.optional(v.string()), // full-frame transparent PNG overlay
+    overlayStorageId: v.optional(v.id("_storage")),
+    useOverlay: v.optional(v.boolean()), // true = use overlay instead of logo
     updatedAt: v.number(),
   })
     .index("by_company", ["companyId"]),

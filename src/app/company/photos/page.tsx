@@ -22,6 +22,17 @@ import {
   X,
 } from 'lucide-react';
 
+// ── Helper: load an image ──
+function loadImage(src: string): Promise<HTMLImageElement> {
+  return new Promise((resolve, reject) => {
+    const img = new window.Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => resolve(img);
+    img.onerror = () => reject(new Error('Failed to load image: ' + src));
+    img.src = src;
+  });
+}
+
 // ── Client-side canvas compositing ──
 async function applyBranding(
   originalUrl: string,
@@ -31,93 +42,101 @@ async function applyBranding(
     brandColor?: string;
     watermarkOpacity?: number;
     textTemplate?: string;
+    overlayUrl?: string;
+    useOverlay?: boolean;
   } | null
 ): Promise<Blob> {
-  return new Promise((resolve, reject) => {
-    const img = new window.Image();
-    img.crossOrigin = 'anonymous';
-    img.onload = () => {
-      const canvas = document.createElement('canvas');
-      canvas.width = img.width;
-      canvas.height = img.height;
-      const ctx = canvas.getContext('2d');
-      if (!ctx) return reject(new Error('No canvas context'));
+  const img = await loadImage(originalUrl);
+  const canvas = document.createElement('canvas');
+  canvas.width = img.width;
+  canvas.height = img.height;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) throw new Error('No canvas context');
 
-      // Draw original photo
-      ctx.drawImage(img, 0, 0);
+  // Draw original photo
+  ctx.drawImage(img, 0, 0);
 
-      // If no preset or no logo, just return the original
-      if (!preset || !preset.logoUrl) {
-        canvas.toBlob((blob) => (blob ? resolve(blob) : reject(new Error('Canvas toBlob failed'))), 'image/jpeg', 0.92);
-        return;
+  // No preset — return original
+  if (!preset) {
+    return new Promise((resolve, reject) =>
+      canvas.toBlob((b) => (b ? resolve(b) : reject(new Error('toBlob failed'))), 'image/jpeg', 0.92)
+    );
+  }
+
+  const opacity = preset.watermarkOpacity ?? 0.7;
+
+  // ─── OVERLAY MODE: full-frame transparent PNG on top ───
+  if (preset.useOverlay && preset.overlayUrl) {
+    try {
+      const overlayImg = await loadImage(preset.overlayUrl);
+      ctx.globalAlpha = opacity;
+      ctx.drawImage(overlayImg, 0, 0, img.width, img.height);
+      ctx.globalAlpha = 1;
+    } catch {
+      // Overlay failed to load — continue without it
+    }
+    return new Promise((resolve, reject) =>
+      canvas.toBlob((b) => (b ? resolve(b) : reject(new Error('toBlob failed'))), 'image/jpeg', 0.92)
+    );
+  }
+
+  // ─── LOGO MODE: logo + text overlay ───
+  if (preset.logoUrl) {
+    try {
+      const logoImg = await loadImage(preset.logoUrl);
+      ctx.globalAlpha = opacity;
+
+      // Logo sizing: max 15% of image width, keep aspect ratio
+      const maxLogoW = img.width * 0.15;
+      const scale = Math.min(maxLogoW / logoImg.width, 1);
+      const logoW = logoImg.width * scale;
+      const logoH = logoImg.height * scale;
+      const pad = img.width * 0.03;
+
+      let x = pad, y = pad;
+      switch (preset.logoPosition) {
+        case 'top-right':
+          x = img.width - logoW - pad; y = pad; break;
+        case 'bottom-left':
+          x = pad; y = img.height - logoH - pad; break;
+        case 'bottom-right':
+          x = img.width - logoW - pad; y = img.height - logoH - pad; break;
+        case 'bottom-center':
+          x = (img.width - logoW) / 2; y = img.height - logoH - pad; break;
+        default: // top-left
+          x = pad; y = pad; break;
       }
 
-      const logoImg = new window.Image();
-      logoImg.crossOrigin = 'anonymous';
-      logoImg.onload = () => {
-        const opacity = preset.watermarkOpacity ?? 0.7;
-        ctx.globalAlpha = opacity;
+      ctx.drawImage(logoImg, x, y, logoW, logoH);
+      ctx.globalAlpha = 1;
+    } catch {
+      // Logo failed — continue without it
+    }
+  }
 
-        // Logo sizing: max 15% of image width, keep aspect ratio
-        const maxLogoW = img.width * 0.15;
-        const scale = Math.min(maxLogoW / logoImg.width, 1);
-        const logoW = logoImg.width * scale;
-        const logoH = logoImg.height * scale;
-        const pad = img.width * 0.03; // 3% padding
+  // Text overlay (logo mode only)
+  if (preset.textTemplate) {
+    const pad = img.width * 0.03;
+    const fontSize = Math.max(16, img.width * 0.025);
+    ctx.font = `bold ${fontSize}px sans-serif`;
+    ctx.textAlign = 'center';
+    const textY = img.height - pad;
 
-        let x = pad, y = pad;
-        switch (preset.logoPosition) {
-          case 'top-right':
-            x = img.width - logoW - pad; y = pad; break;
-          case 'bottom-left':
-            x = pad; y = img.height - logoH - pad; break;
-          case 'bottom-right':
-            x = img.width - logoW - pad; y = img.height - logoH - pad; break;
-          case 'bottom-center':
-            x = (img.width - logoW) / 2; y = img.height - logoH - pad; break;
-          default: // top-left
-            x = pad; y = pad; break;
-        }
+    const metrics = ctx.measureText(preset.textTemplate);
+    const textW = metrics.width + fontSize * 2;
+    const textH = fontSize * 1.8;
+    ctx.fillStyle = 'rgba(0,0,0,0.5)';
+    ctx.beginPath();
+    ctx.roundRect((img.width - textW) / 2, textY - textH + fontSize * 0.3, textW, textH, fontSize * 0.3);
+    ctx.fill();
 
-        ctx.drawImage(logoImg, x, y, logoW, logoH);
-        ctx.globalAlpha = 1;
+    ctx.fillStyle = preset.brandColor || '#ffffff';
+    ctx.fillText(preset.textTemplate, img.width / 2, textY);
+  }
 
-        // Text overlay
-        if (preset.textTemplate) {
-          const fontSize = Math.max(16, img.width * 0.025);
-          ctx.font = `bold ${fontSize}px sans-serif`;
-          ctx.textAlign = 'center';
-          const textY = img.height - pad;
-
-          // Semi-transparent background strip
-          const metrics = ctx.measureText(preset.textTemplate);
-          const textW = metrics.width + fontSize * 2;
-          const textH = fontSize * 1.8;
-          ctx.fillStyle = 'rgba(0,0,0,0.5)';
-          ctx.beginPath();
-          ctx.roundRect((img.width - textW) / 2, textY - textH + fontSize * 0.3, textW, textH, fontSize * 0.3);
-          ctx.fill();
-
-          // Text
-          ctx.fillStyle = preset.brandColor || '#ffffff';
-          ctx.fillText(preset.textTemplate, img.width / 2, textY);
-        }
-
-        canvas.toBlob(
-          (blob) => (blob ? resolve(blob) : reject(new Error('Canvas toBlob failed'))),
-          'image/jpeg',
-          0.92
-        );
-      };
-      logoImg.onerror = () => {
-        // If logo fails to load, return photo without logo
-        canvas.toBlob((blob) => (blob ? resolve(blob) : reject(new Error('Canvas toBlob failed'))), 'image/jpeg', 0.92);
-      };
-      logoImg.src = preset.logoUrl!;
-    };
-    img.onerror = () => reject(new Error('Failed to load original image'));
-    img.src = originalUrl;
-  });
+  return new Promise((resolve, reject) =>
+    canvas.toBlob((b) => (b ? resolve(b) : reject(new Error('toBlob failed'))), 'image/jpeg', 0.92)
+  );
 }
 
 export default function CompanyPhotosPage() {

@@ -46,6 +46,8 @@ import {
   Loader2,
   Palette,
   Image,
+  Layers,
+  AlertCircle,
 } from 'lucide-react';
 import { PlanBadge } from '../PlanBadge';
 import { useTranslation } from '@/lib/i18n';
@@ -111,6 +113,14 @@ export default function CompanySettingsPage() {
   const [presetLoaded, setPresetLoaded] = useState(false);
   const presetLogoRef = useRef<HTMLInputElement>(null);
 
+  // Overlay state
+  const [overlayUrl, setOverlayUrl] = useState('');
+  const [overlayStorageId, setOverlayStorageId] = useState<any>(null);
+  const [overlayPreview, setOverlayPreview] = useState('');
+  const [overlayUploading, setOverlayUploading] = useState(false);
+  const [useOverlay, setUseOverlay] = useState(false);
+  const overlayRef = useRef<HTMLInputElement>(null);
+
   // Respect ?tab= query param
   useEffect(() => {
     const tab = searchParams.get('tab');
@@ -130,6 +140,9 @@ export default function CompanySettingsPage() {
       });
       if (photoPreset.logoUrl) setPresetLogoUrl(photoPreset.logoUrl);
       if (photoPreset.logoStorageId) setPresetLogoStorageId(photoPreset.logoStorageId);
+      if ((photoPreset as any).overlayUrl) setOverlayUrl((photoPreset as any).overlayUrl);
+      if ((photoPreset as any).overlayStorageId) setOverlayStorageId((photoPreset as any).overlayStorageId);
+      if ((photoPreset as any).useOverlay) setUseOverlay(true);
       setPresetLoaded(true);
     }
   }, [photoPreset, presetLoaded]);
@@ -773,6 +786,163 @@ export default function CompanySettingsPage() {
             )}
 
             <div className="space-y-5">
+              {/* Branding Mode Toggle */}
+              <div>
+                <label className="block text-sm font-medium text-white mb-3">
+                  {t('company.settings.photos_mode')}
+                </label>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    onClick={() => setUseOverlay(false)}
+                    className={`p-4 rounded-xl border-2 text-left transition-all ${
+                      !useOverlay
+                        ? 'border-brand-red bg-brand-red/10'
+                        : 'border-white/10 hover:border-white/20'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2 mb-1">
+                      <Upload className="w-4 h-4 text-brand-red" />
+                      <span className="font-semibold text-sm">{t('company.settings.photos_mode_logo')}</span>
+                    </div>
+                    <p className="text-xs text-brand-text-muted">{t('company.settings.photos_mode_logo_desc')}</p>
+                  </button>
+                  <button
+                    onClick={() => setUseOverlay(true)}
+                    className={`p-4 rounded-xl border-2 text-left transition-all ${
+                      useOverlay
+                        ? 'border-brand-red bg-brand-red/10'
+                        : 'border-white/10 hover:border-white/20'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2 mb-1">
+                      <Layers className="w-4 h-4 text-brand-red" />
+                      <span className="font-semibold text-sm">{t('company.settings.photos_mode_overlay')}</span>
+                    </div>
+                    <p className="text-xs text-brand-text-muted">{t('company.settings.photos_mode_overlay_desc')}</p>
+                  </button>
+                </div>
+              </div>
+
+              {/* ─── OVERLAY MODE ─── */}
+              {useOverlay && (
+                <div className="space-y-5 bg-brand-bg/50 rounded-xl p-5 border border-white/5">
+                  {/* Overlay Upload */}
+                  <div>
+                    <label className="block text-sm text-brand-text-secondary mb-2">
+                      {t('company.settings.photos_overlay')}
+                    </label>
+                    <input
+                      ref={overlayRef}
+                      type="file"
+                      accept="image/png"
+                      className="hidden"
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        const reader = new FileReader();
+                        reader.onload = (ev) => setOverlayPreview(ev.target?.result as string);
+                        reader.readAsDataURL(file);
+                        setOverlayUploading(true);
+                        try {
+                          const uploadUrl = await generateUploadUrl();
+                          const result = await fetch(uploadUrl, {
+                            method: 'POST',
+                            headers: { 'Content-Type': file.type },
+                            body: file,
+                          });
+                          const { storageId } = await result.json();
+                          const url = await getUrlMutation({ storageId });
+                          if (url) {
+                            setOverlayUrl(url);
+                            setOverlayStorageId(storageId);
+                          }
+                        } catch {
+                          setPresetMsg('Failed to upload overlay');
+                        } finally {
+                          setOverlayUploading(false);
+                        }
+                      }}
+                    />
+                    <div
+                      onClick={() => overlayRef.current?.click()}
+                      className="cursor-pointer border-2 border-dashed border-white/10 hover:border-brand-red/40 rounded-xl p-6 text-center transition-all group"
+                    >
+                      {overlayUploading ? (
+                        <Loader2 className="w-10 h-10 text-brand-red animate-spin mx-auto" />
+                      ) : (overlayPreview || overlayUrl) ? (
+                        <div className="relative w-full max-w-sm mx-auto">
+                          <div className="bg-[url('data:image/svg+xml,%3Csvg%20width%3D%2220%22%20height%3D%2220%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Crect%20width%3D%2210%22%20height%3D%2210%22%20fill%3D%22%23333%22%2F%3E%3Crect%20x%3D%2210%22%20y%3D%2210%22%20width%3D%2210%22%20height%3D%2210%22%20fill%3D%22%23333%22%2F%3E%3Crect%20x%3D%2210%22%20width%3D%2210%22%20height%3D%2210%22%20fill%3D%22%23555%22%2F%3E%3Crect%20y%3D%2210%22%20width%3D%2210%22%20height%3D%2210%22%20fill%3D%22%23555%22%2F%3E%3C%2Fsvg%3E')] rounded-xl overflow-hidden aspect-video">
+                            <img src={overlayPreview || overlayUrl} alt="Overlay" className="w-full h-full object-contain" />
+                          </div>
+                          <p className="text-xs text-brand-text-muted mt-2">{t('company.settings.photos_change_overlay')}</p>
+                        </div>
+                      ) : (
+                        <div>
+                          <Layers className="w-10 h-10 text-brand-text-secondary group-hover:text-brand-red transition-colors mx-auto mb-2" />
+                          <p className="text-sm text-brand-text-secondary group-hover:text-white transition-colors">
+                            {t('company.settings.photos_upload_overlay')}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Overlay Instructions */}
+                  <div className="bg-brand-surface rounded-xl p-4 border border-white/5">
+                    <h4 className="text-sm font-semibold mb-2 flex items-center gap-2">
+                      <AlertCircle className="w-4 h-4 text-brand-red" />
+                      {t('company.settings.photos_overlay_instructions_title')}
+                    </h4>
+                    <ul className="text-xs text-brand-text-muted space-y-1.5 leading-relaxed">
+                      <li>• {t('company.settings.photos_overlay_inst_1')}</li>
+                      <li>• {t('company.settings.photos_overlay_inst_2')}</li>
+                      <li>• {t('company.settings.photos_overlay_inst_3')}</li>
+                      <li>• {t('company.settings.photos_overlay_inst_4')}</li>
+                      <li>• {t('company.settings.photos_overlay_inst_5')}</li>
+                    </ul>
+                  </div>
+
+                  {/* Overlay Opacity */}
+                  <div>
+                    <label className="block text-sm text-brand-text-secondary mb-2">
+                      {t('company.settings.photos_overlay_opacity')} ({Math.round(presetForm.watermarkOpacity * 100)}%)
+                    </label>
+                    <input
+                      type="range"
+                      min="0"
+                      max="100"
+                      value={presetForm.watermarkOpacity * 100}
+                      onChange={(e) => setPresetForm({ ...presetForm, watermarkOpacity: parseInt(e.target.value) / 100 })}
+                      className="w-full accent-[#FF1E1E]"
+                    />
+                  </div>
+
+                  {/* Overlay Preview */}
+                  {overlayUrl && (
+                    <div>
+                      <label className="block text-sm text-brand-text-secondary mb-2">
+                        <Eye className="w-4 h-4 inline mr-1" />
+                        {t('company.settings.photos_preview')}
+                      </label>
+                      <div className="relative w-full max-w-md aspect-video bg-gradient-to-br from-gray-700 to-gray-900 rounded-xl overflow-hidden border border-white/10">
+                        <div className="absolute inset-0 flex items-center justify-center text-white/20">
+                          <Image className="w-16 h-16" />
+                        </div>
+                        <img
+                          src={overlayPreview || overlayUrl}
+                          alt="Overlay preview"
+                          className="absolute inset-0 w-full h-full object-cover"
+                          style={{ opacity: presetForm.watermarkOpacity }}
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* ─── LOGO MODE ─── */}
+              {!useOverlay && (
+                <div className="space-y-5">
               {/* Logo Upload */}
               <div>
                 <label className="block text-sm text-brand-text-secondary mb-2">
@@ -945,6 +1115,8 @@ export default function CompanySettingsPage() {
                   </div>
                 </div>
               )}
+                </div>
+              )}
 
               {/* Save Button */}
               <div className="pt-2">
@@ -962,6 +1134,9 @@ export default function CompanySettingsPage() {
                         brandColor: presetForm.brandColor,
                         watermarkOpacity: presetForm.watermarkOpacity,
                         textTemplate: presetForm.textTemplate || undefined,
+                        overlayUrl: overlayUrl || undefined,
+                        overlayStorageId: overlayStorageId || undefined,
+                        useOverlay,
                       });
                       setPresetMsg('✓ ' + t('company.settings.photos_saved'));
                     } catch {
