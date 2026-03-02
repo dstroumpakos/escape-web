@@ -126,22 +126,56 @@ async function applyBranding(
         .replace(/\{\{date\}\}/gi, bookingContext.date || '');
     }
 
-    const pad = img.width * 0.03;
-    const fontSize = Math.max(16, img.width * 0.025);
-    ctx.font = `bold ${fontSize}px sans-serif`;
+    const pad = img.width * 0.04;
+    const fontSize = Math.max(18, img.width * 0.03);
+
+    // ─── Cinematic gradient fade at the bottom ───
+    const gradientH = img.height * 0.3;
+    const grad = ctx.createLinearGradient(0, img.height - gradientH, 0, img.height);
+    grad.addColorStop(0, 'rgba(0,0,0,0)');
+    grad.addColorStop(0.5, 'rgba(0,0,0,0.4)');
+    grad.addColorStop(1, 'rgba(0,0,0,0.75)');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, img.height - gradientH, img.width, gradientH);
+
+    // ─── Thin accent line ───
+    const brandColor = preset.brandColor || '#FF1E1E';
+    const lineY = img.height - pad - fontSize * 1.6;
+    const lineW = img.width * 0.12;
+    ctx.strokeStyle = brandColor;
+    ctx.lineWidth = Math.max(2, img.width * 0.002);
+    ctx.beginPath();
+    ctx.moveTo((img.width - lineW) / 2, lineY);
+    ctx.lineTo((img.width + lineW) / 2, lineY);
+    ctx.stroke();
+
+    // ─── Elegant text with shadow ───
+    ctx.font = `600 ${fontSize}px 'Segoe UI', 'Helvetica Neue', Arial, sans-serif`;
     ctx.textAlign = 'center';
+    ctx.letterSpacing = `${fontSize * 0.08}px`;
     const textY = img.height - pad;
 
-    const metrics = ctx.measureText(displayText);
-    const textW = metrics.width + fontSize * 2;
-    const textH = fontSize * 1.8;
-    ctx.fillStyle = 'rgba(0,0,0,0.5)';
-    ctx.beginPath();
-    ctx.roundRect((img.width - textW) / 2, textY - textH + fontSize * 0.3, textW, textH, fontSize * 0.3);
-    ctx.fill();
+    // Multi-layer shadow for depth
+    ctx.shadowColor = 'rgba(0,0,0,0.8)';
+    ctx.shadowBlur = fontSize * 0.5;
+    ctx.shadowOffsetX = 0;
+    ctx.shadowOffsetY = fontSize * 0.08;
+    ctx.fillStyle = '#ffffff';
+    ctx.fillText(displayText.toUpperCase(), img.width / 2, textY);
 
-    ctx.fillStyle = preset.brandColor || '#ffffff';
-    ctx.fillText(displayText, img.width / 2, textY);
+    // Second pass: brand color glow
+    ctx.shadowColor = brandColor;
+    ctx.shadowBlur = fontSize * 0.3;
+    ctx.shadowOffsetX = 0;
+    ctx.shadowOffsetY = 0;
+    ctx.fillStyle = '#ffffff';
+    ctx.fillText(displayText.toUpperCase(), img.width / 2, textY);
+
+    // Reset shadow
+    ctx.shadowColor = 'transparent';
+    ctx.shadowBlur = 0;
+    ctx.shadowOffsetX = 0;
+    ctx.shadowOffsetY = 0;
   }
 
   return new Promise((resolve, reject) =>

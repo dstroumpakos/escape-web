@@ -1105,12 +1105,22 @@ export default function CompanySettingsPage() {
                     )}
                     {/* Text overlay */}
                     {presetForm.textTemplate && (
-                      <div
-                        className="absolute bottom-3 left-0 right-0 text-center text-sm font-medium"
-                        style={{ color: presetForm.brandColor, opacity: presetForm.watermarkOpacity + 0.3 }}
-                      >
-                        {presetForm.textTemplate.replace('{{time}}', '45:23')}
-                      </div>
+                      <>
+                        {/* Cinematic gradient fade */}
+                        <div className="absolute bottom-0 left-0 right-0 h-1/2 bg-gradient-to-t from-black/75 via-black/30 to-transparent" />
+                        {/* Accent line */}
+                        <div
+                          className="absolute left-1/2 -translate-x-1/2 bottom-10 w-10 h-0.5 rounded-full"
+                          style={{ backgroundColor: presetForm.brandColor }}
+                        />
+                        {/* Text */}
+                        <div
+                          className="absolute bottom-3 left-0 right-0 text-center text-xs font-semibold uppercase tracking-[0.15em] text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]"
+                          style={{ textShadow: `0 0 12px ${presetForm.brandColor}40` }}
+                        >
+                          {presetForm.textTemplate.replace('{{room}}', 'Room Name').replace('{{time}}', '45:23').replace('{{date}}', '25/12/2025')}
+                        </div>
+                      </>
                     )}
                   </div>
                 </div>
