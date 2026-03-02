@@ -35,7 +35,7 @@ function getResend(): Resend | null {
 }
 
 function fromAddr(senderName?: string): string {
-  const addr = process.env.EMAIL_FROM || "noreply@unlockedescapes.com";
+  const addr = process.env.EMAIL_FROM || "noreply@unlocked.gr";
   const name = senderName || process.env.EMAIL_FROM_NAME || "UNLOCKED";
   return `${name} <${addr}>`;
 }
@@ -264,7 +264,7 @@ export const sendPlayerWelcome = internalAction({
   <tr><th style="${S.th}">📸 Share</th><td style="${S.td}">Save and share your escape room photos</td></tr>
 </table>
 <div style="text-align:center;margin:32px 0;">
-  <a href="https://unlockedescapes.com/discover" style="${S.btn}">Start Exploring →</a>
+  <a href="https://unlocked.gr/discover" style="${S.btn}">Start Exploring →</a>
 </div>
 <p style="font-size:14px;color:#666;line-height:1.6;">
   Your rank: <strong>Escape Rookie 🌟</strong><br/>
@@ -320,7 +320,7 @@ ${planLine}
   You'll receive an email as soon as your account is approved.
 </p>
 <div style="text-align:center;margin:32px 0;">
-  <a href="https://unlockedescapes.com/company" style="${S.btn}">Go to Dashboard →</a>
+  <a href="https://unlocked.gr/company" style="${S.btn}">Go to Dashboard →</a>
 </div>`,
       "UNLOCKED — Escape Room Platform"
     );
@@ -397,7 +397,7 @@ export const sendCompanyApproved = internalAction({
   Players can discover and book your rooms as soon as you publish them!
 </p>
 <div style="text-align:center;margin:32px 0;">
-  <a href="https://unlockedescapes.com/company" style="${S.btnGreen}">Go to Dashboard →</a>
+  <a href="https://unlocked.gr/company" style="${S.btnGreen}">Go to Dashboard →</a>
 </div>`,
       "UNLOCKED — Escape Room Platform"
     );
@@ -517,10 +517,10 @@ export const sendSubscriptionReceipt = internalAction({
   <strong>Billing</strong> section in your dashboard.
 </p>
 <div style="text-align:center;margin:32px 0;">
-  <a href="https://unlockedescapes.com/company/settings" style="${S.btn}">Manage Subscription →</a>
+  <a href="https://unlocked.gr/company/settings" style="${S.btn}">Manage Subscription →</a>
 </div>
 <p style="font-size:13px;color:#999;margin:0;line-height:1.6;">
-  This charge will appear on your statement as "UNLOCKED". If you have questions, contact us at support@unlockedescapes.com.
+  This charge will appear on your statement as "UNLOCKED". If you have questions, contact us at support@unlocked.gr.
 </p>`,
       "UNLOCKED — Subscription Receipt"
     );

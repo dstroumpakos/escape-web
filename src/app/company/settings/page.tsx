@@ -757,8 +757,8 @@ export default function CompanySettingsPage() {
             <div className="mt-4 p-3 bg-brand-bg/50 rounded-xl border border-white/5">
               <p className="text-xs text-brand-text-secondary">
                 {t('company.widget.need_help')}{' '}
-                <a href="mailto:support@unlockedescapes.com" className="text-brand-red hover:underline">
-                  support@unlockedescapes.com
+                <a href="mailto:support@unlocked.gr" className="text-brand-red hover:underline">
+                  support@unlocked.gr
                 </a>
               </p>
             </div>
