@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef } from 'react';
-import { useQuery, useMutation, useAction } from 'convex/react';
+import { useQuery, useMutation } from 'convex/react';
 import { api } from '../../../../convex/_generated/api';
 import { useCompanyAuth } from '@/lib/companyAuth';
 import { useTranslation } from '@/lib/i18n';
@@ -22,6 +22,104 @@ import {
   X,
 } from 'lucide-react';
 
+// ── Client-side canvas compositing ──
+async function applyBranding(
+  originalUrl: string,
+  preset: {
+    logoUrl?: string;
+    logoPosition?: string;
+    brandColor?: string;
+    watermarkOpacity?: number;
+    textTemplate?: string;
+  } | null
+): Promise<Blob> {
+  return new Promise((resolve, reject) => {
+    const img = new window.Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return reject(new Error('No canvas context'));
+
+      // Draw original photo
+      ctx.drawImage(img, 0, 0);
+
+      // If no preset or no logo, just return the original
+      if (!preset || !preset.logoUrl) {
+        canvas.toBlob((blob) => (blob ? resolve(blob) : reject(new Error('Canvas toBlob failed'))), 'image/jpeg', 0.92);
+        return;
+      }
+
+      const logoImg = new window.Image();
+      logoImg.crossOrigin = 'anonymous';
+      logoImg.onload = () => {
+        const opacity = preset.watermarkOpacity ?? 0.7;
+        ctx.globalAlpha = opacity;
+
+        // Logo sizing: max 15% of image width, keep aspect ratio
+        const maxLogoW = img.width * 0.15;
+        const scale = Math.min(maxLogoW / logoImg.width, 1);
+        const logoW = logoImg.width * scale;
+        const logoH = logoImg.height * scale;
+        const pad = img.width * 0.03; // 3% padding
+
+        let x = pad, y = pad;
+        switch (preset.logoPosition) {
+          case 'top-right':
+            x = img.width - logoW - pad; y = pad; break;
+          case 'bottom-left':
+            x = pad; y = img.height - logoH - pad; break;
+          case 'bottom-right':
+            x = img.width - logoW - pad; y = img.height - logoH - pad; break;
+          case 'bottom-center':
+            x = (img.width - logoW) / 2; y = img.height - logoH - pad; break;
+          default: // top-left
+            x = pad; y = pad; break;
+        }
+
+        ctx.drawImage(logoImg, x, y, logoW, logoH);
+        ctx.globalAlpha = 1;
+
+        // Text overlay
+        if (preset.textTemplate) {
+          const fontSize = Math.max(16, img.width * 0.025);
+          ctx.font = `bold ${fontSize}px sans-serif`;
+          ctx.textAlign = 'center';
+          const textY = img.height - pad;
+
+          // Semi-transparent background strip
+          const metrics = ctx.measureText(preset.textTemplate);
+          const textW = metrics.width + fontSize * 2;
+          const textH = fontSize * 1.8;
+          ctx.fillStyle = 'rgba(0,0,0,0.5)';
+          ctx.beginPath();
+          ctx.roundRect((img.width - textW) / 2, textY - textH + fontSize * 0.3, textW, textH, fontSize * 0.3);
+          ctx.fill();
+
+          // Text
+          ctx.fillStyle = preset.brandColor || '#ffffff';
+          ctx.fillText(preset.textTemplate, img.width / 2, textY);
+        }
+
+        canvas.toBlob(
+          (blob) => (blob ? resolve(blob) : reject(new Error('Canvas toBlob failed'))),
+          'image/jpeg',
+          0.92
+        );
+      };
+      logoImg.onerror = () => {
+        // If logo fails to load, return photo without logo
+        canvas.toBlob((blob) => (blob ? resolve(blob) : reject(new Error('Canvas toBlob failed'))), 'image/jpeg', 0.92);
+      };
+      logoImg.src = preset.logoUrl!;
+    };
+    img.onerror = () => reject(new Error('Failed to load original image'));
+    img.src = originalUrl;
+  });
+}
+
 export default function CompanyPhotosPage() {
   const { company } = useCompanyAuth();
   const { t } = useTranslation();
@@ -32,11 +130,18 @@ export default function CompanyPhotosPage() {
     companyId ? { companyId: companyId as any } : 'skip'
   );
 
+  // Fetch the company's photo branding preset
+  const photoPreset = useQuery(
+    api.bookingPhotos.getPreset,
+    companyId ? { companyId: companyId as any } : 'skip'
+  );
+
   const generateUploadUrl = useMutation(api.companies.generateUploadUrl);
   const getUrlMutation = useMutation(api.companies.getUrlMutation);
   const addPhoto = useMutation(api.bookingPhotos.addPhoto);
   const deletePhoto = useMutation(api.bookingPhotos.deletePhoto);
-  const processAll = useAction(api.bookingPhotos.processAllForBooking);
+  const markPhotoProcessed = useMutation(api.bookingPhotos.markPhotoProcessed);
+  const checkAndNotify = useMutation(api.bookingPhotos.checkAndNotifyBooking);
 
   const [selectedBookingId, setSelectedBookingId] = useState<string | null>(null);
   const [expandedBooking, setExpandedBooking] = useState<string | null>(null);
@@ -109,9 +214,37 @@ export default function CompanyPhotosPage() {
   };
 
   const handleProcess = async (bookingId: string) => {
+    if (!companyId || !bookingPhotos) return;
     setProcessing(bookingId);
     try {
-      await processAll({ bookingId: bookingId as any });
+      const pending = bookingPhotos.filter((p: any) => p.status === 'pending');
+      for (const photo of pending) {
+        // 1. Apply branding on canvas
+        const branded = await applyBranding(photo.originalUrl, photoPreset || null);
+
+        // 2. Upload processed image to Convex storage
+        const uploadUrl = await generateUploadUrl();
+        const result = await fetch(uploadUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'image/jpeg' },
+          body: branded,
+        });
+        const { storageId } = await result.json();
+        const processedUrl = await getUrlMutation({ storageId });
+
+        // 3. Mark photo as processed
+        if (processedUrl) {
+          await markPhotoProcessed({
+            photoId: photo._id,
+            companyId: companyId as any,
+            processedStorageId: storageId,
+            processedUrl,
+          });
+        }
+      }
+
+      // 4. Check if all photos ready → notify player
+      await checkAndNotify({ bookingId: bookingId as any, companyId: companyId as any });
     } catch (err) {
       console.error('Processing failed:', err);
     } finally {
@@ -188,7 +321,7 @@ export default function CompanyPhotosPage() {
                       <h3 className="font-semibold truncate">{booking.room?.title || 'Room'}</h3>
                       {booking.photoCount > 0 && (
                         <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-brand-red/20 text-brand-red">
-                          {booking.photoCount} {t('company.photos.photos_count')}
+                          {t('company.photos.photos_count', { count: String(booking.photoCount) })}
                         </span>
                       )}
                     </div>
@@ -330,10 +463,7 @@ export default function CompanyPhotosPage() {
           <div className="bg-brand-surface rounded-2xl p-8 text-center border border-white/10 max-w-sm w-full mx-4">
             <Loader2 className="w-10 h-10 text-brand-red animate-spin mx-auto mb-4" />
             <p className="text-lg font-semibold mb-1">
-              {t('company.photos.uploading')}
-            </p>
-            <p className="text-sm text-brand-text-muted">
-              {uploadProgress} / {uploadTotal}
+              {t('company.photos.uploading', { current: String(uploadProgress), total: String(uploadTotal) })}
             </p>
             <div className="w-full h-2 bg-brand-bg rounded-full mt-4 overflow-hidden">
               <div

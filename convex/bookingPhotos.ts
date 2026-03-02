@@ -263,6 +263,60 @@ export const getPhotoById = query({
   },
 });
 
+// ── Public mutation: mark a photo as processed (called from client after canvas compositing) ──
+export const markPhotoProcessed = mutation({
+  args: {
+    photoId: v.id("bookingPhotos"),
+    companyId: v.id("companies"),
+    processedStorageId: v.id("_storage"),
+    processedUrl: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const photo = await ctx.db.get(args.photoId);
+    if (!photo || photo.companyId !== args.companyId) {
+      throw new Error("Not authorized");
+    }
+    await ctx.db.patch(args.photoId, {
+      status: "ready",
+      processedStorageId: args.processedStorageId,
+      processedUrl: args.processedUrl,
+      processedAt: Date.now(),
+    });
+  },
+});
+
+// ── Public mutation: check if all booking photos are ready and notify player ──
+export const checkAndNotifyBooking = mutation({
+  args: { bookingId: v.id("bookings"), companyId: v.id("companies") },
+  handler: async (ctx, args) => {
+    const photos = await ctx.db
+      .query("bookingPhotos")
+      .withIndex("by_booking", (q) => q.eq("bookingId", args.bookingId))
+      .collect();
+
+    const allReady = photos.length > 0 && photos.every((p) => p.status === "ready");
+    if (!allReady) return false;
+
+    const booking = await ctx.db.get(args.bookingId);
+    if (!booking || !booking.userId) return false;
+
+    const room = await ctx.db.get(booking.roomId);
+    const roomName = room?.title || "Escape Room";
+
+    await ctx.db.insert("notifications", {
+      userId: booking.userId,
+      type: "photos_ready",
+      title: "Your Escape Moments are ready! 🎉",
+      message: `Your photos from ${roomName} are now available to view and download.`,
+      read: false,
+      createdAt: Date.now(),
+      data: { bookingId: args.bookingId, roomName },
+    });
+
+    return true;
+  },
+});
+
 // ── Notify player that booking photos are ready ──
 export const notifyPhotosReady = mutation({
   args: { bookingId: v.id("bookings") },
