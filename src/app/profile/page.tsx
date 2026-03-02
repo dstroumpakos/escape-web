@@ -107,7 +107,7 @@ export default function ProfilePage() {
           <div className="flex items-center justify-center gap-2 flex-wrap mb-2">
             {profile.title && (
               <span className="inline-block text-xs font-medium px-3 py-1 rounded-full bg-brand-red/10 text-brand-red border border-brand-red/20">
-                {profile.title}
+                {t(`profile.${profile.title}`)}
               </span>
             )}
             {(convexUser as any)?.isPremium && (
@@ -117,7 +117,9 @@ export default function ProfilePage() {
             )}
           </div>
           {(profile as any).memberSince && (
-            <p className="text-xs text-brand-text-muted">{(profile as any).memberSince}</p>
+            <p className="text-xs text-brand-text-muted">
+              {t('profile.member_since')} {(profile as any).memberSince}
+            </p>
           )}
         </div>
       </section>

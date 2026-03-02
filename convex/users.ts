@@ -24,10 +24,42 @@ export const getByEmail = query({
       .withIndex("by_user", (q) => q.eq("userId", user._id))
       .collect();
 
+    // Compute real stats from bookings
+    const allBookings = await ctx.db
+      .query("bookings")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .collect();
+
+    const played = allBookings.filter((b) => b.status === "completed").length;
+    const uniqueRooms = new Set(
+      allBookings.filter((b) => b.status === "completed").map((b) => b.roomId)
+    ).size;
+
+    const rank = getPlayerRank(played);
+
     const { password: _pw, ...safeUser } = user;
-    return { ...safeUser, avatar, badges };
+    return {
+      ...safeUser,
+      avatar,
+      badges,
+      played,
+      escaped: uniqueRooms,
+      awards: badges.filter((b) => b.earned).length,
+      title: rank,
+    };
   },
 });
+
+// ── Rank thresholds based on completed rooms ──
+function getPlayerRank(completed: number): string {
+  if (completed >= 100) return "rank_legend";
+  if (completed >= 50) return "rank_master";
+  if (completed >= 25) return "rank_expert";
+  if (completed >= 10) return "rank_veteran";
+  if (completed >= 5) return "rank_adventurer";
+  if (completed >= 1) return "rank_explorer";
+  return "rank_rookie";
+}
 
 export const getById = query({
   args: { userId: v.id("users") },
@@ -47,8 +79,36 @@ export const getById = query({
       .withIndex("by_user", (q) => q.eq("userId", user._id))
       .collect();
 
+    // Compute real stats from bookings
+    const allBookings = await ctx.db
+      .query("bookings")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .collect();
+
+    const played = allBookings.filter(
+      (b) => b.status === "completed"
+    ).length;
+    const upcoming = allBookings.filter(
+      (b) => b.status === "upcoming"
+    ).length;
+    // Count unique rooms completed
+    const uniqueRooms = new Set(
+      allBookings.filter((b) => b.status === "completed").map((b) => b.roomId)
+    ).size;
+
+    const rank = getPlayerRank(played);
+
     const { password: _pw, ...safeUser } = user;
-    return { ...safeUser, avatar, badges };
+    return {
+      ...safeUser,
+      avatar,
+      badges,
+      played,
+      escaped: uniqueRooms,
+      awards: badges.filter((b) => b.earned).length,
+      title: rank,
+      upcoming,
+    };
   },
 });
 
@@ -299,11 +359,22 @@ export const leaderboard = query({
   handler: async (ctx, args) => {
     const max = args.limit ?? 20;
 
-    // Fetch all users
+    // Fetch all users and all bookings
     const allUsers = await ctx.db.query("users").collect();
+    const allBookings = await ctx.db.query("bookings").collect();
+
+    // Compute dynamic stats per user
+    const userStats = allUsers.map((user) => {
+      const userBookings = allBookings.filter(
+        (b) => b.userId === user._id && b.status === "completed"
+      );
+      const played = userBookings.length;
+      const escaped = new Set(userBookings.map((b) => b.roomId)).size;
+      return { ...user, played, escaped };
+    });
 
     // Sort by escaped count descending, then by played ascending (fewer games = better rate)
-    const sorted = allUsers
+    const sorted = userStats
       .filter((u) => u.played > 0)
       .sort((a, b) => {
         if (b.escaped !== a.escaped) return b.escaped - a.escaped;
@@ -350,9 +421,9 @@ export const leaderboard = query({
       })
     );
 
-    // Aggregate stats across ALL users
-    const totalEscapes = allUsers.reduce((sum, u) => sum + u.escaped, 0);
-    const totalPlayed = allUsers.reduce((sum, u) => sum + u.played, 0);
+    // Aggregate stats across ALL users (dynamic)
+    const totalEscapes = userStats.reduce((sum, u) => sum + u.escaped, 0);
+    const totalPlayed = userStats.reduce((sum, u) => sum + u.played, 0);
     const successRate = totalPlayed > 0 ? Math.round((totalEscapes / totalPlayed) * 100) : 0;
 
     // Total badges
