@@ -263,7 +263,7 @@ const translations: Record<Language, Record<string, string>> = {
     'ws.faq5_q': 'Is hosting included?',
     'ws.faq5_a': 'The first year of hosting is included. After that, hosting is available at €9/month or €89/year.',
     'ws.faq6_q': 'Can you add the UNLOCKED booking system to my existing website?',
-    'ws.faq6_a': 'Yes! If you already have a website, we can integrate the UNLOCKED booking widget into it. Contact us for a custom quote.',
+    'ws.faq6_a': 'Yes! The UNLOCKED booking widget is available for free in your company dashboard under Settings. Simply copy the embed code and paste it into your website — no custom development needed.',
     'ws.faq7_q': 'What if I\'m not satisfied with the design?',
     'ws.faq7_a': 'We include multiple rounds of design revisions. We won\'t launch until you\'re 100% happy with the result.',
 
@@ -1750,7 +1750,7 @@ const translations: Record<Language, Record<string, string>> = {
     'ws.faq5_q': 'Περιλαμβάνεται το hosting;',
     'ws.faq5_a': 'Ο πρώτος χρόνος hosting περιλαμβάνεται. Μετά, το hosting είναι διαθέσιμο στα €9/μήνα ή €89/χρόνο.',
     'ws.faq6_q': 'Μπορείτε να ενσωματώσετε το UNLOCKED σε υπάρχουσα ιστοσελίδα;',
-    'ws.faq6_a': 'Ναι! Αν ήδη έχετε ιστοσελίδα, μπορούμε να ενσωματώσουμε το UNLOCKED booking widget. Επικοινωνήστε μαζί μας για προσφορά.',
+    'ws.faq6_a': 'Ναι! Το UNLOCKED booking widget είναι διαθέσιμο δωρεάν στον πίνακα ελέγχου της εταιρείας σας στις Ρυθμίσεις. Απλά αντιγράψτε τον κώδικα embed και επικολλήστε τον στην ιστοσελίδα σας — δεν χρειάζεται custom ανάπτυξη.',
     'ws.faq7_q': 'Τι γίνεται αν δεν μου αρέσει ο σχεδιασμός;',
     'ws.faq7_a': 'Περιλαμβάνονται πολλαπλοί γύροι αναθεωρήσεων. Δεν κάνουμε launch μέχρι να είστε 100% ικανοποιημένοι.',
 
