@@ -202,9 +202,9 @@ export default function WebsiteServicePage() {
             </div>
 
             {/* Professional - Recommended */}
-            <div className="card p-8 flex flex-col border-brand-red/50 relative">
-              <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                <span className="bg-brand-red text-white text-xs font-bold px-4 py-1.5 rounded-full flex items-center gap-1">
+            <div className="card p-8 flex flex-col border-brand-red/50 relative overflow-visible pt-12">
+              <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-10">
+                <span className="bg-brand-red text-white text-xs font-bold px-4 py-1.5 rounded-full flex items-center gap-1 whitespace-nowrap shadow-lg">
                   <Star className="w-3 h-3" /> {t('ws.recommended')}
                 </span>
               </div>
