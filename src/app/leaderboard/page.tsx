@@ -319,8 +319,12 @@ export default function LeaderboardPage() {
                         ({room.reviews})
                       </span>
                     </div>
-                    <div className="text-brand-text-secondary">
-                      {room.escapeRate}% {t('leaderboard.escape_rate')}
+                    <div className="text-brand-text-muted text-xs">
+                      {room.escapeRate > 0 ? (
+                        <>{room.escapeRate}% {t('leaderboard.escape_rate')}</>
+                      ) : (
+                        <>{room.reviews} {t('featured.reviews')}</>
+                      )}
                     </div>
                   </div>
                 </div>
