@@ -3,6 +3,7 @@
 import { usePathname } from 'next/navigation';
 import { Navbar } from './Navbar';
 import { Footer } from './Footer';
+import { CookieConsent } from './CookieConsent';
 
 export function LayoutShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -10,7 +11,12 @@ export function LayoutShell({ children }: { children: React.ReactNode }) {
 
   if (isCompanyRoute) {
     // Company portal has its own layout — no main Navbar/Footer
-    return <>{children}</>;
+    return (
+      <>
+        {children}
+        <CookieConsent />
+      </>
+    );
   }
 
   return (
@@ -18,6 +24,7 @@ export function LayoutShell({ children }: { children: React.ReactNode }) {
       <Navbar />
       <main className="flex-1">{children}</main>
       <Footer />
+      <CookieConsent />
     </>
   );
 }

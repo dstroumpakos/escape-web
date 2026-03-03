@@ -349,6 +349,14 @@ const translations: Record<Language, Record<string, string>> = {
     'legal.cookies.section5_title': 'Contact Us',
     'legal.cookies.section5_text': 'If you have questions about our use of cookies, please contact us at privacy@unlocked.gr.',
 
+    // ── Cookie Consent Banner ──
+    'cookies.title': 'We use cookies',
+    'cookies.description': 'We use essential cookies to make our site work, and optional analytics cookies to improve your experience.',
+    'cookies.learn_more': 'Learn more',
+    'cookies.accept': 'Accept All',
+    'cookies.decline': 'Essential Only',
+    'cookies.privacy_note': 'Your privacy is important to us. We never sell your data.',
+
     // ── Auth ──
     'auth.welcome_back': 'Welcome Back',
     'auth.login_subtitle': 'Log in to continue your escape journey',
@@ -1835,6 +1843,14 @@ const translations: Record<Language, Record<string, string>> = {
     'legal.cookies.section4_text': 'Μπορείτε να ελέγξετε και να διαχειριστείτε τα cookies μέσω των ρυθμίσεων του προγράμματος περιήγησής σας. Σημειώστε ότι η αφαίρεση cookies μπορεί να επηρεάσει την εμπειρία χρήστη σας.',
     'legal.cookies.section5_title': 'Επικοινωνία',
     'legal.cookies.section5_text': 'Εάν έχετε ερωτήσεις σχετικά με τη χρήση cookies, επικοινωνήστε μαζί μας στο privacy@unlocked.gr.',
+
+    // ── Cookie Consent Banner ──
+    'cookies.title': 'Χρησιμοποιούμε cookies',
+    'cookies.description': 'Χρησιμοποιούμε απαραίτητα cookies για τη λειτουργία του ιστότοπου και προαιρετικά cookies αναλυτικών για τη βελτίωση της εμπειρίας σας.',
+    'cookies.learn_more': 'Μάθετε περισσότερα',
+    'cookies.accept': 'Αποδοχή Όλων',
+    'cookies.decline': 'Μόνο Απαραίτητα',
+    'cookies.privacy_note': 'Η ιδιωτικότητά σας είναι σημαντική για εμάς. Δεν πουλάμε ποτέ τα δεδομένα σας.',
 
     // ── Auth ──
     'auth.welcome_back': 'Καλώς Ήρθες Πίσω',
