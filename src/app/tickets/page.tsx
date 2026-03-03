@@ -23,6 +23,8 @@ import {
   Share2,
   ChevronDown,
   ChevronUp,
+  Star,
+  CheckCircle,
 } from 'lucide-react';
 
 type TabType = 'upcoming' | 'past';
@@ -235,6 +237,15 @@ export default function TicketsPage() {
                               {t('tickets.cancel')}
                             </button>
                           </>
+                        )}
+                        {booking.status === 'completed' && (
+                          <Link
+                            href={`/rooms/${booking.roomId}`}
+                            className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-brand-gold/10 border border-brand-gold/20 text-brand-gold text-sm font-medium hover:bg-brand-gold/20 transition-all"
+                          >
+                            <Star className="w-4 h-4" />
+                            {t('tickets.write_review')}
+                          </Link>
                         )}
                       </div>
                     </div>

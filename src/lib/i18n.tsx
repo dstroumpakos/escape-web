@@ -444,6 +444,25 @@ const translations: Record<Language, Record<string, string>> = {
     'room.price_per_group': 'Price per group size',
     'room.player_count': '{{count}} players',
 
+    // ── Reviews ──
+    'reviews.title': 'Reviews',
+    'reviews.write_review': 'Write a Review',
+    'reviews.your_rating': 'Your Rating',
+    'reviews.your_review': 'Share your experience (optional)',
+    'reviews.submit': 'Submit Review',
+    'reviews.submitting': 'Submitting...',
+    'reviews.success': 'Thanks for your review!',
+    'reviews.already_reviewed': 'You already reviewed this room',
+    'reviews.need_booking': 'Complete a booking to leave a review',
+    'reviews.no_reviews': 'No reviews yet. Be the first to review!',
+    'reviews.verified': 'Verified Booking',
+    'reviews.ago_days': '{{count}}d ago',
+    'reviews.ago_hours': '{{count}}h ago',
+    'reviews.ago_minutes': '{{count}}m ago',
+    'reviews.just_now': 'Just now',
+    'reviews.show_more': 'Show all {{count}} reviews',
+    'reviews.show_less': 'Show less',
+
     // ── Booking ──
     'book.back_to_room': 'Back to {{room}}',
     'book.title': 'Book',
@@ -782,6 +801,8 @@ const translations: Record<Language, Record<string, string>> = {
     'tickets.escape_moments_desc': 'Photos from your escape room adventures',
     'tickets.photos': '{{count}} photos',
     'tickets.download': 'Download',
+    'tickets.write_review': 'Write Review',
+    'tickets.reviewed': 'Reviewed',
     'tickets.share': 'Share',
     'tickets.no_photos': 'No photos yet',
 
@@ -1939,6 +1960,25 @@ const translations: Record<Language, Record<string, string>> = {
     'room.price_per_group': 'Τιμή ανά μέγεθος ομάδας',
     'room.player_count': '{{count}} παίκτες',
 
+    // ── Reviews ──
+    'reviews.title': 'Κριτικές',
+    'reviews.write_review': 'Γράψε μια Κριτική',
+    'reviews.your_rating': 'Η Βαθμολογία σου',
+    'reviews.your_review': 'Μοιράσου την εμπειρία σου (προαιρετικά)',
+    'reviews.submit': 'Υποβολή Κριτικής',
+    'reviews.submitting': 'Υποβολή...',
+    'reviews.success': 'Ευχαριστούμε για την κριτική σου!',
+    'reviews.already_reviewed': 'Έχεις ήδη αξιολογήσει αυτό το δωμάτιο',
+    'reviews.need_booking': 'Ολοκλήρωσε μια κράτηση για να αφήσεις κριτική',
+    'reviews.no_reviews': 'Δεν υπάρχουν κριτικές ακόμα. Γίνε ο πρώτος!',
+    'reviews.verified': 'Επαληθευμένη Κράτηση',
+    'reviews.ago_days': '{{count}} μέρες πριν',
+    'reviews.ago_hours': '{{count}} ώρες πριν',
+    'reviews.ago_minutes': '{{count}} λεπτά πριν',
+    'reviews.just_now': 'Μόλις τώρα',
+    'reviews.show_more': 'Εμφάνιση όλων ({{count}}) κριτικών',
+    'reviews.show_less': 'Λιγότερα',
+
     // ── Booking ──
     'book.back_to_room': 'Πίσω στο {{room}}',
     'book.title': 'Κράτηση',
@@ -2277,6 +2317,8 @@ const translations: Record<Language, Record<string, string>> = {
     'tickets.escape_moments_desc': 'Φωτογραφίες από τις escape room περιπέτειές σας',
     'tickets.photos': '{{count}} φωτογραφίες',
     'tickets.download': 'Λήψη',
+    'tickets.write_review': 'Γράψε Κριτική',
+    'tickets.reviewed': 'Αξιολογήθηκε',
     'tickets.share': 'Κοινοποίηση',
     'tickets.no_photos': 'Δεν υπάρχουν φωτογραφίες ακόμα',
 

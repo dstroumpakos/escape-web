@@ -312,6 +312,20 @@ export default defineSchema({
     .index("by_slot", ["roomId", "date", "time"])
     .index("by_contact", ["contact"]),
 
+  // ─── Room Reviews ───
+  reviews: defineTable({
+    userId: v.id("users"),
+    roomId: v.id("rooms"),
+    bookingId: v.id("bookings"),
+    rating: v.number(), // 1-5 stars
+    text: v.optional(v.string()),
+    createdAt: v.number(),
+  })
+    .index("by_room", ["roomId"])
+    .index("by_user", ["userId"])
+    .index("by_booking", ["bookingId"])
+    .index("by_room_created", ["roomId", "createdAt"]),
+
   // ─── Content Reports (Guideline 1.2 — UGC moderation) ───
   reports: defineTable({
     postId: v.optional(v.id("posts")),

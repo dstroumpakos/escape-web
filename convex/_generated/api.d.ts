@@ -18,6 +18,7 @@ import type * as notificationTexts from "../notificationTexts.js";
 import type * as notifications from "../notifications.js";
 import type * as passwordUtils from "../passwordUtils.js";
 import type * as posts from "../posts.js";
+import type * as reviews from "../reviews.js";
 import type * as rooms from "../rooms.js";
 import type * as seed from "../seed.js";
 import type * as slotAlerts from "../slotAlerts.js";
@@ -45,6 +46,7 @@ declare const fullApi: ApiFromModules<{
   notifications: typeof notifications;
   passwordUtils: typeof passwordUtils;
   posts: typeof posts;
+  reviews: typeof reviews;
   rooms: typeof rooms;
   seed: typeof seed;
   slotAlerts: typeof slotAlerts;
