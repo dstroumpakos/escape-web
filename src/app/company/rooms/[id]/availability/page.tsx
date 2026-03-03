@@ -24,7 +24,7 @@ const DAYS = ['common.day_sun', 'common.day_mon', 'common.day_tue', 'common.day_
 export default function RoomAvailabilityPage() {
   const params = useParams();
   const { company } = useCompanyAuth();
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
   const roomId = params.id as string;
 
   const room = useQuery(api.rooms.getById, roomId ? { id: roomId as any } : 'skip');
@@ -213,7 +213,7 @@ export default function RoomAvailabilityPage() {
               <div>
                 <h2 className="font-semibold">
                   {new Date(selectedDate + 'T00:00:00').toLocaleDateString(
-                    'en-US',
+                    language === 'el' ? 'el-GR' : 'en-US',
                     { weekday: 'long', month: 'long', day: 'numeric' }
                   )}
                 </h2>
