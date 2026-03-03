@@ -2607,7 +2607,7 @@ const translations: Record<Language, Record<string, string>> = {
     'company.rooms.active': 'Ενεργό',
     'company.rooms.inactive': 'Ανενεργό',
     'company.rooms.edit': 'Επεξεργασία',
-    'company.rooms.slots': 'Θυρίδες',
+    'company.rooms.slots': 'Slots',
     'company.rooms.difficulty': 'Δυσκολία:',
     'company.rooms.loading': 'Φόρτωση δωματίων...',
     'company.rooms.upgrade_warning': 'Φτάσατε το όριο του {{plan}} πλάνου ({{limit}} δωμάτια).',
