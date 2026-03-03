@@ -459,8 +459,62 @@ export const leaderboard = query({
     const allBadges = await ctx.db.query("badges").collect();
     const totalBadges = allBadges.length;
 
+    // ── Per-room escape stats (computed from bookings) ──
+    const allRooms = await ctx.db.query("rooms").collect();
+    const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
+
+    const roomStats: Record<string, { completed: number; total: number }> = {};
+    for (const booking of allBookings) {
+      if (booking.status === "cancelled") continue;
+      const rid = booking.roomId as string;
+      if (!roomStats[rid]) roomStats[rid] = { completed: 0, total: 0 };
+      // Only count past bookings (date <= today) for escape rate
+      if (booking.date <= today) {
+        roomStats[rid].total += 1;
+        if (booking.status === "completed") {
+          roomStats[rid].completed += 1;
+        }
+      }
+    }
+
+    const topRooms = allRooms
+      .filter((r) => r.isActive !== false)
+      .map((r) => {
+        const stats = roomStats[r._id as string] ?? { completed: 0, total: 0 };
+        const escapeRate = stats.total > 0
+          ? Math.round((stats.completed / stats.total) * 100)
+          : 0;
+        return {
+          id: r._id,
+          title: r.title,
+          location: r.location,
+          rating: r.rating,
+          reviews: r.reviews,
+          theme: r.theme,
+          escapeRate,
+          gamesPlayed: stats.completed,
+          companyId: r.companyId,
+        };
+      })
+      .filter((r) => r.rating > 0 || r.gamesPlayed > 0)
+      .sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0))
+      .slice(0, 10);
+
+    // Enrich top rooms with company name
+    const topRoomsEnriched = await Promise.all(
+      topRooms.map(async (r) => {
+        let companyName = "";
+        if (r.companyId) {
+          const company = await ctx.db.get(r.companyId);
+          if (company) companyName = company.name;
+        }
+        return { ...r, companyName };
+      })
+    );
+
     return {
       players,
+      topRooms: topRoomsEnriched,
       stats: {
         totalEscapes,
         totalPlayed,

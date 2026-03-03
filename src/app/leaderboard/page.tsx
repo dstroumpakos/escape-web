@@ -61,7 +61,6 @@ export default function LeaderboardPage() {
 
   // Query real data from Convex
   const leaderboardData = useQuery(api.users.leaderboard, { limit: 20 });
-  const convexRooms = useQuery(api.rooms.list);
 
   const isLoading = leaderboardData === undefined;
 
@@ -71,13 +70,10 @@ export default function LeaderboardPage() {
   // Live stats from Convex
   const globalStats = leaderboardData?.stats;
 
-  // Build top rooms from real data
+  // Build top rooms from leaderboard data (escape rate computed from bookings)
   const topRooms =
-    convexRooms && convexRooms.length > 0
-      ? [...convexRooms]
-          .sort((a: any, b: any) => (b.rating ?? 0) - (a.rating ?? 0))
-          .slice(0, 10)
-          .map((r: any, i: number) => ({
+    leaderboardData?.topRooms
+      ? leaderboardData.topRooms.map((r: any, i: number) => ({
             rank: i + 1,
             name: r.title || 'Untitled',
             venue: r.companyName || r.location || 'Unknown',
@@ -320,11 +316,7 @@ export default function LeaderboardPage() {
                       </span>
                     </div>
                     <div className="text-brand-text-muted text-xs">
-                      {room.escapeRate > 0 ? (
-                        <>{room.escapeRate}% {t('leaderboard.escape_rate')}</>
-                      ) : (
-                        <>{room.reviews} {t('featured.reviews')}</>
-                      )}
+                      {room.escapeRate}% {t('leaderboard.escape_rate')}
                     </div>
                   </div>
                 </div>
