@@ -322,3 +322,93 @@ export const createBookingCheckout = action({
     return { url: session.url, bookingId };
   },
 });
+
+/**
+ * Retry payment for an existing pending_payment booking.
+ * Creates a new Stripe checkout session for the same booking.
+ * Resets the 30-minute auto-cancellation timer.
+ */
+export const retryBookingPayment = action({
+  args: {
+    bookingId: v.id("bookings"),
+    successUrl: v.string(),
+    cancelUrl: v.string(),
+  },
+  handler: async (ctx, args): Promise<{ url: string }> => {
+    const stripe = getStripe();
+
+    // Get the existing booking
+    const booking: any = await ctx.runQuery(api.bookings.getById, { bookingId: args.bookingId });
+    if (!booking) throw new Error("Booking not found");
+    if (booking.status !== "pending_payment") throw new Error("Booking is not pending payment");
+
+    // Get room + user info
+    const room = await ctx.runQuery(api.rooms.getById, { id: booking.roomId });
+    if (!room) throw new Error("Room not found");
+
+    const user = booking.userId
+      ? await ctx.runQuery(api.users.getById, { userId: booking.userId })
+      : null;
+
+    // Calculate charge amount (same logic as createBookingCheckout)
+    const serviceFee = 399; // €3.99 in cents
+    const paymentTerms = booking.paymentTerms || "full";
+    let chargeAmount: number;
+    let description: string;
+
+    if (paymentTerms === "full") {
+      chargeAmount = Math.round(booking.total * 100) + serviceFee;
+      description = `Full payment for ${room.title}`;
+    } else {
+      // deposit_20
+      const deposit = Math.round(booking.total * 0.2 * 100);
+      chargeAmount = deposit + serviceFee;
+      description = `20% deposit for ${room.title}`;
+    }
+
+    // Create a new Stripe checkout session for the same booking
+    const session = await stripe.checkout.sessions.create({
+      mode: "payment",
+      payment_method_types: ["card"],
+      customer_email: user?.email,
+      line_items: [
+        {
+          price_data: {
+            currency: "eur",
+            product_data: {
+              name: room.title,
+              description,
+            },
+            unit_amount: chargeAmount,
+          },
+          quantity: 1,
+        },
+      ],
+      metadata: {
+        type: "booking",
+        bookingId: args.bookingId,
+        bookingCode: booking.bookingCode,
+        paymentTerms,
+        userId: booking.userId || "",
+        roomId: booking.roomId,
+      },
+      success_url: args.successUrl,
+      cancel_url: args.cancelUrl,
+    });
+
+    if (!session.url) throw new Error("Failed to create checkout session");
+
+    // Update the session ID on the booking
+    await ctx.runMutation(api.bookings.updateStripeSession, {
+      bookingId: args.bookingId,
+      stripeSessionId: session.id,
+    });
+
+    // Schedule new auto-cancellation (30 minutes from now)
+    await ctx.scheduler.runAfter(30 * 60 * 1000, api.bookings.cancelUnpaidBooking, {
+      bookingId: args.bookingId,
+    });
+
+    return { url: session.url };
+  },
+});

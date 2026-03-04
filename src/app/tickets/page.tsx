@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useQuery, useMutation } from 'convex/react';
+import { useQuery, useMutation, useAction } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
 import { useAuth } from '@/lib/auth';
 import { useTranslation } from '@/lib/i18n';
@@ -25,6 +25,8 @@ import {
   ChevronUp,
   Star,
   CheckCircle,
+  CreditCard,
+  AlertCircle,
 } from 'lucide-react';
 
 type TabType = 'upcoming' | 'past';
@@ -38,6 +40,7 @@ export default function TicketsPage() {
   const [cancelling, setCancelling] = useState<string | null>(null);
   const [expandedPhotos, setExpandedPhotos] = useState<string | null>(null);
   const [photoPreviewUrl, setPhotoPreviewUrl] = useState<string | null>(null);
+  const [payingBooking, setPayingBooking] = useState<string | null>(null);
 
   const bookings = useQuery(
     api.bookings.getByUser,
@@ -45,6 +48,7 @@ export default function TicketsPage() {
   );
 
   const cancelBooking = useMutation(api.bookings.cancel);
+  const retryPayment = useAction(api.stripe.retryBookingPayment);
 
   // Photos for completed bookings
   const bookingsWithPhotos = useQuery(
@@ -66,7 +70,7 @@ export default function TicketsPage() {
     );
   }
 
-  const upcoming = (bookings ?? []).filter((b: any) => b.status === 'upcoming');
+  const upcoming = (bookings ?? []).filter((b: any) => b.status === 'upcoming' || b.status === 'pending_payment');
   const past = (bookings ?? []).filter((b: any) => b.status !== 'upcoming' && b.status !== 'pending_payment');
   const displayed = activeTab === 'upcoming' ? upcoming : past;
 
@@ -79,6 +83,25 @@ export default function TicketsPage() {
       console.error('Failed to cancel booking:', err);
     } finally {
       setCancelling(null);
+    }
+  };
+
+  const handleRetryPayment = async (bookingId: string) => {
+    setPayingBooking(bookingId);
+    try {
+      const result = await retryPayment({
+        bookingId: bookingId as any,
+        successUrl: `${window.location.origin}/booking/confirmation?session_id={CHECKOUT_SESSION_ID}`,
+        cancelUrl: `${window.location.origin}/tickets`,
+      });
+      if (result.url) {
+        window.location.href = result.url;
+      }
+    } catch (err) {
+      console.error('Failed to retry payment:', err);
+      alert('Failed to create payment session. The booking may have expired.');
+    } finally {
+      setPayingBooking(null);
     }
   };
 
@@ -179,6 +202,12 @@ export default function TicketsPage() {
                               {t('tickets.cancelled')}
                             </span>
                           )}
+                          {booking.status === 'pending_payment' && (
+                            <span className="flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-400">
+                              <AlertCircle className="w-3 h-3" />
+                              {t('tickets.pending_payment')}
+                            </span>
+                          )}
                           {badge.label && (
                             <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${badge.color}`}>
                               {badge.label}
@@ -213,6 +242,34 @@ export default function TicketsPage() {
 
                       {/* Actions */}
                       <div className="flex items-center gap-2 shrink-0">
+                        {booking.status === 'pending_payment' && (
+                          <>
+                            <button
+                              disabled={payingBooking === booking._id}
+                              onClick={() => handleRetryPayment(booking._id)}
+                              className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-brand-red text-white text-sm font-medium hover:bg-brand-red/90 transition-all disabled:opacity-50 animate-pulse hover:animate-none"
+                            >
+                              {payingBooking === booking._id ? (
+                                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                              ) : (
+                                <CreditCard className="w-4 h-4" />
+                              )}
+                              {t('tickets.pay_now')}
+                            </button>
+                            <button
+                              disabled={cancelling === booking._id}
+                              onClick={() => handleCancel(booking._id)}
+                              className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-red-900/20 border border-red-800/30 text-red-400 text-sm font-medium hover:bg-red-900/30 transition-all disabled:opacity-50"
+                            >
+                              {cancelling === booking._id ? (
+                                <div className="w-4 h-4 border-2 border-red-400/30 border-t-red-400 rounded-full animate-spin" />
+                              ) : (
+                                <XIcon className="w-4 h-4" />
+                              )}
+                              {t('tickets.cancel')}
+                            </button>
+                          </>
+                        )}
                         {booking.status === 'upcoming' && (
                           <>
                             <button

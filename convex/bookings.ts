@@ -98,6 +98,13 @@ export const create = mutation({
   },
 });
 
+export const getById = query({
+  args: { bookingId: v.id("bookings") },
+  handler: async (ctx, args) => {
+    return await ctx.db.get(args.bookingId);
+  },
+});
+
 export const getByUser = query({
   args: { userId: v.id("users") },
   handler: async (ctx, args) => {
