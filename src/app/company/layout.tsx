@@ -14,6 +14,7 @@ import {
   ChevronRight,
   CreditCard,
   Camera,
+  BookOpen,
 } from 'lucide-react';
 import { ConvexClientProvider } from '@/components/providers/ConvexClientProvider';
 import { CompanyAuthProvider, useCompanyAuth } from '@/lib/companyAuth';
@@ -32,6 +33,7 @@ function CompanyShell({ children }: { children: React.ReactNode }) {
     { href: '/company/rooms', label: t('company.nav.rooms'), icon: DoorOpen },
     { href: '/company/photos', label: t('company.nav.photos'), icon: Camera },
     { href: '/company/billing', label: t('company.nav.billing'), icon: CreditCard },
+    { href: '/company/docs', label: t('company.nav.docs'), icon: BookOpen },
     { href: '/company/settings', label: t('company.nav.settings'), icon: Settings },
   ];
 
