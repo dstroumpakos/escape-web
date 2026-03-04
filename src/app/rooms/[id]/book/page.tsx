@@ -3,7 +3,7 @@
 import { useState, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { useQuery } from 'convex/react';
+import { useQuery, useMutation } from 'convex/react';
 import { api } from '../../../../../convex/_generated/api';
 import { useAuth } from '@/lib/auth';
 import { useTranslation } from '@/lib/i18n';
@@ -15,6 +15,8 @@ import {
   ChevronLeft,
   ChevronRight,
   DoorOpen,
+  Bell,
+  BellOff,
 } from 'lucide-react';
 
 export default function BookingPage() {
@@ -42,6 +44,7 @@ export default function BookingPage() {
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [playerCount, setPlayerCount] = useState(2);
+  const [alertLoading, setAlertLoading] = useState<string | null>(null);
 
   // Get time slots for selected date
   const timeSlots = useQuery(
@@ -54,6 +57,15 @@ export default function BookingPage() {
     api.bookings.getBookedTimes,
     selectedDate ? { roomId: roomId as any, date: selectedDate } : 'skip'
   );
+
+  // Slot alerts for current user + room + date
+  const slotAlerts = useQuery(
+    api.slotAlerts.getByUserRoomDate,
+    user?.id && roomId && selectedDate
+      ? { userId: user.id as any, roomId: roomId as any, date: selectedDate }
+      : 'skip'
+  );
+  const toggleSlotAlert = useMutation(api.slotAlerts.toggle);
 
   // Calendar grid
   const calendarDays = useMemo(() => {
@@ -138,6 +150,25 @@ export default function BookingPage() {
   }, [timeSlots, bookedTimes, room]);
 
   const canProceed = selectedDate && selectedTime && isAuthenticated;
+
+  const alertedTimes = new Set((slotAlerts ?? []).map((a: any) => a.time));
+
+  const handleToggleAlert = async (time: string) => {
+    if (!user?.id || !roomId || !selectedDate) return;
+    setAlertLoading(time);
+    try {
+      await toggleSlotAlert({
+        userId: user.id as any,
+        roomId: roomId as any,
+        date: selectedDate,
+        time,
+      });
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setAlertLoading(null);
+    }
+  };
 
   const handleProceed = () => {
     if (!canProceed) return;
@@ -249,20 +280,41 @@ export default function BookingPage() {
                   </h3>
                   <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
                     {availableSlots.map((slot: any) => (
-                      <button
-                        key={slot.time}
-                        disabled={slot.booked}
-                        onClick={() => setSelectedTime(slot.time)}
-                        className={`py-3 px-4 rounded-xl text-sm font-medium transition-all ${
-                          slot.booked
-                            ? 'bg-brand-surface/50 text-brand-border cursor-not-allowed line-through'
-                            : selectedTime === slot.time
-                            ? 'bg-brand-red text-white'
-                            : 'bg-brand-surface text-brand-text-secondary hover:text-white hover:bg-brand-surface/80 border border-brand-border hover:border-brand-red/30'
-                        }`}
-                      >
-                        {slot.time}
-                      </button>
+                      <div key={slot.time} className="relative">
+                        <button
+                          disabled={slot.booked}
+                          onClick={() => setSelectedTime(slot.time)}
+                          className={`w-full py-3 px-4 rounded-xl text-sm font-medium transition-all ${
+                            slot.booked
+                              ? 'bg-brand-surface/50 text-brand-border cursor-not-allowed line-through'
+                              : selectedTime === slot.time
+                              ? 'bg-brand-red text-white'
+                              : 'bg-brand-surface text-brand-text-secondary hover:text-white hover:bg-brand-surface/80 border border-brand-border hover:border-brand-red/30'
+                          }`}
+                        >
+                          {slot.time}
+                        </button>
+                        {slot.booked && user?.id && (
+                          <button
+                            onClick={() => handleToggleAlert(slot.time)}
+                            disabled={alertLoading === slot.time}
+                            title={alertedTimes.has(slot.time) ? t('book.alert_on') : t('book.alert_off')}
+                            className={`absolute -top-1.5 -right-1.5 w-6 h-6 rounded-full flex items-center justify-center transition-all ${
+                              alertedTimes.has(slot.time)
+                                ? 'bg-yellow-500 text-black shadow-lg shadow-yellow-500/30'
+                                : 'bg-brand-surface border border-white/10 text-brand-text-secondary hover:border-yellow-500/50 hover:text-yellow-400'
+                            }`}
+                          >
+                            {alertLoading === slot.time ? (
+                              <div className="w-3 h-3 border border-current border-t-transparent rounded-full animate-spin" />
+                            ) : alertedTimes.has(slot.time) ? (
+                              <Bell className="w-3 h-3" />
+                            ) : (
+                              <BellOff className="w-3 h-3" />
+                            )}
+                          </button>
+                        )}
+                      </div>
                     ))}
                   </div>
                 </div>
