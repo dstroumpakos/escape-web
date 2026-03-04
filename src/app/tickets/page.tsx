@@ -186,10 +186,21 @@ export default function TicketsPage() {
                 return (
                   <div
                     key={booking._id}
-                    className={`card p-5 md:p-6 ${
+                    className={`card overflow-hidden ${
                       booking.status === 'cancelled' ? 'opacity-60' : ''
                     }`}
                   >
+                    {/* Room image header */}
+                    {booking.room?.image && (
+                      <div className="h-36 w-full">
+                        <img
+                          src={booking.room.image}
+                          alt={booking.room?.title || ''}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    )}
+                    <div className="p-5 md:p-6">
                     <div className="flex flex-col md:flex-row md:items-center gap-4">
                       {/* Room info */}
                       <div className="flex-1 min-w-0">
@@ -335,6 +346,7 @@ export default function TicketsPage() {
                         </div>
                       </div>
                     )}
+                    </div>{/* end padding wrapper */}
                   </div>
                 );
               })}
