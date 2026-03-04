@@ -135,19 +135,18 @@ export default function ContactPage() {
           <StaggerContainer stagger={0.1} className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
             {contactInfo.map((info, i) => (
               <StaggerItem key={i} animation="fadeUp">
-              <a
-                key={i}
-                href={info.href}
-                className="card p-5 text-center hover:border-brand-red/30 transition-all group"
-              >
-                <div className="inline-flex items-center justify-center w-11 h-11 rounded-xl bg-brand-red/10 mb-3 group-hover:bg-brand-red/20 transition-colors">
-                  <info.icon className="w-5 h-5 text-brand-red" />
-                </div>
-                <div className="text-xs text-brand-text-muted mb-1">
-                  {info.label}
-                </div>
-                <div className="text-sm font-medium">{info.value}</div>
-              </a>
+                <a
+                  href={info.href}
+                  className="block bg-brand-card border border-brand-border rounded-2xl p-5 text-center transition-all duration-300 hover:border-brand-red/30 hover:shadow-[0_0_30px_rgba(255,30,30,0.1)] group"
+                >
+                  <div className="inline-flex items-center justify-center w-11 h-11 rounded-xl bg-brand-red/10 mb-3 group-hover:bg-brand-red/20 transition-colors">
+                    <info.icon className="w-5 h-5 text-brand-red" />
+                  </div>
+                  <div className="text-xs text-brand-text-muted mb-1">
+                    {info.label}
+                  </div>
+                  <div className="text-sm font-medium">{info.value}</div>
+                </a>
               </StaggerItem>
             ))}
           </StaggerContainer>
