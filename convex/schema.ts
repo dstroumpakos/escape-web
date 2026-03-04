@@ -173,7 +173,8 @@ export default defineSchema({
     status: v.union(
       v.literal("upcoming"),
       v.literal("completed"),
-      v.literal("cancelled")
+      v.literal("cancelled"),
+      v.literal("pending_payment")
     ),
     bookingCode: v.string(),
     createdAt: v.number(),

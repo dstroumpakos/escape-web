@@ -19,6 +19,7 @@ import {
   UserPlus,
   Check,
   Send,
+  Loader2,
 } from 'lucide-react';
 
 function ConfirmationContent() {
@@ -52,7 +53,10 @@ function ConfirmationContent() {
   const finalPaymentStatus =
     stripeBooking?.paymentStatus ||
     paymentStatus ||
-    (sessionId ? 'paid' : 'paid');
+    (sessionId ? 'unpaid' : 'paid');
+
+  // Check if booking is still pending payment (Stripe webhook hasn't fired yet)
+  const isPaymentPending = sessionId && stripeBooking?.status === 'pending_payment';
 
   const room = useQuery(
     api.rooms.getById,
@@ -108,6 +112,61 @@ function ConfirmationContent() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="w-8 h-8 border-2 border-brand-red/30 border-t-brand-red rounded-full animate-spin" />
       </div>
+    );
+  }
+
+  // Show "processing payment" state if the booking exists but payment hasn't been confirmed yet
+  if (isPaymentPending) {
+    return (
+      <section className="pt-28 pb-20">
+        <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <div className="mb-6">
+            <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-yellow-500/10 border-2 border-yellow-500/30 mb-4">
+              <Loader2 className="w-10 h-10 text-yellow-400 animate-spin" />
+            </div>
+            <h1 className="text-3xl font-display font-bold mb-2">{t('confirmation.processing_title') || 'Processing Payment...'}</h1>
+            <p className="text-brand-text-secondary">
+              {t('confirmation.processing_subtitle') || 'We\'re confirming your payment with Stripe. This usually takes a few seconds.'}
+            </p>
+          </div>
+
+          {/* Booking Card Preview */}
+          <div className="card p-6 md:p-8 text-left mb-8">
+            <div className="flex items-start justify-between mb-6">
+              <div>
+                <h2 className="text-xl font-semibold">{roomData?.title || 'Escape Room'}</h2>
+                <p className="text-sm text-brand-text-muted">{roomData?.location}</p>
+              </div>
+              <span className="text-xs font-medium px-3 py-1.5 rounded-full border bg-yellow-500/20 text-yellow-400 border-yellow-500/30">
+                {t('confirmation.pending_payment') || 'Payment Pending'}
+              </span>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="bg-brand-surface rounded-xl p-4">
+                <Calendar className="w-4 h-4 text-brand-red mb-1" />
+                <div className="text-xs text-brand-text-muted">{t('confirmation.date')}</div>
+                <div className="text-sm font-medium">
+                  {finalDate ? new Date(finalDate + 'T00:00:00').toLocaleDateString('en-GB', {
+                    weekday: 'short',
+                    day: 'numeric',
+                    month: 'short',
+                    year: 'numeric',
+                  }) : '—'}
+                </div>
+              </div>
+              <div className="bg-brand-surface rounded-xl p-4">
+                <Clock className="w-4 h-4 text-brand-red mb-1" />
+                <div className="text-xs text-brand-text-muted">{t('confirmation.time')}</div>
+                <div className="text-sm font-medium">{finalTime}</div>
+              </div>
+            </div>
+          </div>
+
+          <p className="text-sm text-brand-text-muted animate-pulse">
+            {t('confirmation.please_wait') || 'Please wait, do not close this page...'}
+          </p>
+        </div>
+      </section>
     );
   }
 

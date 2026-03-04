@@ -16,6 +16,7 @@ export const create = mutation({
       v.literal("pay_on_arrival")
     )),
     paymentMethod: v.optional(v.string()),
+    pendingPayment: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
     // Prevent double-booking: check for existing active booking at this slot
@@ -33,11 +34,17 @@ export const create = mutation({
     // Look up room to set companyId for tracking
     const room = await ctx.db.get(args.roomId);
 
+    // If this booking is pending Stripe payment, mark it as pending
+    const isPending = args.pendingPayment === true;
+
     // Determine payment status based on payment terms
     const paymentTerms = args.paymentTerms || 'full';
     let paymentStatus: 'paid' | 'deposit' | 'unpaid' = 'paid';
     let depositPaid: number | undefined;
-    if (paymentTerms === 'deposit_20') {
+    if (isPending) {
+      // Payment hasn't happened yet — will be updated by Stripe webhook
+      paymentStatus = 'unpaid';
+    } else if (paymentTerms === 'deposit_20') {
       paymentStatus = 'deposit';
       depositPaid = Math.round(args.total * 0.2 * 100) / 100;
     } else if (paymentTerms === 'pay_on_arrival') {
@@ -52,7 +59,7 @@ export const create = mutation({
       time: args.time,
       players: args.players,
       total: args.total,
-      status: "upcoming",
+      status: isPending ? "pending_payment" : "upcoming",
       bookingCode,
       createdAt: Date.now(),
       source: "unlocked",
@@ -62,26 +69,29 @@ export const create = mutation({
       depositPaid,
     });
 
-    // Send booking confirmation emails (player + company)
-    const user = await ctx.db.get(args.userId);
-    const company = room?.companyId ? await ctx.db.get(room.companyId) : null;
-    if (user) {
-      await ctx.scheduler.runAfter(0, internal.email.sendBookingEmails, {
-        bookingCode,
-        playerName: user.name,
-        playerContact: user.email,
-        playerPhone: "",
-        roomTitle: room?.title || "Escape Room",
-        date: args.date,
-        time: args.time,
-        players: args.players,
-        total: args.total,
-        paymentStatus,
-        depositPaid,
-        companyName: company?.name ?? "Escape Room",
-        companyPhone: company?.phone ?? "",
-        companyEmail: company?.email ?? "",
-      });
+    // Only send confirmation emails if payment is not pending
+    // (for Stripe bookings, emails are sent after payment is confirmed via webhook)
+    if (!isPending) {
+      const user = await ctx.db.get(args.userId);
+      const company = room?.companyId ? await ctx.db.get(room.companyId) : null;
+      if (user) {
+        await ctx.scheduler.runAfter(0, internal.email.sendBookingEmails, {
+          bookingCode,
+          playerName: user.name,
+          playerContact: user.email,
+          playerPhone: "",
+          roomTitle: room?.title || "Escape Room",
+          date: args.date,
+          time: args.time,
+          players: args.players,
+          total: args.total,
+          paymentStatus,
+          depositPaid,
+          companyName: company?.name ?? "Escape Room",
+          companyPhone: company?.phone ?? "",
+          companyEmail: company?.email ?? "",
+        });
+      }
     }
 
     return { id, bookingCode };
@@ -253,6 +263,7 @@ export const confirmBookingPayment = mutation({
 
     const updates: Record<string, any> = {
       stripePaymentIntentId: args.stripePaymentIntentId,
+      status: "upcoming", // Payment confirmed — activate the booking
     };
 
     if (args.paymentTerms === "full") {
@@ -263,6 +274,29 @@ export const confirmBookingPayment = mutation({
     }
 
     await ctx.db.patch(booking._id as any, updates);
+
+    // Now that payment is confirmed, send booking confirmation emails
+    const room = await ctx.db.get(bookingDoc.roomId);
+    const user = bookingDoc.userId ? await ctx.db.get(bookingDoc.userId) : null;
+    const company = room?.companyId ? await ctx.db.get(room.companyId) : null;
+    if (user) {
+      await ctx.scheduler.runAfter(0, internal.email.sendBookingEmails, {
+        bookingCode: bookingDoc.bookingCode,
+        playerName: (user as any).name,
+        playerContact: (user as any).email,
+        playerPhone: "",
+        roomTitle: room?.title || "Escape Room",
+        date: bookingDoc.date,
+        time: bookingDoc.time,
+        players: bookingDoc.players,
+        total: bookingDoc.total,
+        paymentStatus: updates.paymentStatus || "paid",
+        depositPaid: updates.depositPaid,
+        companyName: company?.name ?? "Escape Room",
+        companyPhone: (company as any)?.phone ?? "",
+        companyEmail: company?.email ?? "",
+      });
+    }
   },
 });
 

@@ -222,10 +222,12 @@ export default function CompanyBookingsPage() {
                               ? 'bg-red-500/10 text-red-400'
                               : booking.status === 'completed'
                               ? 'bg-green-500/10 text-green-400'
+                              : booking.status === 'pending_payment'
+                              ? 'bg-yellow-500/10 text-yellow-400'
                               : 'bg-blue-500/10 text-blue-400'
                           }`}
                         >
-                          {booking.status === 'cancelled' ? t('company.bookings.status_cancelled') : booking.status === 'completed' ? t('company.bookings.status_completed') : booking.status === 'upcoming' ? t('company.bookings.status_upcoming') : booking.status}
+                          {booking.status === 'cancelled' ? t('company.bookings.status_cancelled') : booking.status === 'completed' ? t('company.bookings.status_completed') : booking.status === 'pending_payment' ? (t('company.bookings.status_pending_payment') || 'Pending Payment') : booking.status === 'upcoming' ? t('company.bookings.status_upcoming') : booking.status}
                         </span>
                       </div>
                     </div>

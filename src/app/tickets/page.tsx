@@ -67,7 +67,7 @@ export default function TicketsPage() {
   }
 
   const upcoming = (bookings ?? []).filter((b: any) => b.status === 'upcoming');
-  const past = (bookings ?? []).filter((b: any) => b.status !== 'upcoming');
+  const past = (bookings ?? []).filter((b: any) => b.status !== 'upcoming' && b.status !== 'pending_payment');
   const displayed = activeTab === 'upcoming' ? upcoming : past;
 
   const handleCancel = async (bookingId: string) => {

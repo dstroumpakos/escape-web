@@ -264,7 +264,7 @@ export const createBookingCheckout = action({
       description = `20% deposit for ${room.title}`;
     }
 
-    // Create the booking in "pending" state first
+    // Create the booking in "pending_payment" state first
     const { id: bookingId, bookingCode } = await ctx.runMutation(api.bookings.create, {
       userId: args.userId,
       roomId: args.roomId,
@@ -273,6 +273,7 @@ export const createBookingCheckout = action({
       players: args.players,
       total: args.total,
       paymentTerms: args.paymentTerms,
+      pendingPayment: true,
     }) as { id: string; bookingCode: string };
 
     // Create Stripe checkout session (one-time payment)
@@ -311,6 +312,11 @@ export const createBookingCheckout = action({
     await ctx.runMutation(api.bookings.updateStripeSession, {
       bookingId: bookingId as any,
       stripeSessionId: session.id,
+    });
+
+    // Schedule auto-cancellation after 30 minutes if payment is not completed
+    await ctx.scheduler.runAfter(30 * 60 * 1000, api.bookings.cancelUnpaidBooking, {
+      bookingId: bookingId as any,
     });
 
     return { url: session.url, bookingId };

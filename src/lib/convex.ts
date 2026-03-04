@@ -91,7 +91,7 @@ export interface Booking {
   time: string;
   players: number;
   total: number;
-  status: 'upcoming' | 'completed' | 'cancelled';
+  status: 'upcoming' | 'completed' | 'cancelled' | 'pending_payment';
   bookingCode: string;
   createdAt: number;
   depositPaid?: number;

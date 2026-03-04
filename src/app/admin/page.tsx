@@ -618,6 +618,7 @@ function BookingStatusBadge({ status }: { status: string }) {
     upcoming: { bg: 'bg-blue-500/10', text: 'text-blue-400', label: 'Upcoming' },
     completed: { bg: 'bg-emerald-500/10', text: 'text-emerald-400', label: 'Completed' },
     cancelled: { bg: 'bg-red-500/10', text: 'text-red-400', label: 'Cancelled' },
+    pending_payment: { bg: 'bg-yellow-500/10', text: 'text-yellow-400', label: 'Pending Payment' },
   };
   const c = config[status] || config.upcoming;
   return (
