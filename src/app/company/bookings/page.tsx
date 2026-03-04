@@ -205,6 +205,16 @@ export default function CompanyBookingsPage() {
                       )
                     }
                   >
+                    {/* Room image header */}
+                    {booking.roomImage && (
+                      <div className="-mx-4 -mt-4 mb-3 h-28 rounded-t-xl overflow-hidden">
+                        <img
+                          src={booking.roomImage}
+                          alt={booking.roomTitle}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    )}
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-3">
                         <span className="text-lg font-bold text-brand-red">

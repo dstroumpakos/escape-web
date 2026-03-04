@@ -812,6 +812,7 @@ export const getBookingsByDate = query({
         allBookings.push({
           ...b,
           roomTitle: room.title,
+          roomImage: room.image,
           playerName: playerName || (b.source === "external" ? "External" : "Walk-in"),
           source: b.source || "unlocked",
         });
