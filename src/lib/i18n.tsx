@@ -2782,7 +2782,7 @@ const translations: Record<Language, Record<string, string>> = {
     'company.rooms.edit.payment_deposit': 'Προκαταβολή 20%',
     'company.rooms.edit.payment_arrival': 'Πληρωμή κατά την Άφιξη',
     'company.rooms.edit.operating_days': 'Ημέρες Λειτουργίας',
-    'company.rooms.edit.default_time_slots': 'Default Time Slots',
+    'company.rooms.edit.default_time_slots': 'Προεπιλεγμένες Θυρίδες',
     'company.rooms.edit.add_slot': 'Προσθήκη Θυρίδας',
     'company.rooms.edit.release_date': 'Ημερομηνία Κυκλοφορίας',
     'company.rooms.edit.early_access_title': 'Πρόωρη Πρόσβαση για Premium Παίκτες',

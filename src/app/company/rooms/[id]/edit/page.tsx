@@ -480,24 +480,24 @@ export default function EditRoomPage() {
           <button type="button" onClick={() => updateField('defaultTimeSlots', [...form.defaultTimeSlots, { time: '', price: form.price }])}
             className="text-sm text-brand-red hover:underline flex items-center gap-1 mt-2"
           >
-            <Plus className="w-3 h-3" /> Add Slot
+            <Plus className="w-3 h-3" /> {t('company.rooms.edit.add_slot')}
           </button>
         </SectionCard>
 
         {/* Release Date (Early Access) */}
-        <SectionCard title="Release Date">
+        <SectionCard title={t('company.rooms.edit.release_date')}>
           <div className="flex items-start gap-3 mb-4 p-4 bg-purple-500/5 border border-purple-500/10 rounded-xl">
             <CalendarClock className="w-5 h-5 text-purple-400 mt-0.5 shrink-0" />
             <div>
-              <p className="text-sm font-medium text-purple-300">Early Access for Premium Players</p>
+              <p className="text-sm font-medium text-purple-300">{t('company.rooms.edit.early_access_title')}</p>
               <p className="text-xs text-brand-text-secondary mt-1">
-                Set a future release date and UNLOCKED Premium subscribers will be able to book this room up to 3 days before it goes public.
+                {t('company.rooms.edit.early_access_desc')}
               </p>
             </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <FieldLabel>Public Release Date (optional)</FieldLabel>
+              <FieldLabel>{t('company.rooms.edit.public_release_date')}</FieldLabel>
               <input
                 type="date"
                 value={form.releaseDate}
@@ -509,7 +509,7 @@ export default function EditRoomPage() {
             {form.releaseDate && (
               <div className="flex items-center gap-3">
                 <div className="bg-brand-surface rounded-xl p-4 border border-white/5 flex-1">
-                  <p className="text-xs text-brand-text-muted">Premium early access starts</p>
+                  <p className="text-xs text-brand-text-muted">{t('company.rooms.edit.premium_access_starts')}</p>
                   <p className="text-sm font-bold mt-1">
                     {(() => {
                       const d = new Date(form.releaseDate);
@@ -532,14 +532,14 @@ export default function EditRoomPage() {
 
         {/* Submit */}
         {/* Featured Listing (Pro+ only) */}
-        <SectionCard title="Visibility">
+        <SectionCard title={t('company.rooms.edit.visibility')}>
           <div className="flex items-center justify-between">
             <div>
               <p className="font-medium flex items-center gap-2">
-                <Star className="w-4 h-4 text-yellow-400" /> Featured Listing
+                <Star className="w-4 h-4 text-yellow-400" /> {t('company.rooms.edit.featured')}
               </p>
               <p className="text-sm text-brand-text-secondary mt-1">
-                Featured rooms appear prominently on the homepage
+                {t('company.rooms.edit.featured_desc')}
               </p>
             </div>
             {(company?.platformPlan === 'pro' || company?.platformPlan === 'enterprise') ? (
@@ -556,14 +556,14 @@ export default function EditRoomPage() {
             ) : (
               <div className="flex items-center gap-2 text-xs text-brand-text-secondary">
                 <Lock className="w-4 h-4" />
-                <span>Pro plan required</span>
+                <span>{t('company.rooms.edit.pro_required')}</span>
               </div>
             )}
           </div>
         </SectionCard>
 
         {/* Terms of Use */}
-        <SectionCard title="Terms of Use">
+        <SectionCard title={t('company.rooms.edit.terms_of_use')}>
           <div className="flex flex-wrap gap-2 mb-3">
             {TERMS_TEMPLATES.map((tpl) => (
               <button
@@ -571,7 +571,7 @@ export default function EditRoomPage() {
                 type="button"
                 onClick={() => {
                   if (form.termsOfUse.trim()) {
-                    if (confirm('You already have terms written. Replace with this template?')) {
+                    if (confirm(t('company.rooms.edit.replace_template'))) {
                       updateField('termsOfUse', tpl.body);
                     }
                   } else {
@@ -581,7 +581,7 @@ export default function EditRoomPage() {
                 className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-white/10 text-brand-text-secondary hover:border-brand-red/40 hover:text-brand-red transition-all"
               >
                 <FileText className="w-3.5 h-3.5" />
-                {tpl.label}
+                {t(`company.rooms.edit.terms_${tpl.key}`)}
               </button>
             ))}
           </div>
@@ -590,7 +590,7 @@ export default function EditRoomPage() {
             onChange={(e) => updateField('termsOfUse', e.target.value)}
             rows={6}
             className="w-full bg-brand-bg border border-white/10 rounded-xl px-4 py-3 text-white text-sm placeholder-brand-text-secondary/50 focus:border-brand-red focus:outline-none resize-none leading-relaxed"
-            placeholder="Select a template above or write your room-specific booking terms, cancellation policy, age requirements..."
+            placeholder={t('company.rooms.edit.terms_placeholder')}
           />
           {form.termsOfUse.trim() && (
             <button
@@ -599,18 +599,18 @@ export default function EditRoomPage() {
               className="flex items-center gap-1 text-xs text-brand-text-secondary hover:text-red-400 mt-2 transition-colors"
             >
               <X className="w-3.5 h-3.5" />
-              Clear terms
+              {t('company.rooms.edit.clear_terms')}
             </button>
           )}
         </SectionCard>
 
         {/* Submit - Save */}
         <div className="flex flex-col sm:flex-row gap-3 pt-4">
-          <Link href="/company/rooms" className="btn-ghost text-sm flex-1 text-center">Cancel</Link>
+          <Link href="/company/rooms" className="btn-ghost text-sm flex-1 text-center">{t('company.rooms.edit.cancel')}</Link>
           <button type="submit" disabled={loading}
             className="btn-primary text-sm flex-1 flex items-center justify-center gap-2"
           >
-            {loading ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <><Save className="w-4 h-4" /> Save Changes</>}
+            {loading ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <><Save className="w-4 h-4" /> {t('company.rooms.edit.save')}</>}
           </button>
         </div>
       </form>
