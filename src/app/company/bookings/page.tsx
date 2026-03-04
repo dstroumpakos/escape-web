@@ -20,6 +20,10 @@ import {
   XCircle,
   Lightbulb,
   Timer,
+  CalendarClock,
+  MessageSquare,
+  Save,
+  Pencil,
 } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
 
@@ -44,7 +48,11 @@ export default function CompanyBookingsPage() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showExternalModal, setShowExternalModal] = useState(false);
   const [showCompleteModal, setShowCompleteModal] = useState<any>(null);
+  const [showRescheduleModal, setShowRescheduleModal] = useState<any>(null);
   const [selectedBooking, setSelectedBooking] = useState<any>(null);
+  const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
+  const [noteText, setNoteText] = useState('');
+  const [savingNote, setSavingNote] = useState(false);
 
   const bookings = useQuery(
     api.companies.getBookingsByDate,
@@ -58,6 +66,7 @@ export default function CompanyBookingsPage() {
 
   const cancelBooking = useMutation(api.companies.adminCancelBooking);
   const completeBooking = useMutation(api.companies.adminCompleteBooking);
+  const rescheduleBooking = useMutation(api.companies.adminRescheduleBooking);
   const submitPerformance = useMutation(api.badges.submitPerformance);
   const manualAwardBadges = useMutation(api.badges.manualAwardBadges);
   const updateNotes = useMutation(api.companies.updateBookingNotes);
@@ -275,14 +284,67 @@ export default function CompanyBookingsPage() {
                             <p className="font-semibold">{booking.paymentStatus || t('company.bookings.na')}</p>
                           </div>
                         </div>
-                        {booking.notes && (
-                          <div className="text-sm">
-                            <span className="text-brand-text-secondary">{t('company.bookings.notes')}</span>
-                            <p>{booking.notes}</p>
+                        {/* Internal Note */}
+                        <div className="text-sm">
+                          <div className="flex items-center gap-1.5 mb-1">
+                            <MessageSquare className="w-3.5 h-3.5 text-brand-text-secondary" />
+                            <span className="text-brand-text-secondary">{t('company.bookings.internal_note')}</span>
+                            {editingNoteId !== booking._id && (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setEditingNoteId(booking._id);
+                                  setNoteText(booking.notes || '');
+                                }}
+                                className="ml-auto text-brand-text-muted hover:text-white transition-colors"
+                              >
+                                <Pencil className="w-3.5 h-3.5" />
+                              </button>
+                            )}
                           </div>
-                        )}
+                          {editingNoteId === booking._id ? (
+                            <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
+                              <textarea
+                                value={noteText}
+                                onChange={(e) => setNoteText(e.target.value)}
+                                rows={2}
+                                className="flex-1 bg-brand-bg border border-white/10 rounded-xl px-3 py-2 text-white text-sm placeholder-brand-text-secondary/50 focus:border-brand-red focus:outline-none resize-none"
+                                placeholder={t('company.bookings.note_placeholder')}
+                                autoFocus
+                              />
+                              <div className="flex flex-col gap-1">
+                                <button
+                                  onClick={async (e) => {
+                                    e.stopPropagation();
+                                    setSavingNote(true);
+                                    try {
+                                      await updateNotes({ companyId: companyId as any, bookingId: booking._id as any, notes: noteText });
+                                      setEditingNoteId(null);
+                                    } catch { /* ignore */ }
+                                    setSavingNote(false);
+                                  }}
+                                  disabled={savingNote}
+                                  className="p-2 rounded-lg bg-green-500/10 text-green-400 hover:bg-green-500/20 transition-colors"
+                                >
+                                  <Save className="w-3.5 h-3.5" />
+                                </button>
+                                <button
+                                  onClick={(e) => { e.stopPropagation(); setEditingNoteId(null); }}
+                                  className="p-2 rounded-lg bg-white/5 text-brand-text-secondary hover:bg-white/10 transition-colors"
+                                >
+                                  <X className="w-3.5 h-3.5" />
+                                </button>
+                              </div>
+                            </div>
+                          ) : (
+                            <p className={booking.notes ? 'text-white' : 'text-brand-text-muted italic'}>
+                              {booking.notes || t('company.bookings.no_note')}
+                            </p>
+                          )}
+                        </div>
+
                         {booking.status === 'upcoming' && (
-                          <div className="flex gap-2">
+                          <div className="flex flex-wrap gap-2">
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
@@ -291,6 +353,16 @@ export default function CompanyBookingsPage() {
                               className="text-sm px-4 py-2 rounded-xl bg-green-500/10 text-green-400 hover:bg-green-500/20 transition-colors"
                             >
                               {t('company.bookings.complete')}
+                            </button>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setShowRescheduleModal(booking);
+                              }}
+                              className="text-sm px-4 py-2 rounded-xl bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 transition-colors flex items-center gap-1.5"
+                            >
+                              <CalendarClock className="w-3.5 h-3.5" />
+                              {t('company.bookings.reschedule')}
                             </button>
                             <button
                               onClick={(e) => {
@@ -330,6 +402,17 @@ export default function CompanyBookingsPage() {
           rooms={rooms || []}
           date={selectedDate}
           onClose={() => setShowExternalModal(false)}
+        />
+      )}
+
+      {/* Reschedule Booking Modal */}
+      {showRescheduleModal && (
+        <RescheduleBookingModal
+          companyId={companyId!}
+          booking={showRescheduleModal}
+          rooms={rooms || []}
+          rescheduleBooking={rescheduleBooking}
+          onClose={() => setShowRescheduleModal(null)}
         />
       )}
 
@@ -584,6 +667,196 @@ function CompleteBookingModal({
             </>
           )}
         </button>
+      </div>
+    </div>
+  );
+}
+
+function RescheduleBookingModal({
+  companyId,
+  booking,
+  rooms,
+  rescheduleBooking,
+  onClose,
+}: {
+  companyId: string;
+  booking: any;
+  rooms: any[];
+  rescheduleBooking: any;
+  onClose: () => void;
+}) {
+  const { t } = useTranslation();
+  const [newDate, setNewDate] = useState('');
+  const [newTime, setNewTime] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  // Find the room for this booking to get its slots
+  const bookingRoom = rooms.find((r: any) => r._id === booking.roomId);
+
+  // Fetch available slots for the selected date
+  const slots = useQuery(
+    api.companies.getRoomSlots,
+    booking.roomId && newDate ? { roomId: booking.roomId as any, date: newDate } : 'skip'
+  );
+
+  const defaultSlots = bookingRoom?.defaultTimeSlots || [];
+
+  const availableSlots = useMemo(() => {
+    const sort = (a: any, b: any) => {
+      const aIsMidnight = a.time.startsWith('00:') || a.time.startsWith('00.');
+      const bIsMidnight = b.time.startsWith('00:') || b.time.startsWith('00.');
+      if (aIsMidnight && !bIsMidnight) return 1;
+      if (!aIsMidnight && bIsMidnight) return -1;
+      return a.time.localeCompare(b.time);
+    };
+    if (slots && slots.length > 0) {
+      return slots
+        .filter((s: any) => s.available)
+        .map((s: any) => ({ time: s.time, price: s.price }))
+        .sort(sort);
+    }
+    if (defaultSlots.length > 0) {
+      return [...defaultSlots].sort(sort);
+    }
+    return [];
+  }, [slots, defaultSlots]);
+
+  // Today's date  for the min attribute
+  const today = new Date().toISOString().split('T')[0];
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newDate || !newTime) return;
+    setError('');
+    setLoading(true);
+    try {
+      await rescheduleBooking({
+        companyId: companyId as any,
+        bookingId: booking._id as any,
+        newDate,
+        newTime,
+      });
+      onClose();
+    } catch (err: any) {
+      setError(err?.message || t('company.bookings.reschedule_failed'));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
+      <div className="bg-brand-surface rounded-2xl border border-white/5 p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
+        <div className="flex items-center justify-between mb-5">
+          <h2 className="text-lg font-bold flex items-center gap-2">
+            <CalendarClock className="w-5 h-5 text-blue-400" />
+            {t('company.bookings.reschedule_title')}
+          </h2>
+          <button onClick={onClose} className="p-1 hover:bg-white/5 rounded-lg">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* Current booking summary */}
+        <div className="bg-brand-bg rounded-xl p-3 mb-5 text-sm">
+          <div className="flex items-center gap-2 mb-1">
+            <span className="font-bold text-brand-red">{booking.time}</span>
+            <span className="font-medium">{booking.roomTitle}</span>
+          </div>
+          <div className="text-brand-text-muted flex items-center gap-3">
+            <span>{booking.playerName}</span>
+            <span>{booking.date}</span>
+          </div>
+        </div>
+
+        {error && (
+          <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-3 mb-4 text-red-400 text-sm flex items-center gap-2">
+            <AlertCircle className="w-4 h-4 shrink-0" /> {error}
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {/* New Date */}
+          <div>
+            <label className="block text-sm text-brand-text-secondary mb-1.5">
+              {t('company.bookings.new_date')}
+            </label>
+            <input
+              type="date"
+              value={newDate}
+              min={today}
+              onChange={(e) => { setNewDate(e.target.value); setNewTime(''); }}
+              className="w-full bg-brand-bg border border-white/10 rounded-xl px-4 py-3 text-white focus:border-brand-red focus:outline-none [color-scheme:dark]"
+              required
+            />
+          </div>
+
+          {/* New Time */}
+          <div>
+            <label className="block text-sm text-brand-text-secondary mb-1.5">
+              {t('company.bookings.new_time')}
+            </label>
+            {newDate && availableSlots.length > 0 ? (
+              <div>
+                <div className="grid grid-cols-3 gap-2 mb-2">
+                  {availableSlots.map((slot: any) => (
+                    <button
+                      key={slot.time}
+                      type="button"
+                      onClick={() => setNewTime(slot.time)}
+                      className={`px-3 py-2.5 rounded-xl text-sm font-medium transition-all border ${
+                        newTime === slot.time
+                          ? 'bg-brand-red border-brand-red text-white'
+                          : 'bg-brand-bg border-white/10 text-brand-text-secondary hover:border-brand-red/40 hover:text-white'
+                      }`}
+                    >
+                      <span>{slot.time}</span>
+                      <span className="block text-[10px] opacity-60">€{slot.price}</span>
+                    </button>
+                  ))}
+                </div>
+                <p className="text-xs text-brand-text-secondary mb-1">{t('company.bookings.custom_time')}</p>
+                <input
+                  type="time"
+                  value={newTime}
+                  onChange={(e) => setNewTime(e.target.value)}
+                  className="w-full bg-brand-bg border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:border-brand-red focus:outline-none"
+                />
+              </div>
+            ) : (
+              <div>
+                <input
+                  type="time"
+                  value={newTime}
+                  onChange={(e) => setNewTime(e.target.value)}
+                  className="w-full bg-brand-bg border border-white/10 rounded-xl px-4 py-3 text-white focus:border-brand-red focus:outline-none"
+                  required
+                />
+                {newDate && (
+                  <p className="text-xs text-brand-text-secondary mt-1">
+                    {t('company.bookings.no_slots_manual')}
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading || !newDate || !newTime}
+            className="w-full btn-primary !py-3 flex items-center justify-center gap-2 disabled:opacity-50"
+          >
+            {loading ? (
+              <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            ) : (
+              <>
+                <CalendarClock className="w-4 h-4" />
+                {t('company.bookings.reschedule_confirm')}
+              </>
+            )}
+          </button>
+        </form>
       </div>
     </div>
   );

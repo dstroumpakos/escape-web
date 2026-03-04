@@ -1146,6 +1146,16 @@ const translations: Record<Language, Record<string, string>> = {
     'company.bookings.award_badges': 'Award Badges',
     'company.bookings.award_badges_desc': 'Select badges to manually award to this player. Already earned badges will be skipped.',
     'company.bookings.complete_and_verify': 'Complete & Verify Booking',
+    'company.bookings.reschedule': 'Reschedule',
+    'company.bookings.reschedule_title': 'Reschedule Booking',
+    'company.bookings.reschedule_confirm': 'Move Booking',
+    'company.bookings.reschedule_failed': 'Failed to reschedule booking',
+    'company.bookings.new_date': 'New Date',
+    'company.bookings.new_time': 'New Time',
+    'company.bookings.internal_note': 'Internal Note',
+    'company.bookings.note_placeholder': 'Add an internal note...',
+    'company.bookings.no_note': 'No note added',
+    'company.bookings.status_pending_payment': 'Pending Payment',
 
     // ── Company Rooms ──
     'company.rooms.title': 'Rooms',
@@ -2689,6 +2699,16 @@ const translations: Record<Language, Record<string, string>> = {
     'company.bookings.award_badges': 'Απονομή Badges',
     'company.bookings.award_badges_desc': 'Επιλέξτε badges για χειροκίνητη απονομή στον παίκτη. Τα ήδη κερδισμένα badges θα παραληφθούν.',
     'company.bookings.complete_and_verify': 'Ολοκλήρωση & Επαλήθευση',
+    'company.bookings.reschedule': 'Μετακίνηση',
+    'company.bookings.reschedule_title': 'Μετακίνηση Κράτησης',
+    'company.bookings.reschedule_confirm': 'Μετακίνηση Κράτησης',
+    'company.bookings.reschedule_failed': 'Αποτυχία μετακίνησης κράτησης',
+    'company.bookings.new_date': 'Νέα Ημερομηνία',
+    'company.bookings.new_time': 'Νέα Ώρα',
+    'company.bookings.internal_note': 'Εσωτερική Σημείωση',
+    'company.bookings.note_placeholder': 'Προσθέστε εσωτερική σημείωση...',
+    'company.bookings.no_note': 'Δεν υπάρχει σημείωση',
+    'company.bookings.status_pending_payment': 'Αναμονή Πληρωμής',
 
     // ── Company Rooms ──
     'company.rooms.title': 'Δωμάτια',
