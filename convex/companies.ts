@@ -243,7 +243,8 @@ export const getDashboardStats = query({
       ).length;
       const churnedSubscribers = premiumUsers.length - activeSubscribers;
 
-      // Revenue per room
+      // Collect ALL bookings across all rooms for deeper analytics
+      const allBookings = [];
       const revenuePerRoom = [];
       for (const room of rooms) {
         const roomBookings = await ctx.db
@@ -256,6 +257,71 @@ export const getDashboardStats = query({
           title: room.title,
           revenue: roomRevenue,
         });
+        allBookings.push(...roomBookings);
+      }
+
+      // ── Unique players ──
+      const uniquePlayerIds = new Set(
+        allBookings.filter((b) => b.userId).map((b) => b.userId!.toString())
+      );
+      const totalUniquePlayers = uniquePlayerIds.size;
+
+      // ── Average group size ──
+      const nonCancelledBookings = allBookings.filter((b) => b.status !== "cancelled");
+      const avgGroupSize = nonCancelledBookings.length > 0
+        ? Math.round((nonCancelledBookings.reduce((sum, b) => sum + b.players, 0) / nonCancelledBookings.length) * 10) / 10
+        : 0;
+
+      // ── Total players served ──
+      const totalPlayersServed = nonCancelledBookings.reduce((sum, b) => sum + b.players, 0);
+
+      // ── Repeat customers ──
+      const playerBookingCount: Record<string, number> = {};
+      for (const b of allBookings.filter((b) => b.userId && b.status !== "cancelled")) {
+        const key = b.userId!.toString();
+        playerBookingCount[key] = (playerBookingCount[key] || 0) + 1;
+      }
+      const repeatCustomers = Object.values(playerBookingCount).filter((c) => c > 1).length;
+      const repeatCustomerRate = totalUniquePlayers > 0
+        ? Math.round((repeatCustomers / totalUniquePlayers) * 100)
+        : 0;
+
+      // ── Overall escape rate ──
+      const today = new Date().toISOString().split("T")[0];
+      const pastNonCancelled = allBookings.filter(
+        (b) => b.date <= today && b.status !== "cancelled" && b.status !== "pending_payment"
+      );
+      const completedPast = pastNonCancelled.filter((b) => b.status === "completed").length;
+      const escapeRate = pastNonCancelled.length > 0
+        ? Math.round((completedPast / pastNonCancelled.length) * 100)
+        : 0;
+
+      // ── Most popular day of week ──
+      const dayCount: Record<number, number> = {};
+      for (const b of nonCancelledBookings) {
+        const day = new Date(b.date).getDay(); // 0=Sun..6=Sat
+        dayCount[day] = (dayCount[day] || 0) + 1;
+      }
+      const dayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+      const peakDayNum = Object.entries(dayCount).sort((a, b) => b[1] - a[1])[0];
+      const peakDay = peakDayNum ? dayNames[Number(peakDayNum[0])] : "—";
+
+      // ── Most popular time slot ──
+      const timeCount: Record<string, number> = {};
+      for (const b of nonCancelledBookings) {
+        timeCount[b.time] = (timeCount[b.time] || 0) + 1;
+      }
+      const peakTimeEntry = Object.entries(timeCount).sort((a, b) => b[1] - a[1])[0];
+      const peakTime = peakTimeEntry ? peakTimeEntry[0] : "—";
+
+      // ── Booking source breakdown ──
+      const platformBookings = allBookings.filter((b) => b.source !== "external" && b.status !== "cancelled").length;
+      const widgetBookings = allBookings.filter((b) => b.source === "external" && b.status !== "cancelled").length;
+
+      // ── Total reviews ──
+      let totalReviews = 0;
+      for (const room of rooms) {
+        totalReviews += room.reviews ?? 0;
       }
 
       fullAnalytics = {
@@ -263,6 +329,16 @@ export const getDashboardStats = query({
         activeSubscribers,
         churnedSubscribers,
         revenuePerRoom,
+        totalUniquePlayers,
+        avgGroupSize,
+        totalPlayersServed,
+        repeatCustomerRate,
+        escapeRate,
+        peakDay,
+        peakTime,
+        platformBookings,
+        widgetBookings,
+        totalReviews,
       };
     }
 

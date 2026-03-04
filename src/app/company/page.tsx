@@ -29,6 +29,10 @@ import {
   ArrowUpRight,
   Circle,
   Code,
+  Target,
+  Repeat,
+  Timer,
+  MessageSquare,
 } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
 
@@ -338,27 +342,68 @@ export default function CompanyDashboardPage() {
       )}
 
       {/* ── Enterprise Analytics ── */}
-      {(stats as any)?.fullAnalytics && (
-        <div className="bg-brand-surface rounded-2xl border border-white/5 p-5">
-          <div className="flex items-center gap-2 mb-5">
+      {(stats as any)?.fullAnalytics && (() => {
+        const fa = (stats as any).fullAnalytics;
+        return (
+        <div className="bg-brand-surface rounded-2xl border border-white/5 p-5 space-y-5">
+          <div className="flex items-center gap-2">
             <Crown className="w-5 h-5 text-purple-400" />
             <h2 className="font-bold">{t('company.dashboard.enterprise_insights')}</h2>
             <span className="text-[10px] bg-purple-500/10 text-purple-400 px-2 py-0.5 rounded-full font-semibold tracking-wide uppercase">{t('company.plan.enterprise')}</span>
           </div>
+
+          {/* Row 1: Key Numbers */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
+            <MiniStat icon={Users} label={t('company.dashboard.unique_players')} value={fa.totalUniquePlayers} color="text-purple-400" />
+            <MiniStat icon={Users} label={t('company.dashboard.total_players_served')} value={fa.totalPlayersServed} color="text-blue-400" />
+            <MiniStat icon={Users} label={t('company.dashboard.avg_group_size')} value={fa.avgGroupSize} color="text-cyan-400" />
+            <MiniStat icon={Repeat} label={t('company.dashboard.repeat_customers')} value={`${fa.repeatCustomerRate}%`} color="text-amber-400" />
+            <MiniStat icon={Target} label={t('company.dashboard.escape_rate')} value={`${fa.escapeRate}%`} color="text-emerald-400" />
+          </div>
+
+          {/* Row 2: Insights */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div className="bg-brand-bg/50 rounded-xl p-3 border border-white/[0.03]">
+              <Clock className="w-4 h-4 text-orange-400 mb-2" />
+              <p className="text-lg font-bold">{fa.peakTime}</p>
+              <p className="text-[10px] text-brand-text-secondary mt-0.5">{t('company.dashboard.peak_time')}</p>
+            </div>
+            <div className="bg-brand-bg/50 rounded-xl p-3 border border-white/[0.03]">
+              <CalendarDays className="w-4 h-4 text-pink-400 mb-2" />
+              <p className="text-lg font-bold">{fa.peakDay}</p>
+              <p className="text-[10px] text-brand-text-secondary mt-0.5">{t('company.dashboard.peak_day')}</p>
+            </div>
+            <div className="bg-brand-bg/50 rounded-xl p-3 border border-white/[0.03]">
+              <MessageSquare className="w-4 h-4 text-yellow-400 mb-2" />
+              <p className="text-lg font-bold">{fa.totalReviews}</p>
+              <p className="text-[10px] text-brand-text-secondary mt-0.5">{t('company.dashboard.total_reviews')}</p>
+            </div>
+            <div className="bg-brand-bg/50 rounded-xl p-3 border border-white/[0.03]">
+              <Code className="w-4 h-4 text-teal-400 mb-2" />
+              <div className="flex items-baseline gap-1.5">
+                <p className="text-lg font-bold">{fa.platformBookings}</p>
+                <span className="text-[10px] text-brand-text-secondary">/</span>
+                <p className="text-sm font-semibold text-brand-text-secondary">{fa.widgetBookings}</p>
+              </div>
+              <p className="text-[10px] text-brand-text-secondary mt-0.5">{t('company.dashboard.platform_vs_widget')}</p>
+            </div>
+          </div>
+
+          {/* Row 3: Subscribers + Revenue per Room */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="bg-brand-bg/50 rounded-xl p-4 border border-white/[0.03]">
-              <p className="text-2xl font-bold">{(stats as any).fullAnalytics.totalSubscribers}</p>
+              <p className="text-2xl font-bold">{fa.totalSubscribers}</p>
               <p className="text-xs text-brand-text-secondary mt-1">{t('company.dashboard.total_subscribers')}</p>
               <div className="flex items-center gap-3 mt-3">
                 <span className="flex items-center gap-1 text-xs text-green-400">
-                  <Circle className="w-2 h-2 fill-current" /> {(stats as any).fullAnalytics.activeSubscribers} {t('company.dashboard.active')}
+                  <Circle className="w-2 h-2 fill-current" /> {fa.activeSubscribers} {t('company.dashboard.active')}
                 </span>
                 <span className="flex items-center gap-1 text-xs text-red-400">
-                  <Circle className="w-2 h-2 fill-current" /> {(stats as any).fullAnalytics.churnedSubscribers} {t('company.dashboard.churned')}
+                  <Circle className="w-2 h-2 fill-current" /> {fa.churnedSubscribers} {t('company.dashboard.churned')}
                 </span>
               </div>
             </div>
-            {(stats as any).fullAnalytics.revenuePerRoom?.slice(0, 2).map((r: any) => (
+            {fa.revenuePerRoom?.slice(0, 2).map((r: any) => (
               <div key={r.roomId} className="bg-brand-bg/50 rounded-xl p-4 border border-white/[0.03]">
                 <p className="text-lg font-bold text-emerald-400">€{r.revenue}</p>
                 <p className="text-xs text-brand-text-secondary mt-1 truncate">{r.title}</p>
@@ -367,7 +412,8 @@ export default function CompanyDashboardPage() {
             ))}
           </div>
         </div>
-      )}
+        );
+      })()}
 
       {/* ── Analytics Upsell (Starter) ── */}
       {plan === 'starter' && stats && (
