@@ -15,6 +15,7 @@ import {
   Loader2,
 } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
+import { AnimateIn, StaggerContainer, StaggerItem, Floating } from '@/components/animations/AnimateIn';
 
 type Tab = 'players' | 'rooms' | 'teams';
 
@@ -96,31 +97,41 @@ export default function LeaderboardPage() {
         <div className="absolute top-1/2 left-1/3 w-60 h-60 bg-brand-gold/5 rounded-full blur-3xl" />
 
         <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-brand-gold/10 border border-brand-gold/20 mb-6">
-            <Trophy className="w-8 h-8 text-brand-gold" />
-          </div>
-          <h1 className="section-heading mb-4">
-            {t('leaderboard.title')}
-          </h1>
-          <p className="text-lg text-brand-text-secondary max-w-xl mx-auto">
-            {t('leaderboard.subtitle')}
-          </p>
+          <AnimateIn animation="scaleIn">
+            <Floating>
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-brand-gold/10 border border-brand-gold/20 mb-6">
+                <Trophy className="w-8 h-8 text-brand-gold" />
+              </div>
+            </Floating>
+          </AnimateIn>
+          <AnimateIn animation="fadeUp" delay={0.15}>
+            <h1 className="section-heading mb-4">
+              {t('leaderboard.title')}
+            </h1>
+          </AnimateIn>
+          <AnimateIn animation="fadeUp" delay={0.3}>
+            <p className="text-lg text-brand-text-secondary max-w-xl mx-auto">
+              {t('leaderboard.subtitle')}
+            </p>
+          </AnimateIn>
         </div>
       </section>
 
       {/* Global Stats */}
       <section className="pb-12">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+          <AnimateIn animation="scaleUp" duration={0.7}>
           <div className="glass rounded-2xl p-6 md:p-8">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            <StaggerContainer stagger={0.1} className="grid grid-cols-2 md:grid-cols-4 gap-6">
               {[
                 { icon: DoorOpen, label: t('leaderboard.total_escapes'), value: globalStats ? globalStats.totalEscapes.toLocaleString() : '—', color: 'text-brand-red' },
                 { icon: Clock, label: t('leaderboard.avg_escape_time'), value: globalStats ? `${globalStats.totalPlayed.toLocaleString()} ${t('leaderboard.played')}` : '—', color: 'text-cyan-400' },
                 { icon: TrendingUp, label: t('leaderboard.success_rate'), value: globalStats ? `${globalStats.successRate}%` : '—', color: 'text-green-400' },
                 { icon: Award, label: t('leaderboard.badges_earned'), value: globalStats ? globalStats.totalBadges.toLocaleString() : '—', color: 'text-brand-gold' },
               ].map((s, i) => (
-                <div key={i} className="text-center">
-                  <s.icon className={`w-6 h-6 ${s.color} mx-auto mb-2`} />
+                <StaggerItem key={i} animation="fadeUp">
+                <div className="text-center group">
+                  <s.icon className={`w-6 h-6 ${s.color} mx-auto mb-2 group-hover:scale-110 transition-transform duration-300`} />
                   <div className="text-xl md:text-2xl font-display font-bold">
                     {s.value}
                   </div>
@@ -128,9 +139,11 @@ export default function LeaderboardPage() {
                     {s.label}
                   </div>
                 </div>
+                </StaggerItem>
               ))}
-            </div>
+            </StaggerContainer>
           </div>
+          </AnimateIn>
         </div>
       </section>
 
@@ -330,11 +343,12 @@ export default function LeaderboardPage() {
 
           {/* Badges */}
           {activeTab === 'teams' && (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <StaggerContainer stagger={0.08} className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {badges.map((badge, i) => {
                 const stat = badgeStats?.find((s) => s.key === badge.key);
                 const earnedCount = stat?.earnedCount ?? 0;
                 return (
+                  <StaggerItem key={i} animation="scaleUp">
                   <div
                     key={i}
                     className="card p-5 text-center hover:border-brand-gold/30 group"
@@ -347,9 +361,10 @@ export default function LeaderboardPage() {
                       {earnedCount} {t('leaderboard.players_earned')}
                     </div>
                   </div>
+                  </StaggerItem>
                 );
               })}
-            </div>
+            </StaggerContainer>
           )}
         </div>
       </section>

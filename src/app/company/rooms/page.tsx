@@ -20,6 +20,7 @@ import {
   AlertTriangle,
 } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
+import { AnimateIn, StaggerContainer, StaggerItem } from '@/components/animations/AnimateIn';
 
 const PLAN_ROOM_LIMITS: Record<string, number> = { starter: 1, pro: 10, enterprise: Infinity };
 
@@ -59,6 +60,7 @@ export default function CompanyRoomsPage() {
 
   return (
     <div className="p-6 md:p-8 max-w-7xl mx-auto">
+      <AnimateIn animation="fadeUp">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
         <div>
           <h1 className="text-2xl md:text-3xl font-bold">{t('company.rooms.title')}</h1>
@@ -80,6 +82,7 @@ export default function CompanyRoomsPage() {
           </Link>
         )}
       </div>
+      </AnimateIn>
 
       {/* Room limit bar */}
       {rooms && (
@@ -126,11 +129,11 @@ export default function CompanyRoomsPage() {
           </Link>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+        <StaggerContainer stagger={0.1} className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
           {rooms.map((room: any) => (
+            <StaggerItem key={room._id} animation="fadeUp">
             <div
-              key={room._id}
-              className={`bg-brand-surface rounded-2xl border overflow-hidden transition-all ${
+              className={`bg-brand-surface rounded-2xl border overflow-hidden transition-all hover:-translate-y-0.5 ${
                 room.isActive !== false
                   ? 'border-white/5'
                   : 'border-white/5 opacity-60'
@@ -244,8 +247,9 @@ export default function CompanyRoomsPage() {
                 </div>
               </div>
             </div>
+            </StaggerItem>
           ))}
-        </div>
+        </StaggerContainer>
       )}
     </div>
   );

@@ -11,6 +11,7 @@ import {
   Twitter,
 } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
+import { AnimateIn, StaggerContainer, StaggerItem } from '@/components/animations/AnimateIn';
 
 export function Footer() {
   const { t } = useTranslation();
@@ -39,9 +40,9 @@ export function Footer() {
   return (
     <footer className="bg-brand-dark border-t border-brand-border/50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
+      <StaggerContainer stagger={0.1} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
           {/* Brand */}
-          <div className="lg:col-span-1">
+          <StaggerItem animation="fadeUp" className="lg:col-span-1">
             <Link href="/" className="flex items-center gap-2 mb-4">
               <div className="w-9 h-9 bg-brand-red rounded-lg flex items-center justify-center">
                 <Unlock className="w-5 h-5 text-white" />
@@ -64,10 +65,10 @@ export function Footer() {
                 </a>
               ))}
             </div>
-          </div>
+          </StaggerItem>
 
           {/* Product */}
-          <div>
+          <StaggerItem animation="fadeUp">
             <h4 className="font-semibold text-sm uppercase tracking-wider text-brand-text-muted mb-4">
               {t('footer.product')}
             </h4>
@@ -83,10 +84,10 @@ export function Footer() {
                 </li>
               ))}
             </ul>
-          </div>
+          </StaggerItem>
 
           {/* Company */}
-          <div>
+          <StaggerItem animation="fadeUp">
             <h4 className="font-semibold text-sm uppercase tracking-wider text-brand-text-muted mb-4">
               {t('footer.company')}
             </h4>
@@ -102,10 +103,10 @@ export function Footer() {
                 </li>
               ))}
             </ul>
-          </div>
+          </StaggerItem>
 
           {/* Contact */}
-          <div>
+          <StaggerItem animation="fadeUp">
             <h4 className="font-semibold text-sm uppercase tracking-wider text-brand-text-muted mb-4">
               {t('footer.contact_heading')}
             </h4>
@@ -123,10 +124,11 @@ export function Footer() {
                 Athens, Greece
               </li>
             </ul>
-          </div>
-        </div>
+          </StaggerItem>
+        </StaggerContainer>
 
         {/* Bottom */}
+        <AnimateIn animation="fadeIn" delay={0.4}>
         <div className="mt-12 pt-8 border-t border-brand-border/30 flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-brand-text-muted text-sm">
             © {new Date().getFullYear()} UNLOCKED. {t('footer.rights')}
@@ -143,6 +145,7 @@ export function Footer() {
             ))}
           </div>
         </div>
+        </AnimateIn>
       </div>
     </footer>
   );

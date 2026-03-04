@@ -7,6 +7,7 @@ import { useQuery, useMutation, useAction } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
 import { useAuth } from '@/lib/auth';
 import { useTranslation } from '@/lib/i18n';
+import { AnimateIn, StaggerContainer, StaggerItem, Floating } from '@/components/animations/AnimateIn';
 import { QRCodeSVG } from 'qrcode.react';
 import {
   Ticket,
@@ -120,15 +121,23 @@ export default function TicketsPage() {
         <div className="absolute top-1/3 left-1/4 w-80 h-80 bg-brand-red/5 rounded-full blur-3xl" />
 
         <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-brand-red/10 border border-brand-red/20 mb-6">
-            <Ticket className="w-8 h-8 text-brand-red" />
-          </div>
-          <h1 className="section-heading mb-4">
-            {t('tickets.title')}
-          </h1>
-          <p className="text-lg text-brand-text-secondary max-w-xl mx-auto">
-            {t('tickets.subtitle')}
-          </p>
+          <AnimateIn animation="scaleIn">
+            <Floating>
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-brand-red/10 border border-brand-red/20 mb-6">
+                <Ticket className="w-8 h-8 text-brand-red" />
+              </div>
+            </Floating>
+          </AnimateIn>
+          <AnimateIn animation="fadeUp" delay={0.15}>
+            <h1 className="section-heading mb-4">
+              {t('tickets.title')}
+            </h1>
+          </AnimateIn>
+          <AnimateIn animation="fadeUp" delay={0.3}>
+            <p className="text-lg text-brand-text-secondary max-w-xl mx-auto">
+              {t('tickets.subtitle')}
+            </p>
+          </AnimateIn>
         </div>
       </section>
 
@@ -180,12 +189,12 @@ export default function TicketsPage() {
               </Link>
             </div>
           ) : (
-            <div className="space-y-4">
+            <StaggerContainer stagger={0.1} className="space-y-4">
               {displayed.map((booking: any) => {
                 const badge = paymentBadge[booking.paymentStatus] || paymentBadge.na;
                 return (
+                  <StaggerItem key={booking._id} animation="fadeUp">
                   <div
-                    key={booking._id}
                     className={`card overflow-hidden ${
                       booking.status === 'cancelled' ? 'opacity-60' : ''
                     }`}
@@ -348,9 +357,10 @@ export default function TicketsPage() {
                     )}
                     </div>{/* end padding wrapper */}
                   </div>
+                  </StaggerItem>
                 );
               })}
-            </div>
+            </StaggerContainer>
           )}
         </div>
       </section>

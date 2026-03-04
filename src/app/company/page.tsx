@@ -35,6 +35,7 @@ import {
   MessageSquare,
 } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
+import { AnimateIn, StaggerContainer, StaggerItem } from '@/components/animations/AnimateIn';
 
 function getGreeting(t: (key: string) => string) {
   const h = new Date().getHours();
@@ -93,6 +94,7 @@ export default function CompanyDashboardPage() {
   return (
     <div className="p-4 md:p-8 max-w-7xl mx-auto space-y-6">
       {/* ── Hero Header ── */}
+      <AnimateIn animation="fadeUp">
       <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-brand-surface via-brand-surface to-brand-red/5 border border-white/5 p-6 md:p-8">
         <div className="absolute top-0 right-0 w-64 h-64 bg-brand-red/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
         <div className="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -126,9 +128,10 @@ export default function CompanyDashboardPage() {
           </div>
         </div>
       </div>
+      </AnimateIn>
 
       {/* ── Today&apos;s Metrics (live pulse) ── */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <StaggerContainer stagger={0.1} className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <MetricCard
           icon={CalendarDays}
           label={t('company.dashboard.todays_bookings')}
@@ -157,12 +160,12 @@ export default function CompanyDashboardPage() {
           accent="red"
           detail={roomLimit !== Infinity ? `${roomLimit} max (${plan})` : `${plan} ${t('company.plan.plan_label')}`}
         />
-      </div>
+      </StaggerContainer>
 
       {/* ── Split: Overview + Schedule ── */}
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
         {/* Left: Overview Stats */}
-        <div className="lg:col-span-2 space-y-4">
+        <AnimateIn animation="fadeRight" className="lg:col-span-2 space-y-4">
           <div className="bg-brand-surface rounded-2xl border border-white/5 p-5">
             <div className="flex items-center justify-between mb-5">
               <h2 className="font-bold flex items-center gap-2">
@@ -241,10 +244,10 @@ export default function CompanyDashboardPage() {
               </div>
             </div>
           )}
-        </div>
+        </AnimateIn>
 
         {/* Right: Today&apos;s Schedule */}
-        <div className="lg:col-span-3">
+        <AnimateIn animation="fadeLeft" delay={0.2} className="lg:col-span-3">
           <div className="bg-brand-surface rounded-2xl border border-white/5 p-5 h-full">
             <div className="flex items-center justify-between mb-5">
               <h2 className="font-bold flex items-center gap-2">
@@ -320,11 +323,12 @@ export default function CompanyDashboardPage() {
               </div>
             )}
           </div>
-        </div>
+        </AnimateIn>
       </div>
 
       {/* ── Advanced Analytics (Pro+) ── */}
       {(stats as any)?.advanced && (
+        <AnimateIn animation="fadeUp">
         <div className="bg-brand-surface rounded-2xl border border-white/5 p-5">
           <div className="flex items-center gap-2 mb-5">
             <BarChart3 className="w-5 h-5 text-brand-red" />
@@ -339,6 +343,7 @@ export default function CompanyDashboardPage() {
             <MiniStat icon={CreditCard} label={t('company.dashboard.avg_per_booking')} value={`€${(stats as any).advanced.avgRevenuePerBooking}`} color="text-emerald-400" />
           </div>
         </div>
+        </AnimateIn>
       )}
 
       {/* ── Enterprise Analytics ── */}
@@ -497,7 +502,8 @@ function MetricCard({ icon: Icon, label, value, accent, detail }: {
   const c = colors[accent] || colors.blue;
 
   return (
-    <div className={`bg-brand-surface rounded-2xl border border-white/5 p-4 shadow-lg ${c.glow}`}>
+    <StaggerItem>
+    <div className={`bg-brand-surface rounded-2xl border border-white/5 p-4 shadow-lg ${c.glow} hover:-translate-y-0.5 transition-transform duration-300`}>
       <div className="flex items-center justify-between mb-3">
         <div className={`w-9 h-9 rounded-xl ${c.bg} flex items-center justify-center`}>
           <Icon className={`w-4.5 h-4.5 ${c.text}`} />
@@ -507,6 +513,7 @@ function MetricCard({ icon: Icon, label, value, accent, detail }: {
       <p className="text-[11px] text-brand-text-secondary mt-1">{label}</p>
       {detail && <p className="text-[10px] text-brand-text-secondary/60 mt-0.5">{detail}</p>}
     </div>
+    </StaggerItem>
   );
 }
 

@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { Smartphone, ArrowRight } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
+import { AnimateIn, Floating } from '@/components/animations/AnimateIn';
 
 export function DownloadCTA() {
   const { t } = useTranslation();
@@ -14,18 +15,24 @@ export function DownloadCTA() {
 
       <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
         {/* Phone mockup */}
-        <div className="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-brand-red/10 border border-brand-red/20 mb-8 animate-float">
-          <Smartphone className="w-10 h-10 text-brand-red" />
-        </div>
+        <AnimateIn animation="scaleIn">
+          <Floating>
+            <div className="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-brand-red/10 border border-brand-red/20 mb-8">
+              <Smartphone className="w-10 h-10 text-brand-red" />
+            </div>
+          </Floating>
+        </AnimateIn>
 
-        <h2 className="section-heading mb-6">
-          {t('download.title')} <span className="text-gradient">{t('download.title_highlight')}</span> {t('download.title_end')}
-        </h2>
-        <p className="section-subheading mx-auto mb-10">
-          {t('download.subtitle')}
-        </p>
+        <AnimateIn animation="fadeUp" delay={0.2}>
+          <h2 className="section-heading mb-6">
+            {t('download.title')} <span className="text-gradient">{t('download.title_highlight')}</span> {t('download.title_end')}
+          </h2>
+          <p className="section-subheading mx-auto mb-10">
+            {t('download.subtitle')}
+          </p>
+        </AnimateIn>
 
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+        <AnimateIn animation="fadeUp" delay={0.4}>
           <Link href="/signup" className="btn-primary flex items-center gap-2 text-lg !py-4 !px-10">
             {t('download.cta')}
             <ArrowRight className="w-5 h-5" />
@@ -51,7 +58,7 @@ export function DownloadCTA() {
               </div>
             </button>
           </div>
-        </div>
+        </AnimateIn>
       </div>
     </section>
   );

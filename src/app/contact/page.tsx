@@ -13,6 +13,7 @@ import {
   ArrowRight,
 } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
+import { AnimateIn, StaggerContainer, StaggerItem, Floating } from '@/components/animations/AnimateIn';
 
 export default function ContactPage() {
   const { t } = useTranslation();
@@ -108,23 +109,32 @@ export default function ContactPage() {
         <div className="absolute top-1/3 left-1/3 w-80 h-80 bg-brand-red/5 rounded-full blur-3xl" />
 
         <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-brand-red/10 border border-brand-red/20 mb-6">
-            <MessageSquare className="w-8 h-8 text-brand-red" />
-          </div>
-          <h1 className="section-heading mb-4">
-            {t('contact.title')}
-          </h1>
-          <p className="text-lg text-brand-text-secondary max-w-xl mx-auto">
-            {t('contact.subtitle')}
-          </p>
+          <AnimateIn animation="scaleIn">
+            <Floating>
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-brand-red/10 border border-brand-red/20 mb-6">
+                <MessageSquare className="w-8 h-8 text-brand-red" />
+              </div>
+            </Floating>
+          </AnimateIn>
+          <AnimateIn animation="fadeUp" delay={0.15}>
+            <h1 className="section-heading mb-4">
+              {t('contact.title')}
+            </h1>
+          </AnimateIn>
+          <AnimateIn animation="fadeUp" delay={0.3}>
+            <p className="text-lg text-brand-text-secondary max-w-xl mx-auto">
+              {t('contact.subtitle')}
+            </p>
+          </AnimateIn>
         </div>
       </section>
 
       {/* Contact info cards */}
       <section className="pb-12">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+          <StaggerContainer stagger={0.1} className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
             {contactInfo.map((info, i) => (
+              <StaggerItem key={i} animation="fadeUp">
               <a
                 key={i}
                 href={info.href}
@@ -138,8 +148,9 @@ export default function ContactPage() {
                 </div>
                 <div className="text-sm font-medium">{info.value}</div>
               </a>
+              </StaggerItem>
             ))}
-          </div>
+          </StaggerContainer>
         </div>
       </section>
 
@@ -148,7 +159,7 @@ export default function ContactPage() {
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-5 gap-8">
             {/* Form */}
-            <div className="lg:col-span-3">
+            <AnimateIn animation="fadeRight" className="lg:col-span-3">
               <div className="card p-6 md:p-8">
                 {submitted ? (
                   <div className="text-center py-12">
@@ -277,10 +288,10 @@ export default function ContactPage() {
                   </>
                 )}
               </div>
-            </div>
+            </AnimateIn>
 
             {/* Sidebar */}
-            <div className="lg:col-span-2 space-y-6">
+            <AnimateIn animation="fadeLeft" delay={0.2} className="lg:col-span-2 space-y-6">
               {/* Business CTA */}
               <div className="card p-6 glow-border">
                 <div className="flex items-center gap-3 mb-3">
@@ -312,7 +323,7 @@ export default function ContactPage() {
                   </div>
                 </div>
               </div>
-            </div>
+            </AnimateIn>
           </div>
         </div>
       </section>
@@ -320,19 +331,19 @@ export default function ContactPage() {
       {/* FAQ */}
       <section className="pb-20 bg-brand-dark py-20">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
+          <AnimateIn animation="fadeUp" className="text-center mb-12">
             <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-brand-red/10 mb-4">
               <HelpCircle className="w-6 h-6 text-brand-red" />
             </div>
             <h2 className="section-heading mb-4">
               {t('contact.faq_title')}
             </h2>
-          </div>
+          </AnimateIn>
 
-          <div className="space-y-3">
+          <StaggerContainer stagger={0.08} className="space-y-3">
             {faqs.map((faq, i) => (
+              <StaggerItem key={i} animation="fadeUp">
               <div
-                key={i}
                 className="card overflow-hidden"
               >
                 <button
@@ -366,8 +377,9 @@ export default function ContactPage() {
                   </p>
                 </div>
               </div>
+              </StaggerItem>
             ))}
-          </div>
+          </StaggerContainer>
         </div>
       </section>
     </>

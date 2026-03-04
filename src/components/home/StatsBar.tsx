@@ -5,6 +5,7 @@ import { useSafeQuery } from '@/lib/useSafeQuery';
 import { api } from '../../../convex/_generated/api';
 import { useEffect, useState } from 'react';
 import { useTranslation } from '@/lib/i18n';
+import { AnimateIn, StaggerContainer, StaggerItem } from '@/components/animations/AnimateIn';
 
 function formatStat(value: number): string {
   if (value >= 1000) {
@@ -56,23 +57,27 @@ export function StatsBar() {
   return (
     <section className="relative -mt-1 z-20">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="glass rounded-2xl p-8 md:p-10">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            {stats.map((stat, i) => (
-              <div key={i} className="text-center">
-                <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-brand-red/10 mb-3">
-                  <stat.icon className="w-6 h-6 text-brand-red" />
-                </div>
-                <div className="text-2xl md:text-3xl font-display font-bold text-white">
-                  {platformStats ? stat.value : '—'}
-                </div>
-                <div className="text-sm text-brand-text-muted mt-1">
-                  {stat.label}
-                </div>
-              </div>
-            ))}
+        <AnimateIn animation="scaleUp" duration={0.7}>
+          <div className="glass rounded-2xl p-8 md:p-10">
+            <StaggerContainer stagger={0.1} className="grid grid-cols-2 md:grid-cols-4 gap-8">
+              {stats.map((stat, i) => (
+                <StaggerItem key={i} animation="fadeUp">
+                  <div className="text-center group">
+                    <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-brand-red/10 mb-3 group-hover:bg-brand-red/20 group-hover:scale-110 transition-all duration-300">
+                      <stat.icon className="w-6 h-6 text-brand-red" />
+                    </div>
+                    <div className="text-2xl md:text-3xl font-display font-bold text-white">
+                      {platformStats ? stat.value : '—'}
+                    </div>
+                    <div className="text-sm text-brand-text-muted mt-1">
+                      {stat.label}
+                    </div>
+                  </div>
+                </StaggerItem>
+              ))}
+            </StaggerContainer>
           </div>
-        </div>
+        </AnimateIn>
       </div>
     </section>
   );

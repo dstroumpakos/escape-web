@@ -3,6 +3,7 @@
 import { Building2, BarChart2, Calendar, QrCode, ArrowRight, Globe } from 'lucide-react';
 import Link from 'next/link';
 import { useTranslation } from '@/lib/i18n';
+import { AnimateIn, StaggerContainer, StaggerItem } from '@/components/animations/AnimateIn';
 
 export function ForBusinesses() {
   const { t } = useTranslation();
@@ -43,10 +44,11 @@ export function ForBusinesses() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
           {/* Left content */}
-          <div>
-            <span className="inline-block text-brand-red text-sm font-semibold uppercase tracking-wider mb-3">
-              {t('business.label')}
-            </span>
+          <AnimateIn animation="fadeRight" duration={0.7}>
+            <div>
+              <span className="inline-block text-brand-red text-sm font-semibold uppercase tracking-wider mb-3">
+                {t('business.label')}
+              </span>
             <h2 className="section-heading mb-6">
               {t('business.title')}{' '}
               <span className="text-gradient">{t('business.title_highlight')}</span>
@@ -55,9 +57,9 @@ export function ForBusinesses() {
               {t('business.subtitle')}
             </p>
 
-            <div className="space-y-5 mb-8">
+            <StaggerContainer stagger={0.1} className="space-y-5 mb-8">
               {features.map((f, i) => {
-                const content = (
+                const inner = (
                   <div className="flex gap-4">
                     <div className="shrink-0 w-10 h-10 rounded-xl bg-brand-red/10 flex items-center justify-center">
                       <f.icon className="w-5 h-5 text-brand-red" />
@@ -78,15 +80,17 @@ export function ForBusinesses() {
 
                 if ('link' in f && f.link) {
                   return (
-                    <Link key={i} href={f.link} className="block group/feat hover:bg-brand-surface/30 -mx-3 px-3 py-2 rounded-xl transition-colors">
-                      {content}
-                    </Link>
+                    <StaggerItem key={i} animation="fadeLeft">
+                      <Link href={f.link} className="block group/feat hover:bg-brand-surface/30 -mx-3 px-3 py-2 rounded-xl transition-colors">
+                        {inner}
+                      </Link>
+                    </StaggerItem>
                   );
                 }
 
-                return <div key={i}>{content}</div>;
+                return <StaggerItem key={i} animation="fadeLeft">{inner}</StaggerItem>;
               })}
-            </div>
+            </StaggerContainer>
 
             <Link
               href="/company/register"
@@ -96,8 +100,10 @@ export function ForBusinesses() {
               <ArrowRight className="w-5 h-5" />
             </Link>
           </div>
+          </AnimateIn>
 
           {/* Right illustration */}
+          <AnimateIn animation="fadeLeft" delay={0.3} duration={0.7}>
           <div className="relative">
             <div className="absolute -inset-4 bg-brand-red/5 rounded-3xl blur-2xl" />
             <div className="relative card p-8 md:p-10">
@@ -176,6 +182,7 @@ export function ForBusinesses() {
               </div>
             </div>
           </div>
+          </AnimateIn>
         </div>
       </div>
     </section>

@@ -5,6 +5,7 @@ import { useSafeQuery } from '@/lib/useSafeQuery';
 import { api } from '../../../convex/_generated/api';
 import { useTranslation } from '@/lib/i18n';
 import Link from 'next/link';
+import { AnimateIn, StaggerContainer, StaggerItem } from '@/components/animations/AnimateIn';
 
 interface RoomCardProps {
   id?: string;
@@ -270,26 +271,28 @@ export function FeaturedRooms() {
     <section id="rooms" className="py-20 md:py-28">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="text-center mb-14">
+        <AnimateIn animation="fadeUp" className="text-center mb-14">
           <h2 className="section-heading mb-4">
             {t('featured.title')} <span className="text-gradient">{t('featured.title_highlight')}</span>
           </h2>
           <p className="section-subheading mx-auto">
             {t('featured.subtitle')}
           </p>
-        </div>
+        </AnimateIn>
 
         {/* Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+        <StaggerContainer stagger={0.1} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
           {rooms.map((room, i) => (
-            <RoomCard key={i} room={room} />
+            <StaggerItem key={i} animation="fadeUp">
+              <RoomCard room={room} />
+            </StaggerItem>
           ))}
-        </div>
+        </StaggerContainer>
 
         {/* CTA */}
-        <div className="text-center mt-12">
+        <AnimateIn animation="fadeUp" delay={0.4} className="text-center mt-12">
           <button className="btn-outline">{t('featured.view_all')}</button>
-        </div>
+        </AnimateIn>
       </div>
     </section>
   );

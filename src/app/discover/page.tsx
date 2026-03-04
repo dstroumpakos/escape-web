@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
 import { useAuth } from '@/lib/auth';
+import { AnimateIn, StaggerContainer, StaggerItem } from '@/components/animations/AnimateIn';
 
 const themes = ['All', 'Horror', 'Sci-Fi', 'Mystery', 'Historical', 'Fantasy', 'Adventure'];
 
@@ -115,12 +116,16 @@ export default function DiscoverPage() {
         <div className="absolute top-1/3 right-1/4 w-80 h-80 bg-brand-red/5 rounded-full blur-3xl" />
 
         <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h1 className="section-heading mb-4 text-center">
-            {t('discover.title')} <span className="text-gradient">{t('discover.title_highlight')}</span>
-          </h1>
-          <p className="text-brand-text-secondary text-center mb-8 max-w-xl mx-auto">
-            {t('discover.subtitle')}
-          </p>
+          <AnimateIn animation="fadeUp">
+            <h1 className="section-heading mb-4 text-center">
+              {t('discover.title')} <span className="text-gradient">{t('discover.title_highlight')}</span>
+            </h1>
+          </AnimateIn>
+          <AnimateIn animation="fadeUp" delay={0.15}>
+            <p className="text-brand-text-secondary text-center mb-8 max-w-xl mx-auto">
+              {t('discover.subtitle')}
+            </p>
+          </AnimateIn>
 
           {/* Search */}
           <div className="max-w-2xl mx-auto relative mb-6">
@@ -211,11 +216,11 @@ export default function DiscoverPage() {
               <p className="text-sm text-brand-text-muted mb-6">
                 {t('discover.rooms_found', { count: String(filteredRooms.length) })}
               </p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              <StaggerContainer stagger={0.08} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filteredRooms.map((room: any) => (
+                  <StaggerItem key={room._id} animation="fadeUp">
                   <Link
                     href={`/rooms/${room._id}`}
-                    key={room._id}
                     className="card-hover group cursor-pointer block"
                   >
                     {/* Image */}
@@ -318,8 +323,9 @@ export default function DiscoverPage() {
                       </div>
                     </div>
                   </Link>
+                  </StaggerItem>
                 ))}
-              </div>
+              </StaggerContainer>
             </>
           )}
         </div>

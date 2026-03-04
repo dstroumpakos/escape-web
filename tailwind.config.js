@@ -31,9 +31,16 @@ module.exports = {
       animation: {
         'glow-pulse': 'glow-pulse 2s ease-in-out infinite alternate',
         'fade-up': 'fade-up 0.6s ease-out forwards',
+        'fade-in': 'fade-in 0.5s ease-out forwards',
         'slide-in-left': 'slide-in-left 0.5s ease-out forwards',
         'slide-in-right': 'slide-in-right 0.5s ease-out forwards',
         'float': 'float 3s ease-in-out infinite',
+        'scale-in': 'scale-in 0.4s ease-out forwards',
+        'shimmer': 'shimmer 2s infinite linear',
+        'pulse-soft': 'pulse-soft 2s ease-in-out infinite',
+        'bounce-subtle': 'bounce-subtle 2s ease-in-out infinite',
+        'gradient-x': 'gradient-x 3s ease infinite',
+        'spin-slow': 'spin 3s linear infinite',
       },
       keyframes: {
         'glow-pulse': {
@@ -43,6 +50,10 @@ module.exports = {
         'fade-up': {
           '0%': { opacity: '0', transform: 'translateY(30px)' },
           '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+        'fade-in': {
+          '0%': { opacity: '0' },
+          '100%': { opacity: '1' },
         },
         'slide-in-left': {
           '0%': { opacity: '0', transform: 'translateX(-40px)' },
@@ -55,6 +66,26 @@ module.exports = {
         float: {
           '0%, 100%': { transform: 'translateY(0)' },
           '50%': { transform: 'translateY(-10px)' },
+        },
+        'scale-in': {
+          '0%': { opacity: '0', transform: 'scale(0.9)' },
+          '100%': { opacity: '1', transform: 'scale(1)' },
+        },
+        shimmer: {
+          '0%': { backgroundPosition: '-200% 0' },
+          '100%': { backgroundPosition: '200% 0' },
+        },
+        'pulse-soft': {
+          '0%, 100%': { opacity: '1' },
+          '50%': { opacity: '0.7' },
+        },
+        'bounce-subtle': {
+          '0%, 100%': { transform: 'translateY(0)' },
+          '50%': { transform: 'translateY(-5px)' },
+        },
+        'gradient-x': {
+          '0%, 100%': { backgroundPosition: '0% 50%' },
+          '50%': { backgroundPosition: '100% 50%' },
         },
       },
     },

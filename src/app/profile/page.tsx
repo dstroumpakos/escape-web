@@ -7,6 +7,7 @@ import { useQuery, useMutation } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
 import { useAuth } from '@/lib/auth';
 import { useTranslation } from '@/lib/i18n';
+import { AnimateIn, StaggerContainer, StaggerItem } from '@/components/animations/AnimateIn';
 import {
   User,
   Mail,
@@ -91,6 +92,7 @@ export default function ProfilePage() {
 
         <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           {/* Avatar */}
+          <AnimateIn animation="scaleIn">
           <div className="relative inline-block mb-4">
             <div className="w-24 h-24 rounded-full bg-brand-surface border-4 border-brand-red/30 flex items-center justify-center overflow-hidden">
               {profile.avatar ? (
@@ -106,8 +108,10 @@ export default function ProfilePage() {
               )}
             </div>
           </div>
+          </AnimateIn>
 
           {/* Name & info */}
+          <AnimateIn animation="fadeUp" delay={0.15}>
           <h1 className="text-2xl font-display font-bold mb-1">{profile.name}</h1>
           <p className="text-brand-text-muted text-sm mb-1">{profile.email}</p>
           <div className="flex items-center justify-center gap-2 flex-wrap mb-2">
@@ -127,50 +131,61 @@ export default function ProfilePage() {
               {t('profile.member_since')} {(profile as any).memberSince}
             </p>
           )}
+          </AnimateIn>
         </div>
       </section>
 
       {/* Stats */}
       <section className="pb-6">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <AnimateIn animation="scaleUp" duration={0.7}>
           <div className="glass rounded-2xl p-6">
-            <div className="grid grid-cols-3 gap-3 sm:gap-6">
+            <StaggerContainer stagger={0.1} className="grid grid-cols-3 gap-3 sm:gap-6">
+              <StaggerItem animation="fadeUp">
               <div className="text-center">
                 <DoorOpen className="w-5 h-5 text-brand-red mx-auto mb-1" />
                 <div className="text-2xl font-display font-bold">{profile.played ?? 0}</div>
                 <div className="text-xs text-brand-text-muted">{t('profile.rooms_played')}</div>
               </div>
+              </StaggerItem>
+              <StaggerItem animation="fadeUp">
               <div className="text-center">
                 <Trophy className="w-5 h-5 text-green-400 mx-auto mb-1" />
                 <div className="text-2xl font-display font-bold">{profile.escaped ?? 0}</div>
                 <div className="text-xs text-brand-text-muted">{t('profile.escaped')}</div>
               </div>
+              </StaggerItem>
+              <StaggerItem animation="fadeUp">
               <div className="text-center">
                 <Award className="w-5 h-5 text-brand-gold mx-auto mb-1" />
                 <div className="text-2xl font-display font-bold">{profile.awards ?? 0}</div>
                 <div className="text-xs text-brand-text-muted">{t('profile.awards')}</div>
               </div>
-            </div>
+              </StaggerItem>
+            </StaggerContainer>
           </div>
+          </AnimateIn>
         </div>
       </section>
 
       {/* Badges */}
       <section className="pb-6">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <AnimateIn animation="fadeUp">
           <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
             <Shield className="w-5 h-5 text-brand-gold" />
             {t('profile.badges')}
           </h2>
+          </AnimateIn>
           {badgesData && badgesData.length > 0 ? (
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <StaggerContainer stagger={0.08} className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               {badgesData.map((badge: any) => {
                 const pct = badge.threshold > 0
                   ? Math.min(100, Math.round((badge.progress / badge.threshold) * 100))
                   : 0;
                 return (
+                  <StaggerItem key={badge.key} animation="scaleUp">
                   <div
-                    key={badge.key}
                     className={`card p-4 text-center transition-all ${
                       badge.earned
                         ? 'border-brand-gold/30 bg-brand-gold/5'
@@ -204,9 +219,10 @@ export default function ProfilePage() {
                       </div>
                     )}
                   </div>
+                  </StaggerItem>
                 );
               })}
-            </div>
+            </StaggerContainer>
           ) : (
             <div className="card p-6 text-center">
               <Award className="w-8 h-8 text-brand-border mx-auto mb-2" />
@@ -265,6 +281,7 @@ export default function ProfilePage() {
       {/* Menu */}
       <section className="pb-20">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <AnimateIn animation="fadeUp" delay={0.1}>
           <div className="card overflow-hidden divide-y divide-brand-border/30">
             <button
               onClick={() => {
@@ -339,6 +356,7 @@ export default function ProfilePage() {
               <span className="flex-1">{t('profile.sign_out')}</span>
             </button>
           </div>
+          </AnimateIn>
         </div>
       </section>
     </>
