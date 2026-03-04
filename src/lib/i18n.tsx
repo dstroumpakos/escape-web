@@ -677,6 +677,7 @@ const translations: Record<Language, Record<string, string>> = {
     'leaderboard.badge_perfectionist_desc': 'No hints used in 10 rooms',
     'leaderboard.badge_night_owl': 'Night Owl',
     'leaderboard.badge_night_owl_desc': '10 late-night escapes',
+    'leaderboard.players_earned': 'earned',
     'leaderboard.no_players_yet': 'No players on the leaderboard yet. Start playing to claim the top spot!',
     'leaderboard.no_rooms_yet': 'No rooms ranked yet.',
 
@@ -1133,6 +1134,16 @@ const translations: Record<Language, Record<string, string>> = {
     'company.bookings.players_count': 'players',
     'company.bookings.any_notes': 'Any special notes...',
     'company.bookings.additional_details': 'Additional details...',
+    'company.bookings.complete_verify': 'Complete & Verify',
+    'company.bookings.did_escape': 'Did the team escape?',
+    'company.bookings.yes_escaped': 'Yes, escaped!',
+    'company.bookings.no_escaped': 'No, failed',
+    'company.bookings.escape_time': 'Escape time (optional)',
+    'company.bookings.escape_time_placeholder': 'e.g. 45',
+    'company.bookings.hints_used': 'Hints used (optional)',
+    'company.bookings.hints_placeholder': 'e.g. 2',
+    'company.bookings.badge_info': 'This data is used to verify player badges. Accurate reporting helps players earn achievements like Speed Demon or Perfectionist.',
+    'company.bookings.complete_and_verify': 'Complete & Verify Booking',
 
     // ── Company Rooms ──
     'company.rooms.title': 'Rooms',
@@ -2207,6 +2218,7 @@ const translations: Record<Language, Record<string, string>> = {
     'leaderboard.badge_perfectionist_desc': 'Χωρίς βοήθεια σε 10 δωμάτια',
     'leaderboard.badge_night_owl': 'Νυχτοπούλι',
     'leaderboard.badge_night_owl_desc': '10 νυχτερινές αποδράσεις',
+    'leaderboard.players_earned': 'κέρδισαν',
     'leaderboard.no_players_yet': 'Δεν υπάρχουν παίκτες στο leaderboard ακόμα. Άρχισε να παίζεις για να κατακτήσεις την κορυφή!',
     'leaderboard.no_rooms_yet': 'Δεν υπάρχουν δωμάτια στην κατάταξη ακόμα.',
 
@@ -2663,6 +2675,16 @@ const translations: Record<Language, Record<string, string>> = {
     'company.bookings.players_count': 'παίκτες',
     'company.bookings.any_notes': 'Ειδικές σημειώσεις...',
     'company.bookings.additional_details': 'Πρόσθετες λεπτομέρειες...',
+    'company.bookings.complete_verify': 'Ολοκλήρωση & Επαλήθευση',
+    'company.bookings.did_escape': 'Απέδρασε η ομάδα;',
+    'company.bookings.yes_escaped': 'Ναι, απέδρασαν!',
+    'company.bookings.no_escaped': 'Όχι, απέτυχαν',
+    'company.bookings.escape_time': 'Χρόνος απόδρασης (προαιρετικό)',
+    'company.bookings.escape_time_placeholder': 'π.χ. 45',
+    'company.bookings.hints_used': 'Βοήθειες (προαιρετικό)',
+    'company.bookings.hints_placeholder': 'π.χ. 2',
+    'company.bookings.badge_info': 'Αυτά τα δεδομένα χρησιμοποιούνται για την επαλήθευση badge παικτών. Η ακριβής αναφορά βοηθά τους παίκτες να κερδίσουν επιτεύγματα.',
+    'company.bookings.complete_and_verify': 'Ολοκλήρωση & Επαλήθευση',
 
     // ── Company Rooms ──
     'company.rooms.title': 'Δωμάτια',

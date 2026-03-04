@@ -156,11 +156,30 @@ export default defineSchema({
 
   badges: defineTable({
     userId: v.id("users"),
+    badgeKey: v.string(), // "champion","on_fire","mastermind","speed_demon","team_leader","explorer","perfectionist","night_owl"
     title: v.string(),
     icon: v.string(),
     earned: v.boolean(),
     date: v.optional(v.string()),
-  }).index("by_user", ["userId"]),
+    // Company verification
+    verifiedByCompanyId: v.optional(v.id("companies")),
+    verifiedByBookingId: v.optional(v.id("bookings")),
+    earnedAt: v.optional(v.number()),
+  }).index("by_user", ["userId"])
+    .index("by_user_badge", ["userId", "badgeKey"]),
+
+  // ─── Booking Performance (company-verified escape data) ───
+  bookingPerformance: defineTable({
+    bookingId: v.id("bookings"),
+    companyId: v.id("companies"),
+    userId: v.id("users"),
+    roomId: v.id("rooms"),
+    escaped: v.boolean(),                      // did they escape?
+    escapeTimeMinutes: v.optional(v.number()),  // how fast (minutes)
+    hintsUsed: v.optional(v.number()),          // how many hints
+    verifiedAt: v.number(),
+  }).index("by_booking", ["bookingId"])
+    .index("by_user", ["userId"]),
 
   bookings: defineTable({
     // userId is optional: external bookings may not have a linked player

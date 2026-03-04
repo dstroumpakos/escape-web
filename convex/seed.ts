@@ -144,12 +144,12 @@ export const seed = mutation({
 
     // Seed badges
     const badgesData = [
-      { title: "First Escape", icon: "🔓", earned: true, date: "2025-03-15" },
-      { title: "Speed Demon", icon: "⚡", earned: true, date: "2025-05-22" },
-      { title: "Horror Survivor", icon: "👻", earned: true, date: "2025-07-10" },
-      { title: "Team Leader", icon: "👑", earned: true, date: "2025-09-01" },
-      { title: "Puzzle Master", icon: "🧩", earned: true, date: "2025-11-18" },
-      { title: "Night Owl", icon: "🦉", earned: false },
+      { badgeKey: "champion", title: "Champion", icon: "🏆", earned: true, date: "2025-03-15" },
+      { badgeKey: "speed_demon", title: "Speed Demon", icon: "⚡", earned: true, date: "2025-05-22" },
+      { badgeKey: "mastermind", title: "Mastermind", icon: "🧠", earned: true, date: "2025-07-10" },
+      { badgeKey: "team_leader", title: "Team Leader", icon: "👥", earned: true, date: "2025-09-01" },
+      { badgeKey: "perfectionist", title: "Perfectionist", icon: "🎯", earned: true, date: "2025-11-18" },
+      { badgeKey: "night_owl", title: "Night Owl", icon: "🌙", earned: false },
     ];
 
     for (const badge of badgesData) {

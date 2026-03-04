@@ -15,6 +15,11 @@ import {
   AlertCircle,
   Ban,
   FileText,
+  Award,
+  CheckCircle2,
+  XCircle,
+  Lightbulb,
+  Timer,
 } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
 
@@ -38,6 +43,7 @@ export default function CompanyBookingsPage() {
   );
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showExternalModal, setShowExternalModal] = useState(false);
+  const [showCompleteModal, setShowCompleteModal] = useState<any>(null);
   const [selectedBooking, setSelectedBooking] = useState<any>(null);
 
   const bookings = useQuery(
@@ -52,6 +58,7 @@ export default function CompanyBookingsPage() {
 
   const cancelBooking = useMutation(api.companies.adminCancelBooking);
   const completeBooking = useMutation(api.companies.adminCompleteBooking);
+  const submitPerformance = useMutation(api.badges.submitPerformance);
   const updateNotes = useMutation(api.companies.updateBookingNotes);
 
   // Calendar logic
@@ -86,9 +93,8 @@ export default function CompanyBookingsPage() {
     await cancelBooking({ companyId: companyId as any, bookingId: bookingId as any });
   };
 
-  const handleComplete = async (bookingId: string) => {
-    if (!confirm(t('company.bookings.confirm_complete'))) return;
-    await completeBooking({ companyId: companyId as any, bookingId: bookingId as any });
+  const handleComplete = (booking: any) => {
+    setShowCompleteModal(booking);
   };
 
   return (
@@ -269,7 +275,7 @@ export default function CompanyBookingsPage() {
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
-                                handleComplete(booking._id);
+                                handleComplete(booking);
                               }}
                               className="text-sm px-4 py-2 rounded-xl bg-green-500/10 text-green-400 hover:bg-green-500/20 transition-colors"
                             >
@@ -315,6 +321,192 @@ export default function CompanyBookingsPage() {
           onClose={() => setShowExternalModal(false)}
         />
       )}
+
+      {/* Complete Booking + Badge Modal */}
+      {showCompleteModal && (
+        <CompleteBookingModal
+          companyId={companyId!}
+          booking={showCompleteModal}
+          onClose={() => setShowCompleteModal(null)}
+          completeBooking={completeBooking}
+          submitPerformance={submitPerformance}
+        />
+      )}
+    </div>
+  );
+}
+
+function CompleteBookingModal({
+  companyId,
+  booking,
+  onClose,
+  completeBooking,
+  submitPerformance,
+}: {
+  companyId: string;
+  booking: any;
+  onClose: () => void;
+  completeBooking: any;
+  submitPerformance: any;
+}) {
+  const { t } = useTranslation();
+  const [escaped, setEscaped] = useState(true);
+  const [escapeTime, setEscapeTime] = useState('');
+  const [hintsUsed, setHintsUsed] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleSubmit = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      // 1. Mark booking as completed
+      await completeBooking({
+        companyId: companyId as any,
+        bookingId: booking._id as any,
+      });
+
+      // 2. Submit performance data for badge verification
+      await submitPerformance({
+        companyId: companyId as any,
+        bookingId: booking._id as any,
+        escaped,
+        escapeTimeMinutes: escapeTime ? parseInt(escapeTime) : undefined,
+        hintsUsed: hintsUsed !== '' ? parseInt(hintsUsed) : undefined,
+      });
+
+      onClose();
+    } catch (err: any) {
+      setError(err?.message || 'Failed to complete booking');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
+      <div className="bg-brand-surface rounded-2xl border border-white/5 p-6 w-full max-w-md">
+        <div className="flex items-center justify-between mb-5">
+          <h2 className="text-lg font-bold flex items-center gap-2">
+            <Award className="w-5 h-5 text-brand-gold" />
+            {t('company.bookings.complete_verify')}
+          </h2>
+          <button onClick={onClose} className="p-1 hover:bg-white/5 rounded-lg">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* Booking summary */}
+        <div className="bg-brand-bg rounded-xl p-3 mb-5 text-sm">
+          <div className="flex items-center gap-2 mb-1">
+            <span className="font-bold text-brand-red">{booking.time}</span>
+            <span className="font-medium">{booking.roomTitle}</span>
+          </div>
+          <div className="text-brand-text-muted flex items-center gap-3">
+            <span>{booking.playerName}</span>
+            <span>{booking.players} {t('company.bookings.players_count')}</span>
+          </div>
+        </div>
+
+        {error && (
+          <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-3 mb-4 text-red-400 text-sm flex items-center gap-2">
+            <AlertCircle className="w-4 h-4 shrink-0" /> {error}
+          </div>
+        )}
+
+        {/* Did they escape? */}
+        <div className="mb-5">
+          <label className="block text-sm text-brand-text-secondary mb-2">
+            {t('company.bookings.did_escape')}
+          </label>
+          <div className="grid grid-cols-2 gap-3">
+            <button
+              type="button"
+              onClick={() => setEscaped(true)}
+              className={`flex items-center justify-center gap-2 px-4 py-3 rounded-xl border text-sm font-medium transition-all ${
+                escaped
+                  ? 'bg-green-500/10 border-green-500/30 text-green-400'
+                  : 'bg-brand-bg border-white/10 text-brand-text-secondary hover:border-green-500/20'
+              }`}
+            >
+              <CheckCircle2 className="w-4 h-4" />
+              {t('company.bookings.yes_escaped')}
+            </button>
+            <button
+              type="button"
+              onClick={() => setEscaped(false)}
+              className={`flex items-center justify-center gap-2 px-4 py-3 rounded-xl border text-sm font-medium transition-all ${
+                !escaped
+                  ? 'bg-red-500/10 border-red-500/30 text-red-400'
+                  : 'bg-brand-bg border-white/10 text-brand-text-secondary hover:border-red-500/20'
+              }`}
+            >
+              <XCircle className="w-4 h-4" />
+              {t('company.bookings.no_escaped')}
+            </button>
+          </div>
+        </div>
+
+        {/* Escape time (only if escaped) */}
+        {escaped && (
+          <div className="mb-4">
+            <label className="block text-sm text-brand-text-secondary mb-1.5 flex items-center gap-1.5">
+              <Timer className="w-3.5 h-3.5" />
+              {t('company.bookings.escape_time')}
+            </label>
+            <div className="relative">
+              <input
+                type="number"
+                min="1"
+                max="120"
+                value={escapeTime}
+                onChange={(e) => setEscapeTime(e.target.value)}
+                placeholder={t('company.bookings.escape_time_placeholder')}
+                className="w-full bg-brand-bg border border-white/10 rounded-xl px-4 py-3 text-white placeholder-brand-text-secondary/50 focus:border-brand-red focus:outline-none"
+              />
+              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-brand-text-muted">min</span>
+            </div>
+          </div>
+        )}
+
+        {/* Hints used */}
+        <div className="mb-6">
+          <label className="block text-sm text-brand-text-secondary mb-1.5 flex items-center gap-1.5">
+            <Lightbulb className="w-3.5 h-3.5" />
+            {t('company.bookings.hints_used')}
+          </label>
+          <input
+            type="number"
+            min="0"
+            max="20"
+            value={hintsUsed}
+            onChange={(e) => setHintsUsed(e.target.value)}
+            placeholder={t('company.bookings.hints_placeholder')}
+            className="w-full bg-brand-bg border border-white/10 rounded-xl px-4 py-3 text-white placeholder-brand-text-secondary/50 focus:border-brand-red focus:outline-none"
+          />
+        </div>
+
+        {/* Badge info note */}
+        <div className="bg-brand-gold/5 border border-brand-gold/10 rounded-xl p-3 mb-5 text-xs text-brand-text-secondary flex items-start gap-2">
+          <Award className="w-4 h-4 text-brand-gold shrink-0 mt-0.5" />
+          <span>{t('company.bookings.badge_info')}</span>
+        </div>
+
+        <button
+          onClick={handleSubmit}
+          disabled={loading}
+          className="w-full btn-primary !py-3 flex items-center justify-center gap-2"
+        >
+          {loading ? (
+            <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+          ) : (
+            <>
+              <CheckCircle2 className="w-4 h-4" />
+              {t('company.bookings.complete_and_verify')}
+            </>
+          )}
+        </button>
+      </div>
     </div>
   );
 }

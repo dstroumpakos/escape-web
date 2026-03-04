@@ -37,6 +37,11 @@ export default function ProfilePage() {
     user?.id ? { userId: user.id as any } : 'skip'
   );
 
+  const badgesData = useQuery(
+    api.badges.getUserBadges,
+    user?.id ? { userId: user.id as any } : 'skip'
+  );
+
   const userBadges = convexUser?.badges ?? [];
   const wishlist = convexUser?.wishlist ?? [];
 
@@ -157,22 +162,50 @@ export default function ProfilePage() {
             <Shield className="w-5 h-5 text-brand-gold" />
             {t('profile.badges')}
           </h2>
-          {userBadges.length > 0 ? (
-            <div className="flex gap-3 overflow-x-auto pb-2">
-              {userBadges.map((badge: any) => (
-                <div
-                  key={badge._id}
-                  className={`card p-4 text-center min-w-[100px] ${
-                    badge.earned ? '' : 'opacity-40'
-                  }`}
-                >
-                  <span className="text-2xl block mb-1">{badge.icon}</span>
-                  <div className="text-xs font-medium">{badge.title}</div>
-                  {badge.date && (
-                    <div className="text-[10px] text-brand-text-muted">{badge.date}</div>
-                  )}
-                </div>
-              ))}
+          {badgesData && badgesData.length > 0 ? (
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              {badgesData.map((badge: any) => {
+                const pct = badge.threshold > 0
+                  ? Math.min(100, Math.round((badge.progress / badge.threshold) * 100))
+                  : 0;
+                return (
+                  <div
+                    key={badge.key}
+                    className={`card p-4 text-center transition-all ${
+                      badge.earned
+                        ? 'border-brand-gold/30 bg-brand-gold/5'
+                        : 'opacity-60'
+                    }`}
+                  >
+                    <span className={`text-3xl block mb-2 ${badge.earned ? '' : 'grayscale'}`}>
+                      {badge.icon}
+                    </span>
+                    <div className="text-xs font-semibold mb-1">
+                      {t(`leaderboard.badge_${badge.key}`)}
+                    </div>
+                    <div className="text-[10px] text-brand-text-muted mb-2">
+                      {t(`leaderboard.badge_${badge.key}_desc`)}
+                    </div>
+                    {badge.earned ? (
+                      <div className="text-[10px] text-brand-gold font-medium">
+                        {badge.date}
+                      </div>
+                    ) : (
+                      <div className="w-full bg-brand-bg rounded-full h-1.5 mt-1">
+                        <div
+                          className="bg-brand-red/60 h-1.5 rounded-full transition-all"
+                          style={{ width: `${pct}%` }}
+                        />
+                      </div>
+                    )}
+                    {!badge.earned && badge.threshold > 0 && (
+                      <div className="text-[10px] text-brand-text-muted mt-1">
+                        {badge.progress}/{badge.threshold}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           ) : (
             <div className="card p-6 text-center">

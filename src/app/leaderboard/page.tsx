@@ -49,15 +49,18 @@ export default function LeaderboardPage() {
   const [activeTab, setActiveTab] = useState<Tab>('players');
 
   const badges = [
-    { icon: '🏆', name: t('leaderboard.badge_champion'), desc: t('leaderboard.badge_champion_desc') },
-    { icon: '🔥', name: t('leaderboard.badge_on_fire'), desc: t('leaderboard.badge_on_fire_desc') },
-    { icon: '🧠', name: t('leaderboard.badge_mastermind'), desc: t('leaderboard.badge_mastermind_desc') },
-    { icon: '⚡', name: t('leaderboard.badge_speed_demon'), desc: t('leaderboard.badge_speed_demon_desc') },
-    { icon: '👥', name: t('leaderboard.badge_team_leader'), desc: t('leaderboard.badge_team_leader_desc') },
-    { icon: '🌍', name: t('leaderboard.badge_explorer'), desc: t('leaderboard.badge_explorer_desc') },
-    { icon: '🎯', name: t('leaderboard.badge_perfectionist'), desc: t('leaderboard.badge_perfectionist_desc') },
-    { icon: '🌙', name: t('leaderboard.badge_night_owl'), desc: t('leaderboard.badge_night_owl_desc') },
+    { icon: '🏆', key: 'champion', name: t('leaderboard.badge_champion'), desc: t('leaderboard.badge_champion_desc') },
+    { icon: '🔥', key: 'on_fire', name: t('leaderboard.badge_on_fire'), desc: t('leaderboard.badge_on_fire_desc') },
+    { icon: '🧠', key: 'mastermind', name: t('leaderboard.badge_mastermind'), desc: t('leaderboard.badge_mastermind_desc') },
+    { icon: '⚡', key: 'speed_demon', name: t('leaderboard.badge_speed_demon'), desc: t('leaderboard.badge_speed_demon_desc') },
+    { icon: '👥', key: 'team_leader', name: t('leaderboard.badge_team_leader'), desc: t('leaderboard.badge_team_leader_desc') },
+    { icon: '🌍', key: 'explorer', name: t('leaderboard.badge_explorer'), desc: t('leaderboard.badge_explorer_desc') },
+    { icon: '🎯', key: 'perfectionist', name: t('leaderboard.badge_perfectionist'), desc: t('leaderboard.badge_perfectionist_desc') },
+    { icon: '🌙', key: 'night_owl', name: t('leaderboard.badge_night_owl'), desc: t('leaderboard.badge_night_owl_desc') },
   ];
+
+  // Badge stats from backend
+  const badgeStats = useQuery(api.badges.badgeLeaderboard);
 
   // Query real data from Convex
   const leaderboardData = useQuery(api.users.leaderboard, { limit: 20 });
@@ -328,16 +331,24 @@ export default function LeaderboardPage() {
           {/* Badges */}
           {activeTab === 'teams' && (
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {badges.map((badge, i) => (
-                <div
-                  key={i}
-                  className="card p-5 text-center hover:border-brand-gold/30"
-                >
-                  <span className="text-4xl mb-3 block">{badge.icon}</span>
-                  <h3 className="font-semibold text-sm mb-1">{badge.name}</h3>
-                  <p className="text-xs text-brand-text-muted">{badge.desc}</p>
-                </div>
-              ))}
+              {badges.map((badge, i) => {
+                const stat = badgeStats?.find((s) => s.key === badge.key);
+                const earnedCount = stat?.earnedCount ?? 0;
+                return (
+                  <div
+                    key={i}
+                    className="card p-5 text-center hover:border-brand-gold/30 group"
+                  >
+                    <span className="text-4xl mb-3 block group-hover:scale-110 transition-transform">{badge.icon}</span>
+                    <h3 className="font-semibold text-sm mb-1">{badge.name}</h3>
+                    <p className="text-xs text-brand-text-muted mb-2">{badge.desc}</p>
+                    <div className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full bg-brand-gold/10 text-brand-gold font-medium">
+                      <Award className="w-3 h-3" />
+                      {earnedCount} {t('leaderboard.players_earned')}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>
