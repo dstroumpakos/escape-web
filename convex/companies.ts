@@ -196,7 +196,7 @@ export const getDashboardStats = query({
         .withIndex("by_room", (q) => q.eq("roomId", roomId))
         .collect();
       totalBookings += bookings.length;
-      totalRevenue += bookings.reduce((sum, b) => sum + b.total, 0);
+      totalRevenue += bookings.filter((b) => b.status === "completed").reduce((sum, b) => sum + b.total, 0);
       upcomingBookings += bookings.filter((b) => b.status === "upcoming").length;
       completedBookings += bookings.filter((b) => b.status === "completed").length;
       cancelledBookings += bookings.filter((b) => b.status === "cancelled").length;
@@ -251,7 +251,7 @@ export const getDashboardStats = query({
           .query("bookings")
           .withIndex("by_room", (q) => q.eq("roomId", room._id))
           .collect();
-        const roomRevenue = roomBookings.reduce((sum, b) => sum + b.total, 0);
+        const roomRevenue = roomBookings.filter((b) => b.status === "completed").reduce((sum, b) => sum + b.total, 0);
         revenuePerRoom.push({
           roomId: room._id,
           title: room.title,
