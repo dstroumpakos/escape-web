@@ -21,7 +21,7 @@ import {
 } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
 
-const PLAN_ROOM_LIMITS: Record<string, number> = { starter: 3, pro: 10, enterprise: Infinity };
+const PLAN_ROOM_LIMITS: Record<string, number> = { starter: 1, pro: 10, enterprise: Infinity };
 
 export default function CompanyRoomsPage() {
   const { company } = useCompanyAuth();

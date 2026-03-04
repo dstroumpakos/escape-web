@@ -247,8 +247,8 @@ export default function CompanySettingsPage() {
   const PLAN_DETAILS: Record<string, { label: string; price: string; yearlyPrice: string; color: string; bg: string; border: string; Icon: any; features: string[] }> = {
     starter: {
       label: t('company.plan.starter'),
-      price: '€29/mo',
-      yearlyPrice: '€290/yr',
+      price: '€58/mo',
+      yearlyPrice: '€580/yr',
       color: 'text-emerald-400',
       bg: 'bg-emerald-500/10',
       border: 'border-emerald-500/20',
@@ -257,8 +257,8 @@ export default function CompanySettingsPage() {
     },
     pro: {
       label: t('company.plan.pro'),
-      price: '€59/mo',
-      yearlyPrice: '€590/yr',
+      price: '€98/mo',
+      yearlyPrice: '€980/yr',
       color: 'text-brand-red',
       bg: 'bg-brand-red/10',
       border: 'border-brand-red/20',
@@ -267,8 +267,8 @@ export default function CompanySettingsPage() {
     },
     enterprise: {
       label: t('company.plan.enterprise'),
-      price: '€99/mo',
-      yearlyPrice: '€990/yr',
+      price: '€198/mo',
+      yearlyPrice: '€1980/yr',
       color: 'text-purple-400',
       bg: 'bg-purple-500/10',
       border: 'border-purple-500/20',

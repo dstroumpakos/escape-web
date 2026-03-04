@@ -8,9 +8,9 @@ import Stripe from "stripe";
 // ── Price IDs — these will map plan + period to Stripe prices
 // We create prices dynamically via the Stripe API on first use
 const PLAN_PRICES: Record<string, { monthly: number; yearly: number }> = {
-  starter: { monthly: 2900, yearly: 29000 },   // in cents: €29/mo, €290/yr
-  pro: { monthly: 4900, yearly: 49000 },        // €49/mo, €490/yr
-  enterprise: { monthly: 9900, yearly: 99000 }, // €99/mo, €990/yr
+  starter: { monthly: 5800, yearly: 58000 },   // in cents: €58/mo, €580/yr
+  pro: { monthly: 9800, yearly: 98000 },        // €98/mo, €980/yr
+  enterprise: { monthly: 19800, yearly: 198000 }, // €198/mo, €1980/yr
 };
 
 const PLAN_NAMES: Record<string, string> = {

@@ -71,7 +71,7 @@ export default function CompanyDashboardPage() {
   );
 
   const plan = (stats as any)?.plan || company?.platformPlan || 'starter';
-  const PLAN_ROOM_LIMITS: Record<string, number> = { starter: 3, pro: 10, enterprise: Infinity };
+  const PLAN_ROOM_LIMITS: Record<string, number> = { starter: 1, pro: 10, enterprise: Infinity };
   const roomLimit = PLAN_ROOM_LIMITS[plan] || 3;
   const roomCount = stats?.totalRooms ?? 0;
   const atLimit = roomCount >= roomLimit;
@@ -585,7 +585,7 @@ function OnboardingBanner({
             {
               name: t('company.plan.pro'),
               value: 'pro' as const,
-              price: '€49/' + t('company.onboarding.mo'),
+              price: '€98/' + t('company.onboarding.mo'),
               features: [
                 t('company.onboarding.pro_f1'),
                 t('company.onboarding.pro_f2'),
@@ -597,7 +597,7 @@ function OnboardingBanner({
             {
               name: t('company.plan.enterprise'),
               value: 'enterprise' as const,
-              price: '€99/' + t('company.onboarding.mo'),
+              price: '€198/' + t('company.onboarding.mo'),
               features: [
                 t('company.onboarding.ent_f1'),
                 t('company.onboarding.ent_f2'),

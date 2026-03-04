@@ -26,8 +26,8 @@ const PLANS = [
     id: 'starter' as const,
     icon: Rocket,
     color: '#4CAF50',
-    priceMonth: '€29',
-    priceYear: '€290',
+    priceMonth: '€58',
+    priceYear: '€580',
     features: [
       'company.onboarding.starter_f1',
       'company.onboarding.starter_f2',
@@ -38,8 +38,8 @@ const PLANS = [
     id: 'pro' as const,
     icon: Diamond,
     color: '#E53E3E',
-    priceMonth: '€49',
-    priceYear: '€490',
+    priceMonth: '€98',
+    priceYear: '€980',
     popular: true,
     features: [
       'company.onboarding.pro_f1',
@@ -52,8 +52,8 @@ const PLANS = [
     id: 'enterprise' as const,
     icon: Briefcase,
     color: '#7C4DFF',
-    priceMonth: '€99',
-    priceYear: '€990',
+    priceMonth: '€198',
+    priceYear: '€1980',
     features: [
       'company.onboarding.ent_f1',
       'company.onboarding.ent_f2',

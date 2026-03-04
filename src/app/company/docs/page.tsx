@@ -591,9 +591,9 @@ export default function DocsPage() {
               </thead>
               <tbody className="text-xs">
                 {[
-                  { label: isGreek ? 'Μηνιαία' : 'Monthly', values: ['€29', '€49', '€99'] },
-                  { label: isGreek ? 'Ετήσια' : 'Yearly', values: ['€290', '€490', '€990'] },
-                  { label: isGreek ? 'Δωμάτια' : 'Rooms', values: [isGreek ? 'Έως 3' : 'Up to 3', isGreek ? 'Απεριόριστα' : 'Unlimited', isGreek ? 'Απεριόριστα' : 'Unlimited'] },
+                  { label: isGreek ? 'Μηνιαία' : 'Monthly', values: ['€58', '€98', '€198'] },
+                  { label: isGreek ? 'Ετήσια' : 'Yearly', values: ['€580', '€980', '€1980'] },
+                  { label: isGreek ? 'Δωμάτια' : 'Rooms', values: [isGreek ? 'Έως 1' : 'Up to 1', isGreek ? 'Απεριόριστα' : 'Unlimited', isGreek ? 'Απεριόριστα' : 'Unlimited'] },
                   { label: 'Analytics', values: ['Basic', isGreek ? 'Προχωρημένα' : 'Advanced', isGreek ? 'Προχωρημένα + Revenue' : 'Advanced + Revenue'] },
                   { label: 'Support', values: ['Email', 'Priority', '24/7 + Manager'] },
                   { label: isGreek ? 'Συνδρομές' : 'Subscriptions', values: ['—', '✓', '✓'] },
