@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useQuery, useMutation } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
@@ -20,6 +20,16 @@ import {
   Mail,
 } from 'lucide-react';
 
+// Debounce hook
+function useDebouncedValue<T>(value: T, delay: number): T {
+  const [debounced, setDebounced] = useState(value);
+  useEffect(() => {
+    const timer = setTimeout(() => setDebounced(value), delay);
+    return () => clearTimeout(timer);
+  }, [value, delay]);
+  return debounced;
+}
+
 export default function FriendsPage() {
   const router = useRouter();
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
@@ -28,6 +38,9 @@ export default function FriendsPage() {
   const [activeTab, setActiveTab] = useState<'friends' | 'requests' | 'search'>('friends');
   const [searchTerm, setSearchTerm] = useState('');
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+
+  // Debounce search term by 350ms to avoid firing a query on every keystroke
+  const debouncedSearch = useDebouncedValue(searchTerm, 350);
 
   const friends = useQuery(
     api.friends.listFriends,
@@ -41,8 +54,8 @@ export default function FriendsPage() {
 
   const searchResults = useQuery(
     api.friends.searchUsers,
-    user?.id && searchTerm.trim().length >= 2
-      ? { currentUserId: user.id as any, searchTerm }
+    user?.id && debouncedSearch.trim().length >= 2
+      ? { currentUserId: user.id as any, searchTerm: debouncedSearch }
       : 'skip'
   );
 

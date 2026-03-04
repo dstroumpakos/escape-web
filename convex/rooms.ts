@@ -1,7 +1,30 @@
 import { query } from "./_generated/server";
 import { v } from "convex/values";
 
-// Helper: enrich a room with company partner info
+// Helper: batch-enrich rooms with company partner info
+// Loads all unique companies in ONE pass, then maps them
+async function batchEnrichRooms(ctx: any, rooms: any[]) {
+  // Collect unique companyIds
+  const companyIds = Array.from(new Set(rooms.map((r) => r.companyId).filter(Boolean)));
+
+  // Single batch load
+  const companies = await Promise.all(companyIds.map((id) => ctx.db.get(id)));
+  const companyMap = new Map<string, any>();
+  for (let i = 0; i < companyIds.length; i++) {
+    if (companies[i]) companyMap.set(companyIds[i] as string, companies[i]);
+  }
+
+  return rooms.map((room) => {
+    const company = room.companyId ? companyMap.get(room.companyId as string) : null;
+    return {
+      ...room,
+      isEarlyAccessPartner: company ? !!company.subscriptionEnabled : false,
+      companyName: company?.name ?? "",
+    };
+  });
+}
+
+// Helper: single room enrichment (for getById)
 async function enrichRoom(ctx: any, room: any) {
   let isEarlyAccessPartner = false;
   let companyName = "";
@@ -19,7 +42,7 @@ export const list = query({
   args: {},
   handler: async (ctx) => {
     const rooms = await ctx.db.query("rooms").collect();
-    return await Promise.all(rooms.map((r) => enrichRoom(ctx, r)));
+    return await batchEnrichRooms(ctx, rooms);
   },
 });
 
@@ -42,20 +65,27 @@ export const featured = query({
       .collect();
 
     // Also include EA partner rooms (Featured Spotlight benefit)
+    // Load all companies at once to check subscriptionEnabled
     const featuredIds = new Set(featured.map((r) => r._id.toString()));
     const allRooms = await ctx.db.query("rooms").collect();
-    for (const room of allRooms) {
-      if (featuredIds.has(room._id.toString())) continue;
-      if (room.companyId && room.isActive !== false) {
-        const company = await ctx.db.get(room.companyId);
-        if (company?.subscriptionEnabled) {
-          featured.push(room);
-          featuredIds.add(room._id.toString());
-        }
+
+    // Collect companyIds from non-featured active rooms to check subscription
+    const candidateRooms = allRooms.filter(
+      (r) => !featuredIds.has(r._id.toString()) && r.companyId && r.isActive !== false
+    );
+    const companyIds = Array.from(new Set(candidateRooms.map((r) => r.companyId).filter(Boolean)));
+    const companies = await Promise.all(companyIds.map((id) => ctx.db.get(id!)));
+    const subscribedCompanies = new Set(
+      companies.filter((c) => c?.subscriptionEnabled).map((c) => c!._id.toString())
+    );
+
+    for (const room of candidateRooms) {
+      if (subscribedCompanies.has(room.companyId!.toString())) {
+        featured.push(room);
       }
     }
 
-    return await Promise.all(featured.map((r) => enrichRoom(ctx, r)));
+    return await batchEnrichRooms(ctx, featured);
   },
 });
 
@@ -66,7 +96,7 @@ export const trending = query({
       .query("rooms")
       .withIndex("by_trending", (q) => q.eq("isTrending", true))
       .collect();
-    return await Promise.all(rooms.map((r) => enrichRoom(ctx, r)));
+    return await batchEnrichRooms(ctx, rooms);
   },
 });
 
@@ -77,7 +107,7 @@ export const byTheme = query({
       .query("rooms")
       .withIndex("by_theme", (q) => q.eq("theme", args.theme))
       .collect();
-    return await Promise.all(rooms.map((r) => enrichRoom(ctx, r)));
+    return await batchEnrichRooms(ctx, rooms);
   },
 });
 
@@ -92,6 +122,6 @@ export const search = query({
         r.location.toLowerCase().includes(q) ||
         r.theme.toLowerCase().includes(q)
     );
-    return await Promise.all(filtered.map((r) => enrichRoom(ctx, r)));
+    return await batchEnrichRooms(ctx, filtered);
   },
 });

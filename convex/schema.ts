@@ -50,7 +50,8 @@ export default defineSchema({
     )),
   })
     .index("by_email", ["email"])
-    .index("by_stripeCustomerId", ["stripeCustomerId"]),
+    .index("by_stripeCustomerId", ["stripeCustomerId"])
+    .index("by_onboardingStatus", ["onboardingStatus"]),
 
   rooms: defineTable({
     title: v.string(),
@@ -226,7 +227,10 @@ export default defineSchema({
     .index("by_user_status", ["userId", "status"])
     .index("by_room", ["roomId"])
     .index("by_company", ["companyId"])
-    .index("by_room_date", ["roomId", "date"]),
+    .index("by_room_date", ["roomId", "date"])
+    .index("by_bookingCode", ["bookingCode"])
+    .index("by_stripeSessionId", ["stripeSessionId"])
+    .index("by_status", ["status"]),
 
   // ─── UNLOCKED Premium Subscriptions (platform-wide) ───
   premiumSubscriptions: defineTable({
