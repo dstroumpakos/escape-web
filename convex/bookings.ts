@@ -172,9 +172,26 @@ export const cancel = mutation({
             q.eq("roomId", booking.roomId).eq("date", booking.date).eq("time", booking.time)
           )
           .collect();
+
+        // Get room info for the email
+        const room = await ctx.db.get(booking.roomId);
+
         for (const alert of alerts) {
           if (!alert.notified) {
             await ctx.db.patch(alert._id, { notified: true });
+
+            // Send email notification to the user
+            const alertUser = await ctx.db.get(alert.userId);
+            if (alertUser?.email && room) {
+              await ctx.scheduler.runAfter(0, internal.email.sendSlotAvailableEmail, {
+                playerName: alertUser.name || "Player",
+                playerEmail: alertUser.email,
+                roomTitle: room.title,
+                date: booking.date,
+                time: booking.time,
+                roomId: booking.roomId,
+              });
+            }
           }
         }
 

@@ -595,3 +595,59 @@ export const sendSubscriptionReceipt = internalAction({
       .catch(e => console.error("[Email] Subscription receipt failed:", e));
   },
 });
+
+// ══════════════════════════════════════════════════════════════
+// 7. SLOT AVAILABLE EMAIL (sent when a booked slot opens up)
+// ══════════════════════════════════════════════════════════════
+
+export const sendSlotAvailableEmail = internalAction({
+  args: {
+    playerName: v.string(),
+    playerEmail: v.string(),
+    roomTitle: v.string(),
+    date: v.string(),
+    time: v.string(),
+    roomId: v.string(),
+  },
+  handler: async (_ctx, args) => {
+    const resend = getResend();
+    if (!resend) return;
+
+    const d = args;
+
+    const bookUrl = `https://unlocked.gr/rooms/${d.roomId}/book`;
+
+    const html = shell(
+      "A Slot Just Opened Up! 🔔",
+      `${d.roomTitle} — ${fmtDate(d.date)} at ${d.time}`,
+      `<p style="${S.greeting}">Hi <strong>${d.playerName}</strong>,</p>
+<p style="${S.bodyText}">
+  Great news! A time slot you were watching just became available:
+</p>
+<table style="${S.table}">
+  <tr><th style="${S.th}">Room</th><td style="${S.td}"><strong style="color:${C.red};">${d.roomTitle}</strong></td></tr>
+  <tr><th style="${S.th}">Date</th><td style="${S.td}">${fmtDate(d.date)}</td></tr>
+  <tr><th style="${S.th}">Time</th><td style="${S.td}"><strong>${d.time}</strong></td></tr>
+</table>
+<p style="${S.bodyText}">
+  This slot won't last long — book it now before someone else grabs it!
+</p>
+<div style="text-align:center;margin:32px 0;">
+  <a href="${bookUrl}" style="${S.btnGreen}">Book This Slot</a>
+</div>
+<div style="${S.divider}"></div>
+<p style="${S.smallText}">
+  You received this email because you subscribed to notifications for this time slot on UNLOCKED.
+</p>`,
+      "UNLOCKED — Slot Alert"
+    );
+
+    await resend.emails.send({
+      from: fromAddr(),
+      to: d.playerEmail,
+      subject: `🔔 Slot Available: ${d.roomTitle} — ${fmtDate(d.date)} at ${d.time}`,
+      html,
+    }).then(r => console.log("[Email] Slot available email sent:", r))
+      .catch(e => console.error("[Email] Slot available email failed:", e));
+  },
+});
