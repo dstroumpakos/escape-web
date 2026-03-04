@@ -33,11 +33,13 @@ export function DownloadCTA() {
         </AnimateIn>
 
         <AnimateIn animation="fadeUp" delay={0.4}>
-          <Link href="/signup" className="btn-primary flex items-center gap-2 text-lg !py-4 !px-10">
-            {t('download.cta')}
-            <ArrowRight className="w-5 h-5" />
-          </Link>
-          <div className="flex gap-3">
+          <div className="flex justify-center mb-6">
+            <Link href="/signup" className="btn-primary flex items-center gap-2 text-lg !py-4 !px-10">
+              {t('download.cta')}
+              <ArrowRight className="w-5 h-5" />
+            </Link>
+          </div>
+          <div className="flex justify-center gap-3">
             {/* App Store badges */}
             <button className="flex items-center gap-2 bg-brand-surface border border-brand-border rounded-xl px-5 py-3 opacity-60 cursor-default">
               <svg viewBox="0 0 24 24" className="w-6 h-6 text-white" fill="currentColor">
