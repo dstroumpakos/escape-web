@@ -481,6 +481,8 @@ const translations: Record<Language, Record<string, string>> = {
     'book.total': 'Total',
     'book.login_to_book': 'Log in to Book',
     'book.proceed_checkout': 'Proceed to Checkout',
+    'book.phone_required': 'Phone number is required to complete a booking',
+    'book.save_phone': 'Save',
     'book.no_slots': 'No time slots available for this date.',
 
     // ── Common: Months ──
@@ -733,6 +735,16 @@ const translations: Record<Language, Record<string, string>> = {
     'profile.notifications': 'Notifications',
     'profile.leaderboard': 'Leaderboard',
     'profile.sign_out': 'Sign Out',
+    'profile.edit_phone': 'Phone Number',
+    'profile.phone': 'Phone',
+    'profile.no_phone': 'Not set',
+
+    // ── Phone Prompt ──
+    'phone_prompt.title': 'Add Your Phone',
+    'phone_prompt.description': 'A phone number is required to book escape rooms. Your number helps companies contact you about your booking.',
+    'phone_prompt.label': 'Phone Number',
+    'phone_prompt.save': 'Save',
+    'phone_prompt.later': 'Later',
 
     // ── Friends ──
     'friends.title': 'Friends',
@@ -2034,6 +2046,8 @@ const translations: Record<Language, Record<string, string>> = {
     'book.total': 'Σύνολο',
     'book.login_to_book': 'Συνδεθείτε για Κράτηση',
     'book.proceed_checkout': 'Συνέχεια στην Πληρωμή',
+    'book.phone_required': 'Απαιτείται τηλέφωνο για την ολοκλήρωση κράτησης',
+    'book.save_phone': 'Αποθήκευση',
     'book.no_slots': 'No available time slots for this date.',
 
     // ── Common: Months ──
@@ -2286,6 +2300,16 @@ const translations: Record<Language, Record<string, string>> = {
     'profile.notifications': 'Ειδοποιήσεις',
     'profile.leaderboard': 'Κατάταξη',
     'profile.sign_out': 'Αποσύνδεση',
+    'profile.edit_phone': 'Τηλέφωνο',
+    'profile.phone': 'Τηλέφωνο',
+    'profile.no_phone': 'Δεν έχει οριστεί',
+
+    // ── Phone Prompt ──
+    'phone_prompt.title': 'Προσθήκη Τηλεφώνου',
+    'phone_prompt.description': 'Απαιτείται αριθμός τηλεφώνου για κράτηση escape room. Ο αριθμός σας βοηθά τις εταιρείες να επικοινωνήσουν μαζί σας.',
+    'phone_prompt.label': 'Αριθμός Τηλεφώνου',
+    'phone_prompt.save': 'Αποθήκευση',
+    'phone_prompt.later': 'Αργότερα',
 
     // ── Friends ──
     'friends.title': 'Φίλοι',

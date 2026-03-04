@@ -17,6 +17,7 @@ import {
   DoorOpen,
   Bell,
   BellOff,
+  Phone,
 } from 'lucide-react';
 
 export default function BookingPage() {
@@ -45,6 +46,16 @@ export default function BookingPage() {
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [playerCount, setPlayerCount] = useState(2);
   const [alertLoading, setAlertLoading] = useState<string | null>(null);
+  const [phoneInput, setPhoneInput] = useState('');
+  const [savingPhone, setSavingPhone] = useState(false);
+
+  // Fetch user data (to check phone)
+  const convexUser = useQuery(
+    api.users.getById,
+    user?.id ? { userId: user.id as any } : 'skip'
+  );
+  const updateProfile = useMutation(api.users.updateProfile);
+  const userHasPhone = !!(convexUser as any)?.phone;
 
   // Get time slots for selected date
   const timeSlots = useQuery(
@@ -149,7 +160,7 @@ export default function BookingPage() {
     }));
   }, [timeSlots, bookedTimes, room]);
 
-  const canProceed = selectedDate && selectedTime && isAuthenticated;
+  const canProceed = selectedDate && selectedTime && isAuthenticated && userHasPhone;
 
   const alertedTimes = new Set((slotAlerts ?? []).map((a: any) => a.time));
 
@@ -400,6 +411,40 @@ export default function BookingPage() {
                   <Link href="/login" className="btn-primary w-full text-center mt-6 block">
                     {t('book.login_to_book')}
                   </Link>
+                ) : !userHasPhone && selectedDate && selectedTime ? (
+                  <div className="mt-6 space-y-3">
+                    <div className="flex items-center gap-2 text-sm text-brand-text-secondary">
+                      <Phone className="w-4 h-4 text-brand-red" />
+                      <span>{t('book.phone_required')}</span>
+                    </div>
+                    <div className="flex gap-2">
+                      <input
+                        type="tel"
+                        value={phoneInput}
+                        onChange={(e) => setPhoneInput(e.target.value)}
+                        placeholder="+30 6XX XXX XXXX"
+                        className="flex-1 bg-brand-bg border border-white/10 rounded-xl px-4 py-3 text-white text-sm placeholder-brand-text-secondary/50 focus:border-brand-red focus:outline-none"
+                      />
+                      <button
+                        disabled={!phoneInput.trim() || savingPhone}
+                        onClick={async () => {
+                          if (!phoneInput.trim() || !user?.id) return;
+                          setSavingPhone(true);
+                          try {
+                            await updateProfile({ userId: user.id as any, phone: phoneInput.trim() });
+                          } catch { /* ignore */ }
+                          setSavingPhone(false);
+                        }}
+                        className="btn-primary !py-3 !px-5 flex items-center justify-center gap-1.5 disabled:opacity-50 text-sm"
+                      >
+                        {savingPhone ? (
+                          <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        ) : (
+                          t('book.save_phone')
+                        )}
+                      </button>
+                    </div>
+                  </div>
                 ) : (
                   <button
                     disabled={!canProceed}

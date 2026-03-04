@@ -4,6 +4,7 @@ import { usePathname } from 'next/navigation';
 import { Navbar } from './Navbar';
 import { Footer } from './Footer';
 import { CookieConsent } from './CookieConsent';
+import { PhonePrompt } from './PhonePrompt';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export function LayoutShell({ children }: { children: React.ReactNode }) {
@@ -35,6 +36,7 @@ export function LayoutShell({ children }: { children: React.ReactNode }) {
       </main>
       <Footer />
       <CookieConsent />
+      <PhonePrompt />
     </>
   );
 }

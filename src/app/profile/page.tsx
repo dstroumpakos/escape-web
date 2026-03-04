@@ -24,6 +24,7 @@ import {
   Shield,
   Diamond,
   Users,
+  Phone,
 } from 'lucide-react';
 
 export default function ProfilePage() {
@@ -31,7 +32,9 @@ export default function ProfilePage() {
   const { user, isAuthenticated, isLoading: authLoading, logout } = useAuth();
   const { t } = useTranslation();
   const [showEditName, setShowEditName] = useState(false);
+  const [showEditPhone, setShowEditPhone] = useState(false);
   const [newName, setNewName] = useState('');
+  const [newPhone, setNewPhone] = useState('');
 
   const convexUser = useQuery(
     api.users.getById,
@@ -78,6 +81,16 @@ export default function ProfilePage() {
     }
   };
 
+  const handleSavePhone = async () => {
+    if (!newPhone.trim() || !user?.id) return;
+    try {
+      await updateProfile({ userId: user.id as any, phone: newPhone.trim() });
+      setShowEditPhone(false);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   const handleLogout = () => {
     logout();
     router.push('/');
@@ -114,6 +127,11 @@ export default function ProfilePage() {
           <AnimateIn animation="fadeUp" delay={0.15}>
           <h1 className="text-2xl font-display font-bold mb-1">{profile.name}</h1>
           <p className="text-brand-text-muted text-sm mb-1">{profile.email}</p>
+          {(convexUser as any)?.phone && (
+            <p className="text-brand-text-muted text-xs flex items-center justify-center gap-1">
+              <Phone className="w-3 h-3" /> {(convexUser as any).phone}
+            </p>
+          )}
           <div className="flex items-center justify-center gap-2 flex-wrap mb-2">
             {profile.title && (
               <span className="inline-block text-xs font-medium px-3 py-1 rounded-full bg-brand-red/10 text-brand-red border border-brand-red/20">
@@ -306,6 +324,41 @@ export default function ProfilePage() {
                     className="input-field flex-1"
                   />
                   <button onClick={handleSaveName} className="btn-primary !py-3 !px-6">
+                    {t('profile.save')}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            <button
+              onClick={() => {
+                setNewPhone((convexUser as any)?.phone || '');
+                setShowEditPhone(!showEditPhone);
+              }}
+              className="flex items-center gap-4 w-full p-4 hover:bg-brand-surface/30 transition-colors text-left"
+            >
+              <Phone className="w-5 h-5 text-brand-text-muted" />
+              <span className="flex-1">{t('profile.edit_phone')}</span>
+              {(convexUser as any)?.phone ? (
+                <span className="text-sm text-brand-text-secondary mr-2">{(convexUser as any).phone}</span>
+              ) : (
+                <span className="text-sm text-brand-red mr-2">{t('profile.no_phone')}</span>
+              )}
+              <ChevronRight className="w-4 h-4 text-brand-text-muted" />
+            </button>
+
+            {showEditPhone && (
+              <div className="p-4 bg-brand-surface/20">
+                <label className="block text-sm text-brand-text-muted mb-2">{t('profile.phone')}</label>
+                <div className="flex gap-2">
+                  <input
+                    type="tel"
+                    value={newPhone}
+                    onChange={(e) => setNewPhone(e.target.value)}
+                    placeholder="+30 6XX XXX XXXX"
+                    className="input-field flex-1"
+                  />
+                  <button onClick={handleSavePhone} className="btn-primary !py-3 !px-6">
                     {t('profile.save')}
                   </button>
                 </div>
