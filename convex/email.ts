@@ -99,25 +99,25 @@ const C = {
 
 const S = {
   body: `margin:0;padding:0;background:${C.dark};font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;-webkit-font-smoothing:antialiased;`,
-  wrapper: `padding:32px 16px;background:${C.dark};`,
+  wrapper: `padding:16px 8px;background:${C.dark};`,
   container: `max-width:600px;margin:0 auto;background:${C.bg};border-radius:16px;overflow:hidden;border:1px solid ${C.border};`,
   // Header with gradient overlay
-  header: `background:linear-gradient(135deg, ${C.bg} 0%, ${C.card} 100%);padding:40px 32px 32px;text-align:center;border-bottom:2px solid ${C.red};`,
-  logo: `font-size:28px;font-weight:800;letter-spacing:3px;color:${C.red};margin:0 0 4px;`,
-  headerTitle: `margin:12px 0 0;font-size:22px;font-weight:700;color:${C.white};`,
-  headerSub: `margin:8px 0 0;font-size:14px;color:${C.textSecondary};`,
-  content: `padding:32px;`,
+  header: `background:linear-gradient(135deg, ${C.bg} 0%, ${C.card} 100%);padding:28px 20px 24px;text-align:center;border-bottom:2px solid ${C.red};`,
+  logo: `font-size:24px;font-weight:800;letter-spacing:3px;color:${C.red};margin:0 0 4px;`,
+  headerTitle: `margin:10px 0 0;font-size:20px;font-weight:700;color:${C.white};`,
+  headerSub: `margin:6px 0 0;font-size:13px;color:${C.textSecondary};word-break:break-word;`,
+  content: `padding:20px 16px;`,
   // Booking code badge
-  badge: `display:inline-block;background:linear-gradient(135deg, ${C.red} 0%, ${C.redLight} 100%);color:${C.white};font-size:20px;font-weight:800;padding:12px 28px;border-radius:10px;letter-spacing:2px;font-family:'Courier New',Courier,monospace;`,
+  badge: `display:inline-block;background:linear-gradient(135deg, ${C.red} 0%, ${C.redLight} 100%);color:${C.white};font-size:18px;font-weight:800;padding:10px 20px;border-radius:10px;letter-spacing:2px;font-family:'Courier New',Courier,monospace;`,
   // Table styles
-  table: `width:100%;border-collapse:separate;border-spacing:0;margin:24px 0;border-radius:12px;overflow:hidden;border:1px solid ${C.border};`,
-  th: `text-align:left;padding:12px 16px;background:${C.surface};color:${C.textSecondary};font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.8px;border-bottom:1px solid ${C.border};width:40%;`,
-  td: `padding:12px 16px;font-size:14px;color:${C.white};border-bottom:1px solid ${C.border};background:${C.card};`,
+  table: `width:100%;border-collapse:separate;border-spacing:0;margin:20px 0;border-radius:12px;overflow:hidden;border:1px solid ${C.border};`,
+  th: `text-align:left;padding:10px 12px;background-color:${C.surface};color:${C.textSecondary};font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.6px;border-bottom:1px solid ${C.border};width:35%;`,
+  td: `padding:10px 12px;font-size:13px;color:${C.white};border-bottom:1px solid ${C.border};background-color:${C.card};word-break:break-word;`,
   // Buttons
-  btn: `display:inline-block;background:linear-gradient(135deg, ${C.red} 0%, ${C.redLight} 100%);color:${C.white};padding:14px 36px;border-radius:10px;font-size:15px;font-weight:700;text-decoration:none;letter-spacing:0.5px;`,
-  btnGreen: `display:inline-block;background:linear-gradient(135deg, #22c55e 0%, #16a34a 100%);color:${C.white};padding:14px 36px;border-radius:10px;font-size:15px;font-weight:700;text-decoration:none;letter-spacing:0.5px;`,
+  btn: `display:inline-block;background:linear-gradient(135deg, ${C.red} 0%, ${C.redLight} 100%);color:${C.white};padding:12px 28px;border-radius:10px;font-size:14px;font-weight:700;text-decoration:none;letter-spacing:0.5px;`,
+  btnGreen: `display:inline-block;background:linear-gradient(135deg, #22c55e 0%, #16a34a 100%);color:${C.white};padding:12px 28px;border-radius:10px;font-size:14px;font-weight:700;text-decoration:none;letter-spacing:0.5px;`,
   // Footer
-  footer: `padding:24px 32px;background:${C.dark};text-align:center;font-size:12px;color:${C.textMuted};border-top:1px solid ${C.border};`,
+  footer: `padding:20px 16px;background:${C.dark};text-align:center;font-size:11px;color:${C.textMuted};border-top:1px solid ${C.border};`,
   footerLink: `color:${C.red};text-decoration:none;`,
   // Divider
   divider: `height:1px;background:linear-gradient(to right, transparent, ${C.border}, transparent);margin:24px 0;`,
@@ -139,29 +139,71 @@ const S = {
     return `display:inline-block;background:${c.bg};color:${c.color};padding:4px 14px;border-radius:6px;font-size:12px;font-weight:700;letter-spacing:0.3px;`;
   },
   // Feature check row
-  featureRow: `padding:10px 16px;font-size:14px;color:${C.textSecondary};border-bottom:1px solid ${C.border};background:${C.card};`,
+  featureRow: `padding:10px 12px;font-size:13px;color:${C.textSecondary};border-bottom:1px solid ${C.border};background-color:${C.card};`,
 };
+
+// Helper to generate <th> with bgcolor for mobile email client compatibility
+function TH(label: string): string {
+  return `<th class="email-th" style="${S.th}" bgcolor="${C.surface}">${label}</th>`;
+}
+// Helper to generate <td> with bgcolor
+function TD(content: string): string {
+  return `<td class="email-td" style="${S.td}" bgcolor="${C.card}">${content}</td>`;
+}
+// Helper for table wrapper with bgcolor
+function TABLE(rows: string): string {
+  return `<table class="email-table" style="${S.table}" bgcolor="${C.card}">${rows}</table>`;
+}
+// Helper for feature row
+function FR(content: string): string {
+  return `<tr><td class="email-td" style="${S.featureRow}" bgcolor="${C.card}">${content}</td></tr>`;
+}
 
 function shell(title: string, subtitle: string, body: string, footerText: string): string {
   return `<!DOCTYPE html>
-<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="color-scheme" content="light only">
+<meta name="supported-color-schemes" content="light only">
 <title>${title}</title>
+<!--[if mso]><xml><o:OfficeDocumentSettings><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml><![endif]-->
+<style>
+  :root { color-scheme: light only; supported-color-schemes: light only; }
+  body, .body-wrapper, .email-container, .email-header, .email-content, .email-footer,
+  table, td, th, div, p, h1, h3, span, a {
+    color-scheme: light only !important;
+  }
+  [data-ogsc], [data-ogsb] { background-color: inherit !important; color: inherit !important; }
+  @media (prefers-color-scheme: dark) {
+    body, .body-wrapper { background-color: ${C.dark} !important; }
+    .email-container { background-color: ${C.bg} !important; }
+    .email-header { background: linear-gradient(135deg, ${C.bg} 0%, ${C.card} 100%) !important; }
+    .email-content { background-color: ${C.bg} !important; }
+    .email-footer { background-color: ${C.dark} !important; }
+    .email-td { background-color: ${C.card} !important; color: ${C.white} !important; }
+    .email-th { background-color: ${C.surface} !important; color: ${C.textSecondary} !important; }
+    .email-table { border-color: ${C.border} !important; }
+    h1, p, td, th, div, span { color: inherit !important; }
+  }
+</style>
 </head>
-<body style="${S.body}">
-<div style="${S.wrapper}">
-<div style="${S.container}">
+<body style="${S.body}" bgcolor="${C.dark}">
+<div class="body-wrapper" style="${S.wrapper}" bgcolor="${C.dark}">
+<div class="email-container" style="${S.container}" bgcolor="${C.bg}">
 <!-- Header -->
-<div style="${S.header}">
+<div class="email-header" style="${S.header}" bgcolor="${C.card}">
   <div style="${S.logo}">UNLOCKED</div>
   <h1 style="${S.headerTitle}">${title}</h1>
   <p style="${S.headerSub}">${subtitle}</p>
 </div>
 <!-- Content -->
-<div style="${S.content}">
+<div class="email-content" style="${S.content}" bgcolor="${C.bg}">
 ${body}
 </div>
 <!-- Footer -->
-<div style="${S.footer}">
+<div class="email-footer" style="${S.footer}" bgcolor="${C.dark}">
   <p style="margin:0 0 8px;">${footerText}</p>
   <p style="margin:0;">
     <a href="https://unlocked.gr" style="${S.footerLink}">unlocked.gr</a>
@@ -217,16 +259,16 @@ export const sendBookingEmails = internalAction({
   Thank you for your booking! Your escape room experience is locked in. Here are your details:
 </p>
 <div style="text-align:center;margin:0 0 28px;"><span style="${S.badge}">${d.bookingCode}</span></div>
-<table style="${S.table}">
-  <tr><th style="${S.th}">Room</th><td style="${S.td}"><strong style="color:${C.red};">${d.roomTitle}</strong></td></tr>
-  <tr><th style="${S.th}">Date</th><td style="${S.td}">${fDate}</td></tr>
-  <tr><th style="${S.th}">Time</th><td style="${S.td}">${d.time}</td></tr>
-  <tr><th style="${S.th}">Players</th><td style="${S.td}">${d.players}</td></tr>
-  <tr><th style="${S.th}">Total</th><td style="${S.td}"><strong>€${d.total.toFixed(2)}</strong></td></tr>
-  <tr><th style="${S.th}">Payment</th><td style="${S.td}"><span style="${S.statusColor(d.paymentStatus)}">${paymentLabel(d.paymentStatus)}</span></td></tr>
-  ${d.depositPaid ? `<tr><th style="${S.th}">Deposit</th><td style="${S.td}">€${d.depositPaid.toFixed(2)}</td></tr>` : ""}
-  ${d.notes ? `<tr><th style="${S.th}">Notes</th><td style="${S.td}">${d.notes}</td></tr>` : ""}
-</table>
+${TABLE(`
+  <tr>${TH("Room")}${TD(`<strong style="color:${C.red};">${d.roomTitle}</strong>`)}</tr>
+  <tr>${TH("Date")}${TD(fDate)}</tr>
+  <tr>${TH("Time")}${TD(d.time)}</tr>
+  <tr>${TH("Players")}${TD(String(d.players))}</tr>
+  <tr>${TH("Total")}${TD(`<strong>€${d.total.toFixed(2)}</strong>`)}</tr>
+  <tr>${TH("Payment")}${TD(`<span style="${S.statusColor(d.paymentStatus)}">${paymentLabel(d.paymentStatus)}</span>`)}</tr>
+  ${d.depositPaid ? `<tr>${TH("Deposit")}${TD(`€${d.depositPaid.toFixed(2)}`)}</tr>` : ""}
+  ${d.notes ? `<tr>${TH("Notes")}${TD(d.notes)}</tr>` : ""}
+`)}
 <div style="${S.divider}"></div>
 <p style="${S.bodyText}">
   Keep your booking code <strong style="color:${C.red};">${d.bookingCode}</strong> handy — you'll need it when you arrive.
@@ -255,23 +297,23 @@ export const sendBookingEmails = internalAction({
         "New Booking Received",
         d.bookingCode,
         `<p style="${S.bodyText}">A new booking has been placed on your room.</p>
-<table style="${S.table}">
-  <tr><th style="${S.th}">Booking Code</th><td style="${S.td}"><strong style="color:${C.red};">${d.bookingCode}</strong></td></tr>
-  <tr><th style="${S.th}">Room</th><td style="${S.td}"><strong>${d.roomTitle}</strong></td></tr>
-  <tr><th style="${S.th}">Date</th><td style="${S.td}">${fDate}</td></tr>
-  <tr><th style="${S.th}">Time</th><td style="${S.td}">${d.time}</td></tr>
-  <tr><th style="${S.th}">Players</th><td style="${S.td}">${d.players}</td></tr>
-  <tr><th style="${S.th}">Total</th><td style="${S.td}"><strong>€${d.total.toFixed(2)}</strong></td></tr>
-  <tr><th style="${S.th}">Payment</th><td style="${S.td}"><span style="${S.statusColor(d.paymentStatus)}">${paymentLabel(d.paymentStatus)}</span></td></tr>
-  ${d.depositPaid ? `<tr><th style="${S.th}">Deposit</th><td style="${S.td}">€${d.depositPaid.toFixed(2)}</td></tr>` : ""}
-</table>
+${TABLE(`
+  <tr>${TH("Booking Code")}${TD(`<strong style="color:${C.red};">${d.bookingCode}</strong>`)}</tr>
+  <tr>${TH("Room")}${TD(`<strong>${d.roomTitle}</strong>`)}</tr>
+  <tr>${TH("Date")}${TD(fDate)}</tr>
+  <tr>${TH("Time")}${TD(d.time)}</tr>
+  <tr>${TH("Players")}${TD(String(d.players))}</tr>
+  <tr>${TH("Total")}${TD(`<strong>€${d.total.toFixed(2)}</strong>`)}</tr>
+  <tr>${TH("Payment")}${TD(`<span style="${S.statusColor(d.paymentStatus)}">${paymentLabel(d.paymentStatus)}</span>`)}</tr>
+  ${d.depositPaid ? `<tr>${TH("Deposit")}${TD(`€${d.depositPaid.toFixed(2)}`)}</tr>` : ""}
+`)}
 <h3 style="${S.sectionTitle}">Customer Details</h3>
-<table style="${S.table}">
-  <tr><th style="${S.th}">Name</th><td style="${S.td}">${d.playerName}</td></tr>
-  <tr><th style="${S.th}">Email</th><td style="${S.td}"><a href="mailto:${d.playerContact}" style="color:${C.red};">${d.playerContact}</a></td></tr>
-  <tr><th style="${S.th}">Phone</th><td style="${S.td}"><a href="tel:${d.playerPhone}" style="color:${C.red};">${d.playerPhone || "—"}</a></td></tr>
-  ${d.notes ? `<tr><th style="${S.th}">Notes</th><td style="${S.td}">${d.notes}</td></tr>` : ""}
-</table>
+${TABLE(`
+  <tr>${TH("Name")}${TD(d.playerName)}</tr>
+  <tr>${TH("Email")}${TD(`<a href="mailto:${d.playerContact}" style="color:${C.red};">${d.playerContact}</a>`)}</tr>
+  <tr>${TH("Phone")}${TD(`<a href="tel:${d.playerPhone}" style="color:${C.red};">${d.playerPhone || "—"}</a>`)}</tr>
+  ${d.notes ? `<tr>${TH("Notes")}${TD(d.notes)}</tr>` : ""}
+`)}
 <div style="text-align:center;margin:24px 0;">
   <a href="https://unlocked.gr/company/bookings" style="${S.btn}">View in Dashboard</a>
 </div>`,
@@ -315,13 +357,13 @@ export const sendPlayerWelcome = internalAction({
   You're now part of a community of escape room enthusiasts.
 </p>
 <p style="${S.bodyText}">Here's what you can do:</p>
-<table style="${S.table}">
-  <tr><td style="${S.featureRow}"><strong style="color:${C.white};">Discover</strong> — Browse escape rooms near you</td></tr>
-  <tr><td style="${S.featureRow}"><strong style="color:${C.white};">Book</strong> — Reserve your spot in seconds</td></tr>
-  <tr><td style="${S.featureRow}"><strong style="color:${C.white};">Connect</strong> — Add friends and invite them to play</td></tr>
-  <tr><td style="${S.featureRow}"><strong style="color:${C.white};">Compete</strong> — Climb the leaderboard and earn badges</td></tr>
-  <tr><td style="${S.featureRow}"><strong style="color:${C.white};">Share</strong> — Save and share your escape room photos</td></tr>
-</table>
+${TABLE(`
+  ${FR(`<strong style="color:${C.white};">Discover</strong> — Browse escape rooms near you`)}
+  ${FR(`<strong style="color:${C.white};">Book</strong> — Reserve your spot in seconds`)}
+  ${FR(`<strong style="color:${C.white};">Connect</strong> — Add friends and invite them to play`)}
+  ${FR(`<strong style="color:${C.white};">Compete</strong> — Climb the leaderboard and earn badges`)}
+  ${FR(`<strong style="color:${C.white};">Share</strong> — Save and share your escape room photos`)}
+`)}
 <div style="text-align:center;margin:32px 0;">
   <a href="https://unlocked.gr/discover" style="${S.btn}">Start Exploring</a>
 </div>
@@ -370,11 +412,11 @@ export const sendCompanyWelcome = internalAction({
 </p>
 ${planLine}
 <p style="${S.bodyText}">Here's what happens next:</p>
-<table style="${S.table}">
-  <tr><td style="${S.featureRow}"><strong style="color:${C.white};">Step 1</strong> — Complete your payment (if required)</td></tr>
-  <tr><td style="${S.featureRow}"><strong style="color:${C.white};">Step 2</strong> — Our team reviews your application</td></tr>
-  <tr><td style="${S.featureRow}"><strong style="color:${C.white};">Step 3</strong> — Once approved, add rooms and start receiving bookings!</td></tr>
-</table>
+${TABLE(`
+  ${FR(`<strong style="color:${C.white};">Step 1</strong> — Complete your payment (if required)`)}
+  ${FR(`<strong style="color:${C.white};">Step 2</strong> — Our team reviews your application`)}
+  ${FR(`<strong style="color:${C.white};">Step 3</strong> — Once approved, add rooms and start receiving bookings!`)}
+`)}
 <p style="${S.bodyText}">
   You'll receive an email as soon as your account is approved.
 </p>
@@ -433,7 +475,7 @@ export const sendCompanyApproved = internalAction({
 
     const planFeatures = features[args.plan] || features.starter;
     const featureRows = planFeatures
-      .map(f => `<tr><td style="${S.featureRow}"><span style="color:#22c55e;margin-right:8px;">✓</span> ${f}</td></tr>`)
+      .map(f => FR(`<span style="color:#22c55e;margin-right:8px;">✓</span> ${f}`))
       .join("");
 
     const html = shell(
@@ -448,9 +490,7 @@ export const sendCompanyApproved = internalAction({
   <span style="${S.badge}">${planLabel(args.plan)} Plan</span>
 </div>
 <p style="${S.bodyText}">Your plan includes:</p>
-<table style="${S.table}">
-  ${featureRows}
-</table>
+${TABLE(featureRows)}
 <p style="${S.bodyText}">
   Log in to your dashboard to start setting up your rooms.
   Players can discover and book your rooms as soon as you publish them!
@@ -511,15 +551,15 @@ export const sendStripeReceipt = internalAction({
 <div style="text-align:center;margin:0 0 28px;">
   <span style="${S.badge}">${d.bookingCode}</span>
 </div>
-<table style="${S.table}">
-  <tr><th style="${S.th}">Room</th><td style="${S.td}"><strong style="color:${C.red};">${d.roomTitle}</strong></td></tr>
-  <tr><th style="${S.th}">Date</th><td style="${S.td}">${fDate}</td></tr>
-  <tr><th style="${S.th}">Time</th><td style="${S.td}">${d.time}</td></tr>
-  <tr><th style="${S.th}">Players</th><td style="${S.td}">${d.players}</td></tr>
-  <tr><th style="${S.th}">Booking Total</th><td style="${S.td}">€${d.total.toFixed(2)}</td></tr>
-  <tr><th style="${S.th}">Payment Type</th><td style="${S.td}">${termsLabel}</td></tr>
-  <tr><th style="${S.th}">Amount Charged</th><td style="${S.td}"><strong style="color:#22c55e;">€${d.amountCharged.toFixed(2)}</strong></td></tr>
-</table>
+${TABLE(`
+  <tr>${TH("Room")}${TD(`<strong style="color:${C.red};">${d.roomTitle}</strong>`)}</tr>
+  <tr>${TH("Date")}${TD(fDate)}</tr>
+  <tr>${TH("Time")}${TD(d.time)}</tr>
+  <tr>${TH("Players")}${TD(String(d.players))}</tr>
+  <tr>${TH("Booking Total")}${TD(`€${d.total.toFixed(2)}`)}</tr>
+  <tr>${TH("Payment Type")}${TD(termsLabel)}</tr>
+  <tr>${TH("Amount Charged")}${TD(`<strong style="color:#22c55e;">€${d.amountCharged.toFixed(2)}</strong>`)}</tr>
+`)}
 <div style="${S.divider}"></div>
 <p style="${S.smallText}">
   This is an automated payment receipt from UNLOCKED. The charge will appear on your statement as "UNLOCKED" or "${d.companyName}".
@@ -565,13 +605,13 @@ export const sendSubscriptionReceipt = internalAction({
 <p style="${S.bodyText}">
   Your subscription payment has been processed successfully. Here are the details:
 </p>
-<table style="${S.table}">
-  <tr><th style="${S.th}">Plan</th><td style="${S.td}"><strong style="color:${C.red};">${planLabel(d.plan)}</strong></td></tr>
-  <tr><th style="${S.th}">Billing Period</th><td style="${S.td}">${periodLabel}</td></tr>
-  <tr><th style="${S.th}">Amount</th><td style="${S.td}"><strong style="color:#22c55e;">€${d.amount.toFixed(2)}</strong></td></tr>
-  <tr><th style="${S.th}">Next Billing</th><td style="${S.td}">${nextBilling}</td></tr>
-  <tr><th style="${S.th}">Status</th><td style="${S.td}"><span style="display:inline-block;background:#22c55e;color:#fff;padding:4px 14px;border-radius:6px;font-size:12px;font-weight:700;">Active</span></td></tr>
-</table>
+${TABLE(`
+  <tr>${TH("Plan")}${TD(`<strong style="color:${C.red};">${planLabel(d.plan)}</strong>`)}</tr>
+  <tr>${TH("Billing Period")}${TD(periodLabel)}</tr>
+  <tr>${TH("Amount")}${TD(`<strong style="color:#22c55e;">€${d.amount.toFixed(2)}</strong>`)}</tr>
+  <tr>${TH("Next Billing")}${TD(nextBilling)}</tr>
+  <tr>${TH("Status")}${TD(`<span style="display:inline-block;background:#22c55e;color:#fff;padding:4px 14px;border-radius:6px;font-size:12px;font-weight:700;">Active</span>`)}</tr>
+`)}
 <p style="${S.bodyText}">
   You can manage your subscription, update your payment method, or download invoices from the
   <strong>Billing</strong> section in your dashboard.
@@ -581,7 +621,7 @@ export const sendSubscriptionReceipt = internalAction({
 </div>
 <div style="${S.divider}"></div>
 <p style="${S.smallText}">
-  This charge will appear on your statement as "UNLOCKED". If you have questions, contact us at support@unlocked.gr.
+  This charge will appear on your statement as "UNLOCKED". If you have questions, contact us at hello@unlocked.gr.
 </p>`,
       "UNLOCKED — Subscription Receipt"
     );
@@ -624,11 +664,11 @@ export const sendSlotAvailableEmail = internalAction({
 <p style="${S.bodyText}">
   Great news! A time slot you were watching just became available:
 </p>
-<table style="${S.table}">
-  <tr><th style="${S.th}">Room</th><td style="${S.td}"><strong style="color:${C.red};">${d.roomTitle}</strong></td></tr>
-  <tr><th style="${S.th}">Date</th><td style="${S.td}">${fmtDate(d.date)}</td></tr>
-  <tr><th style="${S.th}">Time</th><td style="${S.td}"><strong>${d.time}</strong></td></tr>
-</table>
+${TABLE(`
+  <tr>${TH("Room")}${TD(`<strong style="color:${C.red};">${d.roomTitle}</strong>`)}</tr>
+  <tr>${TH("Date")}${TD(fmtDate(d.date))}</tr>
+  <tr>${TH("Time")}${TD(`<strong>${d.time}</strong>`)}</tr>
+`)}
 <p style="${S.bodyText}">
   This slot won't last long — book it now before someone else grabs it!
 </p>
