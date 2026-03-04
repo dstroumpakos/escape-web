@@ -89,7 +89,7 @@ export function ForBusinesses() {
             </div>
 
             <Link
-              href="/contact"
+              href="/company/register"
               className="btn-primary inline-flex items-center gap-2"
             >
               {t('business.cta')}

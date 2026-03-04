@@ -201,7 +201,7 @@ export default function AboutPage() {
           </div>
 
           <div className="text-center">
-            <Link href="/contact" className="btn-primary inline-flex items-center gap-2">
+            <Link href="/company/register" className="btn-primary inline-flex items-center gap-2">
               {t('about.become_partner')}
               <ArrowRight className="w-5 h-5" />
             </Link>
