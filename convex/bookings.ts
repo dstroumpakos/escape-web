@@ -73,7 +73,7 @@ export const create = mutation({
     // (for Stripe bookings, emails are sent after payment is confirmed via webhook)
     if (!isPending) {
       const user = await ctx.db.get(args.userId);
-      const company = room?.companyId ? await ctx.db.get(room.companyId) : null;
+      const company: any = room?.companyId ? await ctx.db.get(room.companyId as any) : null;
       if (user) {
         await ctx.scheduler.runAfter(0, internal.email.sendBookingEmails, {
           bookingCode,
@@ -276,9 +276,9 @@ export const confirmBookingPayment = mutation({
     await ctx.db.patch(booking._id as any, updates);
 
     // Now that payment is confirmed, send booking confirmation emails
-    const room = await ctx.db.get(bookingDoc.roomId);
-    const user = bookingDoc.userId ? await ctx.db.get(bookingDoc.userId) : null;
-    const company = room?.companyId ? await ctx.db.get(room.companyId) : null;
+    const room: any = await ctx.db.get(bookingDoc.roomId);
+    const user: any = bookingDoc.userId ? await ctx.db.get(bookingDoc.userId) : null;
+    const company: any = room?.companyId ? await ctx.db.get(room.companyId) : null;
     if (user) {
       await ctx.scheduler.runAfter(0, internal.email.sendBookingEmails, {
         bookingCode: bookingDoc.bookingCode,
