@@ -1143,6 +1143,8 @@ const translations: Record<Language, Record<string, string>> = {
     'company.bookings.hints_used': 'Hints used (optional)',
     'company.bookings.hints_placeholder': 'e.g. 2',
     'company.bookings.badge_info': 'This data is used to verify player badges. Accurate reporting helps players earn achievements like Speed Demon or Perfectionist.',
+    'company.bookings.award_badges': 'Award Badges',
+    'company.bookings.award_badges_desc': 'Select badges to manually award to this player. Already earned badges will be skipped.',
     'company.bookings.complete_and_verify': 'Complete & Verify Booking',
 
     // ── Company Rooms ──
@@ -2684,6 +2686,8 @@ const translations: Record<Language, Record<string, string>> = {
     'company.bookings.hints_used': 'Βοήθειες (προαιρετικό)',
     'company.bookings.hints_placeholder': 'π.χ. 2',
     'company.bookings.badge_info': 'Αυτά τα δεδομένα χρησιμοποιούνται για την επαλήθευση badge παικτών. Η ακριβής αναφορά βοηθά τους παίκτες να κερδίσουν επιτεύγματα.',
+    'company.bookings.award_badges': 'Απονομή Badges',
+    'company.bookings.award_badges_desc': 'Επιλέξτε badges για χειροκίνητη απονομή στον παίκτη. Τα ήδη κερδισμένα badges θα παραληφθούν.',
     'company.bookings.complete_and_verify': 'Ολοκλήρωση & Επαλήθευση',
 
     // ── Company Rooms ──

@@ -59,6 +59,7 @@ export default function CompanyBookingsPage() {
   const cancelBooking = useMutation(api.companies.adminCancelBooking);
   const completeBooking = useMutation(api.companies.adminCompleteBooking);
   const submitPerformance = useMutation(api.badges.submitPerformance);
+  const manualAwardBadges = useMutation(api.badges.manualAwardBadges);
   const updateNotes = useMutation(api.companies.updateBookingNotes);
 
   // Calendar logic
@@ -340,6 +341,7 @@ export default function CompanyBookingsPage() {
           onClose={() => setShowCompleteModal(null)}
           completeBooking={completeBooking}
           submitPerformance={submitPerformance}
+          manualAwardBadges={manualAwardBadges}
         />
       )}
     </div>
@@ -352,19 +354,39 @@ function CompleteBookingModal({
   onClose,
   completeBooking,
   submitPerformance,
+  manualAwardBadges,
 }: {
   companyId: string;
   booking: any;
   onClose: () => void;
   completeBooking: any;
   submitPerformance: any;
+  manualAwardBadges: any;
 }) {
   const { t } = useTranslation();
   const [escaped, setEscaped] = useState(true);
   const [escapeTime, setEscapeTime] = useState('');
   const [hintsUsed, setHintsUsed] = useState('');
+  const [selectedBadges, setSelectedBadges] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  const BADGE_OPTIONS = [
+    { key: 'champion',      icon: '🏆', labelKey: 'leaderboard.badge_champion',      descKey: 'leaderboard.badge_champion_desc' },
+    { key: 'on_fire',       icon: '🔥', labelKey: 'leaderboard.badge_on_fire',       descKey: 'leaderboard.badge_on_fire_desc' },
+    { key: 'mastermind',    icon: '🧠', labelKey: 'leaderboard.badge_mastermind',    descKey: 'leaderboard.badge_mastermind_desc' },
+    { key: 'speed_demon',   icon: '⚡', labelKey: 'leaderboard.badge_speed_demon',   descKey: 'leaderboard.badge_speed_demon_desc' },
+    { key: 'team_leader',   icon: '👥', labelKey: 'leaderboard.badge_team_leader',   descKey: 'leaderboard.badge_team_leader_desc' },
+    { key: 'explorer',      icon: '🌍', labelKey: 'leaderboard.badge_explorer',      descKey: 'leaderboard.badge_explorer_desc' },
+    { key: 'perfectionist', icon: '🎯', labelKey: 'leaderboard.badge_perfectionist', descKey: 'leaderboard.badge_perfectionist_desc' },
+    { key: 'night_owl',     icon: '🌙', labelKey: 'leaderboard.badge_night_owl',     descKey: 'leaderboard.badge_night_owl_desc' },
+  ];
+
+  const toggleBadge = (key: string) => {
+    setSelectedBadges((prev) =>
+      prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]
+    );
+  };
 
   const handleSubmit = async () => {
     setLoading(true);
@@ -384,6 +406,15 @@ function CompleteBookingModal({
         escapeTimeMinutes: escapeTime ? parseInt(escapeTime) : undefined,
         hintsUsed: hintsUsed !== '' ? parseInt(hintsUsed) : undefined,
       });
+
+      // 3. Manually award selected badges
+      if (selectedBadges.length > 0) {
+        await manualAwardBadges({
+          companyId: companyId as any,
+          bookingId: booking._id as any,
+          badgeKeys: selectedBadges,
+        });
+      }
 
       onClose();
     } catch (err: any) {
@@ -500,6 +531,43 @@ function CompleteBookingModal({
         <div className="bg-brand-gold/5 border border-brand-gold/10 rounded-xl p-3 mb-5 text-xs text-brand-text-secondary flex items-start gap-2">
           <Award className="w-4 h-4 text-brand-gold shrink-0 mt-0.5" />
           <span>{t('company.bookings.badge_info')}</span>
+        </div>
+
+        {/* Manual Badge Award */}
+        <div className="mb-5">
+          <label className="block text-sm font-medium text-brand-text-secondary mb-2 flex items-center gap-1.5">
+            <Award className="w-3.5 h-3.5 text-brand-gold" />
+            {t('company.bookings.award_badges')}
+          </label>
+          <p className="text-xs text-brand-text-muted mb-3">{t('company.bookings.award_badges_desc')}</p>
+          <div className="grid grid-cols-2 gap-2">
+            {BADGE_OPTIONS.map((badge) => {
+              const isSelected = selectedBadges.includes(badge.key);
+              return (
+                <button
+                  key={badge.key}
+                  type="button"
+                  onClick={() => toggleBadge(badge.key)}
+                  className={`flex items-center gap-2 px-3 py-2.5 rounded-xl border text-left text-sm transition-all ${
+                    isSelected
+                      ? 'bg-brand-gold/10 border-brand-gold/30 ring-1 ring-brand-gold/20'
+                      : 'bg-brand-bg border-white/10 hover:border-brand-gold/20'
+                  }`}
+                >
+                  <span className="text-lg">{badge.icon}</span>
+                  <div className="min-w-0">
+                    <div className={`font-medium text-xs truncate ${isSelected ? 'text-brand-gold' : 'text-brand-text-secondary'}`}>
+                      {t(badge.labelKey)}
+                    </div>
+                    <div className="text-[10px] text-brand-text-muted truncate">{t(badge.descKey)}</div>
+                  </div>
+                  {isSelected && (
+                    <CheckCircle2 className="w-4 h-4 text-brand-gold shrink-0 ml-auto" />
+                  )}
+                </button>
+              );
+            })}
+          </div>
         </div>
 
         <button
