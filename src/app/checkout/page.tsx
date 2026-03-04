@@ -38,14 +38,14 @@ function CheckoutContent() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const serviceFee = 3.99;
+  const serviceFee = paymentTerms === 'pay_on_arrival' ? 0 : 3.99;
   const deposit = paymentTerms === 'deposit_20' ? Math.round(total * 0.2 * 100) / 100 : 0;
   const payNow =
     paymentTerms === 'full'
       ? total + serviceFee
       : paymentTerms === 'deposit_20'
       ? deposit + serviceFee
-      : serviceFee;
+      : 0;
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -226,7 +226,7 @@ function CheckoutContent() {
                       <div className="font-medium">{t('checkout.pay_full')}</div>
                       <div className="text-xs text-brand-text-muted">{t('checkout.pay_full_desc')}</div>
                     </div>
-                    <span className="font-bold">€{(total + serviceFee).toFixed(2)}</span>
+                    <span className="font-bold">€{(total + 3.99).toFixed(2)}</span>
                   </label>
                 )}
                 {(availableTerms as string[]).includes('deposit_20') && (
@@ -248,7 +248,7 @@ function CheckoutContent() {
                       <div className="font-medium">{t('checkout.pay_deposit')}</div>
                       <div className="text-xs text-brand-text-muted">{t('checkout.pay_deposit_desc')}</div>
                     </div>
-                    <span className="font-bold">€{(deposit + serviceFee).toFixed(2)}</span>
+                    <span className="font-bold">€{(Math.round(total * 0.2 * 100) / 100 + 3.99).toFixed(2)}</span>
                   </label>
                 )}
                 {(availableTerms as string[]).includes('pay_on_arrival') && (
@@ -270,7 +270,7 @@ function CheckoutContent() {
                       <div className="font-medium">{t('checkout.pay_arrival')}</div>
                       <div className="text-xs text-brand-text-muted">{t('checkout.pay_arrival_desc')}</div>
                     </div>
-                    <span className="font-bold">€{serviceFee.toFixed(2)}</span>
+                    <span className="font-bold text-emerald-400">€0.00</span>
                   </label>
                 )}
               </div>
@@ -307,10 +307,12 @@ function CheckoutContent() {
                   </span>
                   <span>€{total.toFixed(2)}</span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-brand-text-muted">{t('checkout.service_fee')}</span>
-                  <span>€{serviceFee.toFixed(2)}</span>
-                </div>
+                {serviceFee > 0 && (
+                  <div className="flex justify-between">
+                    <span className="text-brand-text-muted">{t('checkout.service_fee')}</span>
+                    <span>€{serviceFee.toFixed(2)}</span>
+                  </div>
+                )}
                 {paymentTerms === 'deposit_20' && (
                   <div className="flex justify-between text-brand-text-muted">
                     <span>{t('checkout.deposit_label')}</span>
