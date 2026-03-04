@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useQuery } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
@@ -20,14 +21,23 @@ import { useTranslation } from '@/lib/i18n';
 import { useAuth } from '@/lib/auth';
 import { AnimateIn, StaggerContainer, StaggerItem } from '@/components/animations/AnimateIn';
 
-const themes = ['All', 'Horror', 'Sci-Fi', 'Mystery', 'Historical', 'Fantasy', 'Adventure'];
+const themes = ['All', 'Horror', 'Sci-Fi', 'Mystery', 'Historical', 'Fantasy', 'Adventure', 'Science', 'Paranormal', 'Medieval'];
 
 export default function DiscoverPage() {
+  const searchParams = useSearchParams();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedTheme, setSelectedTheme] = useState('All');
   const [sortBy, setSortBy] = useState<'rating' | 'price' | 'duration'>('rating');
   const [showFilters, setShowFilters] = useState(false);
   const { t } = useTranslation();
+
+  // Read theme from URL params (e.g. /discover?theme=Horror)
+  useEffect(() => {
+    const themeParam = searchParams.get('theme');
+    if (themeParam && themes.includes(themeParam)) {
+      setSelectedTheme(themeParam);
+    }
+  }, [searchParams]);
   const { user } = useAuth();
 
   // Query user's premium status from Convex
@@ -54,6 +64,9 @@ export default function DiscoverPage() {
       'Sci-Fi': t('theme.scifi'),
       'Historical': t('discover.theme_historical'),
       'Fantasy': t('discover.theme_fantasy'),
+      'Science': t('theme.science'),
+      'Paranormal': t('theme.paranormal'),
+      'Medieval': t('theme.medieval'),
     };
     return map[theme] || theme;
   };

@@ -1,10 +1,31 @@
 'use client';
 
 import Link from 'next/link';
-import { Search, ArrowRight, Sparkles } from 'lucide-react';
+import {
+  Search,
+  Sparkles,
+  Skull,
+  Compass,
+  Landmark,
+  Cpu,
+  Microscope,
+  Ghost,
+  Swords,
+} from 'lucide-react';
 import { useSafeQuery } from '@/lib/useSafeQuery';
 import { api } from '../../../convex/_generated/api';
 import { useTranslation } from '@/lib/i18n';
+
+const heroThemes = [
+  { key: 'theme.horror', value: 'Horror', icon: Skull, color: 'from-red-600 to-red-900' },
+  { key: 'theme.adventure', value: 'Adventure', icon: Compass, color: 'from-amber-600 to-amber-900' },
+  { key: 'theme.mystery', value: 'Mystery', icon: Search, color: 'from-purple-600 to-purple-900' },
+  { key: 'theme.history', value: 'Historical', icon: Landmark, color: 'from-yellow-600 to-yellow-900' },
+  { key: 'theme.scifi', value: 'Sci-Fi', icon: Cpu, color: 'from-cyan-600 to-cyan-900' },
+  { key: 'theme.science', value: 'Science', icon: Microscope, color: 'from-green-600 to-green-900' },
+  { key: 'theme.paranormal', value: 'Paranormal', icon: Ghost, color: 'from-indigo-600 to-indigo-900' },
+  { key: 'theme.medieval', value: 'Medieval', icon: Swords, color: 'from-orange-600 to-orange-900' },
+];
 
 export function HeroSection() {
   const { t } = useTranslation();
@@ -78,15 +99,25 @@ export function HeroSection() {
           </div>
         </div>
 
-        {/* CTA Buttons */}
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-fade-up animate-delay-400">
-          <Link href="/signup" className="btn-primary flex items-center gap-2 text-lg !py-4 !px-10">
-            {t('hero.get_started')}
-            <ArrowRight className="w-5 h-5" />
-          </Link>
-          <Link href="/about" className="btn-outline text-lg !py-4 !px-10">
-            {t('hero.learn_more')}
-          </Link>
+        {/* Theme Quick Filters */}
+        <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3 animate-fade-up animate-delay-400">
+          {heroThemes.map((theme) => (
+            <Link
+              key={theme.value}
+              href={`/discover?theme=${encodeURIComponent(theme.value)}`}
+              className="group relative overflow-hidden rounded-full px-4 py-2 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg"
+            >
+              <div className={`absolute inset-0 bg-gradient-to-r ${theme.color} opacity-20 group-hover:opacity-40 transition-opacity`} />
+              <div className="absolute inset-0 bg-brand-card/60 group-hover:bg-brand-card/40 transition-colors" />
+              <div className="absolute inset-0 border border-brand-border/30 rounded-full group-hover:border-brand-red/30 transition-colors" />
+              <div className="relative z-10 flex items-center gap-1.5">
+                <theme.icon className="w-3.5 h-3.5 text-brand-text-muted group-hover:text-brand-red transition-colors" />
+                <span className="text-xs sm:text-sm font-medium text-brand-text-secondary group-hover:text-white transition-colors">
+                  {t(theme.key)}
+                </span>
+              </div>
+            </Link>
+          ))}
         </div>
 
         {/* Trust indicators */}
