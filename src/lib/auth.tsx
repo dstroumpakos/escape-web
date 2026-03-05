@@ -15,6 +15,7 @@ import {
 } from 'react';
 import { useMutation, useQuery } from 'convex/react';
 import { api } from '../../convex/_generated/api';
+import { useTranslation } from './i18n';
 
 export interface AuthUser {
   id: string;
@@ -51,6 +52,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const registerMutation = useMutation(api.users.register);
   const loginMutation = useMutation(api.users.login);
+  const { language } = useTranslation();
 
   // Hydrate session from localStorage on mount.
   // If the Convex backend URL changed (e.g. dev → prod), clear the stale session.
@@ -103,7 +105,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signup = useCallback(
     async (name: string, email: string, password: string) => {
-      const userId = await registerMutation({ name, email, password });
+      const userId = await registerMutation({ name, email, password, lang: language });
       const authUser: AuthUser = {
         id: userId as string,
         name,
@@ -116,7 +118,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       };
       persistUser(authUser);
     },
-    [registerMutation, persistUser]
+    [registerMutation, persistUser, language]
   );
 
   const logout = useCallback(() => {
