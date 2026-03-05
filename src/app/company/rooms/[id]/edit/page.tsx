@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { useQuery, useMutation } from 'convex/react';
 import dynamic from 'next/dynamic';
 import { api } from '../../../../../../convex/_generated/api';
+import { Id } from '../../../../../../convex/_generated/dataModel';
 import { useCompanyAuth } from '@/lib/companyAuth';
 import Link from 'next/link';
 import {
@@ -21,6 +22,14 @@ import {
   X,
   Upload,
   Loader2,
+  Camera,
+  Layers,
+  Palette,
+  Eye,
+  AlertCircle,
+  Image,
+  ChevronDown,
+  ChevronUp,
 } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
 
@@ -69,6 +78,11 @@ export default function EditRoomPage() {
   const updateRoom = useMutation(api.companies.updateRoom);
   const generateUploadUrl = useMutation(api.companies.generateUploadUrl);
   const getUrlMutation = useMutation(api.companies.getUrlMutation);
+  const savePreset = useMutation(api.bookingPhotos.savePreset);
+  const photoPreset = useQuery(
+    api.bookingPhotos.getPreset,
+    company?.id ? { companyId: company.id as any } : 'skip'
+  );
 
   const [loaded, setLoaded] = useState(false);
   const [form, setForm] = useState({
@@ -102,6 +116,46 @@ export default function EditRoomPage() {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { t } = useTranslation();
+
+  // ── Photo Branding State ──
+  const [photoBrandingOpen, setPhotoBrandingOpen] = useState(false);
+  const [presetForm, setPresetForm] = useState({
+    logoPosition: 'bottom-right' as 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right' | 'bottom-center',
+    brandColor: '#FF1E1E',
+    watermarkOpacity: 0.3,
+    textTemplate: '',
+  });
+  const [presetLogoUrl, setPresetLogoUrl] = useState('');
+  const [presetLogoStorageId, setPresetLogoStorageId] = useState<any>(null);
+  const [presetLogoPreview, setPresetLogoPreview] = useState('');
+  const [presetLogoUploading, setPresetLogoUploading] = useState(false);
+  const [presetSaving, setPresetSaving] = useState(false);
+  const [presetMsg, setPresetMsg] = useState('');
+  const [presetLoaded, setPresetLoaded] = useState(false);
+  const presetLogoRef = useRef<HTMLInputElement>(null);
+  const [overlayUrl, setOverlayUrl] = useState('');
+  const [overlayStorageId, setOverlayStorageId] = useState<any>(null);
+  const [overlayPreview, setOverlayPreview] = useState('');
+  const [overlayUploading, setOverlayUploading] = useState(false);
+  const [useOverlay, setUseOverlay] = useState(false);
+  const overlayRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (photoPreset && !presetLoaded) {
+      setPresetForm({
+        logoPosition: photoPreset.logoPosition || 'bottom-right',
+        brandColor: photoPreset.brandColor || '#FF1E1E',
+        watermarkOpacity: photoPreset.watermarkOpacity ?? 0.3,
+        textTemplate: photoPreset.textTemplate || '',
+      });
+      setPresetLogoUrl(photoPreset.logoUrl || '');
+      setPresetLogoStorageId(photoPreset.logoStorageId || null);
+      setOverlayUrl(photoPreset.overlayUrl || '');
+      setOverlayStorageId(photoPreset.overlayStorageId || null);
+      setUseOverlay(photoPreset.useOverlay || false);
+      setPresetLoaded(true);
+    }
+  }, [photoPreset, presetLoaded]);
 
   const PAYMENT_OPTIONS = [
     { value: 'full' as const, label: t('company.rooms.edit.payment_full') },
@@ -529,6 +583,266 @@ export default function EditRoomPage() {
             )}
           </div>
         </SectionCard>
+
+        {/* Photo Branding */}
+        <div className="bg-brand-surface rounded-2xl border border-white/5">
+          <button
+            type="button"
+            onClick={() => setPhotoBrandingOpen(!photoBrandingOpen)}
+            className="w-full flex items-center justify-between p-6"
+          >
+            <div className="flex items-center gap-2">
+              <Camera className="w-5 h-5 text-brand-red" />
+              <h2 className="text-lg font-bold">{t('company.settings.photos_title')}</h2>
+            </div>
+            {photoBrandingOpen ? <ChevronUp className="w-5 h-5 text-brand-text-secondary" /> : <ChevronDown className="w-5 h-5 text-brand-text-secondary" />}
+          </button>
+          {photoBrandingOpen && (
+            <div className="px-6 pb-6 space-y-5">
+              <p className="text-sm text-brand-text-secondary">
+                {t('company.settings.photos_desc')}
+              </p>
+
+              {presetMsg && (
+                <div className={`rounded-xl p-3 text-sm ${presetMsg.includes('✓') ? 'bg-green-500/10 text-green-400' : 'bg-red-500/10 text-red-400'}`}>
+                  {presetMsg}
+                </div>
+              )}
+
+              {/* Branding Mode Toggle */}
+              <div>
+                <label className="block text-sm font-medium text-white mb-3">
+                  {t('company.settings.photos_mode')}
+                </label>
+                <div className="grid grid-cols-2 gap-3">
+                  <button type="button" onClick={() => setUseOverlay(false)}
+                    className={`p-4 rounded-xl border-2 text-left transition-all ${!useOverlay ? 'border-brand-red bg-brand-red/10' : 'border-white/10 hover:border-white/20'}`}>
+                    <div className="flex items-center gap-2 mb-1">
+                      <Upload className="w-4 h-4 text-brand-red" />
+                      <span className="font-semibold text-sm">{t('company.settings.photos_mode_logo')}</span>
+                    </div>
+                    <p className="text-xs text-brand-text-muted">{t('company.settings.photos_mode_logo_desc')}</p>
+                  </button>
+                  <button type="button" onClick={() => setUseOverlay(true)}
+                    className={`p-4 rounded-xl border-2 text-left transition-all ${useOverlay ? 'border-brand-red bg-brand-red/10' : 'border-white/10 hover:border-white/20'}`}>
+                    <div className="flex items-center gap-2 mb-1">
+                      <Layers className="w-4 h-4 text-brand-red" />
+                      <span className="font-semibold text-sm">{t('company.settings.photos_mode_overlay')}</span>
+                    </div>
+                    <p className="text-xs text-brand-text-muted">{t('company.settings.photos_mode_overlay_desc')}</p>
+                  </button>
+                </div>
+              </div>
+
+              {/* OVERLAY MODE */}
+              {useOverlay && (
+                <div className="space-y-5 bg-brand-bg/50 rounded-xl p-5 border border-white/5">
+                  <div>
+                    <label className="block text-sm text-brand-text-secondary mb-2">{t('company.settings.photos_overlay')}</label>
+                    <input ref={overlayRef} type="file" accept="image/png" className="hidden"
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0]; if (!file) return;
+                        const reader = new FileReader();
+                        reader.onload = (ev) => setOverlayPreview(ev.target?.result as string);
+                        reader.readAsDataURL(file);
+                        setOverlayUploading(true);
+                        try {
+                          const uploadUrl = await generateUploadUrl();
+                          const result = await fetch(uploadUrl, { method: 'POST', headers: { 'Content-Type': file.type }, body: file });
+                          const { storageId } = await result.json();
+                          const url = await getUrlMutation({ storageId });
+                          if (url) { setOverlayUrl(url); setOverlayStorageId(storageId); }
+                        } catch { setPresetMsg('Failed to upload overlay'); }
+                        finally { setOverlayUploading(false); }
+                      }}
+                    />
+                    <div onClick={() => overlayRef.current?.click()}
+                      className="cursor-pointer border-2 border-dashed border-white/10 hover:border-brand-red/40 rounded-xl p-6 text-center transition-all group">
+                      {overlayUploading ? (
+                        <Loader2 className="w-10 h-10 text-brand-red animate-spin mx-auto" />
+                      ) : (overlayPreview || overlayUrl) ? (
+                        <div className="relative w-full max-w-sm mx-auto">
+                          <div className="bg-[url('data:image/svg+xml,%3Csvg%20width%3D%2220%22%20height%3D%2220%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Crect%20width%3D%2210%22%20height%3D%2210%22%20fill%3D%22%23333%22%2F%3E%3Crect%20x%3D%2210%22%20y%3D%2210%22%20width%3D%2210%22%20height%3D%2210%22%20fill%3D%22%23333%22%2F%3E%3Crect%20x%3D%2210%22%20width%3D%2210%22%20height%3D%2210%22%20fill%3D%22%23555%22%2F%3E%3Crect%20y%3D%2210%22%20width%3D%2210%22%20height%3D%2210%22%20fill%3D%22%23555%22%2F%3E%3C%2Fsvg%3E')] rounded-xl overflow-hidden aspect-video">
+                            <img src={overlayPreview || overlayUrl} alt="Overlay" className="w-full h-full object-contain" />
+                          </div>
+                          <p className="text-xs text-brand-text-muted mt-2">{t('company.settings.photos_change_overlay')}</p>
+                        </div>
+                      ) : (
+                        <div>
+                          <Layers className="w-10 h-10 text-brand-text-secondary group-hover:text-brand-red transition-colors mx-auto mb-2" />
+                          <p className="text-sm text-brand-text-secondary group-hover:text-white transition-colors">{t('company.settings.photos_upload_overlay')}</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm text-brand-text-secondary mb-2">
+                      {t('company.settings.photos_overlay_opacity')} ({Math.round(presetForm.watermarkOpacity * 100)}%)
+                    </label>
+                    <input type="range" min="0" max="100" value={presetForm.watermarkOpacity * 100}
+                      onChange={(e) => setPresetForm({ ...presetForm, watermarkOpacity: parseInt(e.target.value) / 100 })}
+                      className="w-full accent-[#FF1E1E]"
+                    />
+                  </div>
+                  {overlayUrl && (
+                    <div>
+                      <label className="block text-sm text-brand-text-secondary mb-2"><Eye className="w-4 h-4 inline mr-1" />{t('company.settings.photos_preview')}</label>
+                      <div className="relative w-full max-w-md aspect-video bg-gradient-to-br from-gray-700 to-gray-900 rounded-xl overflow-hidden border border-white/10">
+                        <div className="absolute inset-0 flex items-center justify-center text-white/20"><Image className="w-16 h-16" /></div>
+                        <img src={overlayPreview || overlayUrl} alt="Overlay preview" className="absolute inset-0 w-full h-full object-cover" style={{ opacity: presetForm.watermarkOpacity }} />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* LOGO MODE */}
+              {!useOverlay && (
+                <div className="space-y-5">
+                  {/* Logo Upload */}
+                  <div>
+                    <label className="block text-sm text-brand-text-secondary mb-2">{t('company.settings.photos_logo')}</label>
+                    <input ref={presetLogoRef} type="file" accept="image/*" className="hidden"
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0]; if (!file) return;
+                        const reader = new FileReader();
+                        reader.onload = (ev) => setPresetLogoPreview(ev.target?.result as string);
+                        reader.readAsDataURL(file);
+                        setPresetLogoUploading(true);
+                        try {
+                          const uploadUrl = await generateUploadUrl();
+                          const result = await fetch(uploadUrl, { method: 'POST', headers: { 'Content-Type': file.type }, body: file });
+                          const { storageId } = await result.json();
+                          const url = await getUrlMutation({ storageId });
+                          if (url) { setPresetLogoUrl(url); setPresetLogoStorageId(storageId); }
+                        } catch { setPresetMsg('Failed to upload logo'); }
+                        finally { setPresetLogoUploading(false); }
+                      }}
+                    />
+                    <div onClick={() => presetLogoRef.current?.click()}
+                      className="cursor-pointer border-2 border-dashed border-white/10 hover:border-brand-red/40 rounded-xl p-4 text-center transition-all group inline-flex items-center gap-4">
+                      {presetLogoUploading ? (
+                        <Loader2 className="w-8 h-8 text-brand-red animate-spin" />
+                      ) : (presetLogoPreview || presetLogoUrl) ? (
+                        <img src={presetLogoPreview || presetLogoUrl} alt="Logo" className="w-16 h-16 object-contain rounded-lg bg-white/5 p-1" />
+                      ) : (
+                        <div className="w-16 h-16 bg-brand-bg rounded-lg flex items-center justify-center">
+                          <Upload className="w-6 h-6 text-brand-text-secondary group-hover:text-brand-red transition-colors" />
+                        </div>
+                      )}
+                      <span className="text-sm text-brand-text-secondary group-hover:text-white transition-colors">
+                        {presetLogoUrl ? t('company.settings.photos_change_logo') : t('company.settings.photos_upload_logo')}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Logo Position */}
+                  <div>
+                    <label className="block text-sm text-brand-text-secondary mb-2">{t('company.settings.photos_logo_pos')}</label>
+                    <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
+                      {(['top-left', 'top-right', 'bottom-left', 'bottom-right', 'bottom-center'] as const).map((pos) => (
+                        <button key={pos} type="button" onClick={() => setPresetForm({ ...presetForm, logoPosition: pos })}
+                          className={`px-3 py-2 rounded-lg text-xs font-medium border transition-all ${presetForm.logoPosition === pos ? 'border-brand-red bg-brand-red/10 text-brand-red' : 'border-white/10 text-brand-text-secondary hover:border-brand-red/30'}`}>
+                          {t(`company.settings.photos_pos_${pos.replace('-', '_')}`)}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Brand Color */}
+                  <div>
+                    <label className="block text-sm text-brand-text-secondary mb-2"><Palette className="w-4 h-4 inline mr-1" />{t('company.settings.photos_brand_color')}</label>
+                    <div className="flex items-center gap-3">
+                      <input type="color" value={presetForm.brandColor} onChange={(e) => setPresetForm({ ...presetForm, brandColor: e.target.value })}
+                        className="w-10 h-10 rounded-lg border border-white/10 cursor-pointer bg-transparent" />
+                      <input type="text" value={presetForm.brandColor} onChange={(e) => setPresetForm({ ...presetForm, brandColor: e.target.value })}
+                        className="w-28 bg-brand-bg border border-white/10 rounded-xl px-3 py-2 text-sm text-white font-mono focus:border-brand-red focus:outline-none" placeholder="#FF1E1E" />
+                    </div>
+                  </div>
+
+                  {/* Watermark Opacity */}
+                  <div>
+                    <label className="block text-sm text-brand-text-secondary mb-2">
+                      {t('company.settings.photos_opacity')} ({Math.round(presetForm.watermarkOpacity * 100)}%)
+                    </label>
+                    <input type="range" min="0" max="100" value={presetForm.watermarkOpacity * 100}
+                      onChange={(e) => setPresetForm({ ...presetForm, watermarkOpacity: parseInt(e.target.value) / 100 })}
+                      className="w-full accent-[#FF1E1E]" />
+                  </div>
+
+                  {/* Text Template */}
+                  <div>
+                    <label className="block text-sm text-brand-text-secondary mb-2">{t('company.settings.photos_text_template')}</label>
+                    <input type="text" value={presetForm.textTemplate}
+                      onChange={(e) => setPresetForm({ ...presetForm, textTemplate: e.target.value })}
+                      placeholder={t('company.settings.photos_text_placeholder')}
+                      className="w-full bg-brand-bg border border-white/10 rounded-xl px-4 py-3 text-white focus:border-brand-red focus:outline-none" />
+                    <p className="text-xs text-brand-text-secondary mt-1">{t('company.settings.photos_text_hint')}</p>
+                  </div>
+
+                  {/* Preview */}
+                  {(presetLogoUrl || presetForm.textTemplate) && (
+                    <div>
+                      <label className="block text-sm text-brand-text-secondary mb-2"><Eye className="w-4 h-4 inline mr-1" />{t('company.settings.photos_preview')}</label>
+                      <div className="relative w-full max-w-md h-48 bg-gradient-to-br from-gray-700 to-gray-900 rounded-xl overflow-hidden border border-white/10">
+                        <div className="absolute inset-0 flex items-center justify-center text-white/20"><Image className="w-16 h-16" /></div>
+                        {presetLogoUrl && (
+                          <img src={presetLogoPreview || presetLogoUrl} alt="Logo"
+                            className={`absolute w-12 h-12 object-contain ${
+                              presetForm.logoPosition === 'top-left' ? 'top-3 left-3' :
+                              presetForm.logoPosition === 'top-right' ? 'top-3 right-3' :
+                              presetForm.logoPosition === 'bottom-left' ? 'bottom-3 left-3' :
+                              presetForm.logoPosition === 'bottom-right' ? 'bottom-3 right-3' :
+                              'bottom-3 left-1/2 -translate-x-1/2'
+                            }`} style={{ opacity: presetForm.watermarkOpacity }} />
+                        )}
+                        {presetForm.textTemplate && (
+                          <>
+                            <div className="absolute bottom-0 left-0 right-0 h-1/2 bg-gradient-to-t from-black/75 via-black/30 to-transparent" />
+                            <div className="absolute left-1/2 -translate-x-1/2 bottom-10 w-10 h-0.5 rounded-full" style={{ backgroundColor: presetForm.brandColor }} />
+                            <div className="absolute bottom-3 left-0 right-0 text-center text-xs font-semibold uppercase tracking-[0.15em] text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]"
+                              style={{ textShadow: `0 0 12px ${presetForm.brandColor}40` }}>
+                              {presetForm.textTemplate.replace('{{room}}', 'Room Name').replace('{{time}}', '45:23').replace('{{date}}', '25/12/2025')}
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Save Preset */}
+              <div className="pt-2">
+                <button type="button" disabled={presetSaving}
+                  onClick={async () => {
+                    if (!company?.id) return;
+                    setPresetSaving(true); setPresetMsg('');
+                    try {
+                      await savePreset({
+                        companyId: company.id as any,
+                        logoUrl: presetLogoUrl || undefined,
+                        logoStorageId: presetLogoStorageId || undefined,
+                        logoPosition: presetForm.logoPosition,
+                        brandColor: presetForm.brandColor,
+                        watermarkOpacity: presetForm.watermarkOpacity,
+                        textTemplate: presetForm.textTemplate || undefined,
+                        overlayUrl: overlayUrl || undefined,
+                        overlayStorageId: overlayStorageId || undefined,
+                        useOverlay,
+                      });
+                      setPresetMsg('✓ ' + t('company.settings.photos_saved'));
+                    } catch { setPresetMsg(t('company.settings.photos_save_error')); }
+                    finally { setPresetSaving(false); }
+                  }}
+                  className="btn-primary flex items-center gap-2">
+                  {presetSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                  {t('company.settings.photos_save')}
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
 
         {/* Submit */}
         {/* Featured Listing (Pro+ only) */}
