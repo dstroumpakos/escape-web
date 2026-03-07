@@ -804,6 +804,76 @@ ${TABLE(`
 });
 
 // ══════════════════════════════════════════════════════════════
+// 7. PHOTO DELIVERY EMAIL (photos.unlocked.gr)
+// ══════════════════════════════════════════════════════════════
+
+export const sendPhotoEmail = internalAction({
+  args: {
+    recipientEmail: v.string(),
+    photoUrl: v.string(),
+    photoPageUrl: v.string(),
+    companyName: v.string(),
+    companyLogo: v.optional(v.string()),
+    roomTitle: v.optional(v.string()),
+    teamName: v.optional(v.string()),
+    escaped: v.optional(v.boolean()),
+    escapeTime: v.optional(v.string()),
+    lang: v.optional(v.string()),
+  },
+  handler: async (_ctx, args) => {
+    const resend = getResend();
+    if (!resend) return { messageId: null };
+
+    const d = args;
+    const escapeBadge = d.escaped !== undefined
+      ? d.escaped
+        ? `<span style="display:inline-block;background:#22c55e;color:#fff;padding:6px 16px;border-radius:8px;font-size:14px;font-weight:700;letter-spacing:0.5px;">✓ ESCAPED${d.escapeTime ? ` — ${d.escapeTime}` : ""}</span>`
+        : `<span style="display:inline-block;background:${C.red};color:#fff;padding:6px 16px;border-radius:8px;font-size:14px;font-weight:700;letter-spacing:0.5px;">✗ LOCKED IN</span>`
+      : "";
+
+    const html = shell(
+      d.teamName ? `${d.teamName}'s Escape Photo` : "Your Escape Room Photo",
+      d.roomTitle ? `${d.roomTitle} — ${d.companyName}` : d.companyName,
+      `<p style="${S.bodyText}">
+  Your escape room photo from <strong style="color:${C.red};">${d.companyName}</strong> is ready!
+</p>
+${d.teamName ? `<p style="text-align:center;font-size:18px;font-weight:700;color:${C.white};margin:0 0 8px;">Team: ${d.teamName}</p>` : ""}
+${escapeBadge ? `<div style="text-align:center;margin:0 0 20px;">${escapeBadge}</div>` : ""}
+<!-- Photo -->
+<div style="text-align:center;margin:20px 0;">
+  <img src="${d.photoUrl}" alt="Escape Room Photo" style="max-width:100%;border-radius:12px;border:2px solid ${C.border};" />
+</div>
+<div style="text-align:center;margin:28px 0;">
+  <a href="${d.photoPageUrl}" style="${S.btn}">View & Download Photo</a>
+</div>
+<div style="${S.divider}"></div>
+<p style="${S.smallText};text-align:center;">
+  Share your achievement with friends! This photo was created with ❤️ by ${d.companyName}.
+</p>`,
+      `${d.companyName} · Powered by UNLOCKED Photos`
+    );
+
+    const subjectLine = d.teamName
+      ? `${d.teamName}'s Escape Photo — ${d.companyName}`
+      : `Your Escape Room Photo — ${d.companyName}`;
+
+    try {
+      const result = await resend.emails.send({
+        from: fromAddr(d.companyName),
+        to: d.recipientEmail,
+        subject: subjectLine,
+        html,
+      });
+      console.log("[Email] Photo email sent:", result);
+      return { messageId: (result as any)?.data?.id || null };
+    } catch (e) {
+      console.error("[Email] Photo email failed:", e);
+      return { messageId: null };
+    }
+  },
+});
+
+// ══════════════════════════════════════════════════════════════
 // 7. SLOT AVAILABLE EMAIL (sent when a booked slot opens up)
 // ══════════════════════════════════════════════════════════════
 

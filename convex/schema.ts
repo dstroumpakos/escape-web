@@ -473,4 +473,78 @@ export default defineSchema({
     .index("by_booking", ["bookingId"])
     .index("by_company", ["companyId"])
     .index("by_status", ["status"]),
+
+  // ════════════════════════════════════════════════════════════
+  // Photos Tool — Standalone photo management (photos.unlocked.gr)
+  // ════════════════════════════════════════════════════════════
+
+  // ─── Standalone Photos (not tied to bookings) ───
+  standalonePhotos: defineTable({
+    companyId: v.id("companies"),
+    roomId: v.optional(v.id("rooms")),
+    // Storage
+    originalStorageId: v.id("_storage"),
+    originalUrl: v.string(),
+    processedStorageId: v.optional(v.id("_storage")),
+    processedUrl: v.optional(v.string()),
+    // R2 path for public hosting
+    r2Path: v.optional(v.string()),
+    r2Url: v.optional(v.string()),
+    // Editing state
+    filter: v.optional(v.string()),
+    adjustments: v.optional(v.object({
+      brightness: v.optional(v.number()),
+      contrast: v.optional(v.number()),
+      saturation: v.optional(v.number()),
+      temperature: v.optional(v.number()),
+      sharpness: v.optional(v.number()),
+      vignette: v.optional(v.number()),
+      grain: v.optional(v.number()),
+    })),
+    // Overlays
+    hasWatermark: v.optional(v.boolean()),
+    hasFrame: v.optional(v.boolean()),
+    frameOverlayUrl: v.optional(v.string()),
+    textOverlay: v.optional(v.string()),
+    sticker: v.optional(v.string()),
+    // Metadata
+    teamName: v.optional(v.string()),
+    escaped: v.optional(v.boolean()),
+    escapeTime: v.optional(v.string()),
+    // Status
+    status: v.union(
+      v.literal("draft"),
+      v.literal("ready"),
+      v.literal("sent")
+    ),
+    // Tracking
+    emailsSent: v.number(),
+    hostedPageViews: v.number(),
+    downloads: v.number(),
+    createdAt: v.number(),
+  })
+    .index("by_company", ["companyId"])
+    .index("by_company_created", ["companyId", "createdAt"])
+    .index("by_room", ["roomId"])
+    .index("by_status", ["companyId", "status"]),
+
+  // ─── Photo Emails (delivery tracking) ───
+  photoEmails: defineTable({
+    photoId: v.id("standalonePhotos"),
+    companyId: v.id("companies"),
+    recipientEmail: v.string(),
+    resendMessageId: v.optional(v.string()),
+    status: v.union(
+      v.literal("queued"),
+      v.literal("sent"),
+      v.literal("delivered"),
+      v.literal("opened"),
+      v.literal("bounced"),
+      v.literal("failed")
+    ),
+    sentAt: v.number(),
+    openedAt: v.optional(v.number()),
+  })
+    .index("by_photo", ["photoId"])
+    .index("by_company", ["companyId", "sentAt"]),
 });

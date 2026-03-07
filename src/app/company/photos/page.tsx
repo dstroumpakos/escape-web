@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useRef } from 'react';
-import { useQuery, useMutation } from 'convex/react';
+import { useState, useRef, useCallback, useEffect } from 'react';
+import { useQuery, useMutation, useAction } from 'convex/react';
 import { api } from '../../../../convex/_generated/api';
 import { useCompanyAuth } from '@/lib/companyAuth';
 import { useTranslation } from '@/lib/i18n';
@@ -9,17 +9,22 @@ import {
   Camera,
   Upload,
   Loader2,
-  CheckCircle,
-  Clock,
-  AlertCircle,
+  Send,
   Trash2,
   Image,
-  Users,
-  Calendar,
-  ChevronDown,
-  ChevronUp,
   Eye,
   X,
+  Plus,
+  ChevronLeft,
+  Mail,
+  BarChart3,
+  Download,
+  CheckCircle,
+  Wand2,
+  Users,
+  Timer,
+  Trophy,
+  XCircle,
 } from 'lucide-react';
 
 // ── Helper: load an image ──
@@ -33,7 +38,9 @@ function loadImage(src: string): Promise<HTMLImageElement> {
   });
 }
 
-// ── Client-side canvas compositing ──
+// ═══════════════════════════════════════════════════
+// Canvas branding pipeline (reused from existing code)
+// ═══════════════════════════════════════════════════
 async function applyBranding(
   originalUrl: string,
   preset: {
@@ -45,7 +52,7 @@ async function applyBranding(
     overlayUrl?: string;
     useOverlay?: boolean;
   } | null,
-  bookingContext?: { roomName?: string; time?: string; date?: string }
+  context?: { roomName?: string; teamName?: string; time?: string }
 ): Promise<Blob> {
   const img = await loadImage(originalUrl);
   const canvas = document.createElement('canvas');
@@ -54,10 +61,8 @@ async function applyBranding(
   const ctx = canvas.getContext('2d');
   if (!ctx) throw new Error('No canvas context');
 
-  // Draw original photo
   ctx.drawImage(img, 0, 0);
 
-  // No preset — return original
   if (!preset) {
     return new Promise((resolve, reject) =>
       canvas.toBlob((b) => (b ? resolve(b) : reject(new Error('toBlob failed'))), 'image/jpeg', 0.92)
@@ -66,70 +71,55 @@ async function applyBranding(
 
   const opacity = preset.watermarkOpacity ?? 0.7;
 
-  // ─── OVERLAY MODE: full-frame transparent PNG on top ───
+  // Overlay mode
   if (preset.useOverlay && preset.overlayUrl) {
     try {
       const overlayImg = await loadImage(preset.overlayUrl);
       ctx.globalAlpha = opacity;
       ctx.drawImage(overlayImg, 0, 0, img.width, img.height);
       ctx.globalAlpha = 1;
-    } catch {
-      // Overlay failed to load — continue without it
-    }
+    } catch { /* skip */ }
     return new Promise((resolve, reject) =>
       canvas.toBlob((b) => (b ? resolve(b) : reject(new Error('toBlob failed'))), 'image/jpeg', 0.92)
     );
   }
 
-  // ─── LOGO MODE: logo + text overlay ───
+  // Logo mode
   if (preset.logoUrl) {
     try {
       const logoImg = await loadImage(preset.logoUrl);
       ctx.globalAlpha = opacity;
-
-      // Logo sizing: max 15% of image width, keep aspect ratio
       const maxLogoW = img.width * 0.15;
       const scale = Math.min(maxLogoW / logoImg.width, 1);
       const logoW = logoImg.width * scale;
       const logoH = logoImg.height * scale;
       const pad = img.width * 0.03;
-
       let x = pad, y = pad;
       switch (preset.logoPosition) {
-        case 'top-right':
-          x = img.width - logoW - pad; y = pad; break;
-        case 'bottom-left':
-          x = pad; y = img.height - logoH - pad; break;
-        case 'bottom-right':
-          x = img.width - logoW - pad; y = img.height - logoH - pad; break;
-        case 'bottom-center':
-          x = (img.width - logoW) / 2; y = img.height - logoH - pad; break;
-        default: // top-left
-          x = pad; y = pad; break;
+        case 'top-right': x = img.width - logoW - pad; y = pad; break;
+        case 'bottom-left': x = pad; y = img.height - logoH - pad; break;
+        case 'bottom-right': x = img.width - logoW - pad; y = img.height - logoH - pad; break;
+        case 'bottom-center': x = (img.width - logoW) / 2; y = img.height - logoH - pad; break;
+        default: x = pad; y = pad; break;
       }
-
       ctx.drawImage(logoImg, x, y, logoW, logoH);
       ctx.globalAlpha = 1;
-    } catch {
-      // Logo failed — continue without it
-    }
+    } catch { /* skip */ }
   }
 
-  // Text overlay (logo mode only)
+  // Text overlay
   if (preset.textTemplate) {
-    // Replace placeholders with actual booking data
     let displayText = preset.textTemplate;
-    if (bookingContext) {
+    if (context) {
       displayText = displayText
-        .replace(/\{\{room\}\}/gi, bookingContext.roomName || '')
-        .replace(/\{\{time\}\}/gi, bookingContext.time || '')
-        .replace(/\{\{date\}\}/gi, bookingContext.date || '');
+        .replace(/\{\{room\}\}/gi, context.roomName || '')
+        .replace(/\{\{team\}\}/gi, context.teamName || '')
+        .replace(/\{\{time\}\}/gi, context.time || '');
     }
 
     const pad = img.width * 0.04;
     const fontSize = Math.max(18, img.width * 0.03);
 
-    // ─── Cinematic gradient fade at the bottom ───
     const gradientH = img.height * 0.3;
     const grad = ctx.createLinearGradient(0, img.height - gradientH, 0, img.height);
     grad.addColorStop(0, 'rgba(0,0,0,0)');
@@ -138,7 +128,6 @@ async function applyBranding(
     ctx.fillStyle = grad;
     ctx.fillRect(0, img.height - gradientH, img.width, gradientH);
 
-    // ─── Thin accent line ───
     const brandColor = preset.brandColor || '#FF1E1E';
     const lineY = img.height - pad - fontSize * 1.6;
     const lineW = img.width * 0.12;
@@ -149,13 +138,10 @@ async function applyBranding(
     ctx.lineTo((img.width + lineW) / 2, lineY);
     ctx.stroke();
 
-    // ─── Elegant text with shadow ───
     ctx.font = `600 ${fontSize}px 'Segoe UI', 'Helvetica Neue', Arial, sans-serif`;
     ctx.textAlign = 'center';
-    ctx.letterSpacing = `${fontSize * 0.08}px`;
     const textY = img.height - pad;
 
-    // Multi-layer shadow for depth
     ctx.shadowColor = 'rgba(0,0,0,0.8)';
     ctx.shadowBlur = fontSize * 0.5;
     ctx.shadowOffsetX = 0;
@@ -163,19 +149,13 @@ async function applyBranding(
     ctx.fillStyle = '#ffffff';
     ctx.fillText(displayText.toUpperCase(), img.width / 2, textY);
 
-    // Second pass: brand color glow
     ctx.shadowColor = brandColor;
     ctx.shadowBlur = fontSize * 0.3;
-    ctx.shadowOffsetX = 0;
-    ctx.shadowOffsetY = 0;
     ctx.fillStyle = '#ffffff';
     ctx.fillText(displayText.toUpperCase(), img.width / 2, textY);
 
-    // Reset shadow
     ctx.shadowColor = 'transparent';
     ctx.shadowBlur = 0;
-    ctx.shadowOffsetX = 0;
-    ctx.shadowOffsetY = 0;
   }
 
   return new Promise((resolve, reject) =>
@@ -183,332 +163,746 @@ async function applyBranding(
   );
 }
 
+// ═══════════════════════════════════════════════════════
+// FILTERS — CSS-like canvas filters
+// ═══════════════════════════════════════════════════════
+type FilterDef = { name: string; label: string; css: string };
+
+const FILTERS: FilterDef[] = [
+  { name: 'none', label: 'Original', css: '' },
+  { name: 'horror', label: 'Horror', css: 'contrast(1.3) saturate(0.3) brightness(0.8) sepia(0.2)' },
+  { name: 'mystery', label: 'Mystery', css: 'contrast(1.1) saturate(0.7) brightness(0.85) hue-rotate(220deg)' },
+  { name: 'vintage', label: 'Vintage', css: 'sepia(0.5) contrast(1.1) brightness(0.95) saturate(0.8)' },
+  { name: 'neon', label: 'Neon', css: 'contrast(1.4) saturate(1.8) brightness(1.1)' },
+  { name: 'cinematic', label: 'Cinematic', css: 'contrast(1.2) saturate(0.9) brightness(0.9)' },
+  { name: 'bw', label: 'B&W', css: 'grayscale(1) contrast(1.2)' },
+  { name: 'warm', label: 'Warm', css: 'sepia(0.3) saturate(1.2) brightness(1.05)' },
+  { name: 'cool', label: 'Cool', css: 'saturate(0.8) brightness(1.05) hue-rotate(15deg)' },
+];
+
+async function applyFilter(imageSrc: string, filterCss: string): Promise<Blob> {
+  const img = await loadImage(imageSrc);
+  const canvas = document.createElement('canvas');
+  canvas.width = img.width;
+  canvas.height = img.height;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) throw new Error('No canvas context');
+
+  if (filterCss) {
+    ctx.filter = filterCss;
+  }
+  ctx.drawImage(img, 0, 0);
+  ctx.filter = 'none';
+
+  return new Promise((resolve, reject) =>
+    canvas.toBlob((b) => (b ? resolve(b) : reject(new Error('toBlob failed'))), 'image/jpeg', 0.92)
+  );
+}
+
+// ═══════════════════════════════════════════════════════
+// MAIN PAGE COMPONENT
+// ═══════════════════════════════════════════════════════
+
+type Step = 'gallery' | 'upload' | 'edit' | 'send';
+
 export default function CompanyPhotosPage() {
   const { company } = useCompanyAuth();
   const { t } = useTranslation();
   const companyId = company?.id;
 
-  const completedBookings = useQuery(
-    api.bookingPhotos.getCompletedBookings,
+  // ── Queries ──
+  const photos = useQuery(
+    api.standalonePhotos.listByCompany,
     companyId ? { companyId: companyId as any } : 'skip'
   );
-
-  // Fetch the company's photo branding preset
+  const stats = useQuery(
+    api.standalonePhotos.getStats,
+    companyId ? { companyId: companyId as any } : 'skip'
+  );
+  const rooms = useQuery(
+    api.companies.getRooms,
+    companyId ? { companyId: companyId as any } : 'skip'
+  );
   const photoPreset = useQuery(
     api.bookingPhotos.getPreset,
     companyId ? { companyId: companyId as any } : 'skip'
   );
 
+  // ── Mutations ──
   const generateUploadUrl = useMutation(api.companies.generateUploadUrl);
   const getUrlMutation = useMutation(api.companies.getUrlMutation);
-  const addPhoto = useMutation(api.bookingPhotos.addPhoto);
-  const deletePhoto = useMutation(api.bookingPhotos.deletePhoto);
-  const markPhotoProcessed = useMutation(api.bookingPhotos.markPhotoProcessed);
-  const checkAndNotify = useMutation(api.bookingPhotos.checkAndNotifyBooking);
+  const createPhoto = useMutation(api.standalonePhotos.create);
+  const saveProcessed = useMutation(api.standalonePhotos.saveProcessed);
+  const updateMeta = useMutation(api.standalonePhotos.updateMeta);
+  const deletePhotoMut = useMutation(api.standalonePhotos.deletePhoto);
+  const sendPhotoAction = useAction(api.standalonePhotos.sendPhotoToEmails);
 
-  const [selectedBookingId, setSelectedBookingId] = useState<string | null>(null);
-  const [expandedBooking, setExpandedBooking] = useState<string | null>(null);
+  // ── UI State ──
+  const [step, setStep] = useState<Step>('gallery');
   const [uploading, setUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
-  const [uploadTotal, setUploadTotal] = useState(0);
-  const [processing, setProcessing] = useState<string | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [processing, setProcessing] = useState(false);
+  const [sending, setSending] = useState(false);
+
+  // Current photo being edited
+  const [currentPhotoId, setCurrentPhotoId] = useState<string | null>(null);
+  const [currentOriginalUrl, setCurrentOriginalUrl] = useState<string>('');
+  const [previewUrl, setPreviewUrl] = useState<string>('');
+
+  // Edit state
+  const [selectedRoom, setSelectedRoom] = useState<string>('');
+  const [teamName, setTeamName] = useState('');
+  const [escaped, setEscaped] = useState<boolean | undefined>(undefined);
+  const [escapeTime, setEscapeTime] = useState('');
+  const [selectedFilter, setSelectedFilter] = useState('none');
+  const [applyBrand, setApplyBrand] = useState(true);
+
+  // Send state
+  const [emailAddresses, setEmailAddresses] = useState('');
+  const [sendSuccess, setSendSuccess] = useState(false);
+
+  // Preview modal
+  const [modalUrl, setModalUrl] = useState<string | null>(null);
+
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Get photos for expanded booking
-  const bookingPhotos = useQuery(
-    api.bookingPhotos.getByBooking,
-    expandedBooking ? { bookingId: expandedBooking as any } : 'skip'
-  );
+  // ── Filtered preview generation ──
+  const generatePreview = useCallback(async (url: string, filter: string, brand: boolean) => {
+    if (!url) return;
 
-  const handleUploadPhotos = async (bookingId: string, files: FileList) => {
+    let blob: Blob;
+
+    // Apply filter first
+    const filterDef = FILTERS.find((f) => f.name === filter);
+    if (filterDef && filterDef.css) {
+      blob = await applyFilter(url, filterDef.css);
+    } else {
+      const response = await fetch(url);
+      blob = await response.blob();
+    }
+
+    // Apply branding on top
+    if (brand && photoPreset) {
+      const tempUrl = URL.createObjectURL(blob);
+      const roomObj = rooms?.find((r: any) => r._id === selectedRoom);
+      blob = await applyBranding(tempUrl, photoPreset, {
+        roomName: roomObj?.title,
+        teamName,
+      });
+      URL.revokeObjectURL(tempUrl);
+    }
+
+    const prevUrl = URL.createObjectURL(blob);
+    setPreviewUrl((old) => {
+      if (old && old.startsWith('blob:')) URL.revokeObjectURL(old);
+      return prevUrl;
+    });
+  }, [photoPreset, rooms, selectedRoom, teamName]);
+
+  // Regenerate preview when filter/branding changes
+  useEffect(() => {
+    if (step === 'edit' && currentOriginalUrl) {
+      generatePreview(currentOriginalUrl, selectedFilter, applyBrand);
+    }
+  }, [step, currentOriginalUrl, selectedFilter, applyBrand, generatePreview]);
+
+  // ═══════════════════════════════════════════
+  // HANDLERS
+  // ═══════════════════════════════════════════
+
+  const handleUpload = async (files: FileList) => {
     if (!companyId || files.length === 0) return;
     setUploading(true);
-    setUploadProgress(0);
-    setUploadTotal(files.length);
-
     try {
-      // Get current photo count for ordering
-      const existing = bookingPhotos || [];
-      let order = existing.length;
+      const file = files[0]; // Single photo workflow
+      let uploadFile = file;
 
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-
-        // Convert HEIC if needed
-        let uploadFile = file;
-        if (file.name.toLowerCase().endsWith('.heic') || file.name.toLowerCase().endsWith('.heif')) {
-          const { convertToWebFormat } = await import('@/lib/imageUtils');
-          uploadFile = await convertToWebFormat(file);
-        }
-
-        // Upload to Convex storage
-        const uploadUrl = await generateUploadUrl();
-        const result = await fetch(uploadUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': uploadFile.type },
-          body: uploadFile,
-        });
-        const { storageId } = await result.json();
-        const url = await getUrlMutation({ storageId });
-
-        if (url) {
-          await addPhoto({
-            bookingId: bookingId as any,
-            companyId: companyId as any,
-            storageId,
-            url,
-            order: order + i,
-          });
-        }
-
-        setUploadProgress(i + 1);
+      // HEIC conversion
+      if (file.name.toLowerCase().endsWith('.heic') || file.name.toLowerCase().endsWith('.heif')) {
+        const { convertToWebFormat } = await import('@/lib/imageUtils');
+        uploadFile = await convertToWebFormat(file);
       }
 
-      // Auto-expand the booking to show photos
-      setExpandedBooking(bookingId);
+      // Upload to Convex storage
+      const uploadUrl = await generateUploadUrl();
+      const result = await fetch(uploadUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': uploadFile.type },
+        body: uploadFile,
+      });
+      const { storageId } = await result.json();
+      const url = await getUrlMutation({ storageId });
+
+      if (url) {
+        const photoId = await createPhoto({
+          companyId: companyId as any,
+          originalStorageId: storageId,
+          originalUrl: url,
+        });
+
+        setCurrentPhotoId(photoId);
+        setCurrentOriginalUrl(url);
+        setPreviewUrl(url);
+        setSelectedFilter('none');
+        setApplyBrand(true);
+        setTeamName('');
+        setEscaped(undefined);
+        setEscapeTime('');
+        setSelectedRoom('');
+        setEmailAddresses('');
+        setSendSuccess(false);
+        setStep('edit');
+      }
     } catch (err) {
       console.error('Upload failed:', err);
     } finally {
       setUploading(false);
-      setUploadProgress(0);
-      setUploadTotal(0);
     }
   };
 
-  const handleProcess = async (bookingId: string) => {
-    if (!companyId || !bookingPhotos) return;
-    setProcessing(bookingId);
+  const handleSaveAndContinue = async () => {
+    if (!companyId || !currentPhotoId || !currentOriginalUrl) return;
+    setProcessing(true);
     try {
-      // Find the booking to get room/date/time context for text placeholders
-      const booking = completedBookings?.find((b: any) => b._id === bookingId);
-      const bookingContext = {
-        roomName: booking?.room?.title || '',
-        time: booking?.time || '',
-        date: booking?.date || '',
-      };
-
-      const pending = bookingPhotos.filter((p: any) => p.status === 'pending');
-      for (const photo of pending) {
-        // 1. Apply branding on canvas
-        const branded = await applyBranding(photo.originalUrl, photoPreset || null, bookingContext);
-
-        // 2. Upload processed image to Convex storage
-        const uploadUrl = await generateUploadUrl();
-        const result = await fetch(uploadUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'image/jpeg' },
-          body: branded,
-        });
-        const { storageId } = await result.json();
-        const processedUrl = await getUrlMutation({ storageId });
-
-        // 3. Mark photo as processed
-        if (processedUrl) {
-          await markPhotoProcessed({
-            photoId: photo._id,
-            companyId: companyId as any,
-            processedStorageId: storageId,
-            processedUrl,
-          });
-        }
+      // Generate final processed image
+      let blob: Blob;
+      const filterDef = FILTERS.find((f) => f.name === selectedFilter);
+      if (filterDef && filterDef.css) {
+        blob = await applyFilter(currentOriginalUrl, filterDef.css);
+      } else {
+        const response = await fetch(currentOriginalUrl);
+        blob = await response.blob();
       }
 
-      // 4. Check if all photos ready → notify player
-      await checkAndNotify({ bookingId: bookingId as any, companyId: companyId as any });
+      if (applyBrand && photoPreset) {
+        const tempUrl = URL.createObjectURL(blob);
+        const roomObj = rooms?.find((r: any) => r._id === selectedRoom);
+        blob = await applyBranding(tempUrl, photoPreset, {
+          roomName: roomObj?.title,
+          teamName,
+        });
+        URL.revokeObjectURL(tempUrl);
+      }
+
+      // Upload processed image
+      const uploadUrl = await generateUploadUrl();
+      const result = await fetch(uploadUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'image/jpeg' },
+        body: blob,
+      });
+      const { storageId } = await result.json();
+      const processedUrl = await getUrlMutation({ storageId });
+
+      if (processedUrl) {
+        await saveProcessed({
+          photoId: currentPhotoId as any,
+          companyId: companyId as any,
+          processedStorageId: storageId,
+          processedUrl,
+          filter: selectedFilter !== 'none' ? selectedFilter : undefined,
+          hasWatermark: applyBrand,
+        });
+
+        // Update meta
+        await updateMeta({
+          photoId: currentPhotoId as any,
+          companyId: companyId as any,
+          roomId: selectedRoom ? (selectedRoom as any) : undefined,
+          teamName: teamName || undefined,
+          escaped,
+          escapeTime: escapeTime || undefined,
+        });
+
+        setPreviewUrl(processedUrl);
+        setStep('send');
+      }
     } catch (err) {
       console.error('Processing failed:', err);
     } finally {
-      setProcessing(null);
+      setProcessing(false);
     }
   };
 
-  const handleDelete = async (photoId: string) => {
-    if (!companyId) return;
-    if (!confirm(t('company.photos.confirm_delete'))) return;
+  const handleSendEmails = async () => {
+    if (!companyId || !currentPhotoId) return;
+    const emails = emailAddresses
+      .split(/[,;\s]+/)
+      .map((e) => e.trim())
+      .filter((e) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e));
+
+    if (emails.length === 0) return;
+    setSending(true);
     try {
-      await deletePhoto({ photoId: photoId as any, companyId: companyId as any });
+      const photoPageUrl = `${window.location.origin}/p/${currentPhotoId}`;
+
+      await sendPhotoAction({
+        photoId: currentPhotoId as any,
+        companyId: companyId as any,
+        emails,
+        photoPageUrl,
+      });
+
+      setSendSuccess(true);
+    } catch (err) {
+      console.error('Send failed:', err);
+    } finally {
+      setSending(false);
+    }
+  };
+
+  const handleDeletePhoto = async (photoId: string) => {
+    if (!companyId) return;
+    try {
+      await deletePhotoMut({ photoId: photoId as any, companyId: companyId as any });
     } catch (err) {
       console.error('Delete failed:', err);
     }
   };
 
-  const statusIcon = (status: string) => {
-    switch (status) {
-      case 'ready':
-        return <CheckCircle className="w-4 h-4 text-green-400" />;
-      case 'processing':
-        return <Loader2 className="w-4 h-4 text-yellow-400 animate-spin" />;
-      case 'pending':
-        return <Clock className="w-4 h-4 text-brand-text-muted" />;
-      case 'failed':
-        return <AlertCircle className="w-4 h-4 text-red-400" />;
-      default:
-        return null;
-    }
+  const openExistingPhoto = (photo: any) => {
+    setCurrentPhotoId(photo._id);
+    setCurrentOriginalUrl(photo.originalUrl);
+    setPreviewUrl(photo.processedUrl || photo.originalUrl);
+    setSelectedRoom(photo.roomId || '');
+    setTeamName(photo.teamName || '');
+    setEscaped(photo.escaped);
+    setEscapeTime(photo.escapeTime || '');
+    setSelectedFilter(photo.filter || 'none');
+    setApplyBrand(photo.hasWatermark ?? true);
+    setEmailAddresses('');
+    setSendSuccess(false);
+    setStep(photo.status === 'ready' || photo.status === 'sent' ? 'send' : 'edit');
   };
 
+  const resetToGallery = () => {
+    setStep('gallery');
+    setCurrentPhotoId(null);
+    setCurrentOriginalUrl('');
+    if (previewUrl.startsWith('blob:')) URL.revokeObjectURL(previewUrl);
+    setPreviewUrl('');
+    setSendSuccess(false);
+  };
+
+  // ═══════════════════════════════════════════
+  // RENDER
+  // ═══════════════════════════════════════════
+
   return (
-    <div className="p-6 md:p-8 max-w-5xl mx-auto">
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-2xl md:text-3xl font-bold flex items-center gap-3">
-            <Camera className="w-7 h-7 text-brand-red" />
-            {t('company.photos.title')}
-          </h1>
-          <p className="text-brand-text-secondary text-sm mt-1">
-            {t('company.photos.subtitle')}
-          </p>
+    <div className="p-6 md:p-8 max-w-6xl mx-auto">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-3">
+          {step !== 'gallery' && (
+            <button onClick={resetToGallery} className="p-2 hover:bg-white/5 rounded-xl transition-colors">
+              <ChevronLeft className="w-5 h-5" />
+            </button>
+          )}
+          <div>
+            <h1 className="text-2xl md:text-3xl font-bold flex items-center gap-3">
+              <Camera className="w-7 h-7 text-brand-red" />
+              Photos Tool
+            </h1>
+            <p className="text-brand-text-secondary text-sm mt-1">
+              {step === 'gallery' && 'Upload, brand, and send team photos in seconds'}
+              {step === 'edit' && 'Edit and apply branding'}
+              {step === 'send' && 'Send to players'}
+            </p>
+          </div>
         </div>
+
+        {step === 'gallery' && (
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            disabled={uploading}
+            className="btn-primary flex items-center gap-2"
+          >
+            {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+            New Photo
+          </button>
+        )}
       </div>
 
-      {/* Completed Bookings List */}
-      {!completedBookings ? (
-        <div className="text-center py-20">
-          <Loader2 className="w-8 h-8 text-brand-red animate-spin mx-auto mb-4" />
-          <p className="text-brand-text-muted">{t('common.loading')}</p>
+      {/* Stats Bar */}
+      {step === 'gallery' && stats && (
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
+          {[
+            { icon: Camera, label: 'Photos', value: stats.totalPhotos, accent: 'text-brand-red' },
+            { icon: Camera, label: 'Today', value: stats.todayPhotos, accent: 'text-blue-400' },
+            { icon: Mail, label: 'Emails Sent', value: stats.totalEmails, accent: 'text-green-400' },
+            { icon: Eye, label: 'Page Views', value: stats.totalViews, accent: 'text-purple-400' },
+            { icon: Download, label: 'Downloads', value: stats.totalDownloads, accent: 'text-yellow-400' },
+          ].map((s) => (
+            <div key={s.label} className="bg-brand-surface rounded-xl border border-white/5 p-4 text-center">
+              <s.icon className={`w-5 h-5 ${s.accent} mx-auto mb-1`} />
+              <div className="text-xl font-bold">{s.value}</div>
+              <div className="text-xs text-brand-text-muted">{s.label}</div>
+            </div>
+          ))}
         </div>
-      ) : completedBookings.length === 0 ? (
-        <div className="text-center py-20 bg-brand-surface rounded-2xl border border-white/5">
-          <Camera className="w-16 h-16 text-brand-border mx-auto mb-4" />
-          <h3 className="text-xl font-semibold mb-2">{t('company.photos.no_bookings')}</h3>
-          <p className="text-brand-text-muted">
-            {t('company.photos.no_bookings_desc')}
-          </p>
-        </div>
-      ) : (
-        <div className="space-y-4">
-          {completedBookings.map((booking: any) => {
-            const isExpanded = expandedBooking === booking._id;
-            return (
-              <div key={booking._id} className="bg-brand-surface rounded-2xl border border-white/5 overflow-hidden">
-                {/* Booking Header */}
+      )}
+
+      {/* ═══════════════ GALLERY VIEW ═══════════════ */}
+      {step === 'gallery' && (
+        <>
+          {!photos ? (
+            <div className="text-center py-20">
+              <Loader2 className="w-8 h-8 text-brand-red animate-spin mx-auto mb-4" />
+            </div>
+          ) : photos.length === 0 ? (
+            <div className="text-center py-20 bg-brand-surface rounded-2xl border border-white/5">
+              <Camera className="w-16 h-16 text-brand-border mx-auto mb-4" />
+              <h3 className="text-xl font-semibold mb-2">No photos yet</h3>
+              <p className="text-brand-text-muted mb-6">Upload your first team photo to get started</p>
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                className="btn-primary inline-flex items-center gap-2"
+              >
+                <Upload className="w-4 h-4" />
+                Upload Photo
+              </button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+              {photos.map((photo: any) => (
                 <div
-                  className="p-5 flex items-center gap-4 cursor-pointer hover:bg-white/[0.02] transition-colors"
-                  onClick={() => setExpandedBooking(isExpanded ? null : booking._id)}
+                  key={photo._id}
+                  onClick={() => openExistingPhoto(photo)}
+                  className="relative group rounded-xl overflow-hidden border border-white/5 aspect-[4/3] bg-brand-bg cursor-pointer hover:border-brand-red/30 transition-colors"
                 >
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <h3 className="font-semibold truncate">{booking.room?.title || 'Room'}</h3>
-                      {booking.photoCount > 0 && (
-                        <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-brand-red/20 text-brand-red">
-                          {t('company.photos.photos_count', { count: String(booking.photoCount) })}
+                  <img
+                    src={photo.processedUrl || photo.originalUrl}
+                    alt={photo.teamName || ''}
+                    className="w-full h-full object-cover"
+                  />
+
+                  {/* Overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+
+                  {/* Bottom info */}
+                  <div className="absolute bottom-0 left-0 right-0 p-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="text-xs font-medium truncate">{photo.teamName || 'Untitled'}</div>
+                    <div className="text-xs text-brand-text-muted">{photo.room?.title || ''}</div>
+                    <div className="flex items-center gap-2 mt-1">
+                      {photo.status === 'sent' && (
+                        <span className="text-xs text-green-400 flex items-center gap-0.5">
+                          <CheckCircle className="w-3 h-3" /> Sent ({photo.emailsSent})
+                        </span>
+                      )}
+                      {photo.status === 'ready' && (
+                        <span className="text-xs text-blue-400 flex items-center gap-0.5">
+                          <CheckCircle className="w-3 h-3" /> Ready
+                        </span>
+                      )}
+                      {photo.status === 'draft' && (
+                        <span className="text-xs text-yellow-400 flex items-center gap-0.5">
+                          <Wand2 className="w-3 h-3" /> Draft
                         </span>
                       )}
                     </div>
-                    <div className="flex flex-wrap gap-3 text-xs text-brand-text-muted">
-                      <span className="flex items-center gap-1">
-                        <Calendar className="w-3.5 h-3.5" />
-                        {new Date(booking.date + 'T00:00:00').toLocaleDateString('en-GB', {
-                          day: 'numeric', month: 'short', year: 'numeric',
-                        })}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <Clock className="w-3.5 h-3.5" />
-                        {booking.time}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <Users className="w-3.5 h-3.5" />
-                        {booking.playerName || t('company.photos.unknown_player')}
-                      </span>
-                    </div>
                   </div>
 
-                  {/* Upload Button */}
+                  {/* Delete button */}
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      setSelectedBookingId(booking._id);
-                      fileInputRef.current?.click();
+                      handleDeletePhoto(photo._id);
                     }}
-                    disabled={uploading}
-                    className="btn-primary !py-2 !px-4 flex items-center gap-1.5 text-sm shrink-0"
+                    className="absolute top-2 right-2 p-1.5 bg-red-500/80 hover:bg-red-500 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
                   >
-                    <Upload className="w-4 h-4" />
-                    <span className="hidden sm:inline">{t('company.photos.upload')}</span>
+                    <Trash2 className="w-3.5 h-3.5 text-white" />
                   </button>
-
-                  {isExpanded ? (
-                    <ChevronUp className="w-5 h-5 text-brand-text-muted shrink-0" />
-                  ) : (
-                    <ChevronDown className="w-5 h-5 text-brand-text-muted shrink-0" />
-                  )}
                 </div>
+              ))}
+            </div>
+          )}
+        </>
+      )}
 
-                {/* Expanded: Photo Gallery */}
-                {isExpanded && (
-                  <div className="border-t border-white/5 p-5">
-                    {bookingPhotos && bookingPhotos.length > 0 ? (
-                      <>
-                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mb-4">
-                          {bookingPhotos.map((photo: any) => (
-                            <div
-                              key={photo._id}
-                              className="relative group rounded-xl overflow-hidden border border-white/5 aspect-square bg-brand-bg"
-                            >
-                              <img
-                                src={photo.processedUrl || photo.originalUrl}
-                                alt=""
-                                className="w-full h-full object-cover"
-                              />
-                              {/* Status badge */}
-                              <div className="absolute top-2 left-2">
-                                {statusIcon(photo.status)}
-                              </div>
-                              {/* Actions overlay */}
-                              <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                                <button
-                                  onClick={() => setPreviewUrl(photo.processedUrl || photo.originalUrl)}
-                                  className="p-2 bg-white/20 hover:bg-white/30 rounded-xl transition-colors"
-                                >
-                                  <Eye className="w-5 h-5 text-white" />
-                                </button>
-                                <button
-                                  onClick={() => handleDelete(photo._id)}
-                                  className="p-2 bg-red-500/20 hover:bg-red-500/30 rounded-xl transition-colors"
-                                >
-                                  <Trash2 className="w-5 h-5 text-red-400" />
-                                </button>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-
-                        {/* Process button — only if there are pending photos */}
-                        {bookingPhotos.some((p: any) => p.status === 'pending') && (
-                          <button
-                            onClick={() => handleProcess(booking._id)}
-                            disabled={processing === booking._id}
-                            className="btn-primary flex items-center gap-2 text-sm"
-                          >
-                            {processing === booking._id ? (
-                              <Loader2 className="w-4 h-4 animate-spin" />
-                            ) : (
-                              <Image className="w-4 h-4" />
-                            )}
-                            {t('company.photos.process_all')}
-                          </button>
-                        )}
-
-                        {/* All ready badge */}
-                        {bookingPhotos.every((p: any) => p.status === 'ready') && (
-                          <div className="flex items-center gap-2 text-sm text-green-400">
-                            <CheckCircle className="w-4 h-4" />
-                            {t('company.photos.all_ready')}
-                          </div>
-                        )}
-                      </>
-                    ) : (
-                      <div className="text-center py-8 text-brand-text-muted">
-                        <Image className="w-10 h-10 mx-auto mb-2 opacity-30" />
-                        <p className="text-sm">{t('company.photos.no_photos_yet')}</p>
-                      </div>
-                    )}
+      {/* ═══════════════ EDIT VIEW ═══════════════ */}
+      {step === 'edit' && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Left: Preview */}
+          <div>
+            <div className="bg-brand-surface rounded-2xl border border-white/5 overflow-hidden">
+              <div className="aspect-[4/3] relative">
+                {previewUrl ? (
+                  <img src={previewUrl} alt="Preview" className="w-full h-full object-contain bg-black" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center bg-brand-bg">
+                    <Loader2 className="w-8 h-8 text-brand-red animate-spin" />
                   </div>
                 )}
               </div>
-            );
-          })}
+            </div>
+
+            {/* Filters strip */}
+            <div className="mt-4">
+              <label className="text-sm font-medium text-brand-text-secondary mb-2 block">Filters</label>
+              <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+                {FILTERS.map((f) => (
+                  <button
+                    key={f.name}
+                    onClick={() => setSelectedFilter(f.name)}
+                    className={`shrink-0 px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
+                      selectedFilter === f.name
+                        ? 'bg-brand-red text-white border-brand-red'
+                        : 'bg-brand-surface border-white/10 text-brand-text-secondary hover:border-brand-red/30'
+                    }`}
+                  >
+                    {f.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Right: Controls */}
+          <div className="space-y-5">
+            {/* Room selector */}
+            <div>
+              <label className="text-sm font-medium text-brand-text-secondary mb-1.5 block">Room</label>
+              <select
+                value={selectedRoom}
+                onChange={(e) => setSelectedRoom(e.target.value)}
+                className="input-field w-full"
+              >
+                <option value="">Select room...</option>
+                {rooms?.map((room: any) => (
+                  <option key={room._id} value={room._id}>
+                    {room.title}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Team name */}
+            <div>
+              <label className="text-sm font-medium text-brand-text-secondary mb-1.5 block flex items-center gap-1.5">
+                <Users className="w-4 h-4" /> Team Name
+              </label>
+              <input
+                type="text"
+                value={teamName}
+                onChange={(e) => setTeamName(e.target.value)}
+                placeholder="e.g. The Masterminds"
+                className="input-field w-full"
+              />
+            </div>
+
+            {/* Escape result */}
+            <div>
+              <label className="text-sm font-medium text-brand-text-secondary mb-1.5 block flex items-center gap-1.5">
+                <Trophy className="w-4 h-4" /> Result
+              </label>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setEscaped(escaped === true ? undefined : true)}
+                  className={`flex-1 py-2 rounded-xl text-sm font-medium border transition-colors flex items-center justify-center gap-1.5 ${
+                    escaped === true
+                      ? 'bg-green-500/20 border-green-500/50 text-green-400'
+                      : 'bg-brand-surface border-white/10 text-brand-text-muted hover:border-white/20'
+                  }`}
+                >
+                  <CheckCircle className="w-4 h-4" /> Escaped
+                </button>
+                <button
+                  onClick={() => setEscaped(escaped === false ? undefined : false)}
+                  className={`flex-1 py-2 rounded-xl text-sm font-medium border transition-colors flex items-center justify-center gap-1.5 ${
+                    escaped === false
+                      ? 'bg-red-500/20 border-red-500/50 text-red-400'
+                      : 'bg-brand-surface border-white/10 text-brand-text-muted hover:border-white/20'
+                  }`}
+                >
+                  <XCircle className="w-4 h-4" /> Locked In
+                </button>
+              </div>
+            </div>
+
+            {/* Escape time */}
+            {escaped === true && (
+              <div>
+                <label className="text-sm font-medium text-brand-text-secondary mb-1.5 block flex items-center gap-1.5">
+                  <Timer className="w-4 h-4" /> Escape Time
+                </label>
+                <input
+                  type="text"
+                  value={escapeTime}
+                  onChange={(e) => setEscapeTime(e.target.value)}
+                  placeholder="e.g. 45:23"
+                  className="input-field w-full"
+                />
+              </div>
+            )}
+
+            {/* Apply branding toggle */}
+            <div className="flex items-center justify-between bg-brand-surface rounded-xl border border-white/5 p-4">
+              <div>
+                <div className="text-sm font-medium">Apply Branding</div>
+                <div className="text-xs text-brand-text-muted">Logo, overlay & text from your room preset</div>
+              </div>
+              <button
+                onClick={() => setApplyBrand(!applyBrand)}
+                className={`w-12 h-6 rounded-full transition-colors relative ${applyBrand ? 'bg-brand-red' : 'bg-brand-border'}`}
+              >
+                <div className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-transform ${applyBrand ? 'translate-x-6' : 'translate-x-0.5'}`} />
+              </button>
+            </div>
+
+            {/* Action buttons */}
+            <div className="flex gap-3 pt-2">
+              <button onClick={resetToGallery} className="btn-secondary flex-1">
+                Cancel
+              </button>
+              <button
+                onClick={handleSaveAndContinue}
+                disabled={processing}
+                className="btn-primary flex-1 flex items-center justify-center gap-2"
+              >
+                {processing ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Wand2 className="w-4 h-4" />
+                )}
+                Process & Continue
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ═══════════════ SEND VIEW ═══════════════ */}
+      {step === 'send' && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Left: Preview */}
+          <div className="bg-brand-surface rounded-2xl border border-white/5 overflow-hidden">
+            <div className="aspect-[4/3] relative">
+              {previewUrl ? (
+                <img
+                  src={previewUrl}
+                  alt="Processed"
+                  className="w-full h-full object-contain bg-black cursor-pointer"
+                  onClick={() => setModalUrl(previewUrl)}
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center bg-brand-bg">
+                  <Image className="w-12 h-12 text-brand-border" />
+                </div>
+              )}
+            </div>
+
+            {/* Photo info */}
+            <div className="p-4 space-y-1">
+              {teamName && (
+                <div className="flex items-center gap-2 text-sm">
+                  <Users className="w-4 h-4 text-brand-text-muted" />
+                  <span className="font-medium">{teamName}</span>
+                </div>
+              )}
+              {escaped !== undefined && (
+                <div className={`flex items-center gap-2 text-sm ${escaped ? 'text-green-400' : 'text-red-400'}`}>
+                  {escaped ? <CheckCircle className="w-4 h-4" /> : <XCircle className="w-4 h-4" />}
+                  {escaped ? `Escaped${escapeTime ? ` — ${escapeTime}` : ''}` : 'Locked In'}
+                </div>
+              )}
+              {selectedRoom && rooms && (
+                <div className="text-xs text-brand-text-muted">
+                  {rooms.find((r: any) => r._id === selectedRoom)?.title}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Right: Email form */}
+          <div className="space-y-5">
+            {sendSuccess ? (
+              <div className="bg-green-500/10 border border-green-500/30 rounded-2xl p-8 text-center">
+                <CheckCircle className="w-12 h-12 text-green-400 mx-auto mb-3" />
+                <h3 className="text-lg font-bold text-green-400 mb-1">Photo Sent!</h3>
+                <p className="text-sm text-brand-text-secondary mb-4">
+                  Emails have been queued and will arrive in seconds.
+                </p>
+
+                {/* Hosted link */}
+                <div className="bg-brand-surface rounded-xl p-4 mb-4">
+                  <div className="text-xs text-brand-text-muted mb-1.5">Hosted Photo Page</div>
+                  <div className="text-sm font-medium break-all text-brand-red">
+                    {window.location.origin}/p/{currentPhotoId}
+                  </div>
+                </div>
+
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(`${window.location.origin}/p/${currentPhotoId}`);
+                    }}
+                    className="btn-secondary flex-1 text-sm"
+                  >
+                    Copy Link
+                  </button>
+                  <button onClick={resetToGallery} className="btn-primary flex-1 text-sm">
+                    New Photo
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <>
+                <div>
+                  <label className="text-sm font-medium text-brand-text-secondary mb-1.5 block flex items-center gap-1.5">
+                    <Mail className="w-4 h-4" /> Player Emails
+                  </label>
+                  <textarea
+                    value={emailAddresses}
+                    onChange={(e) => setEmailAddresses(e.target.value)}
+                    placeholder="player1@email.com, player2@email.com"
+                    rows={3}
+                    className="input-field w-full resize-none"
+                  />
+                  <p className="text-xs text-brand-text-muted mt-1">
+                    Separate multiple emails with commas or spaces
+                  </p>
+                </div>
+
+                {/* Hosted link preview */}
+                <div className="bg-brand-surface rounded-xl border border-white/5 p-4">
+                  <div className="text-xs text-brand-text-muted mb-1">Hosted Photo Page</div>
+                  <div className="text-sm text-brand-text-secondary break-all">
+                    {window.location.origin}/p/{currentPhotoId}
+                  </div>
+                </div>
+
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setStep('edit')}
+                    className="btn-secondary flex-1"
+                  >
+                    Back to Edit
+                  </button>
+                  <button
+                    onClick={handleSendEmails}
+                    disabled={sending || !emailAddresses.trim()}
+                    className="btn-primary flex-1 flex items-center justify-center gap-2"
+                  >
+                    {sending ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Send className="w-4 h-4" />
+                    )}
+                    Send Photo
+                  </button>
+                </div>
+
+                {/* Skip email - just save */}
+                <button
+                  onClick={() => {
+                    setSendSuccess(true);
+                  }}
+                  className="w-full text-center text-sm text-brand-text-muted hover:text-brand-text-secondary transition-colors"
+                >
+                  Skip — just save the photo
+                </button>
+              </>
+            )}
+          </div>
         </div>
       )}
 
@@ -517,53 +911,23 @@ export default function CompanyPhotosPage() {
         ref={fileInputRef}
         type="file"
         accept="image/*"
-        multiple
         className="hidden"
         onChange={(e) => {
-          if (selectedBookingId && e.target.files) {
-            handleUploadPhotos(selectedBookingId, e.target.files);
-            setExpandedBooking(selectedBookingId);
-          }
+          if (e.target.files) handleUpload(e.target.files);
           e.target.value = '';
         }}
       />
 
-      {/* Upload progress overlay */}
-      {uploading && (
-        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center">
-          <div className="bg-brand-surface rounded-2xl p-8 text-center border border-white/10 max-w-sm w-full mx-4">
-            <Loader2 className="w-10 h-10 text-brand-red animate-spin mx-auto mb-4" />
-            <p className="text-lg font-semibold mb-1">
-              {t('company.photos.uploading', { current: String(uploadProgress), total: String(uploadTotal) })}
-            </p>
-            <div className="w-full h-2 bg-brand-bg rounded-full mt-4 overflow-hidden">
-              <div
-                className="h-full bg-brand-red rounded-full transition-all"
-                style={{ width: `${(uploadProgress / uploadTotal) * 100}%` }}
-              />
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Photo Preview Modal */}
-      {previewUrl && (
+      {/* Full-screen preview modal */}
+      {modalUrl && (
         <div
-          className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4"
-          onClick={() => setPreviewUrl(null)}
+          className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4"
+          onClick={() => setModalUrl(null)}
         >
-          <button
-            onClick={() => setPreviewUrl(null)}
-            className="absolute top-4 right-4 p-2 bg-white/10 hover:bg-white/20 rounded-full transition-colors"
-          >
+          <button className="absolute top-4 right-4 p-2 bg-white/10 hover:bg-white/20 rounded-full">
             <X className="w-6 h-6 text-white" />
           </button>
-          <img
-            src={previewUrl}
-            alt=""
-            className="max-w-full max-h-[90vh] rounded-xl object-contain"
-            onClick={(e) => e.stopPropagation()}
-          />
+          <img src={modalUrl} alt="Full preview" className="max-w-full max-h-full object-contain rounded-xl" />
         </div>
       )}
     </div>
