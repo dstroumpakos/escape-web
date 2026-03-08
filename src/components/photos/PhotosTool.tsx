@@ -187,7 +187,7 @@ const FILTERS: FilterDef[] = [
   { name: 'oilpaint', label: 'Oil Paint', css: '__oilpaint__' },
 ];
 
-// Oil painting effect — two-pass intensity histogram for painterly brush strokes
+// Oil painting color quantization — groups nearby pixels by intensity
 function applyOilPaint(canvas: HTMLCanvasElement, radius: number, levels: number): void {
   const ctx = canvas.getContext('2d');
   if (!ctx) return;
@@ -238,8 +238,58 @@ function applyOilPaint(canvas: HTMLCanvasElement, radius: number, levels: number
   ctx.putImageData(dst, 0, 0);
 }
 
-// Boost saturation + vibrance at pixel level for painterly color pop
-function boostColors(canvas: HTMLCanvasElement, satMul: number, vibrance: number, brightnessAdd: number): void {
+// Detect edges and blend darkened outlines into the image for a painted look
+function addPaintEdges(canvas: HTMLCanvasElement, strength: number): void {
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return;
+  const w = canvas.width;
+  const h = canvas.height;
+  const src = ctx.getImageData(0, 0, w, h);
+  const sd = src.data;
+
+  // Build grayscale for edge detection
+  const gray = new Float32Array(w * h);
+  for (let i = 0; i < w * h; i++) {
+    gray[i] = (sd[i * 4] * 0.299 + sd[i * 4 + 1] * 0.587 + sd[i * 4 + 2] * 0.114);
+  }
+
+  // Sobel edge detection
+  const edges = new Float32Array(w * h);
+  for (let y = 1; y < h - 1; y++) {
+    for (let x = 1; x < w - 1; x++) {
+      const idx = y * w + x;
+      const gx =
+        -gray[idx - w - 1] + gray[idx - w + 1] +
+        -2 * gray[idx - 1] + 2 * gray[idx + 1] +
+        -gray[idx + w - 1] + gray[idx + w + 1];
+      const gy =
+        -gray[idx - w - 1] - 2 * gray[idx - w] - gray[idx - w + 1] +
+        gray[idx + w - 1] + 2 * gray[idx + w] + gray[idx + w + 1];
+      edges[idx] = Math.sqrt(gx * gx + gy * gy);
+    }
+  }
+
+  // Normalize edges
+  let maxEdge = 0;
+  for (let i = 0; i < edges.length; i++) if (edges[i] > maxEdge) maxEdge = edges[i];
+  if (maxEdge === 0) return;
+
+  // Darken pixels along edges — simulates paint outlines between brush strokes
+  const out = ctx.createImageData(w, h);
+  const od = out.data;
+  for (let i = 0; i < w * h; i++) {
+    const e = Math.min(1, edges[i] / maxEdge * 2); // amplify edges
+    const darken = 1 - e * strength;
+    od[i * 4] = (sd[i * 4] * darken) | 0;
+    od[i * 4 + 1] = (sd[i * 4 + 1] * darken) | 0;
+    od[i * 4 + 2] = (sd[i * 4 + 2] * darken) | 0;
+    od[i * 4 + 3] = 255;
+  }
+  ctx.putImageData(out, 0, 0);
+}
+
+// Add canvas-like texture grain
+function addCanvasTexture(canvas: HTMLCanvasElement, intensity: number): void {
   const ctx = canvas.getContext('2d');
   if (!ctx) return;
   const w = canvas.width;
@@ -247,34 +297,16 @@ function boostColors(canvas: HTMLCanvasElement, satMul: number, vibrance: number
   const imgData = ctx.getImageData(0, 0, w, h);
   const d = imgData.data;
 
-  for (let i = 0; i < d.length; i += 4) {
-    let r = d[i], g = d[i + 1], b = d[i + 2];
-
-    // Brighten
-    r = Math.min(255, r + brightnessAdd);
-    g = Math.min(255, g + brightnessAdd);
-    b = Math.min(255, b + brightnessAdd);
-
-    // Convert to HSL-like for saturation boost
-    const max = Math.max(r, g, b);
-    const min = Math.min(r, g, b);
-    const l = (max + min) / 2;
-    const delta = max - min;
-
-    if (delta > 0) {
-      // Vibrance: boost more when saturation is low
-      const sat = delta / (255 - Math.abs(2 * l - 255));
-      const boost = satMul + vibrance * (1 - sat);
-
-      const avg = (r + g + b) / 3;
-      r = Math.min(255, Math.max(0, avg + (r - avg) * boost));
-      g = Math.min(255, Math.max(0, avg + (g - avg) * boost));
-      b = Math.min(255, Math.max(0, avg + (b - avg) * boost));
+  // Crosshatch pattern simulating canvas weave
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      const i = (y * w + x) * 4;
+      // Create a crosshatch pattern that varies by position
+      const weave = ((x + y) % 4 === 0 || (x - y + 1000) % 5 === 0) ? -intensity : intensity * 0.3;
+      d[i] = Math.min(255, Math.max(0, d[i] + weave));
+      d[i + 1] = Math.min(255, Math.max(0, d[i + 1] + weave));
+      d[i + 2] = Math.min(255, Math.max(0, d[i + 2] + weave));
     }
-
-    d[i] = r | 0;
-    d[i + 1] = g | 0;
-    d[i + 2] = b | 0;
   }
   ctx.putImageData(imgData, 0, 0);
 }
@@ -299,11 +331,17 @@ async function applyFilter(imageSrc: string, filterCss: string): Promise<Blob> {
     const wctx = work.getContext('2d')!;
     wctx.drawImage(img, 0, 0, work.width, work.height);
 
-    // Single gentle oil paint pass — small radius preserves faces/detail
-    applyOilPaint(work, 3, 25);
+    // 1. Gentle color smoothing — radius 2 keeps faces clear
+    applyOilPaint(work, 2, 20);
 
-    // Light saturation + contrast boost for painterly color pop
-    wctx.filter = 'saturate(1.25) contrast(1.08)';
+    // 2. Add darkened edges — simulates paint brush stroke boundaries
+    addPaintEdges(work, 0.4);
+
+    // 3. Add canvas weave texture
+    addCanvasTexture(work, 8);
+
+    // 4. Warm toning + saturation for oil paint color richness
+    wctx.filter = 'saturate(1.4) contrast(1.1) sepia(0.15)';
     wctx.drawImage(work, 0, 0);
     wctx.filter = 'none';
 
