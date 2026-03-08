@@ -186,6 +186,26 @@ const FILTERS: FilterDef[] = [
   { name: 'cool', label: 'Cool', css: 'saturate(0.8) brightness(1.05) hue-rotate(15deg)' },
   { name: 'oilpaint', label: 'Oil Paint', css: '__oilpaint__' },
   { name: 'anime', label: 'Anime', css: '__anime__' },
+  { name: 'dramatic', label: 'Dramatic', css: 'contrast(1.5) brightness(0.85) saturate(1.3)' },
+  { name: 'dreamy', label: 'Dreamy', css: 'brightness(1.15) contrast(0.9) saturate(1.1) sepia(0.1)' },
+  { name: 'retro', label: 'Retro', css: 'sepia(0.6) contrast(1.15) brightness(0.9) saturate(0.7)' },
+  { name: 'sunset', label: 'Sunset', css: 'sepia(0.35) saturate(1.4) brightness(1.05) hue-rotate(-10deg)' },
+  { name: 'arctic', label: 'Arctic', css: 'brightness(1.1) saturate(0.6) hue-rotate(190deg) contrast(1.1)' },
+  { name: 'fade', label: 'Fade', css: 'contrast(0.85) brightness(1.15) saturate(0.5)' },
+  { name: 'vivid', label: 'Vivid', css: 'saturate(2.0) contrast(1.15) brightness(1.05)' },
+  { name: 'noir', label: 'Noir', css: 'grayscale(1) contrast(1.5) brightness(0.8)' },
+  { name: 'emerald', label: 'Emerald', css: 'hue-rotate(90deg) saturate(0.9) contrast(1.1)' },
+  { name: 'golden', label: 'Golden', css: 'sepia(0.4) saturate(1.3) brightness(1.1) contrast(1.05)' },
+  { name: 'chrome', label: 'Chrome', css: 'saturate(0) contrast(1.4) brightness(1.15)' },
+  { name: 'lomo', label: 'Lomo', css: 'contrast(1.5) saturate(1.5) brightness(0.9)' },
+  { name: 'pastel', label: 'Pastel', css: 'saturate(0.5) brightness(1.2) contrast(0.85)' },
+  { name: 'sketch', label: 'Sketch', css: '__sketch__' },
+  { name: 'watercolor', label: 'Watercolor', css: '__watercolor__' },
+  { name: 'pixelate', label: 'Pixel Art', css: '__pixelate__' },
+  { name: 'emboss', label: 'Emboss', css: '__emboss__' },
+  { name: 'popart', label: 'Pop Art', css: '__popart__' },
+  { name: 'vignette', label: 'Vignette', css: '__vignette__' },
+  { name: 'glitch', label: 'Glitch', css: '__glitch__' },
 ];
 
 // Oil painting color quantization — groups nearby pixels by intensity
@@ -375,6 +395,185 @@ function addBlackOutlines(canvas: HTMLCanvasElement, threshold: number, lineOpac
   ctx.putImageData(out, 0, 0);
 }
 
+// Pencil sketch: white paper with dark edge lines
+function applySketch(canvas: HTMLCanvasElement): void {
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return;
+  const w = canvas.width;
+  const h = canvas.height;
+  const src = ctx.getImageData(0, 0, w, h);
+  const sd = src.data;
+  const gray = new Float32Array(w * h);
+  for (let i = 0; i < w * h; i++) {
+    gray[i] = sd[i * 4] * 0.299 + sd[i * 4 + 1] * 0.587 + sd[i * 4 + 2] * 0.114;
+  }
+  const out = ctx.createImageData(w, h);
+  const od = out.data;
+  for (let y = 1; y < h - 1; y++) {
+    for (let x = 1; x < w - 1; x++) {
+      const idx = y * w + x;
+      const gx =
+        -gray[idx - w - 1] + gray[idx - w + 1] +
+        -2 * gray[idx - 1] + 2 * gray[idx + 1] +
+        -gray[idx + w - 1] + gray[idx + w + 1];
+      const gy =
+        -gray[idx - w - 1] - 2 * gray[idx - w] - gray[idx - w + 1] +
+        gray[idx + w - 1] + 2 * gray[idx + w] + gray[idx + w + 1];
+      const edge = Math.min(255, Math.sqrt(gx * gx + gy * gy));
+      const v = Math.max(0, 255 - edge * 2) | 0;
+      const o = (y * w + x) * 4;
+      od[o] = v; od[o + 1] = v; od[o + 2] = v; od[o + 3] = 255;
+    }
+  }
+  for (let x = 0; x < w; x++) {
+    od[x * 4] = od[x * 4 + 1] = od[x * 4 + 2] = 255; od[x * 4 + 3] = 255;
+    const b = ((h - 1) * w + x) * 4;
+    od[b] = od[b + 1] = od[b + 2] = 255; od[b + 3] = 255;
+  }
+  for (let y = 0; y < h; y++) {
+    const l = (y * w) * 4;
+    od[l] = od[l + 1] = od[l + 2] = 255; od[l + 3] = 255;
+    const r = (y * w + w - 1) * 4;
+    od[r] = od[r + 1] = od[r + 2] = 255; od[r + 3] = 255;
+  }
+  ctx.putImageData(out, 0, 0);
+}
+
+// Pixelate: average colors in blocks
+function applyPixelate(canvas: HTMLCanvasElement, blockSize: number): void {
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return;
+  const w = canvas.width;
+  const h = canvas.height;
+  const src = ctx.getImageData(0, 0, w, h);
+  const sd = src.data;
+  const out = ctx.createImageData(w, h);
+  const od = out.data;
+  for (let by = 0; by < h; by += blockSize) {
+    for (let bx = 0; bx < w; bx += blockSize) {
+      let r = 0, g = 0, b = 0, count = 0;
+      const maxY = Math.min(by + blockSize, h);
+      const maxX = Math.min(bx + blockSize, w);
+      for (let y = by; y < maxY; y++) {
+        for (let x = bx; x < maxX; x++) {
+          const i = (y * w + x) * 4;
+          r += sd[i]; g += sd[i + 1]; b += sd[i + 2]; count++;
+        }
+      }
+      r = (r / count) | 0; g = (g / count) | 0; b = (b / count) | 0;
+      for (let y = by; y < maxY; y++) {
+        for (let x = bx; x < maxX; x++) {
+          const i = (y * w + x) * 4;
+          od[i] = r; od[i + 1] = g; od[i + 2] = b; od[i + 3] = 255;
+        }
+      }
+    }
+  }
+  ctx.putImageData(out, 0, 0);
+}
+
+// Emboss: 3x3 convolution kernel for relief effect
+function applyEmboss(canvas: HTMLCanvasElement): void {
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return;
+  const w = canvas.width;
+  const h = canvas.height;
+  const src = ctx.getImageData(0, 0, w, h);
+  const sd = src.data;
+  const out = ctx.createImageData(w, h);
+  const od = out.data;
+  for (let y = 1; y < h - 1; y++) {
+    for (let x = 1; x < w - 1; x++) {
+      const o = (y * w + x) * 4;
+      for (let c = 0; c < 3; c++) {
+        const val =
+          -2 * sd[((y - 1) * w + (x - 1)) * 4 + c] - sd[((y - 1) * w + x) * 4 + c] +
+          -sd[(y * w + (x - 1)) * 4 + c] + sd[(y * w + x) * 4 + c] + sd[(y * w + (x + 1)) * 4 + c] +
+          sd[((y + 1) * w + x) * 4 + c] + 2 * sd[((y + 1) * w + (x + 1)) * 4 + c];
+        od[o + c] = Math.min(255, Math.max(0, val + 128));
+      }
+      od[o + 3] = 255;
+    }
+  }
+  // Fill border pixels
+  for (let x = 0; x < w; x++) {
+    const t = x * 4; const b = ((h - 1) * w + x) * 4;
+    for (let c = 0; c < 3; c++) { od[t + c] = 128; od[b + c] = 128; }
+    od[t + 3] = 255; od[b + 3] = 255;
+  }
+  for (let y = 0; y < h; y++) {
+    const l = (y * w) * 4; const r = (y * w + w - 1) * 4;
+    for (let c = 0; c < 3; c++) { od[l + c] = 128; od[r + c] = 128; }
+    od[l + 3] = 255; od[r + 3] = 255;
+  }
+  ctx.putImageData(out, 0, 0);
+}
+
+// Vignette: darken edges radially
+function applyVignette(canvas: HTMLCanvasElement, strength: number): void {
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return;
+  const w = canvas.width;
+  const h = canvas.height;
+  const imgData = ctx.getImageData(0, 0, w, h);
+  const d = imgData.data;
+  const cx = w / 2;
+  const cy = h / 2;
+  const maxDist = Math.sqrt(cx * cx + cy * cy);
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      const i = (y * w + x) * 4;
+      const dx = x - cx;
+      const dy = y - cy;
+      const dist = Math.sqrt(dx * dx + dy * dy) / maxDist;
+      const darken = 1 - dist * dist * strength;
+      d[i] = (d[i] * darken) | 0;
+      d[i + 1] = (d[i + 1] * darken) | 0;
+      d[i + 2] = (d[i + 2] * darken) | 0;
+    }
+  }
+  ctx.putImageData(imgData, 0, 0);
+}
+
+// Glitch: RGB channel shift + scanline displacement
+function applyGlitch(canvas: HTMLCanvasElement, shift: number): void {
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return;
+  const w = canvas.width;
+  const h = canvas.height;
+  const src = ctx.getImageData(0, 0, w, h);
+  const sd = src.data;
+  const out = ctx.createImageData(w, h);
+  const od = out.data;
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      const o = (y * w + x) * 4;
+      const rx = Math.min(w - 1, x + shift);
+      const ri = (y * w + rx) * 4;
+      const bx = Math.max(0, x - shift);
+      const bi = (y * w + bx) * 4;
+      od[o] = sd[ri];
+      od[o + 1] = sd[o + 1];
+      od[o + 2] = sd[bi + 2];
+      od[o + 3] = 255;
+    }
+  }
+  // Deterministic scanline shifts using golden ratio hash
+  for (let y = 0; y < h; y++) {
+    const hash = ((y * 2654435761) >>> 0) / 4294967296;
+    if (hash < 0.03) {
+      const lineShift = (((hash * 73856093) >>> 0) % (shift * 4)) - shift * 2;
+      for (let x = 0; x < w; x++) {
+        const o = (y * w + x) * 4;
+        const sx = Math.min(w - 1, Math.max(0, x + lineShift));
+        const si = (y * w + sx) * 4;
+        od[o] = sd[si]; od[o + 1] = sd[si + 1]; od[o + 2] = sd[si + 2];
+      }
+    }
+  }
+  ctx.putImageData(out, 0, 0);
+}
+
 async function applyFilter(imageSrc: string, filterCss: string): Promise<Blob> {
   const img = await loadImage(imageSrc);
   const canvas = document.createElement('canvas');
@@ -436,6 +635,67 @@ async function applyFilter(imageSrc: string, filterCss: string): Promise<Blob> {
 
     // Scale back to full resolution
     ctx.drawImage(work, 0, 0, canvas.width, canvas.height);
+  } else if (filterCss === '__sketch__') {
+    const maxDim = 1000;
+    const scale = Math.min(1, maxDim / Math.max(img.width, img.height));
+    const work = document.createElement('canvas');
+    work.width = Math.round(canvas.width * scale);
+    work.height = Math.round(canvas.height * scale);
+    const wctx = work.getContext('2d')!;
+    wctx.drawImage(img, 0, 0, work.width, work.height);
+    applySketch(work);
+    ctx.drawImage(work, 0, 0, canvas.width, canvas.height);
+  } else if (filterCss === '__watercolor__') {
+    const maxDim = 1000;
+    const scale = Math.min(1, maxDim / Math.max(img.width, img.height));
+    const work = document.createElement('canvas');
+    work.width = Math.round(canvas.width * scale);
+    work.height = Math.round(canvas.height * scale);
+    const wctx = work.getContext('2d')!;
+    wctx.drawImage(img, 0, 0, work.width, work.height);
+    wctx.filter = 'brightness(1.1) saturate(0.85)';
+    wctx.drawImage(work, 0, 0);
+    wctx.filter = 'none';
+    applyOilPaint(work, 3, 15);
+    addPaintEdges(work, 0.25);
+    ctx.drawImage(work, 0, 0, canvas.width, canvas.height);
+  } else if (filterCss === '__pixelate__') {
+    const maxDim = 1000;
+    const scale = Math.min(1, maxDim / Math.max(img.width, img.height));
+    const work = document.createElement('canvas');
+    work.width = Math.round(canvas.width * scale);
+    work.height = Math.round(canvas.height * scale);
+    const wctx = work.getContext('2d')!;
+    wctx.drawImage(img, 0, 0, work.width, work.height);
+    wctx.filter = 'saturate(1.4) contrast(1.2)';
+    wctx.drawImage(work, 0, 0);
+    wctx.filter = 'none';
+    applyPixelate(work, 10);
+    ctx.drawImage(work, 0, 0, canvas.width, canvas.height);
+  } else if (filterCss === '__emboss__') {
+    applyEmboss(canvas);
+  } else if (filterCss === '__popart__') {
+    const maxDim = 1000;
+    const scale = Math.min(1, maxDim / Math.max(img.width, img.height));
+    const work = document.createElement('canvas');
+    work.width = Math.round(canvas.width * scale);
+    work.height = Math.round(canvas.height * scale);
+    const wctx = work.getContext('2d')!;
+    wctx.drawImage(img, 0, 0, work.width, work.height);
+    wctx.filter = 'saturate(2.0) contrast(1.4) brightness(1.1)';
+    wctx.drawImage(work, 0, 0);
+    wctx.filter = 'none';
+    celShade(work, 5);
+    addBlackOutlines(work, 25, 0.9);
+    ctx.drawImage(work, 0, 0, canvas.width, canvas.height);
+  } else if (filterCss === '__vignette__') {
+    ctx.filter = 'contrast(1.1) saturate(1.1)';
+    ctx.drawImage(img, 0, 0);
+    ctx.filter = 'none';
+    applyVignette(canvas, 1.2);
+  } else if (filterCss === '__glitch__') {
+    const shift = Math.round(Math.max(img.width, img.height) * 0.01);
+    applyGlitch(canvas, shift);
   } else if (filterCss) {
     ctx.filter = filterCss;
     ctx.drawImage(img, 0, 0);
