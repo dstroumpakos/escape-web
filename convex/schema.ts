@@ -439,6 +439,7 @@ export default defineSchema({
       v.literal("bottom-right"),
       v.literal("bottom-center")
     ),
+    logoScale: v.optional(v.number()), // 0.05–0.5 (fraction of image width)
     brandColor: v.string(), // hex e.g. "#FF1E1E"
     watermarkOpacity: v.number(), // 0.0 – 1.0
     textTemplate: v.optional(v.string()), // e.g. "You escaped in {{time}}"
@@ -561,6 +562,7 @@ export default defineSchema({
       v.literal("bottom-right"),
       v.literal("bottom-center")
     )),
+    logoScale: v.optional(v.number()), // 0.05–0.5 (fraction of image width)
     brandColor: v.optional(v.string()),
     watermarkOpacity: v.optional(v.number()),
     textTemplate: v.optional(v.string()),

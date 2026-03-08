@@ -52,6 +52,7 @@ async function applyBranding(
   preset: {
     logoUrl?: string;
     logoPosition?: string;
+    logoScale?: number;
     brandColor?: string;
     watermarkOpacity?: number;
     textTemplate?: string;
@@ -95,7 +96,8 @@ async function applyBranding(
     try {
       const logoImg = await loadImage(preset.logoUrl);
       ctx.globalAlpha = opacity;
-      const maxLogoW = img.width * 0.15;
+      const logoSizeFraction = preset.logoScale ?? 0.15;
+      const maxLogoW = img.width * logoSizeFraction;
       const scale = Math.min(maxLogoW / logoImg.width, 1);
       const logoW = logoImg.width * scale;
       const logoH = logoImg.height * scale;
@@ -838,6 +840,7 @@ export default function PhotosTool({ roomId, roomTitle }: { roomId: string; room
   const [settingsLogoUrl, setSettingsLogoUrl] = useState('');
   const [settingsLogoStorageId, setSettingsLogoStorageId] = useState<string | undefined>();
   const [settingsLogoPosition, setSettingsLogoPosition] = useState<string>('bottom-right');
+  const [settingsLogoScale, setSettingsLogoScale] = useState(0.15);
   const [settingsBrandColor, setSettingsBrandColor] = useState('#FF1E1E');
   const [settingsOpacity, setSettingsOpacity] = useState(0.7);
   const [settingsTextTemplate, setSettingsTextTemplate] = useState('');
@@ -1076,6 +1079,7 @@ export default function PhotosTool({ roomId, roomTitle }: { roomId: string; room
     setSettingsLogoUrl(roomPreset?.logoUrl || '');
     setSettingsLogoStorageId(roomPreset?.logoStorageId || undefined);
     setSettingsLogoPosition(roomPreset?.logoPosition || 'bottom-right');
+    setSettingsLogoScale(roomPreset?.logoScale ?? 0.15);
     setSettingsBrandColor(roomPreset?.brandColor || '#FF1E1E');
     setSettingsOpacity(roomPreset?.watermarkOpacity ?? 0.7);
     setSettingsTextTemplate(roomPreset?.textTemplate || '');
@@ -1145,6 +1149,7 @@ export default function PhotosTool({ roomId, roomTitle }: { roomId: string; room
         logoUrl: settingsLogoUrl || undefined,
         logoStorageId: settingsLogoStorageId as any || undefined,
         logoPosition: (settingsLogoPosition as any) || undefined,
+        logoScale: settingsLogoScale,
         brandColor: settingsBrandColor || undefined,
         watermarkOpacity: settingsOpacity,
         textTemplate: settingsTextTemplate || undefined,
@@ -1590,8 +1595,10 @@ export default function PhotosTool({ roomId, roomTitle }: { roomId: string; room
                     <img
                       src={settingsLogoUrl}
                       alt="Logo"
-                      className="absolute max-w-[20%] max-h-[20%] object-contain"
+                      className="absolute object-contain"
                       style={{
+                        maxWidth: `${Math.round(settingsLogoScale * 100)}%`,
+                        maxHeight: `${Math.round(settingsLogoScale * 100)}%`,
                         ...(settingsLogoPosition === 'top-left' && { top: '5%', left: '5%' }),
                         ...(settingsLogoPosition === 'top-right' && { top: '5%', right: '5%' }),
                         ...(settingsLogoPosition === 'bottom-left' && { bottom: '5%', left: '5%' }),
@@ -1679,6 +1686,26 @@ export default function PhotosTool({ roomId, roomTitle }: { roomId: string; room
                     </button>
                   </div>
                   <p className="text-xs text-brand-text-muted mt-1">PNG with transparent background works best</p>
+                </div>
+
+                {/* Logo scale */}
+                <div>
+                  <label className="text-sm font-medium text-brand-text-secondary mb-1.5 block">
+                    Logo Size ({Math.round(settingsLogoScale * 100)}%)
+                  </label>
+                  <input
+                    type="range"
+                    min="0.05"
+                    max="0.5"
+                    step="0.01"
+                    value={settingsLogoScale}
+                    onChange={(e) => setSettingsLogoScale(parseFloat(e.target.value))}
+                    className="w-full accent-brand-red"
+                  />
+                  <div className="flex justify-between text-xs text-brand-text-muted mt-1">
+                    <span>Small</span>
+                    <span>Large</span>
+                  </div>
                 </div>
 
                 {/* Logo position */}

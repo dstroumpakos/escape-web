@@ -494,6 +494,7 @@ export const saveRoomPreset = mutation({
     overlayStorageId: v.optional(v.id("_storage")),
     useOverlay: v.optional(v.boolean()),
     defaultFilter: v.optional(v.string()),
+    logoScale: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
     const room = await ctx.db.get(args.roomId);
@@ -512,6 +513,7 @@ export const saveRoomPreset = mutation({
       logoUrl: args.logoUrl,
       logoStorageId: args.logoStorageId,
       logoPosition: args.logoPosition,
+      logoScale: args.logoScale,
       brandColor: args.brandColor,
       watermarkOpacity: args.watermarkOpacity,
       textTemplate: args.textTemplate,
