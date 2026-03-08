@@ -10,9 +10,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 export function LayoutShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isCompanyRoute = pathname.startsWith('/company');
+  const isPhotosApp = pathname.startsWith('/photos-app');
 
-  if (isCompanyRoute) {
-    // Company portal has its own layout — no main Navbar/Footer
+  if (isCompanyRoute || isPhotosApp) {
+    // Company portal / Photos app have their own layout — no main Navbar/Footer
     return (
       <>
         {children}
