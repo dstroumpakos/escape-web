@@ -184,7 +184,59 @@ const FILTERS: FilterDef[] = [
   { name: 'bw', label: 'B&W', css: 'grayscale(1) contrast(1.2)' },
   { name: 'warm', label: 'Warm', css: 'sepia(0.3) saturate(1.2) brightness(1.05)' },
   { name: 'cool', label: 'Cool', css: 'saturate(0.8) brightness(1.05) hue-rotate(15deg)' },
+  { name: 'oilpaint', label: 'Oil Paint', css: '__oilpaint__' },
 ];
+
+// Oil painting effect via pixel quantization + local median smoothing
+function applyOilPaint(canvas: HTMLCanvasElement, radius: number = 4, levels: number = 20): void {
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return;
+  const w = canvas.width;
+  const h = canvas.height;
+  const src = ctx.getImageData(0, 0, w, h);
+  const dst = ctx.createImageData(w, h);
+  const sd = src.data;
+  const dd = dst.data;
+
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      const rHist = new Int32Array(levels);
+      const gHist = new Int32Array(levels);
+      const bHist = new Int32Array(levels);
+      const count = new Int32Array(levels);
+      let maxCount = 0;
+      let maxIdx = 0;
+
+      const x0 = Math.max(0, x - radius);
+      const x1 = Math.min(w - 1, x + radius);
+      const y0 = Math.max(0, y - radius);
+      const y1 = Math.min(h - 1, y + radius);
+
+      for (let ky = y0; ky <= y1; ky++) {
+        for (let kx = x0; kx <= x1; kx++) {
+          const i = (ky * w + kx) * 4;
+          const intensity = ((sd[i] + sd[i + 1] + sd[i + 2]) / 3 * levels / 256) | 0;
+          const ci = Math.min(intensity, levels - 1);
+          rHist[ci] += sd[i];
+          gHist[ci] += sd[i + 1];
+          bHist[ci] += sd[i + 2];
+          count[ci]++;
+          if (count[ci] > maxCount) {
+            maxCount = count[ci];
+            maxIdx = ci;
+          }
+        }
+      }
+
+      const o = (y * w + x) * 4;
+      dd[o] = (rHist[maxIdx] / maxCount) | 0;
+      dd[o + 1] = (gHist[maxIdx] / maxCount) | 0;
+      dd[o + 2] = (bHist[maxIdx] / maxCount) | 0;
+      dd[o + 3] = 255;
+    }
+  }
+  ctx.putImageData(dst, 0, 0);
+}
 
 async function applyFilter(imageSrc: string, filterCss: string): Promise<Blob> {
   const img = await loadImage(imageSrc);
@@ -194,11 +246,36 @@ async function applyFilter(imageSrc: string, filterCss: string): Promise<Blob> {
   const ctx = canvas.getContext('2d');
   if (!ctx) throw new Error('No canvas context');
 
-  if (filterCss) {
-    ctx.filter = filterCss;
-  }
   ctx.drawImage(img, 0, 0);
-  ctx.filter = 'none';
+
+  if (filterCss === '__oilpaint__') {
+    // For performance, work on a smaller canvas then scale back up
+    const maxDim = 800;
+    const scale = Math.min(1, maxDim / Math.max(img.width, img.height));
+    if (scale < 1) {
+      const small = document.createElement('canvas');
+      small.width = Math.round(img.width * scale);
+      small.height = Math.round(img.height * scale);
+      const sctx = small.getContext('2d')!;
+      sctx.drawImage(img, 0, 0, small.width, small.height);
+      applyOilPaint(small, 3, 20);
+      // Boost color saturation slightly for painterly look
+      sctx.filter = 'saturate(1.3) contrast(1.1)';
+      sctx.drawImage(small, 0, 0);
+      sctx.filter = 'none';
+      // Scale back up
+      ctx.drawImage(small, 0, 0, canvas.width, canvas.height);
+    } else {
+      applyOilPaint(canvas, 4, 20);
+      ctx.filter = 'saturate(1.3) contrast(1.1)';
+      ctx.drawImage(canvas, 0, 0);
+      ctx.filter = 'none';
+    }
+  } else if (filterCss) {
+    ctx.filter = filterCss;
+    ctx.drawImage(img, 0, 0);
+    ctx.filter = 'none';
+  }
 
   return new Promise((resolve, reject) =>
     canvas.toBlob((b) => (b ? resolve(b) : reject(new Error('toBlob failed'))), 'image/jpeg', 0.92)
