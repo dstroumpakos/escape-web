@@ -187,8 +187,8 @@ const FILTERS: FilterDef[] = [
   { name: 'oilpaint', label: 'Oil Paint', css: '__oilpaint__' },
 ];
 
-// Oil painting effect via pixel quantization + local median smoothing
-function applyOilPaint(canvas: HTMLCanvasElement, radius: number = 4, levels: number = 20): void {
+// Oil painting effect — two-pass intensity histogram for painterly brush strokes
+function applyOilPaint(canvas: HTMLCanvasElement, radius: number, levels: number): void {
   const ctx = canvas.getContext('2d');
   if (!ctx) return;
   const w = canvas.width;
@@ -238,6 +238,47 @@ function applyOilPaint(canvas: HTMLCanvasElement, radius: number = 4, levels: nu
   ctx.putImageData(dst, 0, 0);
 }
 
+// Boost saturation + vibrance at pixel level for painterly color pop
+function boostColors(canvas: HTMLCanvasElement, satMul: number, vibrance: number, brightnessAdd: number): void {
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return;
+  const w = canvas.width;
+  const h = canvas.height;
+  const imgData = ctx.getImageData(0, 0, w, h);
+  const d = imgData.data;
+
+  for (let i = 0; i < d.length; i += 4) {
+    let r = d[i], g = d[i + 1], b = d[i + 2];
+
+    // Brighten
+    r = Math.min(255, r + brightnessAdd);
+    g = Math.min(255, g + brightnessAdd);
+    b = Math.min(255, b + brightnessAdd);
+
+    // Convert to HSL-like for saturation boost
+    const max = Math.max(r, g, b);
+    const min = Math.min(r, g, b);
+    const l = (max + min) / 2;
+    const delta = max - min;
+
+    if (delta > 0) {
+      // Vibrance: boost more when saturation is low
+      const sat = delta / (255 - Math.abs(2 * l - 255));
+      const boost = satMul + vibrance * (1 - sat);
+
+      const avg = (r + g + b) / 3;
+      r = Math.min(255, Math.max(0, avg + (r - avg) * boost));
+      g = Math.min(255, Math.max(0, avg + (g - avg) * boost));
+      b = Math.min(255, Math.max(0, avg + (b - avg) * boost));
+    }
+
+    d[i] = r | 0;
+    d[i + 1] = g | 0;
+    d[i + 2] = b | 0;
+  }
+  ctx.putImageData(imgData, 0, 0);
+}
+
 async function applyFilter(imageSrc: string, filterCss: string): Promise<Blob> {
   const img = await loadImage(imageSrc);
   const canvas = document.createElement('canvas');
@@ -249,28 +290,34 @@ async function applyFilter(imageSrc: string, filterCss: string): Promise<Blob> {
   ctx.drawImage(img, 0, 0);
 
   if (filterCss === '__oilpaint__') {
-    // For performance, work on a smaller canvas then scale back up
-    const maxDim = 800;
+    // Step 1: Pre-boost brightness and saturation before oil paint
+    ctx.filter = 'brightness(1.15) saturate(1.4) contrast(1.1)';
+    ctx.drawImage(canvas, 0, 0);
+    ctx.filter = 'none';
+
+    // Step 2: Work on a scaled canvas for performance
+    const maxDim = 1000;
     const scale = Math.min(1, maxDim / Math.max(img.width, img.height));
-    if (scale < 1) {
-      const small = document.createElement('canvas');
-      small.width = Math.round(img.width * scale);
-      small.height = Math.round(img.height * scale);
-      const sctx = small.getContext('2d')!;
-      sctx.drawImage(img, 0, 0, small.width, small.height);
-      applyOilPaint(small, 3, 20);
-      // Boost color saturation slightly for painterly look
-      sctx.filter = 'saturate(1.3) contrast(1.1)';
-      sctx.drawImage(small, 0, 0);
-      sctx.filter = 'none';
-      // Scale back up
-      ctx.drawImage(small, 0, 0, canvas.width, canvas.height);
-    } else {
-      applyOilPaint(canvas, 4, 20);
-      ctx.filter = 'saturate(1.3) contrast(1.1)';
-      ctx.drawImage(canvas, 0, 0);
-      ctx.filter = 'none';
-    }
+    const work = document.createElement('canvas');
+    work.width = Math.round(canvas.width * scale);
+    work.height = Math.round(canvas.height * scale);
+    const wctx = work.getContext('2d')!;
+    wctx.drawImage(canvas, 0, 0, work.width, work.height);
+
+    // Step 3: Two-pass oil paint — first pass coarse, second pass fine
+    applyOilPaint(work, 5, 12); // Coarse: big brush, fewer levels = more painterly
+    applyOilPaint(work, 2, 30); // Fine: preserves edge detail within strokes
+
+    // Step 4: Pixel-level color boost — vibrant saturated look
+    boostColors(work, 1.6, 0.5, 15);
+
+    // Step 5: Final contrast punch
+    wctx.filter = 'contrast(1.15)';
+    wctx.drawImage(work, 0, 0);
+    wctx.filter = 'none';
+
+    // Scale back to full resolution
+    ctx.drawImage(work, 0, 0, canvas.width, canvas.height);
   } else if (filterCss) {
     ctx.filter = filterCss;
     ctx.drawImage(img, 0, 0);
