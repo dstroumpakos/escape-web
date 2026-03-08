@@ -243,49 +243,49 @@ function et(lang: Lang, key: string): string {
 
 // Brand palette
 const C = {
-  bg: "#1A0D0D",
-  dark: "#0F0707",
-  card: "#2A1515",
-  surface: "#3A2020",
-  border: "#4A2A2A",
-  red: "#FF1E1E",
-  redHover: "#E01A1A",
-  redLight: "#FF4D4D",
-  gold: "#FFD700",
-  text: "#FFFFFF",
-  textSecondary: "#B0A0A0",
-  textMuted: "#6B5555",
-  white: "#FFFFFF",
+  bg: "#ffffff",
+  dark: "#f5f5f5",
+  card: "#f9f9f9",
+  surface: "#f0f0f0",
+  border: "#e0e0e0",
+  red: "#DC2626",
+  redHover: "#B91C1C",
+  redLight: "#EF4444",
+  gold: "#F59E0B",
+  text: "#1a1a1a",
+  textSecondary: "#555555",
+  textMuted: "#999999",
+  white: "#ffffff",
 };
 
 const S = {
   body: `margin:0;padding:0;background:${C.dark};font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;-webkit-font-smoothing:antialiased;`,
   wrapper: `padding:16px 8px;background:${C.dark};`,
   container: `max-width:600px;margin:0 auto;background:${C.bg};border-radius:16px;overflow:hidden;border:1px solid ${C.border};`,
-  // Header with gradient overlay
-  header: `background:linear-gradient(135deg, ${C.bg} 0%, ${C.card} 100%);padding:28px 20px 24px;text-align:center;border-bottom:2px solid ${C.red};`,
+  // Header — white bg with red bottom border
+  header: `background-color:${C.bg};padding:28px 20px 24px;text-align:center;border-bottom:3px solid ${C.red};`,
   logo: `font-size:24px;font-weight:800;letter-spacing:3px;color:${C.red};margin:0 0 4px;`,
-  headerTitle: `margin:10px 0 0;font-size:20px;font-weight:700;color:${C.white};`,
+  headerTitle: `margin:10px 0 0;font-size:20px;font-weight:700;color:${C.text};`,
   headerSub: `margin:6px 0 0;font-size:13px;color:${C.textSecondary};word-break:break-word;`,
   content: `padding:20px 16px;`,
   // Booking code badge
-  badge: `display:inline-block;background:linear-gradient(135deg, ${C.red} 0%, ${C.redLight} 100%);color:${C.white};font-size:18px;font-weight:800;padding:10px 20px;border-radius:10px;letter-spacing:2px;font-family:'Courier New',Courier,monospace;`,
+  badge: `display:inline-block;background:${C.red};color:${C.white};font-size:18px;font-weight:800;padding:10px 20px;border-radius:10px;letter-spacing:2px;font-family:'Courier New',Courier,monospace;`,
   // Table styles
   table: `width:100%;border-collapse:separate;border-spacing:0;margin:20px 0;border-radius:12px;overflow:hidden;border:1px solid ${C.border};`,
   th: `text-align:left;padding:10px 12px;background-color:${C.surface};color:${C.textSecondary};font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.6px;border-bottom:1px solid ${C.border};width:35%;`,
-  td: `padding:10px 12px;font-size:13px;color:${C.white};border-bottom:1px solid ${C.border};background-color:${C.card};word-break:break-word;`,
+  td: `padding:10px 12px;font-size:13px;color:${C.text};border-bottom:1px solid ${C.border};background-color:${C.bg};word-break:break-word;`,
   // Buttons
-  btn: `display:inline-block;background:linear-gradient(135deg, ${C.red} 0%, ${C.redLight} 100%);color:${C.white};padding:12px 28px;border-radius:10px;font-size:14px;font-weight:700;text-decoration:none;letter-spacing:0.5px;`,
-  btnGreen: `display:inline-block;background:linear-gradient(135deg, #22c55e 0%, #16a34a 100%);color:${C.white};padding:12px 28px;border-radius:10px;font-size:14px;font-weight:700;text-decoration:none;letter-spacing:0.5px;`,
+  btn: `display:inline-block;background-color:${C.red};color:${C.white};padding:12px 28px;border-radius:10px;font-size:14px;font-weight:700;text-decoration:none;letter-spacing:0.5px;`,
+  btnGreen: `display:inline-block;background-color:#22c55e;color:${C.white};padding:12px 28px;border-radius:10px;font-size:14px;font-weight:700;text-decoration:none;letter-spacing:0.5px;`,
   // Footer
   footer: `padding:20px 16px;background:${C.dark};text-align:center;font-size:11px;color:${C.textMuted};border-top:1px solid ${C.border};`,
   footerLink: `color:${C.red};text-decoration:none;`,
   // Divider
-  divider: `height:1px;background:linear-gradient(to right, transparent, ${C.border}, transparent);margin:24px 0;`,
+  divider: `height:1px;background:${C.border};margin:24px 0;`,
   // Section header
-  sectionTitle: `font-size:15px;font-weight:700;color:${C.white};margin:28px 0 12px;padding-bottom:8px;border-bottom:1px solid ${C.border};`,
+  sectionTitle: `font-size:15px;font-weight:700;color:${C.text};margin:28px 0 12px;padding-bottom:8px;border-bottom:1px solid ${C.border};`,
   // Text styles
-  greeting: `font-size:16px;color:${C.white};margin:0 0 8px;`,
+  greeting: `font-size:16px;color:${C.text};margin:0 0 8px;`,
   bodyText: `font-size:14px;color:${C.textSecondary};margin:0 0 24px;line-height:1.7;`,
   smallText: `font-size:13px;color:${C.textMuted};margin:24px 0 0;line-height:1.6;`,
   highlight: `color:${C.red};font-weight:600;`,
@@ -300,93 +300,63 @@ const S = {
     return `display:inline-block;background:${c.bg};color:${c.color};padding:4px 14px;border-radius:6px;font-size:12px;font-weight:700;letter-spacing:0.3px;`;
   },
   // Feature check row
-  featureRow: `padding:10px 12px;font-size:13px;color:${C.textSecondary};border-bottom:1px solid ${C.border};background-color:${C.card};`,
+  featureRow: `padding:10px 12px;font-size:13px;color:${C.textSecondary};border-bottom:1px solid ${C.border};background-color:${C.bg};`,
 };
 
 // Helper to generate <th> with bgcolor for mobile email client compatibility
 function TH(label: string): string {
-  return `<th class="email-th" style="${S.th}" bgcolor="${C.surface}">${label}</th>`;
+  return `<th style="${S.th}" bgcolor="${C.surface}">${label}</th>`;
 }
 // Helper to generate <td> with bgcolor
 function TD(content: string): string {
-  return `<td class="email-td" style="${S.td}" bgcolor="${C.card}">${content}</td>`;
+  return `<td style="${S.td}" bgcolor="${C.bg}">${content}</td>`;
 }
 // Helper for table wrapper with bgcolor
 function TABLE(rows: string): string {
-  return `<table class="email-table" style="${S.table}" bgcolor="${C.card}">${rows}</table>`;
+  return `<table style="${S.table}" bgcolor="${C.bg}">${rows}</table>`;
 }
 // Helper for feature row
 function FR(content: string): string {
-  return `<tr><td class="email-td" style="${S.featureRow}" bgcolor="${C.card}">${content}</td></tr>`;
+  return `<tr><td style="${S.featureRow}" bgcolor="${C.bg}">${content}</td></tr>`;
 }
 
 function shell(title: string, subtitle: string, body: string, footerText: string): string {
-  // Light outer wrapper tricks Gmail/Samsung dark mode detection into
-  // thinking this is a light email, preventing automatic color inversion.
-  // The actual dark design lives inside the inner table.
   return `<!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office" lang="en">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <meta name="color-scheme" content="light only">
 <meta name="supported-color-schemes" content="light only">
-<meta name="format-detection" content="telephone=no,date=no,address=no,email=no">
 <title>${title}</title>
-<!--[if mso]><xml><o:OfficeDocumentSettings><o:AllowPNG/><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml><![endif]-->
-<style>
-  :root { color-scheme: light only; supported-color-schemes: light only; }
-  [data-ogsc], [data-ogsb] {
-    background-color: #ffffff !important;
-    color: #000000 !important;
-  }
-  @media (prefers-color-scheme: dark) {
-    .outer-shell, body { background-color: #ffffff !important; }
-    .inner-dark-bg td { background-color: ${C.dark} !important; }
-    .inner-main-bg td { background-color: ${C.bg} !important; }
-    .inner-header-bg td { background-color: ${C.card} !important; }
-  }
-</style>
+<!--[if mso]><xml><o:OfficeDocumentSettings><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml><![endif]-->
 </head>
-<body style="margin:0;padding:0;background-color:#ffffff;-webkit-font-smoothing:antialiased;" bgcolor="#ffffff">
-<!--[if mso]><table role="presentation" width="100%" bgcolor="#ffffff"><tr><td><![endif]-->
-<table role="presentation" class="outer-shell" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#ffffff" style="background-color:#ffffff;">
-<tr><td align="center" valign="top" style="padding:0;">
-  <!-- Dark wrapper that contains our actual design -->
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="${C.dark}" class="inner-dark-bg" style="background-color:${C.dark};">
-  <tr><td align="center" style="padding:16px 8px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;">
-
-    <!-- Main container -->
-    <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" bgcolor="${C.bg}" class="inner-main-bg" style="max-width:600px;width:100%;background-color:${C.bg};border-radius:16px;overflow:hidden;border:1px solid ${C.border};">
-    <!-- Header -->
-    <tr><td bgcolor="${C.card}" class="inner-header-bg" style="background:linear-gradient(135deg, ${C.bg} 0%, ${C.card} 100%);padding:28px 20px 24px;text-align:center;border-bottom:2px solid ${C.red};">
-      <div style="font-size:24px;font-weight:800;letter-spacing:3px;color:${C.red};margin:0 0 4px;">UNLOCKED</div>
-      <h1 style="margin:10px 0 0;font-size:20px;font-weight:700;color:${C.white};">${title}</h1>
-      <p style="margin:6px 0 0;font-size:13px;color:${C.textSecondary};word-break:break-word;">${subtitle}</p>
-    </td></tr>
-    <!-- Content -->
-    <tr><td bgcolor="${C.bg}" class="inner-main-bg" style="padding:20px 16px;background-color:${C.bg};">
+<body style="${S.body}" bgcolor="${C.dark}">
+<div style="${S.wrapper}" bgcolor="${C.dark}">
+<div style="${S.container}" bgcolor="${C.bg}">
+<!-- Header -->
+<div style="${S.header}" bgcolor="${C.bg}">
+  <div style="${S.logo}">UNLOCKED</div>
+  <h1 style="${S.headerTitle}">${title}</h1>
+  <p style="${S.headerSub}">${subtitle}</p>
+</div>
+<!-- Content -->
+<div style="${S.content}" bgcolor="${C.bg}">
 ${body}
-    </td></tr>
-    <!-- Footer -->
-    <tr><td bgcolor="${C.dark}" class="inner-dark-bg" style="padding:20px 16px;background-color:${C.dark};text-align:center;font-size:11px;color:${C.textMuted};border-top:1px solid ${C.border};">
-      <p style="margin:0 0 8px;color:${C.textMuted};">${footerText}</p>
-      <p style="margin:0;color:${C.textMuted};">
-        <a href="https://unlocked.gr" style="color:${C.red};text-decoration:none;">unlocked.gr</a>
-        &nbsp;·&nbsp;
-        <a href="https://unlocked.gr/privacy" style="color:${C.red};text-decoration:none;">Privacy</a>
-        &nbsp;·&nbsp;
-        <a href="https://unlocked.gr/terms" style="color:${C.red};text-decoration:none;">Terms</a>
-      </p>
-    </td></tr>
-    </table>
-
-  </td></tr>
-  </table>
-</td></tr>
-</table>
-<!--[if mso]></td></tr></table><![endif]-->
+</div>
+<!-- Footer -->
+<div style="${S.footer}" bgcolor="${C.dark}">
+  <p style="margin:0 0 8px;color:${C.textMuted};">${footerText}</p>
+  <p style="margin:0;color:${C.textMuted};">
+    <a href="https://unlocked.gr" style="${S.footerLink}">unlocked.gr</a>
+    &nbsp;·&nbsp;
+    <a href="https://unlocked.gr/privacy" style="${S.footerLink}">Privacy</a>
+    &nbsp;·&nbsp;
+    <a href="https://unlocked.gr/terms" style="${S.footerLink}">Terms</a>
+  </p>
+</div>
+</div>
+</div>
 </body></html>`;
 }
 
@@ -848,14 +818,14 @@ export const sendPhotoEmail = internalAction({
       `<p style="${S.bodyText}">
   Your escape room photo from <strong style="color:${C.red};">${d.companyName}</strong> is ready!
 </p>
-${d.teamName ? `<p style="text-align:center;font-size:18px;font-weight:700;color:${C.white};margin:0 0 8px;">Team: ${d.teamName}</p>` : ""}
+${d.teamName ? `<p style="text-align:center;font-size:18px;font-weight:700;color:${C.text};margin:0 0 8px;">Team: ${d.teamName}</p>` : ""}
 ${escapeBadge ? `<div style="text-align:center;margin:0 0 20px;">${escapeBadge}</div>` : ""}
 <!-- Photo -->
 <div style="text-align:center;margin:20px 0;">
   <img src="${d.photoUrl}" alt="Escape Room Photo" style="max-width:100%;border-radius:12px;border:2px solid ${C.border};" />
 </div>
 <div style="text-align:center;margin:28px 0;">
-  <a href="${d.photoPageUrl}" class="email-btn" style="${S.btn}">View & Download Photo</a>
+  <a href="${d.photoPageUrl}" style="${S.btn}">View & Download Photo</a>
 </div>
 <div style="${S.divider}"></div>
 <p style="${S.smallText};text-align:center;">
