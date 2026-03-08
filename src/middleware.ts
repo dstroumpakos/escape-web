@@ -17,6 +17,11 @@ export function middleware(request: NextRequest) {
       return NextResponse.rewrite(new URL('/photos-app/login', request.url));
     }
 
+    // /register → /photos-app/register
+    if (pathname === '/register') {
+      return NextResponse.rewrite(new URL('/photos-app/register', request.url));
+    }
+
     // /p/[id] → served as-is (public photo page already exists)
     if (pathname.startsWith('/p/')) {
       return NextResponse.next();

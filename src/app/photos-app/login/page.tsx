@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
+import Link from 'next/link';
 import { Camera, Mail, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react';
 import { useCompanyAuth } from '@/lib/companyAuth';
 import { useMutation } from 'convex/react';
@@ -10,6 +11,8 @@ import { api } from '../../../../convex/_generated/api';
 export default function PhotosLoginPage() {
   const router = useRouter();
   const { login, isAuthenticated } = useCompanyAuth();
+  const searchParams = useSearchParams();
+  const justRegistered = searchParams.get('registered') === 'true';
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -57,6 +60,12 @@ export default function PhotosLoginPage() {
         {/* Form */}
         <div className="bg-brand-surface rounded-2xl p-8 border border-white/5">
           <h1 className="text-2xl font-bold mb-6">Sign In</h1>
+
+          {justRegistered && (
+            <div className="bg-green-500/10 border border-green-500/20 rounded-xl p-3 mb-4 text-green-400 text-sm">
+              Account created! Sign in to get started.
+            </div>
+          )}
 
           {error && (
             <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-3 mb-4 text-red-400 text-sm">
@@ -118,7 +127,14 @@ export default function PhotosLoginPage() {
           </form>
         </div>
 
-        <p className="text-center text-xs text-brand-text-muted mt-6">
+        <p className="text-center text-sm text-brand-text-secondary mt-6">
+          Don&apos;t have an account?{' '}
+          <Link href="/register" className="text-brand-red hover:underline font-medium">
+            Create Account
+          </Link>
+        </p>
+
+        <p className="text-center text-xs text-brand-text-muted mt-4">
           Powered by <span className="text-brand-red font-bold">UNLOCKED</span>
         </p>
       </div>
