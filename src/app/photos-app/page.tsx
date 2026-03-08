@@ -1,7 +1,7 @@
-﻿'use client';
+'use client';
 
 import PhotosTool from '@/components/photos/PhotosTool';
 
-export default function CompanyPhotosPage() {
+export default function PhotosAppPage() {
   return <PhotosTool />;
 }
