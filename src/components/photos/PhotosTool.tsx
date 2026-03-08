@@ -290,29 +290,20 @@ async function applyFilter(imageSrc: string, filterCss: string): Promise<Blob> {
   ctx.drawImage(img, 0, 0);
 
   if (filterCss === '__oilpaint__') {
-    // Step 1: Pre-boost brightness and saturation before oil paint
-    ctx.filter = 'brightness(1.15) saturate(1.4) contrast(1.1)';
-    ctx.drawImage(canvas, 0, 0);
-    ctx.filter = 'none';
-
-    // Step 2: Work on a scaled canvas for performance
+    // Work on a scaled canvas for performance
     const maxDim = 1000;
     const scale = Math.min(1, maxDim / Math.max(img.width, img.height));
     const work = document.createElement('canvas');
     work.width = Math.round(canvas.width * scale);
     work.height = Math.round(canvas.height * scale);
     const wctx = work.getContext('2d')!;
-    wctx.drawImage(canvas, 0, 0, work.width, work.height);
+    wctx.drawImage(img, 0, 0, work.width, work.height);
 
-    // Step 3: Two-pass oil paint — first pass coarse, second pass fine
-    applyOilPaint(work, 5, 12); // Coarse: big brush, fewer levels = more painterly
-    applyOilPaint(work, 2, 30); // Fine: preserves edge detail within strokes
+    // Single gentle oil paint pass — small radius preserves faces/detail
+    applyOilPaint(work, 3, 25);
 
-    // Step 4: Pixel-level color boost — vibrant saturated look
-    boostColors(work, 1.6, 0.5, 15);
-
-    // Step 5: Final contrast punch
-    wctx.filter = 'contrast(1.15)';
+    // Light saturation + contrast boost for painterly color pop
+    wctx.filter = 'saturate(1.25) contrast(1.08)';
     wctx.drawImage(work, 0, 0);
     wctx.filter = 'none';
 
