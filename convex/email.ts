@@ -336,17 +336,46 @@ function shell(title: string, subtitle: string, body: string, footerText: string
   table, td, th, div, p, h1, h3, span, a {
     color-scheme: light only !important;
   }
-  [data-ogsc], [data-ogsb] { background-color: inherit !important; color: inherit !important; }
+  u + .body-wrapper { } /* Gmail specificity hack */
+  [data-ogsc] body, [data-ogsc] .body-wrapper { background-color: ${C.dark} !important; }
+  [data-ogsc] .email-container { background-color: ${C.bg} !important; border-color: ${C.border} !important; }
+  [data-ogsc] .email-header { background: linear-gradient(135deg, ${C.bg} 0%, ${C.card} 100%) !important; }
+  [data-ogsc] .email-content { background-color: ${C.bg} !important; }
+  [data-ogsc] .email-footer { background-color: ${C.dark} !important; }
+  [data-ogsc] .email-td { background-color: ${C.card} !important; color: ${C.white} !important; }
+  [data-ogsc] .email-th { background-color: ${C.surface} !important; color: ${C.textSecondary} !important; }
+  [data-ogsc] .email-table { border-color: ${C.border} !important; }
+  [data-ogsc] h1, [data-ogsc] .email-title { color: ${C.white} !important; }
+  [data-ogsc] p, [data-ogsc] div, [data-ogsc] span, [data-ogsc] td { color: ${C.white} !important; }
+  [data-ogsc] .email-sub { color: ${C.textSecondary} !important; }
+  [data-ogsc] .email-muted { color: ${C.textMuted} !important; }
+  [data-ogsc] .email-logo { color: ${C.red} !important; }
+  [data-ogsc] .email-btn { background: linear-gradient(135deg, ${C.red} 0%, ${C.redLight} 100%) !important; color: ${C.white} !important; }
+  [data-ogsb] body, [data-ogsb] .body-wrapper { background-color: ${C.dark} !important; }
+  [data-ogsb] .email-container { background-color: ${C.bg} !important; }
+  [data-ogsb] .email-content { background-color: ${C.bg} !important; }
+  [data-ogsb] .email-footer { background-color: ${C.dark} !important; }
+  [data-ogsb] h1, [data-ogsb] p, [data-ogsb] div, [data-ogsb] span, [data-ogsb] td { color: ${C.white} !important; }
   @media (prefers-color-scheme: dark) {
-    body, .body-wrapper { background-color: ${C.dark} !important; }
-    .email-container { background-color: ${C.bg} !important; }
+    body, .body-wrapper { background-color: ${C.dark} !important; color: ${C.white} !important; }
+    .email-container { background-color: ${C.bg} !important; border-color: ${C.border} !important; }
     .email-header { background: linear-gradient(135deg, ${C.bg} 0%, ${C.card} 100%) !important; }
     .email-content { background-color: ${C.bg} !important; }
     .email-footer { background-color: ${C.dark} !important; }
     .email-td { background-color: ${C.card} !important; color: ${C.white} !important; }
     .email-th { background-color: ${C.surface} !important; color: ${C.textSecondary} !important; }
     .email-table { border-color: ${C.border} !important; }
-    h1, p, td, th, div, span { color: inherit !important; }
+    .email-logo { color: ${C.red} !important; }
+    .email-title { color: ${C.white} !important; }
+    .email-sub { color: ${C.textSecondary} !important; }
+    .email-muted { color: ${C.textMuted} !important; }
+    .email-btn { background: linear-gradient(135deg, ${C.red} 0%, ${C.redLight} 100%) !important; color: ${C.white} !important; }
+    h1, h3 { color: ${C.white} !important; }
+    p, div, span { color: ${C.white} !important; }
+    td { color: ${C.white} !important; }
+    th { color: ${C.textSecondary} !important; }
+    a { color: ${C.red} !important; }
+    .email-btn, .email-btn a { color: ${C.white} !important; }
   }
 </style>
 </head>
@@ -355,9 +384,9 @@ function shell(title: string, subtitle: string, body: string, footerText: string
 <div class="email-container" style="${S.container}" bgcolor="${C.bg}">
 <!-- Header -->
 <div class="email-header" style="${S.header}" bgcolor="${C.card}">
-  <div style="${S.logo}">UNLOCKED</div>
-  <h1 style="${S.headerTitle}">${title}</h1>
-  <p style="${S.headerSub}">${subtitle}</p>
+  <div class="email-logo" style="${S.logo}">UNLOCKED</div>
+  <h1 class="email-title" style="${S.headerTitle}">${title}</h1>
+  <p class="email-sub" style="${S.headerSub}">${subtitle}</p>
 </div>
 <!-- Content -->
 <div class="email-content" style="${S.content}" bgcolor="${C.bg}">
@@ -365,8 +394,8 @@ ${body}
 </div>
 <!-- Footer -->
 <div class="email-footer" style="${S.footer}" bgcolor="${C.dark}">
-  <p style="margin:0 0 8px;">${footerText}</p>
-  <p style="margin:0;">
+  <p class="email-muted" style="margin:0 0 8px;">${footerText}</p>
+  <p class="email-muted" style="margin:0;">
     <a href="https://unlocked.gr" style="${S.footerLink}">unlocked.gr</a>
     &nbsp;·&nbsp;
     <a href="https://unlocked.gr/privacy" style="${S.footerLink}">Privacy</a>
@@ -844,7 +873,7 @@ ${escapeBadge ? `<div style="text-align:center;margin:0 0 20px;">${escapeBadge}<
   <img src="${d.photoUrl}" alt="Escape Room Photo" style="max-width:100%;border-radius:12px;border:2px solid ${C.border};" />
 </div>
 <div style="text-align:center;margin:28px 0;">
-  <a href="${d.photoPageUrl}" style="${S.btn}">View & Download Photo</a>
+  <a href="${d.photoPageUrl}" class="email-btn" style="${S.btn}">View & Download Photo</a>
 </div>
 <div style="${S.divider}"></div>
 <p style="${S.smallText};text-align:center;">
