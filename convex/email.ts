@@ -321,90 +321,72 @@ function FR(content: string): string {
 }
 
 function shell(title: string, subtitle: string, body: string, footerText: string): string {
+  // Light outer wrapper tricks Gmail/Samsung dark mode detection into
+  // thinking this is a light email, preventing automatic color inversion.
+  // The actual dark design lives inside the inner table.
   return `<!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office" lang="en">
 <head>
 <meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <meta name="color-scheme" content="light only">
 <meta name="supported-color-schemes" content="light only">
+<meta name="format-detection" content="telephone=no,date=no,address=no,email=no">
 <title>${title}</title>
-<!--[if mso]><xml><o:OfficeDocumentSettings><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml><![endif]-->
+<!--[if mso]><xml><o:OfficeDocumentSettings><o:AllowPNG/><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml><![endif]-->
 <style>
   :root { color-scheme: light only; supported-color-schemes: light only; }
-  body, .body-wrapper, .email-container, .email-header, .email-content, .email-footer,
-  table, td, th, div, p, h1, h3, span, a {
-    color-scheme: light only !important;
+  [data-ogsc], [data-ogsb] {
+    background-color: #ffffff !important;
+    color: #000000 !important;
   }
-  u + .body-wrapper { } /* Gmail specificity hack */
-  [data-ogsc] body, [data-ogsc] .body-wrapper { background-color: ${C.dark} !important; }
-  [data-ogsc] .email-container { background-color: ${C.bg} !important; border-color: ${C.border} !important; }
-  [data-ogsc] .email-header { background: linear-gradient(135deg, ${C.bg} 0%, ${C.card} 100%) !important; }
-  [data-ogsc] .email-content { background-color: ${C.bg} !important; }
-  [data-ogsc] .email-footer { background-color: ${C.dark} !important; }
-  [data-ogsc] .email-td { background-color: ${C.card} !important; color: ${C.white} !important; }
-  [data-ogsc] .email-th { background-color: ${C.surface} !important; color: ${C.textSecondary} !important; }
-  [data-ogsc] .email-table { border-color: ${C.border} !important; }
-  [data-ogsc] h1, [data-ogsc] .email-title { color: ${C.white} !important; }
-  [data-ogsc] p, [data-ogsc] div, [data-ogsc] span, [data-ogsc] td { color: ${C.white} !important; }
-  [data-ogsc] .email-sub { color: ${C.textSecondary} !important; }
-  [data-ogsc] .email-muted { color: ${C.textMuted} !important; }
-  [data-ogsc] .email-logo { color: ${C.red} !important; }
-  [data-ogsc] .email-btn { background: linear-gradient(135deg, ${C.red} 0%, ${C.redLight} 100%) !important; color: ${C.white} !important; }
-  [data-ogsb] body, [data-ogsb] .body-wrapper { background-color: ${C.dark} !important; }
-  [data-ogsb] .email-container { background-color: ${C.bg} !important; }
-  [data-ogsb] .email-content { background-color: ${C.bg} !important; }
-  [data-ogsb] .email-footer { background-color: ${C.dark} !important; }
-  [data-ogsb] h1, [data-ogsb] p, [data-ogsb] div, [data-ogsb] span, [data-ogsb] td { color: ${C.white} !important; }
   @media (prefers-color-scheme: dark) {
-    body, .body-wrapper { background-color: ${C.dark} !important; color: ${C.white} !important; }
-    .email-container { background-color: ${C.bg} !important; border-color: ${C.border} !important; }
-    .email-header { background: linear-gradient(135deg, ${C.bg} 0%, ${C.card} 100%) !important; }
-    .email-content { background-color: ${C.bg} !important; }
-    .email-footer { background-color: ${C.dark} !important; }
-    .email-td { background-color: ${C.card} !important; color: ${C.white} !important; }
-    .email-th { background-color: ${C.surface} !important; color: ${C.textSecondary} !important; }
-    .email-table { border-color: ${C.border} !important; }
-    .email-logo { color: ${C.red} !important; }
-    .email-title { color: ${C.white} !important; }
-    .email-sub { color: ${C.textSecondary} !important; }
-    .email-muted { color: ${C.textMuted} !important; }
-    .email-btn { background: linear-gradient(135deg, ${C.red} 0%, ${C.redLight} 100%) !important; color: ${C.white} !important; }
-    h1, h3 { color: ${C.white} !important; }
-    p, div, span { color: ${C.white} !important; }
-    td { color: ${C.white} !important; }
-    th { color: ${C.textSecondary} !important; }
-    a { color: ${C.red} !important; }
-    .email-btn, .email-btn a { color: ${C.white} !important; }
+    .outer-shell, body { background-color: #ffffff !important; }
+    .inner-dark-bg td { background-color: ${C.dark} !important; }
+    .inner-main-bg td { background-color: ${C.bg} !important; }
+    .inner-header-bg td { background-color: ${C.card} !important; }
   }
 </style>
 </head>
-<body style="${S.body}" bgcolor="${C.dark}">
-<div class="body-wrapper" style="${S.wrapper}" bgcolor="${C.dark}">
-<div class="email-container" style="${S.container}" bgcolor="${C.bg}">
-<!-- Header -->
-<div class="email-header" style="${S.header}" bgcolor="${C.card}">
-  <div class="email-logo" style="${S.logo}">UNLOCKED</div>
-  <h1 class="email-title" style="${S.headerTitle}">${title}</h1>
-  <p class="email-sub" style="${S.headerSub}">${subtitle}</p>
-</div>
-<!-- Content -->
-<div class="email-content" style="${S.content}" bgcolor="${C.bg}">
+<body style="margin:0;padding:0;background-color:#ffffff;-webkit-font-smoothing:antialiased;" bgcolor="#ffffff">
+<!--[if mso]><table role="presentation" width="100%" bgcolor="#ffffff"><tr><td><![endif]-->
+<table role="presentation" class="outer-shell" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#ffffff" style="background-color:#ffffff;">
+<tr><td align="center" valign="top" style="padding:0;">
+  <!-- Dark wrapper that contains our actual design -->
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="${C.dark}" class="inner-dark-bg" style="background-color:${C.dark};">
+  <tr><td align="center" style="padding:16px 8px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;">
+
+    <!-- Main container -->
+    <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" bgcolor="${C.bg}" class="inner-main-bg" style="max-width:600px;width:100%;background-color:${C.bg};border-radius:16px;overflow:hidden;border:1px solid ${C.border};">
+    <!-- Header -->
+    <tr><td bgcolor="${C.card}" class="inner-header-bg" style="background:linear-gradient(135deg, ${C.bg} 0%, ${C.card} 100%);padding:28px 20px 24px;text-align:center;border-bottom:2px solid ${C.red};">
+      <div style="font-size:24px;font-weight:800;letter-spacing:3px;color:${C.red};margin:0 0 4px;">UNLOCKED</div>
+      <h1 style="margin:10px 0 0;font-size:20px;font-weight:700;color:${C.white};">${title}</h1>
+      <p style="margin:6px 0 0;font-size:13px;color:${C.textSecondary};word-break:break-word;">${subtitle}</p>
+    </td></tr>
+    <!-- Content -->
+    <tr><td bgcolor="${C.bg}" class="inner-main-bg" style="padding:20px 16px;background-color:${C.bg};">
 ${body}
-</div>
-<!-- Footer -->
-<div class="email-footer" style="${S.footer}" bgcolor="${C.dark}">
-  <p class="email-muted" style="margin:0 0 8px;">${footerText}</p>
-  <p class="email-muted" style="margin:0;">
-    <a href="https://unlocked.gr" style="${S.footerLink}">unlocked.gr</a>
-    &nbsp;·&nbsp;
-    <a href="https://unlocked.gr/privacy" style="${S.footerLink}">Privacy</a>
-    &nbsp;·&nbsp;
-    <a href="https://unlocked.gr/terms" style="${S.footerLink}">Terms</a>
-  </p>
-</div>
-</div>
-</div>
+    </td></tr>
+    <!-- Footer -->
+    <tr><td bgcolor="${C.dark}" class="inner-dark-bg" style="padding:20px 16px;background-color:${C.dark};text-align:center;font-size:11px;color:${C.textMuted};border-top:1px solid ${C.border};">
+      <p style="margin:0 0 8px;color:${C.textMuted};">${footerText}</p>
+      <p style="margin:0;color:${C.textMuted};">
+        <a href="https://unlocked.gr" style="color:${C.red};text-decoration:none;">unlocked.gr</a>
+        &nbsp;·&nbsp;
+        <a href="https://unlocked.gr/privacy" style="color:${C.red};text-decoration:none;">Privacy</a>
+        &nbsp;·&nbsp;
+        <a href="https://unlocked.gr/terms" style="color:${C.red};text-decoration:none;">Terms</a>
+      </p>
+    </td></tr>
+    </table>
+
+  </td></tr>
+  </table>
+</td></tr>
+</table>
+<!--[if mso]></td></tr></table><![endif]-->
 </body></html>`;
 }
 
