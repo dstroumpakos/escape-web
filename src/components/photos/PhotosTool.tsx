@@ -26,6 +26,11 @@ import {
   Timer,
   Trophy,
   XCircle,
+  Settings,
+  Palette,
+  Type,
+  Layers,
+  Save,
 } from 'lucide-react';
 
 // ── Helper: load an image ──
@@ -204,7 +209,7 @@ async function applyFilter(imageSrc: string, filterCss: string): Promise<Blob> {
 // MAIN PAGE COMPONENT
 // ═══════════════════════════════════════════════════════
 
-type Step = 'gallery' | 'upload' | 'edit' | 'send';
+type Step = 'gallery' | 'upload' | 'edit' | 'send' | 'settings';
 
 export default function PhotosTool({ roomId, roomTitle }: { roomId: string; roomTitle?: string }) {
   const { company } = useCompanyAuth();
@@ -240,6 +245,7 @@ export default function PhotosTool({ roomId, roomTitle }: { roomId: string; room
   const updateMeta = useMutation(api.standalonePhotos.updateMeta);
   const deletePhotoMut = useMutation(api.standalonePhotos.deletePhoto);
   const sendPhotoAction = useAction(api.standalonePhotos.sendPhotoToEmails);
+  const saveRoomPresetMut = useMutation(api.standalonePhotos.saveRoomPreset);
 
   // ── UI State ──
   const [step, setStep] = useState<Step>('gallery');
@@ -267,7 +273,24 @@ export default function PhotosTool({ roomId, roomTitle }: { roomId: string; room
   // Preview modal
   const [modalUrl, setModalUrl] = useState<string | null>(null);
 
+  // Settings state
+  const [settingsLogoUrl, setSettingsLogoUrl] = useState('');
+  const [settingsLogoStorageId, setSettingsLogoStorageId] = useState<string | undefined>();
+  const [settingsLogoPosition, setSettingsLogoPosition] = useState<string>('bottom-right');
+  const [settingsBrandColor, setSettingsBrandColor] = useState('#FF1E1E');
+  const [settingsOpacity, setSettingsOpacity] = useState(0.7);
+  const [settingsTextTemplate, setSettingsTextTemplate] = useState('');
+  const [settingsOverlayUrl, setSettingsOverlayUrl] = useState('');
+  const [settingsOverlayStorageId, setSettingsOverlayStorageId] = useState<string | undefined>();
+  const [settingsUseOverlay, setSettingsUseOverlay] = useState(false);
+  const [settingsDefaultFilter, setSettingsDefaultFilter] = useState('none');
+  const [savingSettings, setSavingSettings] = useState(false);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
+  const [uploadingOverlay, setUploadingOverlay] = useState(false);
+
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const logoInputRef = useRef<HTMLInputElement>(null);
+  const overlayInputRef = useRef<HTMLInputElement>(null);
 
   // ── Filtered preview generation ──
   const generatePreview = useCallback(async (url: string, filter: string, brand: boolean) => {
@@ -486,6 +509,97 @@ export default function PhotosTool({ roomId, roomTitle }: { roomId: string; room
     setSendSuccess(false);
   };
 
+  // ── Settings helpers ──
+  const openSettings = () => {
+    // Load existing preset values
+    setSettingsLogoUrl(roomPreset?.logoUrl || '');
+    setSettingsLogoStorageId(roomPreset?.logoStorageId || undefined);
+    setSettingsLogoPosition(roomPreset?.logoPosition || 'bottom-right');
+    setSettingsBrandColor(roomPreset?.brandColor || '#FF1E1E');
+    setSettingsOpacity(roomPreset?.watermarkOpacity ?? 0.7);
+    setSettingsTextTemplate(roomPreset?.textTemplate || '');
+    setSettingsOverlayUrl(roomPreset?.overlayUrl || '');
+    setSettingsOverlayStorageId(roomPreset?.overlayStorageId || undefined);
+    setSettingsUseOverlay(roomPreset?.useOverlay || false);
+    setSettingsDefaultFilter(roomPreset?.defaultFilter || 'none');
+    setStep('settings');
+  };
+
+  const handleUploadLogo = async (files: FileList) => {
+    if (!files.length) return;
+    setUploadingLogo(true);
+    try {
+      const file = files[0];
+      const uploadUrl = await generateUploadUrl();
+      const res = await fetch(uploadUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': file.type },
+        body: file,
+      });
+      const { storageId } = await res.json();
+      const url = await getUrlMutation({ storageId });
+      if (url) {
+        setSettingsLogoStorageId(storageId);
+        setSettingsLogoUrl(url);
+      }
+    } catch (err) {
+      console.error('Logo upload failed:', err);
+    } finally {
+      setUploadingLogo(false);
+    }
+  };
+
+  const handleUploadOverlay = async (files: FileList) => {
+    if (!files.length) return;
+    setUploadingOverlay(true);
+    try {
+      const file = files[0];
+      const uploadUrl = await generateUploadUrl();
+      const res = await fetch(uploadUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': file.type },
+        body: file,
+      });
+      const { storageId } = await res.json();
+      const url = await getUrlMutation({ storageId });
+      if (url) {
+        setSettingsOverlayStorageId(storageId);
+        setSettingsOverlayUrl(url);
+        setSettingsUseOverlay(true);
+      }
+    } catch (err) {
+      console.error('Overlay upload failed:', err);
+    } finally {
+      setUploadingOverlay(false);
+    }
+  };
+
+  const handleSaveSettings = async () => {
+    if (!companyId) return;
+    setSavingSettings(true);
+    try {
+      await saveRoomPresetMut({
+        roomId: roomId as any,
+        companyId: companyId as any,
+        logoUrl: settingsLogoUrl || undefined,
+        logoStorageId: settingsLogoStorageId as any || undefined,
+        logoPosition: (settingsLogoPosition as any) || undefined,
+        brandColor: settingsBrandColor || undefined,
+        watermarkOpacity: settingsOpacity,
+        textTemplate: settingsTextTemplate || undefined,
+        overlayUrl: settingsOverlayUrl || undefined,
+        overlayStorageId: settingsOverlayStorageId as any || undefined,
+        useOverlay: settingsUseOverlay,
+        defaultFilter: settingsDefaultFilter !== 'none' ? settingsDefaultFilter : undefined,
+      });
+      setStep('gallery');
+    } catch (err) {
+      console.error('Save settings failed:', err);
+    } finally {
+      setSavingSettings(false);
+    }
+  };
+
   // ═══════════════════════════════════════════
   // RENDER
   // ═══════════════════════════════════════════
@@ -496,7 +610,7 @@ export default function PhotosTool({ roomId, roomTitle }: { roomId: string; room
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
           <button
-            onClick={step === 'gallery' ? () => router.push('/') : resetToGallery}
+            onClick={step === 'gallery' ? () => router.push('/') : step === 'settings' ? resetToGallery : resetToGallery}
             className="p-2 hover:bg-white/5 rounded-xl transition-colors"
           >
             <ChevronLeft className="w-5 h-5" />
@@ -510,19 +624,29 @@ export default function PhotosTool({ roomId, roomTitle }: { roomId: string; room
               {step === 'gallery' && 'Upload, brand, and send team photos in seconds'}
               {step === 'edit' && 'Edit and apply branding'}
               {step === 'send' && 'Send to players'}
+              {step === 'settings' && 'Logo, overlay & branding settings for this room'}
             </p>
           </div>
         </div>
 
         {step === 'gallery' && (
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            disabled={uploading}
-            className="btn-primary flex items-center gap-2"
-          >
-            {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
-            New Photo
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={openSettings}
+              className="btn-secondary flex items-center gap-2"
+            >
+              <Settings className="w-4 h-4" />
+              <span className="hidden sm:inline">Branding</span>
+            </button>
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploading}
+              className="btn-primary flex items-center gap-2"
+            >
+              {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+              New Photo
+            </button>
+          </div>
         )}
       </div>
 
@@ -888,6 +1012,272 @@ export default function PhotosTool({ roomId, roomTitle }: { roomId: string; room
         </div>
       )}
 
+      {/* ═══════════════ SETTINGS VIEW ═══════════════ */}
+      {step === 'settings' && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Left: Preview with current branding */}
+          <div>
+            <div className="bg-brand-surface rounded-2xl border border-white/5 overflow-hidden">
+              <div className="aspect-[4/3] relative bg-brand-bg flex items-center justify-center">
+                {settingsLogoUrl ? (
+                  <div className="relative w-full h-full">
+                    {/* Simulated photo background */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-gray-800 via-gray-700 to-gray-900 flex items-center justify-center">
+                      <Camera className="w-20 h-20 text-white/10" />
+                    </div>
+                    {/* Logo preview positioned */}
+                    <img
+                      src={settingsLogoUrl}
+                      alt="Logo"
+                      className="absolute max-w-[20%] max-h-[20%] object-contain"
+                      style={{
+                        ...(settingsLogoPosition === 'top-left' && { top: '5%', left: '5%' }),
+                        ...(settingsLogoPosition === 'top-right' && { top: '5%', right: '5%' }),
+                        ...(settingsLogoPosition === 'bottom-left' && { bottom: '5%', left: '5%' }),
+                        ...(settingsLogoPosition === 'bottom-right' && { bottom: '5%', right: '5%' }),
+                        ...(settingsLogoPosition === 'bottom-center' && { bottom: '5%', left: '50%', transform: 'translateX(-50%)' }),
+                        opacity: settingsOpacity,
+                      }}
+                    />
+                    {/* Text preview */}
+                    {settingsTextTemplate && (
+                      <div className="absolute bottom-0 left-0 right-0" style={{ background: 'linear-gradient(transparent, rgba(0,0,0,0.7))' }}>
+                        <p className="text-center text-white font-semibold text-sm py-4 px-3 uppercase tracking-wider">
+                          {settingsTextTemplate.replace(/\{\{room\}\}/gi, roomTitle || 'Room Name').replace(/\{\{team\}\}/gi, 'Team Name').replace(/\{\{time\}\}/gi, '45:30')}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                ) : settingsOverlayUrl && settingsUseOverlay ? (
+                  <div className="relative w-full h-full">
+                    <div className="absolute inset-0 bg-gradient-to-br from-gray-800 via-gray-700 to-gray-900 flex items-center justify-center">
+                      <Camera className="w-20 h-20 text-white/10" />
+                    </div>
+                    <img src={settingsOverlayUrl} alt="Overlay" className="absolute inset-0 w-full h-full object-cover" style={{ opacity: settingsOpacity }} />
+                  </div>
+                ) : (
+                  <div className="text-center">
+                    <Layers className="w-16 h-16 text-brand-border mx-auto mb-3" />
+                    <p className="text-brand-text-muted text-sm">Upload a logo to see the preview</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Right: Settings form */}
+          <div className="space-y-5">
+            {/* Mode toggle: Logo vs Overlay */}
+            <div className="flex gap-2">
+              <button
+                onClick={() => setSettingsUseOverlay(false)}
+                className={`flex-1 py-2.5 rounded-xl text-sm font-medium border transition-colors flex items-center justify-center gap-1.5 ${
+                  !settingsUseOverlay
+                    ? 'bg-brand-red/20 border-brand-red/50 text-brand-red'
+                    : 'bg-brand-surface border-white/10 text-brand-text-muted hover:border-white/20'
+                }`}
+              >
+                <Image className="w-4 h-4" /> Logo Mode
+              </button>
+              <button
+                onClick={() => setSettingsUseOverlay(true)}
+                className={`flex-1 py-2.5 rounded-xl text-sm font-medium border transition-colors flex items-center justify-center gap-1.5 ${
+                  settingsUseOverlay
+                    ? 'bg-brand-red/20 border-brand-red/50 text-brand-red'
+                    : 'bg-brand-surface border-white/10 text-brand-text-muted hover:border-white/20'
+                }`}
+              >
+                <Layers className="w-4 h-4" /> Overlay Mode
+              </button>
+            </div>
+
+            {/* Logo upload (logo mode) */}
+            {!settingsUseOverlay && (
+              <>
+                <div>
+                  <label className="text-sm font-medium text-brand-text-secondary mb-1.5 block">Logo</label>
+                  <div className="flex items-center gap-3">
+                    {settingsLogoUrl ? (
+                      <div className="relative w-16 h-16 bg-brand-bg rounded-xl border border-white/10 flex items-center justify-center overflow-hidden">
+                        <img src={settingsLogoUrl} alt="Logo" className="w-full h-full object-contain p-1" />
+                        <button
+                          onClick={() => { setSettingsLogoUrl(''); setSettingsLogoStorageId(undefined); }}
+                          className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center"
+                        >
+                          <X className="w-3 h-3 text-white" />
+                        </button>
+                      </div>
+                    ) : null}
+                    <button
+                      onClick={() => logoInputRef.current?.click()}
+                      disabled={uploadingLogo}
+                      className="btn-secondary flex items-center gap-2 text-sm"
+                    >
+                      {uploadingLogo ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+                      {settingsLogoUrl ? 'Change Logo' : 'Upload Logo'}
+                    </button>
+                  </div>
+                  <p className="text-xs text-brand-text-muted mt-1">PNG with transparent background works best</p>
+                </div>
+
+                {/* Logo position */}
+                <div>
+                  <label className="text-sm font-medium text-brand-text-secondary mb-2 block">Logo Position</label>
+                  <div className="grid grid-cols-3 gap-2">
+                    {[
+                      { value: 'top-left', label: 'Top Left' },
+                      { value: 'top-right', label: 'Top Right' },
+                      { value: 'bottom-left', label: 'Bottom Left' },
+                      { value: 'bottom-right', label: 'Bottom Right' },
+                      { value: 'bottom-center', label: 'Bottom Center' },
+                    ].map((pos) => (
+                      <button
+                        key={pos.value}
+                        onClick={() => setSettingsLogoPosition(pos.value)}
+                        className={`py-2 px-3 rounded-xl text-xs font-medium border transition-colors ${
+                          settingsLogoPosition === pos.value
+                            ? 'bg-brand-red/20 border-brand-red/50 text-brand-red'
+                            : 'bg-brand-surface border-white/10 text-brand-text-muted hover:border-white/20'
+                        }`}
+                      >
+                        {pos.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </>
+            )}
+
+            {/* Overlay upload (overlay mode) */}
+            {settingsUseOverlay && (
+              <div>
+                <label className="text-sm font-medium text-brand-text-secondary mb-1.5 block">
+                  Full-Frame Overlay
+                </label>
+                <div className="flex items-center gap-3">
+                  {settingsOverlayUrl ? (
+                    <div className="relative w-20 h-14 bg-brand-bg rounded-xl border border-white/10 flex items-center justify-center overflow-hidden">
+                      <img src={settingsOverlayUrl} alt="Overlay" className="w-full h-full object-cover" />
+                      <button
+                        onClick={() => { setSettingsOverlayUrl(''); setSettingsOverlayStorageId(undefined); }}
+                        className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center"
+                      >
+                        <X className="w-3 h-3 text-white" />
+                      </button>
+                    </div>
+                  ) : null}
+                  <button
+                    onClick={() => overlayInputRef.current?.click()}
+                    disabled={uploadingOverlay}
+                    className="btn-secondary flex items-center gap-2 text-sm"
+                  >
+                    {uploadingOverlay ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+                    {settingsOverlayUrl ? 'Change Overlay' : 'Upload Overlay'}
+                  </button>
+                </div>
+                <p className="text-xs text-brand-text-muted mt-1">
+                  PNG with transparent areas — placed over the entire photo
+                </p>
+              </div>
+            )}
+
+            {/* Opacity */}
+            <div>
+              <label className="text-sm font-medium text-brand-text-secondary mb-1.5 block">
+                Opacity ({Math.round(settingsOpacity * 100)}%)
+              </label>
+              <input
+                type="range"
+                min="0.1"
+                max="1"
+                step="0.05"
+                value={settingsOpacity}
+                onChange={(e) => setSettingsOpacity(parseFloat(e.target.value))}
+                className="w-full accent-brand-red"
+              />
+            </div>
+
+            {/* Brand color */}
+            <div>
+              <label className="text-sm font-medium text-brand-text-secondary mb-1.5 block flex items-center gap-1.5">
+                <Palette className="w-4 h-4" /> Brand Color
+              </label>
+              <div className="flex items-center gap-3">
+                <input
+                  type="color"
+                  value={settingsBrandColor}
+                  onChange={(e) => setSettingsBrandColor(e.target.value)}
+                  className="w-10 h-10 rounded-lg border border-white/10 cursor-pointer bg-transparent"
+                />
+                <input
+                  type="text"
+                  value={settingsBrandColor}
+                  onChange={(e) => setSettingsBrandColor(e.target.value)}
+                  className="input-field w-32 text-sm"
+                  maxLength={7}
+                />
+              </div>
+            </div>
+
+            {/* Text template */}
+            <div>
+              <label className="text-sm font-medium text-brand-text-secondary mb-1.5 block flex items-center gap-1.5">
+                <Type className="w-4 h-4" /> Text Overlay
+              </label>
+              <input
+                type="text"
+                value={settingsTextTemplate}
+                onChange={(e) => setSettingsTextTemplate(e.target.value)}
+                placeholder="e.g. {{room}} — Escaped in {{time}}"
+                className="input-field w-full"
+              />
+              <p className="text-xs text-brand-text-muted mt-1">
+                Use {'{{room}}'}, {'{{team}}'}, {'{{time}}'} as placeholders
+              </p>
+            </div>
+
+            {/* Default filter */}
+            <div>
+              <label className="text-sm font-medium text-brand-text-secondary mb-2 block">Default Filter</label>
+              <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+                {FILTERS.map((f) => (
+                  <button
+                    key={f.name}
+                    onClick={() => setSettingsDefaultFilter(f.name)}
+                    className={`shrink-0 px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
+                      settingsDefaultFilter === f.name
+                        ? 'bg-brand-red text-white border-brand-red'
+                        : 'bg-brand-surface border-white/10 text-brand-text-secondary hover:border-brand-red/30'
+                    }`}
+                  >
+                    {f.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Save */}
+            <div className="flex gap-3 pt-2">
+              <button onClick={resetToGallery} className="btn-secondary flex-1">
+                Cancel
+              </button>
+              <button
+                onClick={handleSaveSettings}
+                disabled={savingSettings}
+                className="btn-primary flex-1 flex items-center justify-center gap-2"
+              >
+                {savingSettings ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Save className="w-4 h-4" />
+                )}
+                Save Branding
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Hidden file input */}
       <input
         ref={fileInputRef}
@@ -896,6 +1286,30 @@ export default function PhotosTool({ roomId, roomTitle }: { roomId: string; room
         className="hidden"
         onChange={(e) => {
           if (e.target.files) handleUpload(e.target.files);
+          e.target.value = '';
+        }}
+      />
+
+      {/* Logo file input */}
+      <input
+        ref={logoInputRef}
+        type="file"
+        accept="image/png,image/svg+xml,image/webp,image/jpeg"
+        className="hidden"
+        onChange={(e) => {
+          if (e.target.files) handleUploadLogo(e.target.files);
+          e.target.value = '';
+        }}
+      />
+
+      {/* Overlay file input */}
+      <input
+        ref={overlayInputRef}
+        type="file"
+        accept="image/png,image/svg+xml,image/webp"
+        className="hidden"
+        onChange={(e) => {
+          if (e.target.files) handleUploadOverlay(e.target.files);
           e.target.value = '';
         }}
       />
