@@ -1,6 +1,7 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import { Navbar } from './Navbar';
 import { Footer } from './Footer';
 import { CookieConsent } from './CookieConsent';
@@ -12,7 +13,14 @@ export function LayoutShell({ children }: { children: React.ReactNode }) {
   const isCompanyRoute = pathname.startsWith('/company');
   const isPhotosApp = pathname.startsWith('/photos-app');
 
-  if (isCompanyRoute || isPhotosApp) {
+  const [isPhotosSubdomain, setIsPhotosSubdomain] = useState(false);
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.location.hostname === 'photos.unlocked.gr') {
+      setIsPhotosSubdomain(true);
+    }
+  }, []);
+
+  if (isCompanyRoute || isPhotosApp || isPhotosSubdomain) {
     // Company portal / Photos app have their own layout — no main Navbar/Footer
     return (
       <>
