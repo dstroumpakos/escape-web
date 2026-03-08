@@ -208,6 +208,97 @@ const FILTERS: FilterDef[] = [
   { name: 'glitch', label: 'Glitch', css: '__glitch__' },
 ];
 
+// ── Face protection via skin-tone detection ──
+// Detects skin-colored pixels using YCbCr color space thresholds,
+// then dilates/blurs the mask so entire face regions are protected.
+
+function detectSkinMask(data: Uint8ClampedArray, w: number, h: number): Float32Array {
+  const mask = new Float32Array(w * h);
+  for (let i = 0; i < w * h; i++) {
+    const r = data[i * 4], g = data[i * 4 + 1], b = data[i * 4 + 2];
+    // Convert RGB to YCbCr
+    const y = 0.299 * r + 0.587 * g + 0.114 * b;
+    const cb = 128 - 0.169 * r - 0.331 * g + 0.500 * b;
+    const cr = 128 + 0.500 * r - 0.419 * g - 0.081 * b;
+    // Skin detection thresholds (covers diverse skin tones)
+    if (y > 60 && cb >= 77 && cb <= 127 && cr >= 133 && cr <= 173) {
+      mask[i] = 1;
+    }
+  }
+  return mask;
+}
+
+// Box-blur a mask to expand and smooth face regions
+function blurMask(mask: Float32Array, w: number, h: number, radius: number): Float32Array {
+  const out = new Float32Array(w * h);
+  // Horizontal pass
+  const tmp = new Float32Array(w * h);
+  for (let y = 0; y < h; y++) {
+    let sum = 0;
+    const row = y * w;
+    for (let x = 0; x < Math.min(radius, w); x++) sum += mask[row + x];
+    for (let x = 0; x < w; x++) {
+      if (x + radius < w) sum += mask[row + x + radius];
+      if (x - radius - 1 >= 0) sum -= mask[row + x - radius - 1];
+      const count = Math.min(x + radius, w - 1) - Math.max(x - radius, 0) + 1;
+      tmp[row + x] = sum / count;
+    }
+  }
+  // Vertical pass
+  for (let x = 0; x < w; x++) {
+    let sum = 0;
+    for (let y = 0; y < Math.min(radius, h); y++) sum += tmp[y * w + x];
+    for (let y = 0; y < h; y++) {
+      if (y + radius < h) sum += tmp[(y + radius) * w + x];
+      if (y - radius - 1 >= 0) sum -= tmp[(y - radius - 1) * w + x];
+      const count = Math.min(y + radius, h - 1) - Math.max(y - radius, 0) + 1;
+      out[y * w + x] = sum / count;
+    }
+  }
+  return out;
+}
+
+// Build a face protection mask from canvas: detect skin → dilate → smooth
+function buildFaceMask(canvas: HTMLCanvasElement): Float32Array {
+  const ctx = canvas.getContext('2d')!;
+  const w = canvas.width;
+  const h = canvas.height;
+  const data = ctx.getImageData(0, 0, w, h).data;
+  const raw = detectSkinMask(data, w, h);
+  // Large blur radius to expand skin regions into full face areas
+  const blurRadius = Math.max(8, Math.round(Math.min(w, h) * 0.04));
+  const blurred = blurMask(raw, w, h, blurRadius);
+  // Threshold + smooth: anything above 0.15 becomes protection zone
+  const result = new Float32Array(w * h);
+  for (let i = 0; i < w * h; i++) {
+    result[i] = Math.min(1, Math.max(0, (blurred[i] - 0.08) / 0.25));
+  }
+  // One more blur pass for smooth transitions
+  return blurMask(result, w, h, Math.round(blurRadius * 0.5));
+}
+
+// Blend filtered canvas with original using face mask
+// protection: 0-1, how much to protect faces (1 = keep original in face areas)
+function blendWithFaceMask(
+  canvas: HTMLCanvasElement,
+  originalData: ImageData,
+  mask: Float32Array,
+  protection: number
+): void {
+  const ctx = canvas.getContext('2d')!;
+  const filtered = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  const fd = filtered.data;
+  const od = originalData.data;
+  for (let i = 0; i < mask.length; i++) {
+    const blend = mask[i] * protection; // 0 = full filter, 1 = full original
+    const p = i * 4;
+    fd[p] = (fd[p] * (1 - blend) + od[p] * blend) | 0;
+    fd[p + 1] = (fd[p + 1] * (1 - blend) + od[p + 1] * blend) | 0;
+    fd[p + 2] = (fd[p + 2] * (1 - blend) + od[p + 2] * blend) | 0;
+  }
+  ctx.putImageData(filtered, 0, 0);
+}
+
 // Oil painting color quantization — groups nearby pixels by intensity
 function applyOilPaint(canvas: HTMLCanvasElement, radius: number, levels: number): void {
   const ctx = canvas.getContext('2d');
@@ -584,109 +675,74 @@ async function applyFilter(imageSrc: string, filterCss: string): Promise<Blob> {
 
   ctx.drawImage(img, 0, 0);
 
-  if (filterCss === '__anime__') {
-    const maxDim = 1000;
+  // Helper: create a scaled work canvas and build face mask on it
+  const makeWork = (maxDim: number) => {
     const scale = Math.min(1, maxDim / Math.max(img.width, img.height));
     const work = document.createElement('canvas');
     work.width = Math.round(canvas.width * scale);
     work.height = Math.round(canvas.height * scale);
     const wctx = work.getContext('2d')!;
     wctx.drawImage(img, 0, 0, work.width, work.height);
+    const originalData = wctx.getImageData(0, 0, work.width, work.height);
+    const faceMask = buildFaceMask(work);
+    return { work, wctx, originalData, faceMask };
+  };
 
-    // 1. Brighten + boost saturation for vivid anime colors
+  if (filterCss === '__anime__') {
+    const { work, wctx, originalData, faceMask } = makeWork(1000);
     wctx.filter = 'brightness(1.1) saturate(1.6) contrast(1.15)';
     wctx.drawImage(work, 0, 0);
     wctx.filter = 'none';
-
-    // 2. Light smoothing to flatten skin/textures (small radius)
     applyOilPaint(work, 2, 8);
-
-    // 3. Cel-shade: quantize to limited color palette
     celShade(work, 8);
-
-    // 4. Bold black outlines from edge detection
     addBlackOutlines(work, 30, 0.85);
-
-    // Scale back to full resolution
+    blendWithFaceMask(work, originalData, faceMask, 0.55);
     ctx.drawImage(work, 0, 0, canvas.width, canvas.height);
   } else if (filterCss === '__oilpaint__') {
-    // Work on a scaled canvas for performance
-    const maxDim = 1000;
-    const scale = Math.min(1, maxDim / Math.max(img.width, img.height));
-    const work = document.createElement('canvas');
-    work.width = Math.round(canvas.width * scale);
-    work.height = Math.round(canvas.height * scale);
-    const wctx = work.getContext('2d')!;
-    wctx.drawImage(img, 0, 0, work.width, work.height);
-
-    // 1. Gentle color smoothing — radius 2 keeps faces clear
+    const { work, wctx, originalData, faceMask } = makeWork(1000);
     applyOilPaint(work, 2, 20);
-
-    // 2. Add darkened edges — simulates paint brush stroke boundaries
     addPaintEdges(work, 0.4);
-
-    // 3. Add canvas weave texture
     addCanvasTexture(work, 8);
-
-    // 4. Warm toning + saturation for oil paint color richness
     wctx.filter = 'saturate(1.4) contrast(1.1) sepia(0.15)';
     wctx.drawImage(work, 0, 0);
     wctx.filter = 'none';
-
-    // Scale back to full resolution
+    blendWithFaceMask(work, originalData, faceMask, 0.5);
     ctx.drawImage(work, 0, 0, canvas.width, canvas.height);
   } else if (filterCss === '__sketch__') {
-    const maxDim = 1000;
-    const scale = Math.min(1, maxDim / Math.max(img.width, img.height));
-    const work = document.createElement('canvas');
-    work.width = Math.round(canvas.width * scale);
-    work.height = Math.round(canvas.height * scale);
-    const wctx = work.getContext('2d')!;
-    wctx.drawImage(img, 0, 0, work.width, work.height);
+    const { work, originalData, faceMask } = makeWork(1000);
     applySketch(work);
+    blendWithFaceMask(work, originalData, faceMask, 0.4);
     ctx.drawImage(work, 0, 0, canvas.width, canvas.height);
   } else if (filterCss === '__watercolor__') {
-    const maxDim = 1000;
-    const scale = Math.min(1, maxDim / Math.max(img.width, img.height));
-    const work = document.createElement('canvas');
-    work.width = Math.round(canvas.width * scale);
-    work.height = Math.round(canvas.height * scale);
-    const wctx = work.getContext('2d')!;
-    wctx.drawImage(img, 0, 0, work.width, work.height);
+    const { work, wctx, originalData, faceMask } = makeWork(1000);
     wctx.filter = 'brightness(1.1) saturate(0.85)';
     wctx.drawImage(work, 0, 0);
     wctx.filter = 'none';
     applyOilPaint(work, 3, 15);
     addPaintEdges(work, 0.25);
+    blendWithFaceMask(work, originalData, faceMask, 0.5);
     ctx.drawImage(work, 0, 0, canvas.width, canvas.height);
   } else if (filterCss === '__pixelate__') {
-    const maxDim = 1000;
-    const scale = Math.min(1, maxDim / Math.max(img.width, img.height));
-    const work = document.createElement('canvas');
-    work.width = Math.round(canvas.width * scale);
-    work.height = Math.round(canvas.height * scale);
-    const wctx = work.getContext('2d')!;
-    wctx.drawImage(img, 0, 0, work.width, work.height);
+    const { work, wctx, originalData, faceMask } = makeWork(1000);
     wctx.filter = 'saturate(1.4) contrast(1.2)';
     wctx.drawImage(work, 0, 0);
     wctx.filter = 'none';
     applyPixelate(work, 10);
+    blendWithFaceMask(work, originalData, faceMask, 0.6);
     ctx.drawImage(work, 0, 0, canvas.width, canvas.height);
   } else if (filterCss === '__emboss__') {
+    const originalData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const faceMask = buildFaceMask(canvas);
     applyEmboss(canvas);
+    blendWithFaceMask(canvas, originalData, faceMask, 0.6);
   } else if (filterCss === '__popart__') {
-    const maxDim = 1000;
-    const scale = Math.min(1, maxDim / Math.max(img.width, img.height));
-    const work = document.createElement('canvas');
-    work.width = Math.round(canvas.width * scale);
-    work.height = Math.round(canvas.height * scale);
-    const wctx = work.getContext('2d')!;
-    wctx.drawImage(img, 0, 0, work.width, work.height);
+    const { work, wctx, originalData, faceMask } = makeWork(1000);
     wctx.filter = 'saturate(2.0) contrast(1.4) brightness(1.1)';
     wctx.drawImage(work, 0, 0);
     wctx.filter = 'none';
     celShade(work, 5);
     addBlackOutlines(work, 25, 0.9);
+    blendWithFaceMask(work, originalData, faceMask, 0.45);
     ctx.drawImage(work, 0, 0, canvas.width, canvas.height);
   } else if (filterCss === '__vignette__') {
     ctx.filter = 'contrast(1.1) saturate(1.1)';
@@ -694,8 +750,11 @@ async function applyFilter(imageSrc: string, filterCss: string): Promise<Blob> {
     ctx.filter = 'none';
     applyVignette(canvas, 1.2);
   } else if (filterCss === '__glitch__') {
+    const originalData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const faceMask = buildFaceMask(canvas);
     const shift = Math.round(Math.max(img.width, img.height) * 0.01);
     applyGlitch(canvas, shift);
+    blendWithFaceMask(canvas, originalData, faceMask, 0.5);
   } else if (filterCss) {
     ctx.filter = filterCss;
     ctx.drawImage(img, 0, 0);
