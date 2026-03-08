@@ -14,14 +14,16 @@ function PhotosShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
   const isLoginPage = pathname === '/login' || pathname === '/photos-app/login';
+  const isRegisterPage = pathname === '/register' || pathname === '/photos-app/register';
+  const isAuthPage = isLoginPage || isRegisterPage;
 
   useEffect(() => {
-    if (!isLoading && !isAuthenticated && !isLoginPage) {
+    if (!isLoading && !isAuthenticated && !isAuthPage) {
       router.replace('/login');
     }
-  }, [isLoading, isAuthenticated, isLoginPage, router]);
+  }, [isLoading, isAuthenticated, isAuthPage, router]);
 
-  if (isLoginPage) {
+  if (isAuthPage) {
     return <>{children}</>;
   }
 
