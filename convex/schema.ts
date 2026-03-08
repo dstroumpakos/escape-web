@@ -547,4 +547,29 @@ export default defineSchema({
   })
     .index("by_photo", ["photoId"])
     .index("by_company", ["companyId", "sentAt"]),
+
+  // ─── Per-Room Photo Presets (photos.unlocked.gr) ───
+  roomPhotoPresets: defineTable({
+    roomId: v.id("rooms"),
+    companyId: v.id("companies"),
+    logoUrl: v.optional(v.string()),
+    logoStorageId: v.optional(v.id("_storage")),
+    logoPosition: v.optional(v.union(
+      v.literal("top-left"),
+      v.literal("top-right"),
+      v.literal("bottom-left"),
+      v.literal("bottom-right"),
+      v.literal("bottom-center")
+    )),
+    brandColor: v.optional(v.string()),
+    watermarkOpacity: v.optional(v.number()),
+    textTemplate: v.optional(v.string()),
+    overlayUrl: v.optional(v.string()),
+    overlayStorageId: v.optional(v.id("_storage")),
+    useOverlay: v.optional(v.boolean()),
+    defaultFilter: v.optional(v.string()),
+    updatedAt: v.number(),
+  })
+    .index("by_room", ["roomId"])
+    .index("by_company", ["companyId"]),
 });

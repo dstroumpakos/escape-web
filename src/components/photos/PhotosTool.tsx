@@ -2,6 +2,7 @@
 
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { useQuery, useMutation, useAction } from 'convex/react';
+import { useRouter } from 'next/navigation';
 import { api } from '../../../convex/_generated/api';
 import { useCompanyAuth } from '@/lib/companyAuth';
 import { useTranslation } from '@/lib/i18n';
@@ -205,28 +206,31 @@ async function applyFilter(imageSrc: string, filterCss: string): Promise<Blob> {
 
 type Step = 'gallery' | 'upload' | 'edit' | 'send';
 
-export default function PhotosTool() {
+export default function PhotosTool({ roomId, roomTitle }: { roomId: string; roomTitle?: string }) {
   const { company } = useCompanyAuth();
   const { t } = useTranslation();
+  const router = useRouter();
   const companyId = company?.id;
 
-  // ── Queries ──
+  // ── Queries (room-scoped) ──
   const photos = useQuery(
-    api.standalonePhotos.listByCompany,
-    companyId ? { companyId: companyId as any } : 'skip'
+    api.standalonePhotos.listByRoom,
+    companyId && roomId ? { roomId: roomId as any, companyId: companyId as any } : 'skip'
   );
   const stats = useQuery(
-    api.standalonePhotos.getStats,
-    companyId ? { companyId: companyId as any } : 'skip'
+    api.standalonePhotos.getStatsByRoom,
+    companyId && roomId ? { roomId: roomId as any, companyId: companyId as any } : 'skip'
   );
-  const rooms = useQuery(
-    api.companies.getRooms,
-    companyId ? { companyId: companyId as any } : 'skip'
+  const roomPreset = useQuery(
+    api.standalonePhotos.getRoomPreset,
+    roomId ? { roomId: roomId as any } : 'skip'
   );
-  const photoPreset = useQuery(
+  // Fall back to company preset if no room preset
+  const companyPreset = useQuery(
     api.bookingPhotos.getPreset,
     companyId ? { companyId: companyId as any } : 'skip'
   );
+  const photoPreset = roomPreset || companyPreset;
 
   // ── Mutations ──
   const generateUploadUrl = useMutation(api.companies.generateUploadUrl);
@@ -283,9 +287,8 @@ export default function PhotosTool() {
     // Apply branding on top
     if (brand && photoPreset) {
       const tempUrl = URL.createObjectURL(blob);
-      const roomObj = rooms?.find((r: any) => r._id === selectedRoom);
       blob = await applyBranding(tempUrl, photoPreset, {
-        roomName: roomObj?.title,
+        roomName: roomTitle,
         teamName,
       });
       URL.revokeObjectURL(tempUrl);
@@ -296,7 +299,7 @@ export default function PhotosTool() {
       if (old && old.startsWith('blob:')) URL.revokeObjectURL(old);
       return prevUrl;
     });
-  }, [photoPreset, rooms, selectedRoom, teamName]);
+  }, [photoPreset, roomTitle, teamName]);
 
   // Regenerate preview when filter/branding changes
   useEffect(() => {
@@ -335,6 +338,7 @@ export default function PhotosTool() {
       if (url) {
         const photoId = await createPhoto({
           companyId: companyId as any,
+          roomId: roomId as any,
           originalStorageId: storageId,
           originalUrl: url,
         });
@@ -342,12 +346,12 @@ export default function PhotosTool() {
         setCurrentPhotoId(photoId);
         setCurrentOriginalUrl(url);
         setPreviewUrl(url);
-        setSelectedFilter('none');
+        setSelectedFilter(roomPreset?.defaultFilter || 'none');
         setApplyBrand(true);
         setTeamName('');
         setEscaped(undefined);
         setEscapeTime('');
-        setSelectedRoom('');
+        setSelectedRoom(roomId);
         setEmailAddresses('');
         setSendSuccess(false);
         setStep('edit');
@@ -375,9 +379,8 @@ export default function PhotosTool() {
 
       if (applyBrand && photoPreset) {
         const tempUrl = URL.createObjectURL(blob);
-        const roomObj = rooms?.find((r: any) => r._id === selectedRoom);
         blob = await applyBranding(tempUrl, photoPreset, {
-          roomName: roomObj?.title,
+          roomName: roomTitle,
           teamName,
         });
         URL.revokeObjectURL(tempUrl);
@@ -407,7 +410,7 @@ export default function PhotosTool() {
         await updateMeta({
           photoId: currentPhotoId as any,
           companyId: companyId as any,
-          roomId: selectedRoom ? (selectedRoom as any) : undefined,
+          roomId: roomId as any,
           teamName: teamName || undefined,
           escaped,
           escapeTime: escapeTime || undefined,
@@ -463,7 +466,7 @@ export default function PhotosTool() {
     setCurrentPhotoId(photo._id);
     setCurrentOriginalUrl(photo.originalUrl);
     setPreviewUrl(photo.processedUrl || photo.originalUrl);
-    setSelectedRoom(photo.roomId || '');
+    setSelectedRoom(roomId);
     setTeamName(photo.teamName || '');
     setEscaped(photo.escaped);
     setEscapeTime(photo.escapeTime || '');
@@ -492,15 +495,16 @@ export default function PhotosTool() {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
-          {step !== 'gallery' && (
-            <button onClick={resetToGallery} className="p-2 hover:bg-white/5 rounded-xl transition-colors">
-              <ChevronLeft className="w-5 h-5" />
-            </button>
-          )}
+          <button
+            onClick={step === 'gallery' ? () => router.push('/') : resetToGallery}
+            className="p-2 hover:bg-white/5 rounded-xl transition-colors"
+          >
+            <ChevronLeft className="w-5 h-5" />
+          </button>
           <div>
             <h1 className="text-2xl md:text-3xl font-bold flex items-center gap-3">
               <Camera className="w-7 h-7 text-brand-red" />
-              Photos Tool
+              {roomTitle || 'Photos'}
             </h1>
             <p className="text-brand-text-secondary text-sm mt-1">
               {step === 'gallery' && 'Upload, brand, and send team photos in seconds'}
@@ -658,23 +662,6 @@ export default function PhotosTool() {
 
           {/* Right: Controls */}
           <div className="space-y-5">
-            {/* Room selector */}
-            <div>
-              <label className="text-sm font-medium text-brand-text-secondary mb-1.5 block">Room</label>
-              <select
-                value={selectedRoom}
-                onChange={(e) => setSelectedRoom(e.target.value)}
-                className="input-field w-full"
-              >
-                <option value="">Select room...</option>
-                {rooms?.map((room: any) => (
-                  <option key={room._id} value={room._id}>
-                    {room.title}
-                  </option>
-                ))}
-              </select>
-            </div>
-
             {/* Team name */}
             <div>
               <label className="text-sm font-medium text-brand-text-secondary mb-1.5 block flex items-center gap-1.5">
@@ -802,11 +789,6 @@ export default function PhotosTool() {
                 <div className={`flex items-center gap-2 text-sm ${escaped ? 'text-green-400' : 'text-red-400'}`}>
                   {escaped ? <CheckCircle className="w-4 h-4" /> : <XCircle className="w-4 h-4" />}
                   {escaped ? `Escaped${escapeTime ? ` — ${escapeTime}` : ''}` : 'Locked In'}
-                </div>
-              )}
-              {selectedRoom && rooms && (
-                <div className="text-xs text-brand-text-muted">
-                  {rooms.find((r: any) => r._id === selectedRoom)?.title}
                 </div>
               )}
             </div>

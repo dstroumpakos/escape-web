@@ -346,3 +346,186 @@ export const sendPhotoToEmails = action({
     return { sent: args.emails.length };
   },
 });
+
+// ════════════════════════════════════════════════════════════════
+// Simple Room Management (for photos.unlocked.gr)
+// ════════════════════════════════════════════════════════════════
+
+// ── Create a simple room (photos app only needs name) ──
+export const createSimpleRoom = mutation({
+  args: {
+    companyId: v.id("companies"),
+    title: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const company = await ctx.db.get(args.companyId);
+    if (!company) throw new Error("Company not found");
+
+    return await ctx.db.insert("rooms", {
+      companyId: args.companyId,
+      title: args.title,
+      location: company.city || "",
+      image: "",
+      rating: 0,
+      reviews: 0,
+      duration: 60,
+      difficulty: 5,
+      maxDifficulty: 10,
+      players: "2-6",
+      playersMin: 2,
+      playersMax: 6,
+      price: 0,
+      theme: "mystery",
+      tags: [],
+      description: "",
+      story: "",
+      isActive: true,
+    });
+  },
+});
+
+// ── Delete a room (photos app) ──
+export const deleteSimpleRoom = mutation({
+  args: {
+    roomId: v.id("rooms"),
+    companyId: v.id("companies"),
+  },
+  handler: async (ctx, args) => {
+    const room = await ctx.db.get(args.roomId);
+    if (!room || room.companyId?.toString() !== args.companyId.toString()) {
+      throw new Error("Unauthorized");
+    }
+    await ctx.db.delete(args.roomId);
+
+    // Delete associated preset
+    const preset = await ctx.db
+      .query("roomPhotoPresets")
+      .withIndex("by_room", (q) => q.eq("roomId", args.roomId))
+      .first();
+    if (preset) await ctx.db.delete(preset._id);
+  },
+});
+
+// ── List photos by room ──
+export const listByRoom = query({
+  args: {
+    roomId: v.id("rooms"),
+    companyId: v.id("companies"),
+    limit: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const photos = await ctx.db
+      .query("standalonePhotos")
+      .withIndex("by_room", (q) => q.eq("roomId", args.roomId))
+      .order("desc")
+      .take(args.limit ?? 50);
+
+    // Filter by company + enrich with room info
+    const room = await ctx.db.get(args.roomId);
+    return photos
+      .filter((p) => p.companyId.toString() === args.companyId.toString())
+      .map((p) => ({
+        ...p,
+        room: room ? { title: room.title, image: room.image } : null,
+      }));
+  },
+});
+
+// ── Stats per room ──
+export const getStatsByRoom = query({
+  args: {
+    roomId: v.id("rooms"),
+    companyId: v.id("companies"),
+  },
+  handler: async (ctx, args) => {
+    const allPhotos = await ctx.db
+      .query("standalonePhotos")
+      .withIndex("by_room", (q) => q.eq("roomId", args.roomId))
+      .collect();
+
+    const photos = allPhotos.filter(
+      (p) => p.companyId.toString() === args.companyId.toString()
+    );
+
+    const totalPhotos = photos.length;
+    const totalEmails = photos.reduce((s, p) => s + (p.emailsSent || 0), 0);
+    const totalViews = photos.reduce((s, p) => s + (p.hostedPageViews || 0), 0);
+    const totalDownloads = photos.reduce((s, p) => s + (p.downloads || 0), 0);
+
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+    const todayPhotos = photos.filter((p) => p.createdAt >= todayStart.getTime()).length;
+
+    return { totalPhotos, totalEmails, totalViews, totalDownloads, todayPhotos };
+  },
+});
+
+// ════════════════════════════════════════════════════════════════
+// Per-Room Photo Presets
+// ════════════════════════════════════════════════════════════════
+
+export const getRoomPreset = query({
+  args: { roomId: v.id("rooms") },
+  handler: async (ctx, args) => {
+    return await ctx.db
+      .query("roomPhotoPresets")
+      .withIndex("by_room", (q) => q.eq("roomId", args.roomId))
+      .first();
+  },
+});
+
+export const saveRoomPreset = mutation({
+  args: {
+    roomId: v.id("rooms"),
+    companyId: v.id("companies"),
+    logoUrl: v.optional(v.string()),
+    logoStorageId: v.optional(v.id("_storage")),
+    logoPosition: v.optional(v.union(
+      v.literal("top-left"),
+      v.literal("top-right"),
+      v.literal("bottom-left"),
+      v.literal("bottom-right"),
+      v.literal("bottom-center")
+    )),
+    brandColor: v.optional(v.string()),
+    watermarkOpacity: v.optional(v.number()),
+    textTemplate: v.optional(v.string()),
+    overlayUrl: v.optional(v.string()),
+    overlayStorageId: v.optional(v.id("_storage")),
+    useOverlay: v.optional(v.boolean()),
+    defaultFilter: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const room = await ctx.db.get(args.roomId);
+    if (!room || room.companyId?.toString() !== args.companyId.toString()) {
+      throw new Error("Unauthorized");
+    }
+
+    const existing = await ctx.db
+      .query("roomPhotoPresets")
+      .withIndex("by_room", (q) => q.eq("roomId", args.roomId))
+      .first();
+
+    const data = {
+      roomId: args.roomId,
+      companyId: args.companyId,
+      logoUrl: args.logoUrl,
+      logoStorageId: args.logoStorageId,
+      logoPosition: args.logoPosition,
+      brandColor: args.brandColor,
+      watermarkOpacity: args.watermarkOpacity,
+      textTemplate: args.textTemplate,
+      overlayUrl: args.overlayUrl,
+      overlayStorageId: args.overlayStorageId,
+      useOverlay: args.useOverlay,
+      defaultFilter: args.defaultFilter,
+      updatedAt: Date.now(),
+    };
+
+    if (existing) {
+      await ctx.db.patch(existing._id, data);
+      return existing._id;
+    }
+    return await ctx.db.insert("roomPhotoPresets", data);
+  },
+});
