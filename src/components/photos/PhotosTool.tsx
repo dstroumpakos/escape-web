@@ -185,6 +185,7 @@ const FILTERS: FilterDef[] = [
   { name: 'warm', label: 'Warm', css: 'sepia(0.3) saturate(1.2) brightness(1.05)' },
   { name: 'cool', label: 'Cool', css: 'saturate(0.8) brightness(1.05) hue-rotate(15deg)' },
   { name: 'oilpaint', label: 'Oil Paint', css: '__oilpaint__' },
+  { name: 'anime', label: 'Anime', css: '__anime__' },
 ];
 
 // Oil painting color quantization — groups nearby pixels by intensity
@@ -311,6 +312,69 @@ function addCanvasTexture(canvas: HTMLCanvasElement, intensity: number): void {
   ctx.putImageData(imgData, 0, 0);
 }
 
+// Anime cel-shading: reduce color levels to create flat shading
+function celShade(canvas: HTMLCanvasElement, colorLevels: number): void {
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return;
+  const w = canvas.width;
+  const h = canvas.height;
+  const imgData = ctx.getImageData(0, 0, w, h);
+  const d = imgData.data;
+  const step = 255 / (colorLevels - 1);
+
+  for (let i = 0; i < d.length; i += 4) {
+    d[i] = Math.round(d[i] / step) * step;
+    d[i + 1] = Math.round(d[i + 1] / step) * step;
+    d[i + 2] = Math.round(d[i + 2] / step) * step;
+  }
+  ctx.putImageData(imgData, 0, 0);
+}
+
+// Draw black outlines from edge detection
+function addBlackOutlines(canvas: HTMLCanvasElement, threshold: number, lineOpacity: number): void {
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return;
+  const w = canvas.width;
+  const h = canvas.height;
+  const src = ctx.getImageData(0, 0, w, h);
+  const sd = src.data;
+
+  // Grayscale
+  const gray = new Float32Array(w * h);
+  for (let i = 0; i < w * h; i++) {
+    gray[i] = sd[i * 4] * 0.299 + sd[i * 4 + 1] * 0.587 + sd[i * 4 + 2] * 0.114;
+  }
+
+  // Sobel edge detection
+  const edges = new Float32Array(w * h);
+  for (let y = 1; y < h - 1; y++) {
+    for (let x = 1; x < w - 1; x++) {
+      const idx = y * w + x;
+      const gx =
+        -gray[idx - w - 1] + gray[idx - w + 1] +
+        -2 * gray[idx - 1] + 2 * gray[idx + 1] +
+        -gray[idx + w - 1] + gray[idx + w + 1];
+      const gy =
+        -gray[idx - w - 1] - 2 * gray[idx - w] - gray[idx - w + 1] +
+        gray[idx + w - 1] + 2 * gray[idx + w] + gray[idx + w + 1];
+      edges[idx] = Math.sqrt(gx * gx + gy * gy);
+    }
+  }
+
+  // Overlay black where edges exceed threshold
+  const out = ctx.getImageData(0, 0, w, h);
+  const od = out.data;
+  for (let i = 0; i < w * h; i++) {
+    if (edges[i] > threshold) {
+      const blend = Math.min(1, (edges[i] - threshold) / (threshold * 0.5)) * lineOpacity;
+      od[i * 4] = od[i * 4] * (1 - blend) | 0;
+      od[i * 4 + 1] = od[i * 4 + 1] * (1 - blend) | 0;
+      od[i * 4 + 2] = od[i * 4 + 2] * (1 - blend) | 0;
+    }
+  }
+  ctx.putImageData(out, 0, 0);
+}
+
 async function applyFilter(imageSrc: string, filterCss: string): Promise<Blob> {
   const img = await loadImage(imageSrc);
   const canvas = document.createElement('canvas');
@@ -321,7 +385,32 @@ async function applyFilter(imageSrc: string, filterCss: string): Promise<Blob> {
 
   ctx.drawImage(img, 0, 0);
 
-  if (filterCss === '__oilpaint__') {
+  if (filterCss === '__anime__') {
+    const maxDim = 1000;
+    const scale = Math.min(1, maxDim / Math.max(img.width, img.height));
+    const work = document.createElement('canvas');
+    work.width = Math.round(canvas.width * scale);
+    work.height = Math.round(canvas.height * scale);
+    const wctx = work.getContext('2d')!;
+    wctx.drawImage(img, 0, 0, work.width, work.height);
+
+    // 1. Brighten + boost saturation for vivid anime colors
+    wctx.filter = 'brightness(1.1) saturate(1.6) contrast(1.15)';
+    wctx.drawImage(work, 0, 0);
+    wctx.filter = 'none';
+
+    // 2. Light smoothing to flatten skin/textures (small radius)
+    applyOilPaint(work, 2, 8);
+
+    // 3. Cel-shade: quantize to limited color palette
+    celShade(work, 8);
+
+    // 4. Bold black outlines from edge detection
+    addBlackOutlines(work, 30, 0.85);
+
+    // Scale back to full resolution
+    ctx.drawImage(work, 0, 0, canvas.width, canvas.height);
+  } else if (filterCss === '__oilpaint__') {
     // Work on a scaled canvas for performance
     const maxDim = 1000;
     const scale = Math.min(1, maxDim / Math.max(img.width, img.height));
