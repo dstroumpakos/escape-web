@@ -348,6 +348,7 @@ export const getDashboardStats = query({
 
 // ─── Plan limits helper ───
 const PLAN_ROOM_LIMITS: Record<string, number> = {
+  free: 1,
   starter: 1,
   pro: 2,
   enterprise: Infinity,

@@ -41,7 +41,7 @@ const LocationPicker = dynamic(
   )}
 );
 
-const PLAN_ROOM_LIMITS: Record<string, number> = { starter: 1, pro: 10, enterprise: Infinity };
+const PLAN_ROOM_LIMITS: Record<string, number> = { free: 1, starter: 1, pro: 10, enterprise: Infinity };
 
 const THEMES = ['Horror', 'Adventure', 'Sci-Fi', 'Mystery', 'Fantasy', 'Historical', 'Comedy', 'Thriller'];
 const TAG_OPTIONS = ['Beginner Friendly', 'Team Building', 'Couples', 'Family', 'Intense', 'Immersive', 'Physical', 'Mental', 'Story Driven', 'Competitive'];

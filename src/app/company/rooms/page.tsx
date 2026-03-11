@@ -22,7 +22,7 @@ import {
 import { useTranslation } from '@/lib/i18n';
 import { AnimateIn, StaggerContainer, StaggerItem } from '@/components/animations/AnimateIn';
 
-const PLAN_ROOM_LIMITS: Record<string, number> = { starter: 1, pro: 10, enterprise: Infinity };
+const PLAN_ROOM_LIMITS: Record<string, number> = { free: 1, starter: 1, pro: 10, enterprise: Infinity };
 
 export default function CompanyRoomsPage() {
   const { company } = useCompanyAuth();
