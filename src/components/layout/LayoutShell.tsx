@@ -13,14 +13,17 @@ export function LayoutShell({ children }: { children: React.ReactNode }) {
   const isCompanyRoute = pathname.startsWith('/company');
   const isPhotosApp = pathname.startsWith('/photos-app');
 
-  const [isPhotosSubdomain, setIsPhotosSubdomain] = useState(false);
+  const [isSubdomain, setIsSubdomain] = useState(false);
   useEffect(() => {
-    if (typeof window !== 'undefined' && window.location.hostname === 'photos.unlocked.gr') {
-      setIsPhotosSubdomain(true);
+    if (typeof window !== 'undefined') {
+      const h = window.location.hostname;
+      if (h === 'photos.unlocked.gr' || h === 'business.unlocked.gr') {
+        setIsSubdomain(true);
+      }
     }
   }, []);
 
-  if (isCompanyRoute || isPhotosApp || isPhotosSubdomain) {
+  if (isCompanyRoute || isPhotosApp || isSubdomain) {
     // Company portal / Photos app have their own layout — no main Navbar/Footer
     return (
       <>

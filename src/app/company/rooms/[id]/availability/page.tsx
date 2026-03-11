@@ -4,7 +4,7 @@ import { useState, useMemo } from 'react';
 import { useParams } from 'next/navigation';
 import { useQuery, useMutation } from 'convex/react';
 import { api } from '../../../../../../convex/_generated/api';
-import { useCompanyAuth } from '@/lib/companyAuth';
+import { useCompanyAuth, useCompanyPath } from '@/lib/companyAuth';
 import { useTranslation } from '@/lib/i18n';
 import Link from 'next/link';
 import {
@@ -24,6 +24,7 @@ const DAYS = ['common.day_sun', 'common.day_mon', 'common.day_tue', 'common.day_
 export default function RoomAvailabilityPage() {
   const params = useParams();
   const { company } = useCompanyAuth();
+  const p = useCompanyPath();
   const { t, language } = useTranslation();
   const roomId = params.id as string;
 
@@ -135,7 +136,7 @@ export default function RoomAvailabilityPage() {
       {/* Header */}
       <div className="flex items-center gap-4 mb-8">
         <Link
-          href="/company/rooms"
+          href={p('/company/rooms')}
           className="p-2 rounded-xl hover:bg-white/5 transition-colors"
         >
           <ArrowLeft className="w-5 h-5" />

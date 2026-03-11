@@ -17,7 +17,7 @@ import {
   BookOpen,
 } from 'lucide-react';
 import { ConvexClientProvider } from '@/components/providers/ConvexClientProvider';
-import { CompanyAuthProvider, useCompanyAuth } from '@/lib/companyAuth';
+import { CompanyAuthProvider, useCompanyAuth, useCompanyPath } from '@/lib/companyAuth';
 import { PlanBadge } from './PlanBadge';
 import { useTranslation } from '@/lib/i18n';
 
@@ -26,15 +26,16 @@ function CompanyShell({ children }: { children: React.ReactNode }) {
   const { company, isLoading, isAuthenticated, logout } = useCompanyAuth();
   const router = useRouter();
   const pathname = usePathname();
+  const p = useCompanyPath();
 
   const sidebarLinks = [
-    { href: '/company', label: t('company.nav.dashboard'), icon: LayoutDashboard },
-    { href: '/company/bookings', label: t('company.nav.bookings'), icon: CalendarDays },
-    { href: '/company/rooms', label: t('company.nav.rooms'), icon: DoorOpen },
-    { href: '/company/photos', label: t('company.nav.photos'), icon: Camera },
-    { href: '/company/billing', label: t('company.nav.billing'), icon: CreditCard },
-    { href: '/company/docs', label: t('company.nav.docs'), icon: BookOpen },
-    { href: '/company/settings', label: t('company.nav.settings'), icon: Settings },
+    { href: p('/company'), label: t('company.nav.dashboard'), icon: LayoutDashboard },
+    { href: p('/company/bookings'), label: t('company.nav.bookings'), icon: CalendarDays },
+    { href: p('/company/rooms'), label: t('company.nav.rooms'), icon: DoorOpen },
+    { href: p('/company/photos'), label: t('company.nav.photos'), icon: Camera },
+    { href: p('/company/billing'), label: t('company.nav.billing'), icon: CreditCard },
+    { href: p('/company/docs'), label: t('company.nav.docs'), icon: BookOpen },
+    { href: p('/company/settings'), label: t('company.nav.settings'), icon: Settings },
   ];
 
   // Allow auth pages without redirect
@@ -44,9 +45,9 @@ function CompanyShell({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated && !isAuthPage) {
-      router.replace('/company/login');
+      router.replace(p('/company/login'));
     }
-  }, [isLoading, isAuthenticated, isAuthPage, router]);
+  }, [isLoading, isAuthenticated, isAuthPage, router, p]);
 
   // Redirect non-approved companies to onboarding
   useEffect(() => {
@@ -58,9 +59,9 @@ function CompanyShell({ children }: { children: React.ReactNode }) {
       !isAuthPage &&
       !isOnboardingPage
     ) {
-      router.replace('/company/onboarding');
+      router.replace(p('/company/onboarding'));
     }
-  }, [isLoading, isAuthenticated, company?.onboardingStatus, isAuthPage, isOnboardingPage, router]);
+  }, [isLoading, isAuthenticated, company?.onboardingStatus, isAuthPage, isOnboardingPage, router, p]);
 
   // Auth & onboarding pages render without sidebar
   if (isAuthPage || isOnboardingPage) {
@@ -79,7 +80,7 @@ function CompanyShell({ children }: { children: React.ReactNode }) {
 
   const handleLogout = () => {
     logout();
-    router.push('/company/login');
+    router.push(p('/company/login'));
   };
 
   return (
@@ -116,8 +117,8 @@ function CompanyShell({ children }: { children: React.ReactNode }) {
         <nav className="flex-1 px-3 py-4 space-y-1">
           {sidebarLinks.map((link) => {
             const isActive =
-              link.href === '/company'
-                ? pathname === '/company'
+              link.href === p('/company')
+                ? pathname === '/company' || pathname === p('/company')
                 : pathname.startsWith(link.href);
             return (
               <Link
@@ -147,7 +148,7 @@ function CompanyShell({ children }: { children: React.ReactNode }) {
             {t('company.nav.logout')}
           </button>
           <Link
-            href="/"
+            href="https://unlocked.gr"
             className="flex items-center gap-3 px-3 py-2 mt-1 rounded-xl text-xs text-brand-text-secondary/60 hover:text-brand-text-secondary transition-all"
           >
             {t('company.nav.back_to_site')}
@@ -177,8 +178,8 @@ function CompanyShell({ children }: { children: React.ReactNode }) {
       <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-brand-surface border-t border-white/5 flex">
         {sidebarLinks.map((link) => {
           const isActive =
-            link.href === '/company'
-              ? pathname === '/company'
+            link.href === p('/company')
+              ? pathname === '/company' || pathname === p('/company')
               : pathname.startsWith(link.href);
           return (
             <Link

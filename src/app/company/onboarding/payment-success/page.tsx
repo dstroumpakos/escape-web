@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useCompanyAuth } from '@/lib/companyAuth';
+import { useCompanyAuth, useCompanyPath } from '@/lib/companyAuth';
 import { useTranslation } from '@/lib/i18n';
 import { CheckCircle, ArrowRight, Loader2 } from 'lucide-react';
 import { Suspense } from 'react';
@@ -12,6 +12,7 @@ function PaymentSuccessContent() {
   const router = useRouter();
   const params = useSearchParams();
   const { refreshCompany } = useCompanyAuth();
+  const p = useCompanyPath();
   const [countdown, setCountdown] = useState(5);
   const initialized = useRef(false);
 
@@ -35,7 +36,7 @@ function PaymentSuccessContent() {
       setCountdown((c) => {
         if (c <= 1) {
           clearInterval(interval);
-          router.replace('/company/onboarding');
+          router.replace(p('/company/onboarding'));
           return 0;
         }
         return c - 1;
@@ -76,7 +77,7 @@ function PaymentSuccessContent() {
         </div>
 
         <button
-          onClick={() => router.replace('/company/onboarding')}
+          onClick={() => router.replace(p('/company/onboarding'))}
           className="w-full btn-primary !py-3 flex items-center justify-center gap-2"
         >
           {t('stripe.continue')} <ArrowRight className="w-4 h-4" />

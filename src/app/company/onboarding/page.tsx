@@ -4,7 +4,7 @@ import { useEffect, useState, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useQuery, useMutation, useAction } from 'convex/react';
 import { api } from '../../../../convex/_generated/api';
-import { useCompanyAuth } from '@/lib/companyAuth';
+import { useCompanyAuth, useCompanyPath } from '@/lib/companyAuth';
 import { useTranslation } from '@/lib/i18n';
 import {
   Unlock,
@@ -72,6 +72,7 @@ export default function CompanyOnboardingPage() {
   const { t } = useTranslation();
   const router = useRouter();
   const { company, logout, refreshCompany } = useCompanyAuth();
+  const p = useCompanyPath();
   const companyId = company?.id;
 
   const companyData = useQuery(
@@ -96,7 +97,7 @@ export default function CompanyOnboardingPage() {
   useEffect(() => {
     if (status === 'approved') {
       refreshCompany({ onboardingStatus: 'approved' });
-      router.replace('/company');
+      router.replace(p('/company'));
     }
   }, [status, router, refreshCompany]);
 
@@ -114,7 +115,7 @@ export default function CompanyOnboardingPage() {
 
   const handleLogout = () => {
     logout();
-    router.push('/company/login');
+    router.push(p('/company/login'));
   };
 
   const handleScroll = useCallback(() => {
@@ -290,8 +291,8 @@ export default function CompanyOnboardingPage() {
       setLoading(true);
       try {
         const origin = window.location.origin;
-        const successUrl = `${origin}/company/onboarding/payment-success?plan=${planId}&period=${billingPeriod}`;
-        const cancelUrl = `${origin}/company/onboarding`;
+        const successUrl = `${origin}${p('/company/onboarding/payment-success')}?plan=${planId}&period=${billingPeriod}`;
+        const cancelUrl = `${origin}${p('/company/onboarding')}`;
 
         const checkoutUrl = await createCheckout({
           companyId: companyId as any,

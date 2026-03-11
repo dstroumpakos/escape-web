@@ -5,6 +5,24 @@ export function middleware(request: NextRequest) {
   const host = request.headers.get('host') || '';
   const { pathname } = request.nextUrl;
 
+  // ── business.unlocked.gr subdomain routing ──
+  if (host.startsWith('business.unlocked.gr') || host.startsWith('business.localhost')) {
+    // If someone navigates to /company/... on the subdomain, redirect to strip the prefix
+    if (pathname.startsWith('/company')) {
+      const clean = pathname.replace(/^\/company/, '') || '/';
+      const url = request.nextUrl.clone();
+      url.pathname = clean;
+      return NextResponse.redirect(url);
+    }
+    // Rewrite root-relative paths to /company/* internally
+    if (pathname === '/') {
+      return NextResponse.rewrite(new URL('/company', request.url));
+    }
+    if (!pathname.startsWith('/_next') && !pathname.startsWith('/api')) {
+      return NextResponse.rewrite(new URL(`/company${pathname}`, request.url));
+    }
+  }
+
   // ── photos.unlocked.gr subdomain routing ──
   if (host.startsWith('photos.unlocked.gr') || host.startsWith('photos.localhost')) {
     // Root → /photos-app (standalone photos dashboard)

@@ -6,7 +6,7 @@ import { useQuery, useMutation } from 'convex/react';
 import dynamic from 'next/dynamic';
 import { api } from '../../../../../../convex/_generated/api';
 import { Id } from '../../../../../../convex/_generated/dataModel';
-import { useCompanyAuth } from '@/lib/companyAuth';
+import { useCompanyAuth, useCompanyPath } from '@/lib/companyAuth';
 import Link from 'next/link';
 import {
   ArrowLeft,
@@ -72,6 +72,7 @@ export default function EditRoomPage() {
   const params = useParams();
   const router = useRouter();
   const { company } = useCompanyAuth();
+  const p = useCompanyPath();
   const roomId = params.id as string;
 
   const room = useQuery(api.rooms.getById, roomId ? { id: roomId as any } : 'skip');
@@ -260,7 +261,7 @@ export default function EditRoomPage() {
         isFeatured: form.isFeatured || undefined,
         releaseDate: form.releaseDate || undefined,
       });
-      router.push('/company/rooms');
+      router.push(p('/company/rooms'));
     } catch (err: any) {
       setError(err?.message || t('company.rooms.edit.failed_update'));
     } finally {
@@ -277,7 +278,7 @@ export default function EditRoomPage() {
   return (
     <div className="p-6 md:p-8 max-w-4xl mx-auto">
       <div className="flex items-center gap-4 mb-8">
-        <Link href="/company/rooms" className="p-2 rounded-xl hover:bg-white/5 transition-colors">
+        <Link href={p('/company/rooms')} className="p-2 rounded-xl hover:bg-white/5 transition-colors">
           <ArrowLeft className="w-5 h-5" />
         </Link>
         <div>
@@ -920,7 +921,7 @@ export default function EditRoomPage() {
 
         {/* Submit - Save */}
         <div className="flex flex-col sm:flex-row gap-3 pt-4">
-          <Link href="/company/rooms" className="btn-ghost text-sm flex-1 text-center">{t('company.rooms.edit.cancel')}</Link>
+          <Link href={p('/company/rooms')} className="btn-ghost text-sm flex-1 text-center">{t('company.rooms.edit.cancel')}</Link>
           <button type="submit" disabled={loading}
             className="btn-primary text-sm flex-1 flex items-center justify-center gap-2"
           >

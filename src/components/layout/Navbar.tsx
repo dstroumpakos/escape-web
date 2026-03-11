@@ -110,7 +110,7 @@ export function Navbar() {
             ) : (
               <>
                 <Link
-                  href="/company/login"
+                  href="https://business.unlocked.gr/login"
                   className="text-sm text-brand-text-secondary hover:text-white transition-colors flex items-center gap-1"
                 >
                   <Building2 className="w-4 h-4" /> {t('nav.business')}
@@ -175,7 +175,7 @@ export function Navbar() {
                 </>
               ) : (
                 <div className="flex flex-col gap-2">
-                  <Link href="/company/login" className="px-4 py-3 rounded-lg text-sm font-medium text-brand-text-secondary hover:text-white hover:bg-brand-surface/50 flex items-center gap-2">
+                  <Link href="https://business.unlocked.gr/login" className="px-4 py-3 rounded-lg text-sm font-medium text-brand-text-secondary hover:text-white hover:bg-brand-surface/50 flex items-center gap-2">
                     <Building2 className="w-4 h-4" /> {t('nav.business')}
                   </Link>
                   <div className="flex gap-3 mt-1">

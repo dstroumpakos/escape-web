@@ -71,7 +71,7 @@ export default function AdminPage() {
   const handleLogout = () => {
     localStorage.removeItem('unlocked_admin');
     setAdminEmail(null);
-    router.replace('/company/login');
+    router.replace('https://business.unlocked.gr/login');
   };
 
   if (isLoading) {
@@ -90,7 +90,7 @@ export default function AdminPage() {
           <h1 className="text-2xl font-bold mb-2">{t('admin.access_required')}</h1>
           <p className="text-brand-text-secondary mb-6">{t('admin.access_desc')}</p>
           <Link
-            href="/company/login"
+            href="https://business.unlocked.gr/login"
             className="btn-primary inline-flex items-center gap-2"
           >
             <ArrowLeft className="w-4 h-4" /> {t('admin.go_to_login')}

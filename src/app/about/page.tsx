@@ -219,7 +219,7 @@ export default function AboutPage() {
           </StaggerContainer>
 
           <div className="text-center">
-            <Link href="/company/register" className="btn-primary inline-flex items-center gap-2">
+            <Link href="https://business.unlocked.gr/register" className="btn-primary inline-flex items-center gap-2">
               {t('about.become_partner')}
               <ArrowRight className="w-5 h-5" />
             </Link>

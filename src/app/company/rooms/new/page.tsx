@@ -6,7 +6,7 @@ import { useMutation, useQuery } from 'convex/react';
 import dynamic from 'next/dynamic';
 import { api } from '../../../../../convex/_generated/api';
 import { Id } from '../../../../../convex/_generated/dataModel';
-import { useCompanyAuth } from '@/lib/companyAuth';
+import { useCompanyAuth, useCompanyPath } from '@/lib/companyAuth';
 import Link from 'next/link';
 import {
   ArrowLeft,
@@ -72,6 +72,7 @@ const TERMS_TEMPLATES = [
 export default function NewRoomPage() {
   const router = useRouter();
   const { company } = useCompanyAuth();
+  const p = useCompanyPath();
   const createRoom = useMutation(api.companies.createRoom);
   const generateUploadUrl = useMutation(api.companies.generateUploadUrl);
   const getUrlMutation = useMutation(api.companies.getUrlMutation);
@@ -293,7 +294,7 @@ export default function NewRoomPage() {
         overflowSlot: form.overflowSlot || undefined,
         releaseDate: form.releaseDate || undefined,
       });
-      router.push('/company/rooms');
+      router.push(p('/company/rooms'));
     } catch (err: any) {
       setError(err?.message || t('company.rooms.new.failed_create'));
     } finally {
@@ -305,7 +306,7 @@ export default function NewRoomPage() {
     <div className="p-6 md:p-8 max-w-4xl mx-auto">
       <div className="flex items-center gap-4 mb-8">
         <Link
-          href="/company/rooms"
+          href={p('/company/rooms')}
           className="p-2 rounded-xl hover:bg-white/5 transition-colors"
         >
           <ArrowLeft className="w-5 h-5" />
@@ -332,7 +333,7 @@ export default function NewRoomPage() {
             <p className="text-sm text-brand-text-secondary mt-1">
               {t('company.rooms.new.limit_plan_info', { plan, limit: roomLimit === Infinity ? 'unlimited' : String(roomLimit), count: String(roomCount) })}
               {plan !== 'enterprise' && (
-                <> {t('company.rooms.new.upgrade_in_settings')} <Link href="/company/settings" className="text-brand-red hover:underline">{t('company.rooms.new.settings_link')}</Link> {t('company.rooms.new.to_add_more')}</>
+                <> {t('company.rooms.new.upgrade_in_settings')} <Link href={p('/company/settings')} className="text-brand-red hover:underline">{t('company.rooms.new.settings_link')}</Link> {t('company.rooms.new.to_add_more')}</>
               )}
             </p>
           </div>
@@ -1069,7 +1070,7 @@ export default function NewRoomPage() {
         {/* Submit */}
         <div className="flex gap-3 pt-4">
           <Link
-            href="/company/rooms"
+            href={p('/company/rooms')}
             className="btn-ghost text-sm flex-1 text-center"
           >
             {t('company.rooms.new.cancel')}

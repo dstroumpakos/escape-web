@@ -117,3 +117,28 @@ export function CompanyAuthProvider({ children }: { children: ReactNode }) {
 export function useCompanyAuth() {
   return useContext(CompanyAuthContext);
 }
+
+// Returns a function that maps company paths for the current domain.
+// On business.unlocked.gr: "/company/rooms" → "/rooms"
+// On main domain: "/company/rooms" → "/company/rooms" (unchanged)
+export function useCompanyPath() {
+  const [isBusinessSubdomain, setIsBusinessSubdomain] = useState(false);
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const h = window.location.hostname;
+      setIsBusinessSubdomain(h === 'business.unlocked.gr' || h === 'business.localhost');
+    }
+  }, []);
+
+  const p = useCallback(
+    (path: string) => {
+      if (isBusinessSubdomain && path.startsWith('/company')) {
+        return path.replace(/^\/company/, '') || '/';
+      }
+      return path;
+    },
+    [isBusinessSubdomain]
+  );
+
+  return p;
+}

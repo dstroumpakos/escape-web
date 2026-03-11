@@ -7,10 +7,12 @@ import { useMutation } from 'convex/react';
 import { api } from '../../../../convex/_generated/api';
 import { Unlock, Building2, Mail, Lock, Eye, EyeOff, Phone, MapPin, FileText, ArrowRight } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
+import { useCompanyPath } from '@/lib/companyAuth';
 
 export default function CompanyRegisterPage() {
   const { t } = useTranslation();
   const router = useRouter();
+  const p = useCompanyPath();
   const registerMutation = useMutation(api.companies.register);
 
   const [form, setForm] = useState({
@@ -60,7 +62,7 @@ export default function CompanyRegisterPage() {
       }
 
       // Registration successful — redirect to login
-      router.push('/company/login?registered=true');
+      router.push(p('/company/login?registered=true'));
     } catch (err: any) {
       setError(err?.message || t('company.register.error_failed'));
     } finally {
@@ -264,7 +266,7 @@ export default function CompanyRegisterPage() {
 
           <p className="text-center text-sm text-brand-text-secondary mt-6">
             {t('company.register.has_account')}{' '}
-            <Link href="/company/login" className="text-brand-red hover:underline">
+            <Link href={p('/company/login')} className="text-brand-red hover:underline">
               {t('company.register.sign_in')}
             </Link>
           </p>

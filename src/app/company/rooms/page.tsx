@@ -2,7 +2,7 @@
 
 import { useQuery, useMutation } from 'convex/react';
 import { api } from '../../../../convex/_generated/api';
-import { useCompanyAuth } from '@/lib/companyAuth';
+import { useCompanyAuth, useCompanyPath } from '@/lib/companyAuth';
 import Link from 'next/link';
 import {
   Plus,
@@ -26,6 +26,7 @@ const PLAN_ROOM_LIMITS: Record<string, number> = { starter: 1, pro: 10, enterpri
 
 export default function CompanyRoomsPage() {
   const { company } = useCompanyAuth();
+  const p = useCompanyPath();
   const { t } = useTranslation();
   const companyId = company?.id;
 
@@ -75,7 +76,7 @@ export default function CompanyRoomsPage() {
           </div>
         ) : (
           <Link
-            href="/company/rooms/new"
+            href={p('/company/rooms/new')}
             className="btn-primary text-sm flex items-center gap-2"
           >
             <Plus className="w-4 h-4" /> {t('company.rooms.add_room')}
@@ -124,7 +125,7 @@ export default function CompanyRoomsPage() {
           <p className="text-brand-text-secondary mb-6">
             {t('company.rooms.no_rooms_desc')}
           </p>
-          <Link href="/company/rooms/new" className="btn-primary">
+          <Link href={p('/company/rooms/new')} className="btn-primary">
             <Plus className="w-4 h-4 inline mr-2" /> {t('company.rooms.create_room')}
           </Link>
         </div>
@@ -225,14 +226,14 @@ export default function CompanyRoomsPage() {
                   </button>
 
                   <Link
-                    href={`/company/rooms/${room._id}/edit`}
+                    href={p(`/company/rooms/${room._id}/edit`)}
                     className="flex items-center gap-1.5 text-sm px-3 py-2 rounded-xl hover:bg-white/5 transition-colors"
                   >
                     <Pencil className="w-4 h-4" /> {t('company.rooms.edit')}
                   </Link>
 
                   <Link
-                    href={`/company/rooms/${room._id}/availability`}
+                    href={p(`/company/rooms/${room._id}/availability`)}
                     className="flex items-center gap-1.5 text-sm px-3 py-2 rounded-xl hover:bg-white/5 transition-colors"
                   >
                     <CalendarDays className="w-4 h-4" /> {t('company.rooms.slots')}

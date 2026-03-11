@@ -459,7 +459,7 @@ ${TABLE(`
   ${d.notes ? `<tr>${TH("Notes")}${TD(d.notes)}</tr>` : ""}
 `)}
 <div style="text-align:center;margin:24px 0;">
-  <a href="https://unlocked.gr/company/bookings" style="${S.btn}">View in Dashboard</a>
+  <a href="https://business.unlocked.gr/bookings" style="${S.btn}">View in Dashboard</a>
 </div>`,
         `${d.companyName} · UNLOCKED Platform`
       );
@@ -567,7 +567,7 @@ ${TABLE(`
   You'll receive an email as soon as your account is approved.
 </p>
 <div style="text-align:center;margin:32px 0;">
-  <a href="https://unlocked.gr/company" style="${S.btn}">Go to Dashboard</a>
+  <a href="https://business.unlocked.gr" style="${S.btn}">Go to Dashboard</a>
 </div>`,
       "UNLOCKED — Escape Room Platform"
     );
@@ -642,7 +642,7 @@ ${TABLE(featureRows)}
   Players can discover and book your rooms as soon as you publish them!
 </p>
 <div style="text-align:center;margin:32px 0;">
-  <a href="https://unlocked.gr/company" style="${S.btnGreen}">Go to Dashboard</a>
+  <a href="https://business.unlocked.gr" style="${S.btnGreen}">Go to Dashboard</a>
 </div>`,
       "UNLOCKED — Escape Room Platform"
     );
@@ -765,7 +765,7 @@ ${TABLE(`
   <strong>Billing</strong> section in your dashboard.
 </p>
 <div style="text-align:center;margin:32px 0;">
-  <a href="https://unlocked.gr/company/billing" style="${S.btn}">Manage Subscription</a>
+  <a href="https://business.unlocked.gr/billing" style="${S.btn}">Manage Subscription</a>
 </div>
 <div style="${S.divider}"></div>
 <p style="${S.smallText}">

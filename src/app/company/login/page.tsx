@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Unlock, Building2, Mail, Lock, Eye, EyeOff, ArrowRight, Shield } from 'lucide-react';
-import { useCompanyAuth } from '@/lib/companyAuth';
+import { useCompanyAuth, useCompanyPath } from '@/lib/companyAuth';
 import { useTranslation } from '@/lib/i18n';
 import { useMutation } from 'convex/react';
 import { api } from '../../../../convex/_generated/api';
@@ -13,6 +13,7 @@ export default function CompanyLoginPage() {
   const { t } = useTranslation();
   const router = useRouter();
   const { login, isAuthenticated } = useCompanyAuth();
+  const p = useCompanyPath();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -21,7 +22,7 @@ export default function CompanyLoginPage() {
   const adminLogin = useMutation(api.companies.adminLogin);
 
   if (isAuthenticated) {
-    router.replace('/company');
+    router.replace(p('/company'));
     return null;
   }
 
@@ -42,7 +43,7 @@ export default function CompanyLoginPage() {
         // Not an admin, continue with normal login
       }
       await login(email, password);
-      router.replace('/company');
+      router.replace(p('/company'));
     } catch (err: any) {
       setError(err?.message || t('company.auth.login_failed'));
     } finally {
@@ -137,7 +138,7 @@ export default function CompanyLoginPage() {
 
           <p className="text-center text-sm text-brand-text-secondary mt-6">
             {t('company.auth.no_account')}{' '}
-            <Link href="/company/register" className="text-brand-red hover:underline">
+            <Link href={p('/company/register')} className="text-brand-red hover:underline">
               {t('company.auth.register_link')}
             </Link>
           </p>

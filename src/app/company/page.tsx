@@ -2,7 +2,7 @@
 
 import { useQuery, useMutation } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
-import { useCompanyAuth } from '@/lib/companyAuth';
+import { useCompanyAuth, useCompanyPath } from '@/lib/companyAuth';
 import Link from 'next/link';
 import {
   DoorOpen,
@@ -56,6 +56,7 @@ function formatDate() {
 export default function CompanyDashboardPage() {
   const { t } = useTranslation();
   const { company } = useCompanyAuth();
+  const p = useCompanyPath();
   const companyId = company?.id;
 
   const today = new Date().toISOString().split('T')[0];
@@ -112,7 +113,7 @@ export default function CompanyDashboardPage() {
             </p>
           </div>
           <div className="flex items-center gap-3 shrink-0">
-            <Link href="/company/bookings" className="btn-ghost text-sm flex items-center gap-2 !py-2.5 !px-4">
+            <Link href={p('/company/bookings')} className="btn-ghost text-sm flex items-center gap-2 !py-2.5 !px-4">
               <CalendarDays className="w-4 h-4" /> {t('company.nav.bookings')}
             </Link>
             {atLimit ? (
@@ -121,7 +122,7 @@ export default function CompanyDashboardPage() {
                 <span>{t('company.dashboard.room_limit')}</span>
               </div>
             ) : (
-              <Link href="/company/rooms/new" className="btn-primary text-sm flex items-center gap-2">
+              <Link href={p('/company/rooms/new')} className="btn-primary text-sm flex items-center gap-2">
                 <Plus className="w-4 h-4" /> {t('company.dashboard.add_room')}
               </Link>
             )}
@@ -236,7 +237,7 @@ export default function CompanyDashboardPage() {
                     {atLimit ? t('company.dashboard.upgrade_to_add') : `${roomLimit - roomCount} ${roomLimit - roomCount !== 1 ? t('company.dashboard.rooms_available') : t('company.dashboard.room_available')}`}
                   </p>
                   {atLimit && (
-                    <Link href="/company/settings" className="text-xs text-brand-red hover:underline mt-1 inline-block">
+                    <Link href={p('/company/settings')} className="text-xs text-brand-red hover:underline mt-1 inline-block">
                       {t('company.dashboard.upgrade_plan')} →
                     </Link>
                   )}
@@ -253,7 +254,7 @@ export default function CompanyDashboardPage() {
               <h2 className="font-bold flex items-center gap-2">
                 <Clock className="w-4 h-4 text-brand-red" /> {t('company.dashboard.todays_schedule')}
               </h2>
-              <Link href="/company/bookings" className="text-xs text-brand-red hover:underline flex items-center gap-1">
+              <Link href={p('/company/bookings')} className="text-xs text-brand-red hover:underline flex items-center gap-1">
                 {t('company.dashboard.view_all')} <ArrowRight className="w-3 h-3" />
               </Link>
             </div>
@@ -264,7 +265,7 @@ export default function CompanyDashboardPage() {
               <div className="text-center py-12">
                 <CalendarDays className="w-10 h-10 mx-auto mb-3 text-brand-text-secondary/20" />
                 <p className="text-brand-text-secondary text-sm">{t('company.dashboard.no_bookings_for_today')}</p>
-                <Link href="/company/bookings" className="text-xs text-brand-red hover:underline mt-2 inline-block">
+                <Link href={p('/company/bookings')} className="text-xs text-brand-red hover:underline mt-2 inline-block">
                   {t('company.dashboard.go_to_bookings')} →
                 </Link>
               </div>
@@ -434,7 +435,7 @@ export default function CompanyDashboardPage() {
                 {t('company.dashboard.unlock_analytics_desc')}
               </p>
             </div>
-            <Link href="/company/settings" className="btn-primary text-sm shrink-0 flex items-center gap-1.5">
+            <Link href={p('/company/settings')} className="btn-primary text-sm shrink-0 flex items-center gap-1.5">
               {t('company.dashboard.upgrade')} <ArrowUpRight className="w-3.5 h-3.5" />
             </Link>
           </div>
@@ -448,7 +449,7 @@ export default function CompanyDashboardPage() {
         </h2>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
           <QuickAction
-            href="/company/rooms/new"
+            href={p('/company/rooms/new')}
             icon={Plus}
             label={t('company.dashboard.add_room')}
             desc={t('company.dashboard.new_escape_room')}
@@ -456,28 +457,28 @@ export default function CompanyDashboardPage() {
             disabled={atLimit}
           />
           <QuickAction
-            href="/company/bookings"
+            href={p('/company/bookings')}
             icon={CalendarDays}
             label={t('company.nav.bookings')}
             desc={t('company.dashboard.manage_reservations')}
             color="text-blue-400"
           />
           <QuickAction
-            href="/company/rooms"
+            href={p('/company/rooms')}
             icon={DoorOpen}
             label={t('company.nav.rooms')}
             desc={t('company.dashboard.edit_listings')}
             color="text-purple-400"
           />
           <QuickAction
-            href="/company/settings"
+            href={p('/company/settings')}
             icon={Settings}
             label={t('company.nav.settings')}
             desc={t('company.dashboard.plan_preferences')}
             color="text-green-400"
           />
           <QuickAction
-            href="/company/settings?tab=widget"
+            href={p('/company/settings?tab=widget')}
             icon={Code}
             label={t('company.dashboard.widget_title')}
             desc={t('company.dashboard.widget_desc')}

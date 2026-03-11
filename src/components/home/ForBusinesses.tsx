@@ -93,7 +93,7 @@ export function ForBusinesses() {
             </StaggerContainer>
 
             <Link
-              href="/company/register"
+              href="https://business.unlocked.gr/register"
               className="btn-primary inline-flex items-center gap-2"
             >
               {t('business.cta')}
