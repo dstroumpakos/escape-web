@@ -7,6 +7,7 @@ import { useMutation } from 'convex/react';
 import { api } from '../../../../convex/_generated/api';
 import { Unlock, Building2, Mail, Lock, Eye, EyeOff, Phone, MapPin, FileText, ArrowRight } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
+import { LanguageToggle } from '@/components/LanguageToggle';
 import { useCompanyPath } from '@/lib/companyAuth';
 
 export default function CompanyRegisterPage() {
@@ -72,6 +73,11 @@ export default function CompanyRegisterPage() {
 
   return (
     <div className="min-h-screen bg-brand-bg flex items-center justify-center px-4 py-12">
+      {/* Language toggle */}
+      <div className="absolute top-4 right-4">
+        <LanguageToggle />
+      </div>
+
       <div className="w-full max-w-lg">
         {/* Logo */}
         <div className="text-center mb-8">

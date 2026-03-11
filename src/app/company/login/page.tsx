@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { Unlock, Building2, Mail, Lock, Eye, EyeOff, ArrowRight, Shield } from 'lucide-react';
 import { useCompanyAuth, useCompanyPath } from '@/lib/companyAuth';
 import { useTranslation } from '@/lib/i18n';
+import { LanguageToggle } from '@/components/LanguageToggle';
 import { useMutation } from 'convex/react';
 import { api } from '../../../../convex/_generated/api';
 
@@ -53,6 +54,11 @@ export default function CompanyLoginPage() {
 
   return (
     <div className="min-h-screen bg-brand-bg flex items-center justify-center px-4">
+      {/* Language toggle */}
+      <div className="absolute top-4 right-4">
+        <LanguageToggle />
+      </div>
+
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8">
