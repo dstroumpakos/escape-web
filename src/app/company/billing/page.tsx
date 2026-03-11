@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 
 const PLAN_PRICES: Record<string, { monthly: number; yearly: number }> = {
+  free: { monthly: 0, yearly: 0 },
   starter: { monthly: 29, yearly: 290 },
   pro: { monthly: 49, yearly: 490 },
   enterprise: { monthly: 99, yearly: 990 },
@@ -220,12 +221,19 @@ export default function BillingPage() {
                   {t('billing.amount')}
                 </span>
               </div>
-              <p className="text-2xl font-bold">
-                €{subscription?.amount ?? price}
-                <span className="text-sm text-brand-text-secondary font-normal ml-1">
-                  /{period === 'yearly' ? t('billing.year') : t('billing.month')}
-                </span>
-              </p>
+              {plan === 'free' ? (
+                <>
+                  <p className="text-2xl font-bold">{t('company.onboarding.free')}</p>
+                  <p className="text-xs text-brand-text-secondary mt-1">{t('billing.free_fee_note')}</p>
+                </>
+              ) : (
+                <p className="text-2xl font-bold">
+                  €{subscription?.amount ?? price}
+                  <span className="text-sm text-brand-text-secondary font-normal ml-1">
+                    /{period === 'yearly' ? t('billing.year') : t('billing.month')}
+                  </span>
+                </p>
+              )}
             </div>
 
             {/* Billing Period */}
@@ -262,7 +270,7 @@ export default function BillingPage() {
         </div>
 
         {/* Subscription Details Card */}
-        {subscription && (
+        {subscription && plan !== 'free' && (
           <div className="bg-brand-surface border border-white/5 rounded-2xl p-6 mb-6">
             <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
               <CreditCard className="w-5 h-5 text-brand-red" />
@@ -346,32 +354,46 @@ export default function BillingPage() {
         <div className="bg-brand-surface border border-white/5 rounded-2xl p-6">
           <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
             <Shield className="w-5 h-5 text-brand-red" />
-            {t('billing.manage_title')}
+            {plan === 'free' ? t('billing.upgrade_title') : t('billing.manage_title')}
           </h2>
           <p className="text-sm text-brand-text-secondary mb-6">
-            {t('billing.manage_description')}
+            {plan === 'free' ? t('billing.upgrade_description') : t('billing.manage_description')}
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-3">
-            <button
-              onClick={handleManageSubscription}
-              disabled={portalLoading || !hasStripeCustomer}
-              className="flex items-center justify-center gap-2 px-6 py-3 bg-brand-red hover:bg-brand-red/90 text-white font-semibold rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {portalLoading ? (
-                <Loader2 className="w-5 h-5 animate-spin" />
-              ) : (
-                <ExternalLink className="w-5 h-5" />
-              )}
-              {t('billing.manage_subscription')}
-            </button>
-          </div>
+          {plan === 'free' ? (
+            <div className="flex flex-col sm:flex-row gap-3">
+              <a
+                href="/company/onboarding"
+                className="flex items-center justify-center gap-2 px-6 py-3 bg-brand-red hover:bg-brand-red/90 text-white font-semibold rounded-xl transition-all"
+              >
+                <ArrowUpRight className="w-5 h-5" />
+                {t('billing.upgrade_now')}
+              </a>
+            </div>
+          ) : (
+            <>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <button
+                  onClick={handleManageSubscription}
+                  disabled={portalLoading || !hasStripeCustomer}
+                  className="flex items-center justify-center gap-2 px-6 py-3 bg-brand-red hover:bg-brand-red/90 text-white font-semibold rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {portalLoading ? (
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                  ) : (
+                    <ExternalLink className="w-5 h-5" />
+                  )}
+                  {t('billing.manage_subscription')}
+                </button>
+              </div>
 
-          {!hasStripeCustomer && (
-            <p className="text-xs text-brand-text-secondary mt-3 flex items-center gap-1.5">
-              <AlertTriangle className="w-3.5 h-3.5" />
-              {t('billing.no_stripe_customer')}
-            </p>
+              {!hasStripeCustomer && (
+                <p className="text-xs text-brand-text-secondary mt-3 flex items-center gap-1.5">
+                  <AlertTriangle className="w-3.5 h-3.5" />
+                  {t('billing.no_stripe_customer')}
+                </p>
+              )}
+            </>
           )}
 
           <div className="mt-6 pt-4 border-t border-white/5 flex items-center gap-2 text-xs text-brand-text-secondary">

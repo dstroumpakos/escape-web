@@ -15,6 +15,7 @@ import {
   Rocket,
   Diamond,
   Briefcase,
+  Gift,
   RefreshCw,
   LogOut,
   ChevronDown,
@@ -22,6 +23,20 @@ import {
 } from 'lucide-react';
 
 const PLANS = [
+  {
+    id: 'free' as const,
+    icon: Gift,
+    color: '#64748B',
+    priceMonth: '€0',
+    priceYear: '€0',
+    free: true,
+    features: [
+      'company.onboarding.free_f1',
+      'company.onboarding.free_f2',
+      'company.onboarding.free_f3',
+      'company.onboarding.free_f4',
+    ],
+  },
   {
     id: 'starter' as const,
     icon: Rocket,
@@ -32,6 +47,8 @@ const PLANS = [
       'company.onboarding.starter_f1',
       'company.onboarding.starter_f2',
       'company.onboarding.starter_f3',
+      'company.onboarding.starter_f4',
+      'company.onboarding.starter_f5',
     ],
   },
   {
@@ -46,6 +63,7 @@ const PLANS = [
       'company.onboarding.pro_f2',
       'company.onboarding.pro_f3',
       'company.onboarding.pro_f4',
+      'company.onboarding.pro_f5',
     ],
   },
   {
@@ -286,10 +304,17 @@ export default function CompanyOnboardingPage() {
   //  STEP 2: Select Plan
   // ═══════════════════════════════════════════
   if (status === 'pending_plan') {
-    const handleSelectPlan = async (planId: 'starter' | 'pro' | 'enterprise') => {
+    const handleSelectPlan = async (planId: 'free' | 'starter' | 'pro' | 'enterprise') => {
       setSelectedPlanId(planId);
       setLoading(true);
       try {
+        // Free plan: skip Stripe, go straight to review
+        if (planId === 'free') {
+          await selectPlan({ companyId: companyId as any, plan: 'free' });
+          refreshCompany({ onboardingStatus: 'pending_review', platformPlan: 'free' });
+          setLoading(false);
+          return;
+        }
         const origin = window.location.origin;
         const successUrl = `${origin}${p('/company/onboarding/payment-success')}?plan=${planId}&period=${billingPeriod}`;
         const cancelUrl = `${origin}${p('/company/onboarding')}`;
@@ -312,7 +337,7 @@ export default function CompanyOnboardingPage() {
 
     return (
       <div className="min-h-screen bg-brand-bg">
-        <div className="max-w-5xl mx-auto">
+        <div className="max-w-6xl mx-auto">
           {renderHeader(t('company.onboarding.choose_plan'))}
           {renderSteps()}
 
@@ -348,10 +373,11 @@ export default function CompanyOnboardingPage() {
               </button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {PLANS.map((plan) => {
                 const Icon = plan.icon;
                 const isLoading = loading && selectedPlanId === plan.id;
+                const isFree = 'free' in plan && (plan as any).free;
                 return (
                   <div
                     key={plan.id}
@@ -378,21 +404,34 @@ export default function CompanyOnboardingPage() {
                       {t(`company.onboarding.plan_${plan.id}`)}
                     </h3>
 
-                    <p className="text-3xl font-bold text-white mt-2">
-                      {billingPeriod === 'monthly' ? plan.priceMonth : plan.priceYear}
-                      <span className="text-sm font-normal text-brand-text-secondary">
-                        /{billingPeriod === 'monthly' ? t('company.onboarding.month') : t('company.onboarding.year')}
-                      </span>
-                    </p>
-                    {billingPeriod === 'yearly' && (
-                      <p className="text-sm text-emerald-400 mb-2 font-medium">
-                        {t('company.onboarding.yearly_savings')}
-                      </p>
-                    )}
-                    {billingPeriod === 'monthly' && (
-                      <p className="text-sm text-brand-text-secondary mb-2">
-                        {plan.priceYear}/{t('company.onboarding.year')}
-                      </p>
+                    {isFree ? (
+                      <>
+                        <p className="text-3xl font-bold text-white mt-2">
+                          {t('company.onboarding.free')}
+                        </p>
+                        <p className="text-sm text-brand-text-secondary mb-2">
+                          {t('company.onboarding.free_fee')}
+                        </p>
+                      </>
+                    ) : (
+                      <>
+                        <p className="text-3xl font-bold text-white mt-2">
+                          {billingPeriod === 'monthly' ? plan.priceMonth : plan.priceYear}
+                          <span className="text-sm font-normal text-brand-text-secondary">
+                            /{billingPeriod === 'monthly' ? t('company.onboarding.month') : t('company.onboarding.year')}
+                          </span>
+                        </p>
+                        {billingPeriod === 'yearly' && (
+                          <p className="text-sm text-emerald-400 mb-2 font-medium">
+                            {t('company.onboarding.yearly_savings')}
+                          </p>
+                        )}
+                        {billingPeriod === 'monthly' && (
+                          <p className="text-sm text-brand-text-secondary mb-2">
+                            {plan.priceYear}/{t('company.onboarding.year')}
+                          </p>
+                        )}
+                      </>
                     )}
 
                     <div className="w-4/5 h-px bg-white/10 my-4" />
@@ -423,6 +462,11 @@ export default function CompanyOnboardingPage() {
                     >
                       {isLoading ? (
                         <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      ) : isFree ? (
+                        <>
+                          <Gift className="w-4 h-4" />
+                          {t('company.onboarding.start_free')}
+                        </>
                       ) : (
                         <>
                           <CreditCard className="w-4 h-4" />
@@ -529,12 +573,14 @@ export default function CompanyOnboardingPage() {
                     )}
                   </span>
                 </div>
-                <div className="flex items-center gap-3">
-                  <Check className="w-5 h-5 text-green-400 flex-shrink-0" />
-                  <span className="text-sm text-brand-text-secondary">
-                    {t('company.onboarding.check_payment')}
-                  </span>
-                </div>
+                {companyData?.platformPlan !== 'free' && (
+                  <div className="flex items-center gap-3">
+                    <Check className="w-5 h-5 text-green-400 flex-shrink-0" />
+                    <span className="text-sm text-brand-text-secondary">
+                      {t('company.onboarding.check_payment')}
+                    </span>
+                  </div>
+                )}
                 <div className="flex items-center gap-3">
                   <Clock className="w-5 h-5 text-amber-400 flex-shrink-0" />
                   <span className="text-sm text-brand-text-secondary">

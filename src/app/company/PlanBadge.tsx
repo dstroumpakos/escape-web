@@ -1,6 +1,6 @@
 'use client';
 
-import { Rocket, Diamond, Crown } from 'lucide-react';
+import { Rocket, Diamond, Crown, Gift } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
 
 export function PlanBadge({
@@ -15,6 +15,13 @@ export function PlanBadge({
   const { t } = useTranslation();
 
   const PLAN_CONFIG: Record<string, { label: string; color: string; bg: string; border: string; Icon: any }> = {
+    free: {
+      label: t('company.plan.free'),
+      color: 'text-slate-400',
+      bg: 'bg-slate-500/10',
+      border: 'border-slate-500/20',
+      Icon: Gift,
+    },
     starter: {
       label: t('company.plan.starter'),
       color: 'text-emerald-400',

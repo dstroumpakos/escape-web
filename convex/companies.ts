@@ -659,7 +659,7 @@ export const acceptTerms = mutation({
 export const selectPlan = mutation({
   args: {
     companyId: v.id("companies"),
-    plan: v.union(v.literal("starter"), v.literal("pro"), v.literal("enterprise")),
+    plan: v.union(v.literal("free"), v.literal("starter"), v.literal("pro"), v.literal("enterprise")),
   },
   handler: async (ctx, args) => {
     const company = await ctx.db.get(args.companyId);

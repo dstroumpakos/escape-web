@@ -30,6 +30,7 @@ export default defineSchema({
     )),
     termsAcceptedAt: v.optional(v.number()),
     platformPlan: v.optional(v.union(
+      v.literal("free"),
       v.literal("starter"),
       v.literal("pro"),
       v.literal("enterprise")
