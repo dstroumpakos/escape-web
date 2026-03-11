@@ -15,6 +15,7 @@ import {
   CreditCard,
   Camera,
   BookOpen,
+  Globe,
 } from 'lucide-react';
 import { ConvexClientProvider } from '@/components/providers/ConvexClientProvider';
 import { CompanyAuthProvider, useCompanyAuth, useCompanyPath } from '@/lib/companyAuth';
@@ -35,6 +36,7 @@ function CompanyShell({ children }: { children: React.ReactNode }) {
     { href: p('/company/photos'), label: t('company.nav.photos'), icon: Camera },
     { href: p('/company/billing'), label: t('company.nav.billing'), icon: CreditCard },
     { href: p('/company/docs'), label: t('company.nav.docs'), icon: BookOpen },
+    { href: '/services/website', label: t('company.nav.web_services'), icon: Globe },
     { href: p('/company/settings'), label: t('company.nav.settings'), icon: Settings },
   ];
 

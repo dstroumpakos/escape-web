@@ -899,6 +899,7 @@ const translations: Record<Language, Record<string, string>> = {
     'company.nav.photos': 'Photos',
     'company.nav.billing': 'Billing',
     'company.nav.docs': 'Docs',
+    'company.nav.web_services': 'Web Services',
     'company.nav.settings': 'Settings',
     'company.nav.logout': 'Log Out',
     'company.nav.back_to_site': '← Back to site',
@@ -1493,6 +1494,7 @@ const translations: Record<Language, Record<string, string>> = {
     'company.widget.preview_note': 'The widget will display your active rooms with real-time availability.',
     'company.dashboard.widget_title': 'Booking Widget',
     'company.dashboard.widget_desc': 'Embed on your website',
+    'company.dashboard.web_services_desc': 'Get a professional website',
 
     // ── Company Plan Badge ──
     'company.plan.free': 'Free',
@@ -2480,6 +2482,7 @@ const translations: Record<Language, Record<string, string>> = {
     'company.nav.photos': 'Φωτογραφίες',
     'company.nav.billing': 'Χρεώσεις',
     'company.nav.docs': 'Οδηγός',
+    'company.nav.web_services': 'Web Υπηρεσίες',
     'company.nav.settings': 'Ρυθμίσεις',
     'company.nav.logout': 'Αποσύνδεση',
     'company.nav.back_to_site': '← Πίσω στο site',
@@ -3074,6 +3077,7 @@ const translations: Record<Language, Record<string, string>> = {
     'company.widget.preview_note': 'Το widget θα εμφανίζει τα ενεργά δωμάτιά σας με διαθεσιμότητα σε πραγματικό χρόνο.',
     'company.dashboard.widget_title': 'Widget Κρατήσεων',
     'company.dashboard.widget_desc': 'Ενσωμάτωσε στο site σου',
+    'company.dashboard.web_services_desc': 'Αποκτήστε επαγγελματικό site',
 
     // ── Company Plan Badge ──
     'company.plan.free': 'Δωρεάν',

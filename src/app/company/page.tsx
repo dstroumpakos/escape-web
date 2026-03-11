@@ -33,6 +33,7 @@ import {
   Repeat,
   Timer,
   MessageSquare,
+  Globe,
 } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
 import { AnimateIn, StaggerContainer, StaggerItem } from '@/components/animations/AnimateIn';
@@ -447,7 +448,7 @@ export default function CompanyDashboardPage() {
         <h2 className="font-bold mb-3 flex items-center gap-2">
           <Zap className="w-4 h-4 text-brand-red" /> {t('company.dashboard.quick_actions')}
         </h2>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
           <QuickAction
             href={p('/company/rooms/new')}
             icon={Plus}
@@ -483,6 +484,13 @@ export default function CompanyDashboardPage() {
             label={t('company.dashboard.widget_title')}
             desc={t('company.dashboard.widget_desc')}
             color="text-orange-400"
+          />
+          <QuickAction
+            href="/services/website"
+            icon={Globe}
+            label={t('company.nav.web_services')}
+            desc={t('company.dashboard.web_services_desc')}
+            color="text-cyan-400"
           />
         </div>
       </div>
