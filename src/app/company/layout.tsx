@@ -38,10 +38,12 @@ function CompanyShell({ children }: { children: React.ReactNode }) {
     { href: p('/company/settings'), label: t('company.nav.settings'), icon: Settings },
   ];
 
-  // Allow auth pages without redirect
+  // Allow auth pages without redirect (check both /company/... and subdomain /... paths)
   const isAuthPage =
-    pathname === '/company/login' || pathname === '/company/register';
-  const isOnboardingPage = pathname === '/company/onboarding';
+    pathname === '/company/login' || pathname === '/company/register' ||
+    pathname === '/login' || pathname === '/register';
+  const isOnboardingPage =
+    pathname.startsWith('/company/onboarding') || pathname.startsWith('/onboarding');
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated && !isAuthPage) {
