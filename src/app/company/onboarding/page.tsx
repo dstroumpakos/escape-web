@@ -35,6 +35,7 @@ const PLANS = [
       'company.onboarding.free_f2',
       'company.onboarding.free_f3',
       'company.onboarding.free_f4',
+      'company.onboarding.free_f5',
     ],
   },
   {
