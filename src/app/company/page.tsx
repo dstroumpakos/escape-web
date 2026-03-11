@@ -77,7 +77,7 @@ export default function CompanyDashboardPage() {
   );
 
   const plan = (stats as any)?.plan || company?.platformPlan || 'starter';
-  const PLAN_ROOM_LIMITS: Record<string, number> = { starter: 1, pro: 10, enterprise: Infinity };
+  const PLAN_ROOM_LIMITS: Record<string, number> = { free: 1, starter: 1, pro: 10, enterprise: Infinity };
   const roomLimit = PLAN_ROOM_LIMITS[plan] || 3;
   const roomCount = stats?.totalRooms ?? 0;
   const atLimit = roomCount >= roomLimit;

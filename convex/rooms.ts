@@ -3,6 +3,7 @@ import { v } from "convex/values";
 
 // Helper: batch-enrich rooms with company partner info
 // Loads all unique companies in ONE pass, then maps them
+// Also filters out rooms from free-plan companies (not shown on public site)
 async function batchEnrichRooms(ctx: any, rooms: any[]) {
   // Collect unique companyIds
   const companyIds = Array.from(new Set(rooms.map((r) => r.companyId).filter(Boolean)));
@@ -14,7 +15,15 @@ async function batchEnrichRooms(ctx: any, rooms: any[]) {
     if (companies[i]) companyMap.set(companyIds[i] as string, companies[i]);
   }
 
-  return rooms.map((room) => {
+  // Filter out rooms from free-plan companies
+  const visibleRooms = rooms.filter((room) => {
+    if (!room.companyId) return true; // non-company rooms always visible
+    const company = companyMap.get(room.companyId as string);
+    if (!company) return true;
+    return company.platformPlan !== "free";
+  });
+
+  return visibleRooms.map((room) => {
     const company = room.companyId ? companyMap.get(room.companyId as string) : null;
     return {
       ...room,
@@ -77,7 +86,7 @@ export const featured = query({
     const companyIds = Array.from(new Set(candidateRooms.map((r) => r.companyId).filter(Boolean)));
     const companies = await Promise.all(companyIds.map((id) => ctx.db.get(id!)));
     const subscribedCompanies = new Set(
-      companies.filter((c) => c?.subscriptionEnabled).map((c) => c!._id.toString())
+      companies.filter((c) => c?.subscriptionEnabled && c?.platformPlan !== "free").map((c) => c!._id.toString())
     );
 
     for (const room of candidateRooms) {

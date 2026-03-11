@@ -48,6 +48,7 @@ import {
   Image,
   Layers,
   AlertCircle,
+  Lock,
 } from 'lucide-react';
 import { PlanBadge } from '../PlanBadge';
 import { useTranslation } from '@/lib/i18n';
@@ -472,7 +473,22 @@ export default function CompanySettingsPage() {
       )}
 
       {/* Early Access Tab */}
-      {activeTab === 'early-access' && (
+      {activeTab === 'early-access' && currentPlan === 'free' && (
+        <div className="relative overflow-hidden bg-gradient-to-br from-white/5 via-brand-surface to-brand-surface rounded-2xl border border-white/10 p-8 md:p-12 text-center">
+          <div className="absolute inset-0 bg-brand-bg/60 backdrop-blur-sm" />
+          <div className="relative space-y-4">
+            <div className="w-16 h-16 mx-auto rounded-2xl bg-white/5 flex items-center justify-center">
+              <Lock className="w-8 h-8 text-brand-text-secondary" />
+            </div>
+            <h2 className="text-xl font-bold">{t('company.settings.partner_locked_title')}</h2>
+            <p className="text-brand-text-secondary max-w-md mx-auto">
+              {t('company.settings.partner_locked_desc')}
+            </p>
+          </div>
+        </div>
+      )}
+
+      {activeTab === 'early-access' && currentPlan !== 'free' && (
         <div className="space-y-6">
           {/* Hero card */}
           <div className="relative overflow-hidden bg-gradient-to-br from-brand-red/20 via-brand-surface to-brand-surface rounded-2xl border border-brand-red/20 p-6 md:p-8">
