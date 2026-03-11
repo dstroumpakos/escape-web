@@ -42,7 +42,8 @@ export const list = query({
   args: {},
   handler: async (ctx) => {
     const rooms = await ctx.db.query("rooms").collect();
-    return await batchEnrichRooms(ctx, rooms);
+    const publicRooms = rooms.filter((r) => !r.photosOnly);
+    return await batchEnrichRooms(ctx, publicRooms);
   },
 });
 
@@ -59,10 +60,10 @@ export const featured = query({
   args: {},
   handler: async (ctx) => {
     // Get explicitly featured rooms
-    const featured = await ctx.db
+    const featured = (await ctx.db
       .query("rooms")
       .withIndex("by_featured", (q) => q.eq("isFeatured", true))
-      .collect();
+      .collect()).filter((r) => !r.photosOnly);
 
     // Also include EA partner rooms (Featured Spotlight benefit)
     // Load all companies at once to check subscriptionEnabled
@@ -71,7 +72,7 @@ export const featured = query({
 
     // Collect companyIds from non-featured active rooms to check subscription
     const candidateRooms = allRooms.filter(
-      (r) => !featuredIds.has(r._id.toString()) && r.companyId && r.isActive !== false
+      (r) => !featuredIds.has(r._id.toString()) && r.companyId && r.isActive !== false && !r.photosOnly
     );
     const companyIds = Array.from(new Set(candidateRooms.map((r) => r.companyId).filter(Boolean)));
     const companies = await Promise.all(companyIds.map((id) => ctx.db.get(id!)));
@@ -96,7 +97,7 @@ export const trending = query({
       .query("rooms")
       .withIndex("by_trending", (q) => q.eq("isTrending", true))
       .collect();
-    return await batchEnrichRooms(ctx, rooms);
+    return await batchEnrichRooms(ctx, rooms.filter((r) => !r.photosOnly));
   },
 });
 
@@ -107,7 +108,7 @@ export const byTheme = query({
       .query("rooms")
       .withIndex("by_theme", (q) => q.eq("theme", args.theme))
       .collect();
-    return await batchEnrichRooms(ctx, rooms);
+    return await batchEnrichRooms(ctx, rooms.filter((r) => !r.photosOnly));
   },
 });
 
@@ -118,9 +119,10 @@ export const search = query({
     const q = args.query.toLowerCase();
     const filtered = all.filter(
       (r) =>
-        r.title.toLowerCase().includes(q) ||
+        !r.photosOnly &&
+        (r.title.toLowerCase().includes(q) ||
         r.location.toLowerCase().includes(q) ||
-        r.theme.toLowerCase().includes(q)
+        r.theme.toLowerCase().includes(q))
     );
     return await batchEnrichRooms(ctx, filtered);
   },

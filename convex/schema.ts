@@ -113,6 +113,8 @@ export default defineSchema({
     })),
     // Early Access: date the room goes public (YYYY-MM-DD). Premium players see it 3 days before.
     releaseDate: v.optional(v.string()),
+    // Photos-only rooms (created from photos.unlocked.gr) — hidden from main site listings
+    photosOnly: v.optional(v.boolean()),
   })
     .index("by_theme", ["theme"])
     .index("by_featured", ["isFeatured"])

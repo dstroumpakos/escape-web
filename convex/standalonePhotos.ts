@@ -380,6 +380,7 @@ export const createSimpleRoom = mutation({
       description: "",
       story: "",
       isActive: true,
+      photosOnly: true,
     });
   },
 });
