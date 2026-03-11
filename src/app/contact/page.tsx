@@ -291,26 +291,6 @@ export default function ContactPage() {
 
             {/* Sidebar */}
             <AnimateIn animation="fadeLeft" delay={0.2} className="lg:col-span-2 space-y-6">
-              {/* Business CTA */}
-              <div className="card p-6 glow-border">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-10 h-10 rounded-xl bg-brand-red/10 flex items-center justify-center">
-                    <Building2 className="w-5 h-5 text-brand-red" />
-                  </div>
-                  <h3 className="font-semibold">{t('contact.for_businesses')}</h3>
-                </div>
-                <p className="text-sm text-brand-text-secondary mb-4">
-                  {t('contact.for_businesses_desc')}
-                </p>
-                <a
-                  href="/about#for-businesses"
-                  className="text-brand-red text-sm font-medium hover:text-brand-red-light flex items-center gap-1 transition-colors"
-                >
-                  {t('contact.learn_more')}
-                  <ArrowRight className="w-4 h-4" />
-                </a>
-              </div>
-
               {/* Map placeholder */}
               <div className="card overflow-hidden">
                 <div className="h-48 bg-brand-surface flex items-center justify-center">

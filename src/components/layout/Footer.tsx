@@ -25,7 +25,6 @@ export function Footer() {
     ],
     company: [
       { label: t('footer.about_us'), href: '/about' },
-      { label: t('footer.for_businesses'), href: '/about#for-businesses' },
       { label: t('footer.web_services'), href: '/services/website' },
       { label: t('footer.contact'), href: '/contact' },
       { label: t('footer.careers'), href: '/contact' },

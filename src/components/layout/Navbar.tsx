@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Menu, X, Lock, Unlock, LogOut, User, Bell, Ticket, Building2 } from 'lucide-react';
+import { Menu, X, Lock, Unlock, LogOut, User, Bell, Ticket } from 'lucide-react';
 import { useAuth } from '@/lib/auth';
 import { useTranslation } from '@/lib/i18n';
 import { LanguageToggle } from '@/components/LanguageToggle';
@@ -109,12 +109,6 @@ export function Navbar() {
               </>
             ) : (
               <>
-                <Link
-                  href="https://business.unlocked.gr/login"
-                  className="text-sm text-brand-text-secondary hover:text-white transition-colors flex items-center gap-1"
-                >
-                  <Building2 className="w-4 h-4" /> {t('nav.business')}
-                </Link>
                 <Link href="/login" className="btn-ghost text-sm">
                   {t('nav.login')}
                 </Link>
@@ -175,9 +169,6 @@ export function Navbar() {
                 </>
               ) : (
                 <div className="flex flex-col gap-2">
-                  <Link href="https://business.unlocked.gr/login" className="px-4 py-3 rounded-lg text-sm font-medium text-brand-text-secondary hover:text-white hover:bg-brand-surface/50 flex items-center gap-2">
-                    <Building2 className="w-4 h-4" /> {t('nav.business')}
-                  </Link>
                   <div className="flex gap-3 mt-1">
                     <Link href="/login" className="btn-ghost text-sm flex-1 text-center">
                       {t('nav.login')}

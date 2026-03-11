@@ -52,13 +52,6 @@ export default function AboutPage() {
     { year: t('about.timeline4_year'), title: t('about.timeline4_title'), desc: t('about.timeline4_desc') },
   ];
 
-  const businessFeats = [
-    { icon: Calendar, title: t('about.biz_feature1_title'), desc: t('about.biz_feature1_desc') },
-    { icon: QrCode, title: t('about.biz_feature2_title'), desc: t('about.biz_feature2_desc') },
-    { icon: BarChart2, title: t('about.biz_feature3_title'), desc: t('about.biz_feature3_desc') },
-    { icon: Building2, title: t('about.biz_feature4_title'), desc: t('about.biz_feature4_desc') },
-  ];
-
   return (
     <>
       {/* Hero */}
@@ -183,46 +176,6 @@ export default function AboutPage() {
                 </AnimateIn>
               ))}
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* For Businesses */}
-      <section id="for-businesses" className="py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <AnimateIn animation="fadeUp" className="text-center mb-14">
-            <span className="text-brand-red text-sm font-semibold uppercase tracking-wider">
-              {t('about.for_businesses_label')}
-            </span>
-            <h2 className="section-heading mt-3 mb-4">
-              {t('about.partner_title')} <span className="text-gradient">{t('about.partner_title_highlight')}</span>
-            </h2>
-            <p className="section-subheading mx-auto">
-              {t('about.partner_subtitle')}
-            </p>
-          </AnimateIn>
-
-          <StaggerContainer stagger={0.12} className="grid sm:grid-cols-2 gap-6 mb-10">
-            {businessFeats.map((f, i) => (
-              <StaggerItem key={i} animation="fadeUp">
-              <div className="card p-6 flex gap-4 hover:-translate-y-1 transition-transform duration-300">
-                <div className="shrink-0 w-12 h-12 rounded-xl bg-brand-red/10 flex items-center justify-center">
-                  <f.icon className="w-6 h-6 text-brand-red" />
-                </div>
-                <div>
-                  <h3 className="font-semibold mb-1">{f.title}</h3>
-                  <p className="text-sm text-brand-text-secondary">{f.desc}</p>
-                </div>
-              </div>
-              </StaggerItem>
-            ))}
-          </StaggerContainer>
-
-          <div className="text-center">
-            <Link href="https://business.unlocked.gr/register" className="btn-primary inline-flex items-center gap-2">
-              {t('about.become_partner')}
-              <ArrowRight className="w-5 h-5" />
-            </Link>
           </div>
         </div>
       </section>
