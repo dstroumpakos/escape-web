@@ -385,10 +385,10 @@ export default function AdminPage() {
                       expanded={expandedCompany === company._id}
                       onToggle={() => setExpandedCompany(expandedCompany === company._id ? null : company._id)}
                       onApprove={async () => {
-                        await approveCompany({ companyId: company._id, userId: company._id });
+                        await approveCompany({ companyId: company._id, adminEmail: adminEmail! });
                       }}
                       onDecline={async (notes: string) => {
-                        await declineCompany({ companyId: company._id, notes, userId: company._id });
+                        await declineCompany({ companyId: company._id, notes, adminEmail: adminEmail! });
                       }}
                       t={t}
                       showActions
