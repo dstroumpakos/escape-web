@@ -13,7 +13,13 @@ export function LayoutShell({ children }: { children: React.ReactNode }) {
   const isCompanyRoute = pathname.startsWith('/company');
   const isPhotosApp = pathname.startsWith('/photos-app');
 
-  const [isSubdomain, setIsSubdomain] = useState(false);
+  // Detect subdomain via cookie set by middleware (works on first render, no SSR mismatch)
+  const [isSubdomain, setIsSubdomain] = useState(() => {
+    if (typeof document !== 'undefined') {
+      return document.cookie.includes('x-subdomain=');
+    }
+    return false;
+  });
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const h = window.location.hostname;

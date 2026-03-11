@@ -12,51 +12,64 @@ export function middleware(request: NextRequest) {
       const clean = pathname.replace(/^\/company/, '') || '/';
       const url = request.nextUrl.clone();
       url.pathname = clean;
-      return NextResponse.redirect(url);
+      const resp = NextResponse.redirect(url);
+      resp.cookies.set('x-subdomain', 'business', { path: '/' });
+      return resp;
     }
     // Rewrite root-relative paths to /company/* internally
+    let resp: NextResponse;
     if (pathname === '/') {
-      return NextResponse.rewrite(new URL('/company', request.url));
+      resp = NextResponse.rewrite(new URL('/company', request.url));
+    } else if (!pathname.startsWith('/_next') && !pathname.startsWith('/api')) {
+      resp = NextResponse.rewrite(new URL(`/company${pathname}`, request.url));
+    } else {
+      resp = NextResponse.next();
     }
-    if (!pathname.startsWith('/_next') && !pathname.startsWith('/api')) {
-      return NextResponse.rewrite(new URL(`/company${pathname}`, request.url));
-    }
+    resp.cookies.set('x-subdomain', 'business', { path: '/' });
+    return resp;
   }
 
   // ── photos.unlocked.gr subdomain routing ──
   if (host.startsWith('photos.unlocked.gr') || host.startsWith('photos.localhost')) {
+    let resp: NextResponse;
+
     // Root → /photos-app (standalone photos dashboard)
     if (pathname === '/') {
-      return NextResponse.rewrite(new URL('/photos-app', request.url));
+      resp = NextResponse.rewrite(new URL('/photos-app', request.url));
     }
-
     // /login → /photos-app/login
-    if (pathname === '/login') {
-      return NextResponse.rewrite(new URL('/photos-app/login', request.url));
+    else if (pathname === '/login') {
+      resp = NextResponse.rewrite(new URL('/photos-app/login', request.url));
     }
-
     // /register → /photos-app/register
-    if (pathname === '/register') {
-      return NextResponse.rewrite(new URL('/photos-app/register', request.url));
+    else if (pathname === '/register') {
+      resp = NextResponse.rewrite(new URL('/photos-app/register', request.url));
     }
-
     // /room/[id] → /photos-app/room/[id]
-    if (pathname.startsWith('/room/')) {
-      return NextResponse.rewrite(new URL(`/photos-app${pathname}`, request.url));
+    else if (pathname.startsWith('/room/')) {
+      resp = NextResponse.rewrite(new URL(`/photos-app${pathname}`, request.url));
     }
-
     // /p/[id] → served as-is (public photo page already exists)
-    if (pathname.startsWith('/p/')) {
-      return NextResponse.next();
+    else if (pathname.startsWith('/p/')) {
+      resp = NextResponse.next();
+    }
+    // Any other path under photos subdomain → /photos-app/[path]
+    else if (!pathname.startsWith('/photos-app') && !pathname.startsWith('/_next') && !pathname.startsWith('/api')) {
+      resp = NextResponse.rewrite(new URL(`/photos-app${pathname}`, request.url));
+    } else {
+      resp = NextResponse.next();
     }
 
-    // Any other path under photos subdomain → /photos-app/[path]
-    if (!pathname.startsWith('/photos-app') && !pathname.startsWith('/_next') && !pathname.startsWith('/api')) {
-      return NextResponse.rewrite(new URL(`/photos-app${pathname}`, request.url));
-    }
+    resp.cookies.set('x-subdomain', 'photos', { path: '/' });
+    return resp;
   }
 
-  return NextResponse.next();
+  // Main domain — clear subdomain cookie if present
+  const resp = NextResponse.next();
+  if (request.cookies.has('x-subdomain')) {
+    resp.cookies.delete('x-subdomain');
+  }
+  return resp;
 }
 
 export const config = {
