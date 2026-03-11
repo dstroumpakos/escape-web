@@ -23,6 +23,16 @@ export function middleware(request: NextRequest) {
     } else if (pathname.startsWith('/admin')) {
       // Admin page lives at /admin, not /company/admin — serve as-is
       resp = NextResponse.next();
+    } else if (
+      pathname.startsWith('/services') ||
+      pathname.startsWith('/about') ||
+      pathname.startsWith('/contact') ||
+      pathname.startsWith('/privacy') ||
+      pathname.startsWith('/terms') ||
+      pathname.startsWith('/cookies')
+    ) {
+      // Public pages served as-is on business subdomain
+      resp = NextResponse.next();
     } else if (!pathname.startsWith('/_next') && !pathname.startsWith('/api')) {
       resp = NextResponse.rewrite(new URL(`/company${pathname}`, request.url));
     } else {

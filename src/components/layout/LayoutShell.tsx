@@ -20,16 +20,31 @@ export function LayoutShell({ children }: { children: React.ReactNode }) {
     }
     return false;
   });
+  const [isBusinessSubdomain, setIsBusinessSubdomain] = useState(false);
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const h = window.location.hostname;
       if (h === 'photos.unlocked.gr' || h === 'business.unlocked.gr') {
         setIsSubdomain(true);
       }
+      if (h === 'business.unlocked.gr') {
+        setIsBusinessSubdomain(true);
+      }
     }
   }, []);
 
-  if (isCompanyRoute || isPhotosApp || isSubdomain) {
+  // On business subdomain, public pages (services, about, contact, etc.) should show Navbar/Footer
+  const isPublicPage =
+    pathname.startsWith('/services') ||
+    pathname.startsWith('/about') ||
+    pathname.startsWith('/contact') ||
+    pathname.startsWith('/privacy') ||
+    pathname.startsWith('/terms') ||
+    pathname.startsWith('/cookies');
+
+  const hideMainLayout = isCompanyRoute || isPhotosApp || (isSubdomain && !isPublicPage);
+
+  if (hideMainLayout) {
     // Company portal / Photos app have their own layout — no main Navbar/Footer
     return (
       <>
