@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Unlock, Building2, Mail, Lock, Eye, EyeOff, ArrowRight, Shield } from 'lucide-react';
+import { Unlock, Building2, Mail, Lock, Eye, EyeOff, ArrowRight, Shield, Calendar, QrCode, BarChart2, Code, Globe } from 'lucide-react';
 import { useCompanyAuth, useCompanyPath } from '@/lib/companyAuth';
 import { useTranslation } from '@/lib/i18n';
 import { LanguageToggle } from '@/components/LanguageToggle';
@@ -53,9 +53,9 @@ export default function CompanyLoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-brand-bg flex items-center justify-center px-4">
+    <div className="min-h-screen bg-brand-bg flex flex-col items-center justify-center px-4 py-12">
       {/* Language toggle */}
-      <div className="absolute top-4 right-4">
+      <div className="fixed top-4 right-4 z-50">
         <LanguageToggle />
       </div>
 
@@ -155,6 +155,35 @@ export default function CompanyLoginPage() {
             {t('company.auth.back_to_unlocked')}
           </Link>
         </p>
+      </div>
+
+      {/* ── Features Section ── */}
+      <div className="w-full max-w-4xl mt-16">
+        <div className="text-center mb-8">
+          <h2 className="text-xl font-bold mb-2">{t('company.auth.why_unlocked')}</h2>
+          <p className="text-sm text-brand-text-secondary">{t('company.auth.why_unlocked_desc')}</p>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {[
+            { icon: Calendar, title: t('business.feature1.title'), desc: t('business.feature1.desc') },
+            { icon: QrCode, title: t('business.feature2.title'), desc: t('business.feature2.desc') },
+            { icon: BarChart2, title: t('business.feature3.title'), desc: t('business.feature3.desc') },
+            { icon: Code, title: t('business.feature4.title'), desc: t('business.feature4.desc') },
+            { icon: Globe, title: t('business.feature5.title'), desc: t('business.feature5.desc'), href: '/services/website' },
+            { icon: Shield, title: t('company.auth.feature_free_title'), desc: t('company.auth.feature_free_desc') },
+          ].map((f, i) => (
+            <div key={i} className="bg-brand-surface rounded-xl border border-white/5 p-5 hover:border-white/10 transition-colors">
+              <f.icon className="w-6 h-6 text-brand-red mb-3" />
+              <h3 className="font-semibold text-sm mb-1">{f.title}</h3>
+              <p className="text-xs text-brand-text-secondary leading-relaxed">{f.desc}</p>
+              {(f as any).href && (
+                <Link href={(f as any).href} className="text-xs text-brand-red hover:underline mt-2 inline-block">
+                  {t('company.auth.learn_more')} →
+                </Link>
+              )}
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );

@@ -863,6 +863,11 @@ const translations: Record<Language, Record<string, string>> = {
     'company.auth.no_account': "Don't have a business account?",
     'company.auth.register_link': 'Register here',
     'company.auth.back_to_unlocked': '← Back to UNLOCKED',
+    'company.auth.why_unlocked': 'Why UNLOCKED?',
+    'company.auth.why_unlocked_desc': 'Everything you need to manage and grow your escape room business',
+    'company.auth.feature_free_title': 'Free to Start',
+    'company.auth.feature_free_desc': 'Get started with our free plan — no credit card required. Pay only per booking through the widget.',
+    'company.auth.learn_more': 'Learn more',
     'company.auth.login_failed': 'Login failed',
 
     // ── Company Register ──
@@ -2446,6 +2451,11 @@ const translations: Record<Language, Record<string, string>> = {
     'company.auth.no_account': 'Δεν έχεις εταιρικό λογαριασμό;',
     'company.auth.register_link': 'Εγγραφή εδώ',
     'company.auth.back_to_unlocked': '← Πίσω στο UNLOCKED',
+    'company.auth.why_unlocked': 'Γιατί UNLOCKED;',
+    'company.auth.why_unlocked_desc': 'Όλα όσα χρειάζεστε για να διαχειριστείτε και να αναπτύξετε το escape room σας',
+    'company.auth.feature_free_title': 'Ξεκινήστε Δωρεάν',
+    'company.auth.feature_free_desc': 'Ξεκινήστε με το δωρεάν πλάνο — χωρίς πιστωτική κάρτα. Πληρώνετε μόνο ανά κράτηση μέσω widget.',
+    'company.auth.learn_more': 'Μάθε περισσότερα',
     'company.auth.login_failed': 'Η σύνδεση απέτυχε',
 
     // ── Company Register ──
