@@ -11,20 +11,20 @@ import { SafeConvex } from '@/components/SafeConvex';
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-  title: 'Escape Room Booking & Management Platform | UNLOCKED',
+  title: 'Discover & Book Escape Rooms in Greece | UNLOCKED',
   description:
-    'Discover and book the best escape rooms near you, or manage your escape room business with our all-in-one platform. Instant bookings, real-time analytics & more.',
+    'Find and book the best escape rooms near you. Browse by theme, difficulty & location. Instant online booking, player reviews & team leaderboards on UNLOCKED.',
   keywords: [
     'escape room',
-    'escape room booking',
-    'escape room platform',
-    'escape room management software',
-    'escape room booking system',
-    'book escape room online',
+    'book escape room',
+    'escape room Greece',
     'escape game',
-    'team building',
-    'puzzle',
-    'adventure',
+    'team building activities',
+    'puzzle rooms',
+    'adventure games',
+    'escape room near me',
+    'online booking',
+    'player reviews',
   ],
   manifest: '/manifest.json',
   themeColor: '#FF1E1E',
@@ -43,9 +43,9 @@ export const metadata: Metadata = {
     canonical: 'https://unlocked.gr',
   },
   openGraph: {
-    title: 'Escape Room Booking & Management Platform | UNLOCKED',
+    title: 'Discover & Book Escape Rooms in Greece | UNLOCKED',
     description:
-      'Discover and book the best escape rooms near you, or manage your escape room business with our all-in-one platform.',
+      'Find and book the best escape rooms near you. Browse by theme, difficulty & location. Instant booking & player reviews.',
     type: 'website',
     url: 'https://unlocked.gr',
     siteName: 'UNLOCKED',
@@ -53,9 +53,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Escape Room Booking & Management Platform | UNLOCKED',
+    title: 'Discover & Book Escape Rooms in Greece | UNLOCKED',
     description:
-      'Discover and book the best escape rooms. Manage your escape room business with UNLOCKED.',
+      'Find and book the best escape rooms near you. Browse by theme, difficulty & location on UNLOCKED.',
   },
 };
 
@@ -70,14 +70,14 @@ export default function RootLayout({
     name: 'UNLOCKED',
     url: 'https://unlocked.gr',
     description:
-      'All-in-one escape room booking and management platform. Discover, book and manage escape rooms with UNLOCKED.',
-    applicationCategory: 'BusinessApplication',
+      'Discover and book the best escape rooms in Greece. Browse rooms by theme, difficulty and location with instant online booking.',
+    applicationCategory: 'EntertainmentApplication',
     operatingSystem: 'Web',
     offers: {
       '@type': 'Offer',
       price: '0',
       priceCurrency: 'EUR',
-      description: 'Free plan available for escape room businesses',
+      description: 'Free to browse and book escape rooms',
     },
     creator: {
       '@type': 'Organization',

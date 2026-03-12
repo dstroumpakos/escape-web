@@ -48,33 +48,6 @@ export function SEOContent() {
           {t('seo.players_social_p')}
         </p>
 
-        {/* H2: For Businesses */}
-        <h2 className="text-3xl sm:text-4xl font-display font-bold mb-6">
-          {t('seo.business_title')}{' '}
-          <span className="text-gradient">{t('seo.business_highlight')}</span>
-        </h2>
-
-        <h3 className="text-xl font-semibold mb-3 text-white">
-          {t('seo.business_booking_h3')}
-        </h3>
-        <p className="text-brand-text-secondary leading-relaxed mb-6">
-          {t('seo.business_booking_p')}
-        </p>
-
-        <h3 className="text-xl font-semibold mb-3 text-white">
-          {t('seo.business_analytics_h3')}
-        </h3>
-        <p className="text-brand-text-secondary leading-relaxed mb-6">
-          {t('seo.business_analytics_p')}
-        </p>
-
-        <h3 className="text-xl font-semibold mb-3 text-white">
-          {t('seo.business_marketing_h3')}
-        </h3>
-        <p className="text-brand-text-secondary leading-relaxed mb-12">
-          {t('seo.business_marketing_p')}
-        </p>
-
         {/* H2: Why Choose UNLOCKED */}
         <h2 className="text-3xl sm:text-4xl font-display font-bold mb-6">
           {t('seo.why_title')}{' '}
@@ -103,8 +76,8 @@ export function SEOContent() {
           <Link href="/discover" className="btn-primary text-center">
             {t('seo.cta_discover')}
           </Link>
-          <Link href="/for-escape-rooms" className="btn-outline text-center">
-            {t('seo.cta_business')}
+          <Link href="/signup" className="btn-outline text-center">
+            {t('seo.cta_signup')}
           </Link>
         </div>
       </div>
