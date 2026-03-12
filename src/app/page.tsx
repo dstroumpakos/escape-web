@@ -5,6 +5,7 @@ import { ThemesSection } from '@/components/home/ThemesSection';
 import { StatsBar } from '@/components/home/StatsBar';
 import { TestimonialsSection } from '@/components/home/TestimonialsSection';
 import { DownloadCTA } from '@/components/home/DownloadCTA';
+import { SEOContent } from '@/components/home/SEOContent';
 import { SafeConvex } from '@/components/SafeConvex';
 
 export default function Home() {
@@ -16,6 +17,7 @@ export default function Home() {
       <ThemesSection />
       <HowItWorks />
       <TestimonialsSection />
+      <SEOContent />
       <DownloadCTA />
     </>
   );
