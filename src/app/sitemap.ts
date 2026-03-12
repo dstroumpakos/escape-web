@@ -1,9 +1,10 @@
 import { MetadataRoute } from 'next';
+import { CITIES, getCountries } from '@/data/cities';
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = 'https://unlocked.gr';
 
-  return [
+  const staticRoutes: MetadataRoute.Sitemap = [
     {
       url: baseUrl,
       lastModified: new Date(),
@@ -14,6 +15,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       url: `${baseUrl}/discover`,
       lastModified: new Date(),
       changeFrequency: 'daily',
+      priority: 0.9,
+    },
+    {
+      url: `${baseUrl}/escape-rooms`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
       priority: 0.9,
     },
     {
@@ -83,4 +90,22 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.2,
     },
   ];
+
+  // Country hub pages
+  const countryRoutes: MetadataRoute.Sitemap = getCountries().map((c) => ({
+    url: `${baseUrl}/escape-rooms/${c.countrySlug}`,
+    lastModified: new Date(),
+    changeFrequency: 'weekly' as const,
+    priority: 0.8,
+  }));
+
+  // City pages
+  const cityRoutes: MetadataRoute.Sitemap = CITIES.map((c) => ({
+    url: `${baseUrl}/escape-rooms/${c.countrySlug}/${c.citySlug}`,
+    lastModified: new Date(),
+    changeFrequency: 'weekly' as const,
+    priority: 0.7,
+  }));
+
+  return [...staticRoutes, ...countryRoutes, ...cityRoutes];
 }
