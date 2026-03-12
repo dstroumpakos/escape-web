@@ -21,6 +21,8 @@ import {
 import Link from 'next/link';
 import { useTranslation } from '@/lib/i18n';
 import { useState } from 'react';
+import { useQuery } from 'convex/react';
+import { api } from '../../../convex/_generated/api';
 
 function FAQItem({ question, answer }: { question: string; answer: string }) {
   const [open, setOpen] = useState(false);
@@ -44,6 +46,7 @@ function FAQItem({ question, answer }: { question: string; answer: string }) {
 
 export default function ForEscapeRoomsPage() {
   const { t } = useTranslation();
+  const platformStats = useQuery(api.stats.getPlatformStats);
 
   const features = [
     { icon: Calendar, key: 'booking' },
@@ -140,10 +143,14 @@ export default function ForEscapeRoomsPage() {
             </h2>
           </div>
           <div className="grid md:grid-cols-3 gap-6">
-            {[1, 2, 3].map((i) => (
+            {[
+              { value: platformStats ? `${platformStats.totalRooms}+` : '—', label: t('fer.stat1_label') },
+              { value: platformStats ? `${platformStats.completedEscapes.toLocaleString()}+` : '—', label: t('fer.stat2_label') },
+              { value: platformStats ? `${platformStats.averageRating.toFixed(1)}/5` : '—', label: t('fer.stat3_label') },
+            ].map((stat, i) => (
               <div key={i} className="card p-8 text-center">
-                <div className="text-4xl font-bold text-brand-red mb-2">{t(`fer.stat${i}_value`)}</div>
-                <div className="text-sm text-brand-text-secondary">{t(`fer.stat${i}_label`)}</div>
+                <div className="text-4xl font-bold text-brand-red mb-2">{stat.value}</div>
+                <div className="text-sm text-brand-text-secondary">{stat.label}</div>
               </div>
             ))}
           </div>
