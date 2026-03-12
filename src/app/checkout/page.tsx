@@ -218,7 +218,7 @@ function CheckoutContent() {
 
             {/* Test Mode Banner */}
             {isTestMode && (
-              <div className="card p-5 border-yellow-500/30 bg-yellow-500/5">
+              <div className="card p-5 border-yellow-500/30 bg-yellow-500/5 space-y-3">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 bg-yellow-500/20 rounded-xl flex items-center justify-center shrink-0">
                     <AlertTriangle className="w-5 h-5 text-yellow-400" />
@@ -227,6 +227,9 @@ function CheckoutContent() {
                     <h3 className="font-semibold text-yellow-400 text-sm">{t('room.test_mode_title')}</h3>
                     <p className="text-xs text-yellow-300/70 mt-0.5">{t('room.test_mode_desc')}</p>
                   </div>
+                </div>
+                <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-3">
+                  <p className="text-xs text-red-300">{t('room.test_popup_disclaimer')}</p>
                 </div>
               </div>
             )}

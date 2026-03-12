@@ -110,10 +110,15 @@ export default function RoomDetailsPage() {
             </div>
             <h2 className="text-xl font-display font-bold mb-2 text-yellow-400">{t('room.test_popup_title')}</h2>
             <p className="text-brand-text-secondary text-sm leading-relaxed mb-4" dangerouslySetInnerHTML={{ __html: t('room.test_popup_desc') }} />
-            <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-xl p-3 mb-6">
+            <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-xl p-3 mb-3">
               <p className="text-xs text-yellow-300 flex items-center gap-2">
                 <Shield className="w-4 h-4 shrink-0" />
                 {t('room.test_popup_notice')}
+              </p>
+            </div>
+            <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-3 mb-6">
+              <p className="text-xs text-red-300">
+                {t('room.test_popup_disclaimer')}
               </p>
             </div>
             <button
