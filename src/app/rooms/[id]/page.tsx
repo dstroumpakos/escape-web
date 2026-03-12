@@ -25,6 +25,8 @@ import {
   ChevronDown,
   ChevronUp,
   CheckCircle,
+  AlertTriangle,
+  X,
 } from 'lucide-react';
 
 export default function RoomDetailsPage() {
@@ -53,6 +55,7 @@ export default function RoomDetailsPage() {
   const [reviewSuccess, setReviewSuccess] = useState(false);
   const [showAllReviews, setShowAllReviews] = useState(false);
   const [showReviewForm, setShowReviewForm] = useState(false);
+  const [showTestPopup, setShowTestPopup] = useState(true);
 
   const isWishlisted = false; // Would need to query user's wishlist
 
@@ -90,6 +93,41 @@ export default function RoomDetailsPage() {
 
   return (
     <>
+      {/* Test Room Popup */}
+      {showTestPopup && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+          <div className="bg-brand-card border border-yellow-500/30 rounded-2xl p-6 md:p-8 max-w-md w-full shadow-2xl animate-in fade-in zoom-in-95">
+            <div className="flex items-start justify-between mb-4">
+              <div className="w-12 h-12 bg-yellow-500/20 rounded-xl flex items-center justify-center">
+                <AlertTriangle className="w-6 h-6 text-yellow-400" />
+              </div>
+              <button
+                onClick={() => setShowTestPopup(false)}
+                className="p-1.5 rounded-lg hover:bg-brand-surface transition-colors text-brand-text-muted hover:text-white"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <h2 className="text-xl font-display font-bold mb-2 text-yellow-400">Test Room</h2>
+            <p className="text-brand-text-secondary text-sm leading-relaxed mb-4">
+              This room is currently in <span className="text-yellow-400 font-semibold">test mode</span>. All payment links are disabled and no real transactions can be made. You can browse and explore the room freely.
+            </p>
+            <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-xl p-3 mb-6">
+              <p className="text-xs text-yellow-300 flex items-center gap-2">
+                <Shield className="w-4 h-4 shrink-0" />
+                Online payments are disabled for this room. No charges will be applied.
+              </p>
+            </div>
+            <button
+              onClick={() => setShowTestPopup(false)}
+              className="w-full py-3 bg-yellow-500/20 hover:bg-yellow-500/30 text-yellow-400 font-semibold rounded-xl border border-yellow-500/30 transition-colors"
+            >
+              I Understand
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Hero Image */}
       <section className="relative h-[40vh] md:h-[50vh] overflow-hidden">
         {room.image ? (

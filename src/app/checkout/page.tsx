@@ -15,6 +15,7 @@ import {
   DoorOpen,
   CheckCircle,
   Tag,
+  AlertTriangle,
 } from 'lucide-react';
 
 function CheckoutContent() {
@@ -33,10 +34,13 @@ function CheckoutContent() {
   const createBooking = useMutation(api.bookings.create);
   const createBookingCheckout = useAction(api.stripe.createBookingCheckout);
 
-  const [paymentTerms, setPaymentTerms] = useState<'full' | 'deposit_20' | 'pay_on_arrival'>('full');
+  const [paymentTerms, setPaymentTerms] = useState<'full' | 'deposit_20' | 'pay_on_arrival'>('pay_on_arrival');
   const [promoCode, setPromoCode] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+
+  // TEST MODE: force pay_on_arrival to disable Stripe payments
+  const isTestMode = true;
 
   const serviceFee = paymentTerms === 'pay_on_arrival' ? 0 : 3.99;
   const deposit = paymentTerms === 'deposit_20' ? Math.round(total * 0.2 * 100) / 100 : 0;
@@ -57,6 +61,13 @@ function CheckoutContent() {
     if (!user || !roomId || !date || !time) return;
     setIsLoading(true);
     setError('');
+
+    // TEST MODE: block any Stripe payments
+    if (isTestMode && paymentTerms !== 'pay_on_arrival') {
+      setError('This room is in test mode. Only "Pay on Arrival" is available.');
+      setIsLoading(false);
+      return;
+    }
 
     try {
       if (paymentTerms === 'pay_on_arrival') {
@@ -133,10 +144,15 @@ function CheckoutContent() {
 
   // Auto-select first available term if default isn't available
   useEffect(() => {
+    // TEST MODE: always force pay_on_arrival
+    if (isTestMode) {
+      setPaymentTerms('pay_on_arrival');
+      return;
+    }
     if (availableTerms.length && !availableTerms.includes(paymentTerms)) {
       setPaymentTerms(availableTerms[0] as any);
     }
-  }, [availableTerms.join(',')]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [availableTerms.join(','), isTestMode]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <section className="pt-28 pb-20">
@@ -200,6 +216,21 @@ function CheckoutContent() {
               </div>
             </div>
 
+            {/* Test Mode Banner */}
+            {isTestMode && (
+              <div className="card p-5 border-yellow-500/30 bg-yellow-500/5">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-yellow-500/20 rounded-xl flex items-center justify-center shrink-0">
+                    <AlertTriangle className="w-5 h-5 text-yellow-400" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-yellow-400 text-sm">Test Mode — Payments Disabled</h3>
+                    <p className="text-xs text-yellow-300/70 mt-0.5">This room is in test mode. Online payments are disabled. Only &quot;Pay on Arrival&quot; is available.</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Payment Terms */}
             <div className="card p-6">
               <h3 className="font-semibold mb-4 flex items-center gap-2">
@@ -207,7 +238,7 @@ function CheckoutContent() {
                 {t('checkout.payment_option')}
               </h3>
               <div className="space-y-3">
-                {(availableTerms as string[]).includes('full') && (
+                {!isTestMode && (availableTerms as string[]).includes('full') && (
                   <label
                     className={`flex items-center gap-4 p-4 rounded-xl border cursor-pointer transition-all ${
                       paymentTerms === 'full'
@@ -229,7 +260,7 @@ function CheckoutContent() {
                     <span className="font-bold">€{(total + 3.99).toFixed(2)}</span>
                   </label>
                 )}
-                {(availableTerms as string[]).includes('deposit_20') && (
+                {!isTestMode && (availableTerms as string[]).includes('deposit_20') && (
                   <label
                     className={`flex items-center gap-4 p-4 rounded-xl border cursor-pointer transition-all ${
                       paymentTerms === 'deposit_20'
