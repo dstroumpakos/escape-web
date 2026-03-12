@@ -64,7 +64,7 @@ function CheckoutContent() {
 
     // TEST MODE: block any Stripe payments
     if (isTestMode && paymentTerms !== 'pay_on_arrival') {
-      setError('This room is in test mode. Only "Pay on Arrival" is available.');
+      setError(t('room.test_mode_error'));
       setIsLoading(false);
       return;
     }
@@ -224,8 +224,8 @@ function CheckoutContent() {
                     <AlertTriangle className="w-5 h-5 text-yellow-400" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-yellow-400 text-sm">Test Mode — Payments Disabled</h3>
-                    <p className="text-xs text-yellow-300/70 mt-0.5">This room is in test mode. Online payments are disabled. Only &quot;Pay on Arrival&quot; is available.</p>
+                    <h3 className="font-semibold text-yellow-400 text-sm">{t('room.test_mode_title')}</h3>
+                    <p className="text-xs text-yellow-300/70 mt-0.5">{t('room.test_mode_desc')}</p>
                   </div>
                 </div>
               </div>

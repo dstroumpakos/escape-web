@@ -430,6 +430,13 @@ const translations: Record<Language, Record<string, string>> = {
 
     // ── Room Detail ──
     'room.loading': 'Loading room...',
+    'room.test_popup_title': 'Test Room',
+    'room.test_popup_desc': 'This room is currently in <strong>test mode</strong>. All payment links are disabled and no real transactions can be made. You can browse and explore the room freely.',
+    'room.test_popup_notice': 'Online payments are disabled for this room. No charges will be applied.',
+    'room.test_popup_button': 'I Understand',
+    'room.test_mode_title': 'Test Mode — Payments Disabled',
+    'room.test_mode_desc': 'This room is in test mode. Online payments are disabled. Only "Pay on Arrival" is available.',
+    'room.test_mode_error': 'This room is in test mode. Only "Pay on Arrival" is available.',
     'room.back': 'Back',
     'room.early_access': 'Early Access',
     'room.days_left': 'days left',
@@ -2018,6 +2025,13 @@ const translations: Record<Language, Record<string, string>> = {
 
     // ── Room Detail ──
     'room.loading': 'Φόρτωση δωματίου...',
+    'room.test_popup_title': 'Δοκιμαστικό Δωμάτιο',
+    'room.test_popup_desc': 'Αυτό το δωμάτιο βρίσκεται σε <strong>δοκιμαστική λειτουργία</strong>. Όλοι οι σύνδεσμοι πληρωμής είναι απενεργοποιημένοι και δεν μπορούν να γίνουν πραγματικές συναλλαγές. Μπορείτε να περιηγηθείτε ελεύθερα.',
+    'room.test_popup_notice': 'Οι online πληρωμές είναι απενεργοποιημένες για αυτό το δωμάτιο. Δεν θα γίνει καμία χρέωση.',
+    'room.test_popup_button': 'Καταλαβαίνω',
+    'room.test_mode_title': 'Δοκιμαστική Λειτουργία — Πληρωμές Απενεργοποιημένες',
+    'room.test_mode_desc': 'Αυτό το δωμάτιο είναι σε δοκιμαστική λειτουργία. Οι online πληρωμές είναι απενεργοποιημένες. Μόνο η επιλογή "Πληρωμή κατά την άφιξη" είναι διαθέσιμη.',
+    'room.test_mode_error': 'Αυτό το δωμάτιο είναι σε δοκιμαστική λειτουργία. Μόνο η επιλογή "Πληρωμή κατά την άφιξη" είναι διαθέσιμη.',
     'room.back': 'Πίσω',
     'room.early_access': 'Πρόωρη Πρόσβαση',
     'room.days_left': 'μέρες απομένουν',

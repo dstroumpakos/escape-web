@@ -108,21 +108,19 @@ export default function RoomDetailsPage() {
                 <X className="w-5 h-5" />
               </button>
             </div>
-            <h2 className="text-xl font-display font-bold mb-2 text-yellow-400">Test Room</h2>
-            <p className="text-brand-text-secondary text-sm leading-relaxed mb-4">
-              This room is currently in <span className="text-yellow-400 font-semibold">test mode</span>. All payment links are disabled and no real transactions can be made. You can browse and explore the room freely.
-            </p>
+            <h2 className="text-xl font-display font-bold mb-2 text-yellow-400">{t('room.test_popup_title')}</h2>
+            <p className="text-brand-text-secondary text-sm leading-relaxed mb-4" dangerouslySetInnerHTML={{ __html: t('room.test_popup_desc') }} />
             <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-xl p-3 mb-6">
               <p className="text-xs text-yellow-300 flex items-center gap-2">
                 <Shield className="w-4 h-4 shrink-0" />
-                Online payments are disabled for this room. No charges will be applied.
+                {t('room.test_popup_notice')}
               </p>
             </div>
             <button
               onClick={() => setShowTestPopup(false)}
               className="w-full py-3 bg-yellow-500/20 hover:bg-yellow-500/30 text-yellow-400 font-semibold rounded-xl border border-yellow-500/30 transition-colors"
             >
-              I Understand
+              {t('room.test_popup_button')}
             </button>
           </div>
         </div>
