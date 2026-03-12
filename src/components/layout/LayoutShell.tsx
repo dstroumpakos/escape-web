@@ -7,6 +7,9 @@ import { Footer } from './Footer';
 import { CookieConsent } from './CookieConsent';
 import { PhonePrompt } from './PhonePrompt';
 import { motion, AnimatePresence } from 'framer-motion';
+import Link from 'next/link';
+import { Unlock } from 'lucide-react';
+import { LanguageToggle } from '@/components/LanguageToggle';
 
 export function LayoutShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -50,6 +53,49 @@ export function LayoutShell({ children }: { children: React.ReactNode }) {
     return (
       <>
         {children}
+        <CookieConsent />
+      </>
+    );
+  }
+
+  // Business subdomain public pages — minimal header (no consumer nav links)
+  if (isBusinessSubdomain && isPublicPage) {
+    return (
+      <>
+        <header className="fixed top-0 left-0 right-0 z-50 glass shadow-lg shadow-black/20">
+          <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex items-center justify-between h-16 md:h-20">
+              <Link href="/" className="flex items-center gap-2 group">
+                <div className="w-9 h-9 bg-brand-red rounded-lg flex items-center justify-center">
+                  <Unlock className="w-5 h-5 text-white" />
+                </div>
+                <span className="text-xl font-display font-bold tracking-wider">
+                  UN<span className="text-brand-red">LOCKED</span>
+                </span>
+              </Link>
+              <div className="flex items-center gap-3">
+                <LanguageToggle />
+                <Link href="/company/login" className="btn-outline text-sm px-4 py-2">
+                  Login
+                </Link>
+                <Link href="/company/register" className="btn-primary text-sm px-4 py-2">
+                  Register
+                </Link>
+              </div>
+            </div>
+          </nav>
+        </header>
+        <main className="flex-1">
+          <motion.div
+            key={pathname}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.35, ease: [0.25, 0.4, 0.25, 1] }}
+          >
+            {children}
+          </motion.div>
+        </main>
+        <Footer />
         <CookieConsent />
       </>
     );
