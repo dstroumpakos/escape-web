@@ -29,7 +29,8 @@ export function middleware(request: NextRequest) {
       pathname.startsWith('/contact') ||
       pathname.startsWith('/privacy') ||
       pathname.startsWith('/terms') ||
-      pathname.startsWith('/cookies')
+      pathname.startsWith('/cookies') ||
+      pathname.startsWith('/for-escape-rooms')
     ) {
       // Public pages served as-is on business subdomain
       resp = NextResponse.next();

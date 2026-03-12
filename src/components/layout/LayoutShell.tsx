@@ -40,7 +40,8 @@ export function LayoutShell({ children }: { children: React.ReactNode }) {
     pathname.startsWith('/contact') ||
     pathname.startsWith('/privacy') ||
     pathname.startsWith('/terms') ||
-    pathname.startsWith('/cookies');
+    pathname.startsWith('/cookies') ||
+    pathname.startsWith('/for-escape-rooms');
 
   const hideMainLayout = isCompanyRoute || isPhotosApp || (isSubdomain && !isPublicPage);
 
