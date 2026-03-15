@@ -590,4 +590,18 @@ export default defineSchema({
   })
     .index("by_room", ["roomId"])
     .index("by_company", ["companyId"]),
+
+  // ─── Discount Codes ───
+  discountCodes: defineTable({
+    code: v.string(),                    // e.g. "ENTERPRISE2026"
+    plan: v.union(v.literal("starter"), v.literal("pro"), v.literal("enterprise")),
+    period: v.union(v.literal("monthly"), v.literal("yearly")),
+    durationMonths: v.number(),          // how long the free period lasts (12 = 1 year)
+    maxUses: v.optional(v.number()),     // null = unlimited
+    usedCount: v.number(),
+    isActive: v.boolean(),
+    expiresAt: v.optional(v.number()),   // timestamp, null = never expires
+    createdAt: v.number(),
+  })
+    .index("by_code", ["code"]),
 });

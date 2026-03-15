@@ -20,6 +20,7 @@ import {
   LogOut,
   ChevronDown,
   CreditCard,
+  Tag,
 } from 'lucide-react';
 
 const PLANS = [
@@ -103,12 +104,23 @@ export default function CompanyOnboardingPage() {
   const selectPlan = useMutation(api.companies.selectPlan);
   const createCheckout = useAction(api.stripe.createCheckoutSession);
   const resubmit = useMutation(api.companies.resubmitForReview);
+  const redeemDiscount = useMutation(api.companies.redeemDiscountCode);
 
   const [loading, setLoading] = useState(false);
   const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
   const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'yearly'>('monthly');
   const [scrolledToEnd, setScrolledToEnd] = useState(false);
   const termsRef = useRef<HTMLDivElement>(null);
+
+  // Discount code state
+  const [discountCode, setDiscountCode] = useState('');
+  const [discountChecking, setDiscountChecking] = useState(false);
+  const [discountResult, setDiscountResult] = useState<{ valid: boolean; plan?: string; period?: string; durationMonths?: number; error?: string } | null>(null);
+
+  const discountValidation = useQuery(
+    api.companies.validateDiscountCode,
+    discountCode.trim().length >= 3 ? { code: discountCode.trim() } : 'skip'
+  );
 
   const status = companyData?.onboardingStatus || company?.onboardingStatus;
 
@@ -372,6 +384,79 @@ export default function CompanyOnboardingPage() {
                   {t('company.onboarding.save_17')}
                 </span>
               </button>
+            </div>
+
+            {/* Discount Code */}
+            <div className="max-w-md mx-auto mb-8">
+              <div className="flex gap-2">
+                <div className="relative flex-1">
+                  <Tag className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-brand-text-secondary" />
+                  <input
+                    type="text"
+                    value={discountCode}
+                    onChange={(e) => {
+                      setDiscountCode(e.target.value.toUpperCase());
+                      setDiscountResult(null);
+                    }}
+                    placeholder={t('company.onboarding.discount_placeholder')}
+                    className="w-full bg-brand-surface border border-white/10 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white placeholder-brand-text-secondary/50 focus:border-brand-red focus:outline-none"
+                  />
+                </div>
+                <button
+                  disabled={!discountCode.trim() || discountChecking || loading}
+                  onClick={async () => {
+                    if (!discountValidation) return;
+                    if (!discountValidation.valid) {
+                      setDiscountResult(discountValidation as any);
+                      return;
+                    }
+                    setDiscountChecking(true);
+                    try {
+                      const result = await redeemDiscount({
+                        companyId: companyId as any,
+                        code: discountCode.trim(),
+                      });
+                      setDiscountResult({ valid: true, ...result });
+                      refreshCompany({
+                        onboardingStatus: 'pending_review',
+                        platformPlan: result.plan as any,
+                      });
+                    } catch (err: any) {
+                      setDiscountResult({ valid: false, error: err.message || 'Failed to apply code' });
+                    } finally {
+                      setDiscountChecking(false);
+                    }
+                  }}
+                  className="px-5 py-2.5 rounded-xl bg-brand-red text-white text-sm font-semibold hover:bg-brand-red/90 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                >
+                  {discountChecking ? (
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  ) : (
+                    t('company.onboarding.apply_code')
+                  )}
+                </button>
+              </div>
+              {discountResult && !discountResult.valid && (
+                <p className="text-xs text-red-400 mt-2">
+                  {t(`company.onboarding.discount_${discountResult.error}`) || t('company.onboarding.discount_invalid_code')}
+                </p>
+              )}
+              {discountResult && discountResult.valid && (
+                <p className="text-xs text-emerald-400 mt-2">
+                  {t('company.onboarding.discount_applied', {
+                    plan: discountResult.plan ? t(`company.onboarding.plan_${discountResult.plan}`) : '',
+                    months: String(discountResult.durationMonths || 12),
+                  })}
+                </p>
+              )}
+              {discountValidation && discountValidation.valid && !discountResult && (
+                <p className="text-xs text-emerald-400/70 mt-2">
+                  {t('company.onboarding.discount_valid_hint', {
+                    plan: t(`company.onboarding.plan_${discountValidation.plan}`),
+                    months: String(discountValidation.durationMonths || 12),
+                  })}
+                </p>
+              )}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">

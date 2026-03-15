@@ -684,6 +684,73 @@ export const selectPlan = mutation({
   },
 });
 
+// ─── Discount Codes ───
+export const validateDiscountCode = query({
+  args: { code: v.string() },
+  handler: async (ctx, args) => {
+    const code = args.code.trim().toUpperCase();
+    const discount = await ctx.db
+      .query("discountCodes")
+      .withIndex("by_code", (q) => q.eq("code", code))
+      .first();
+
+    if (!discount) return { valid: false, error: "invalid_code" };
+    if (!discount.isActive) return { valid: false, error: "code_inactive" };
+    if (discount.expiresAt && discount.expiresAt < Date.now()) return { valid: false, error: "code_expired" };
+    if (discount.maxUses && discount.usedCount >= discount.maxUses) return { valid: false, error: "code_used_up" };
+
+    return {
+      valid: true,
+      plan: discount.plan,
+      period: discount.period,
+      durationMonths: discount.durationMonths,
+    };
+  },
+});
+
+export const redeemDiscountCode = mutation({
+  args: {
+    companyId: v.id("companies"),
+    code: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const company = await ctx.db.get(args.companyId);
+    if (!company) throw new Error("Company not found");
+
+    const code = args.code.trim().toUpperCase();
+    const discount = await ctx.db
+      .query("discountCodes")
+      .withIndex("by_code", (q) => q.eq("code", code))
+      .first();
+
+    if (!discount) throw new Error("Invalid discount code");
+    if (!discount.isActive) throw new Error("This code is no longer active");
+    if (discount.expiresAt && discount.expiresAt < Date.now()) throw new Error("This code has expired");
+    if (discount.maxUses && discount.usedCount >= discount.maxUses) throw new Error("This code has been fully redeemed");
+
+    // Apply the plan
+    const updates: any = {
+      platformPlan: discount.plan,
+      billingPeriod: discount.period,
+      platformSubscribedAt: Date.now(),
+      stripePaymentStatus: "active",
+    };
+
+    if (company.onboardingStatus === "pending_plan") {
+      updates.onboardingStatus = "pending_review";
+    }
+
+    await ctx.db.patch(args.companyId, updates);
+
+    // Increment usage count
+    await ctx.db.patch(discount._id, {
+      usedCount: discount.usedCount + 1,
+    });
+
+    return { plan: discount.plan, period: discount.period, durationMonths: discount.durationMonths };
+  },
+});
+
 // Admin: list all pending review companies
 export const getPendingReview = query({
   args: { userId: v.id("users") },
