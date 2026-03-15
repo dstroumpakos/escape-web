@@ -18,36 +18,48 @@ function PaymentSuccessContent() {
   const selectPlan = useMutation(api.companies.selectPlan);
   const [countdown, setCountdown] = useState(5);
   const initialized = useRef(false);
+  const mutationDone = useRef(false);
 
   const plan = params.get('plan') || 'starter';
   const period = params.get('period') || 'monthly';
 
   // Update auth state AND server state once
   useEffect(() => {
-    if (!initialized.current) {
+    if (!initialized.current && company?.id) {
       initialized.current = true;
-      refreshCompany({
-        onboardingStatus: 'pending_review',
-        platformPlan: plan as any,
+      // Update server-side FIRST, then local state
+      selectPlan({
+        companyId: company.id as any,
+        plan: plan as any,
+      }).then(() => {
+        mutationDone.current = true;
+        refreshCompany({
+          onboardingStatus: 'pending_review',
+          platformPlan: plan as any,
+        });
+      }).catch(() => {
+        mutationDone.current = true;
+        // Still update local state even if mutation fails (webhook will handle it)
+        refreshCompany({
+          onboardingStatus: 'pending_review',
+          platformPlan: plan as any,
+        });
       });
-      // Update server-side immediately so the onboarding page
-      // doesn't show plan selection again before the Stripe webhook arrives
-      if (company?.id) {
-        selectPlan({
-          companyId: company.id as any,
-          plan: plan as any,
-        }).catch(() => {});
-      }
     }
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [company?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Countdown timer - separate effect
+  // Countdown timer - only redirect after mutation is done
   useEffect(() => {
     const interval = setInterval(() => {
       setCountdown((c) => {
         if (c <= 1) {
           clearInterval(interval);
-          router.replace(p('/company/onboarding'));
+          if (mutationDone.current) {
+            router.replace(p('/company/onboarding'));
+          } else {
+            // Wait a bit more for mutation
+            setTimeout(() => router.replace(p('/company/onboarding')), 1000);
+          }
           return 0;
         }
         return c - 1;
