@@ -7,7 +7,7 @@
 
 import { createContext, useContext, useState, ReactNode, useCallback, useEffect } from 'react';
 
-export type Language = 'en' | 'el';
+export type Language = 'en' | 'el' | 'nl';
 
 const translations: Record<Language, Record<string, string>> = {
   en: {
@@ -3653,6 +3653,187 @@ const translations: Record<Language, Record<string, string>> = {
     'dir.cta_signup': 'Δωρεάν Λογαριασμός',
     'dir.cta_browse': 'Δες Δωμάτια',
   },
+
+  nl: {
+    // ── Navigation ──
+    'nav.home': 'Home',
+    'nav.discover': 'Ontdek',
+    'nav.map': 'Kaart',
+    'nav.social': 'Sociaal',
+    'nav.leaderboard': 'Ranglijst',
+    'nav.contact': 'Contact',
+    'nav.login': 'Inloggen',
+    'nav.signup': 'Registreren',
+    'nav.logout': 'Uitloggen',
+    'nav.business': 'Zakelijk',
+    'nav.profile': 'Profiel',
+    'nav.notifications': 'Meldingen',
+    'nav.tickets': 'Mijn Tickets',
+
+    // ── Footer ──
+    'footer.tagline': 'Het ultieme platform om escape rooms te ontdekken, te boeken en te beleven.',
+    'footer.platform': 'Platform',
+    'footer.resources': 'Informatie',
+    'footer.legal': 'Juridisch',
+    'footer.privacy': 'Privacybeleid',
+    'footer.terms': 'Algemene Voorwaarden',
+    'footer.cookies': 'Cookiebeleid',
+    'footer.about': 'Over Ons',
+    'footer.contact': 'Contact',
+    'footer.para': 'Voor Escape Rooms',
+    'footer.rights': 'Alle rechten voorbehouden.',
+
+    // ── For Escape Rooms (Operator Landing Page) ──
+    'fer.nav_label': 'Voor Escape Rooms',
+    'fer.hero_badge': 'VOOR ESCAPE ROOM ONDERNEMERS',
+    'fer.hero_title': 'Laat je Escape Room Groeien met',
+    'fer.hero_highlight': 'UNLOCKED',
+    'fer.hero_subtitle': 'Het alles-in-één platform speciaal voor escape rooms. Beheer boekingen, betrek spelers en verhoog je omzet — allemaal vanuit één dashboard.',
+    'fer.hero_cta': 'Gratis Beginnen',
+    'fer.hero_cta_login': 'Al partner? Log in',
+
+    'fer.stats_title': 'Vertrouwd door Escape Rooms',
+    'fer.stats_highlight': 'in Europa',
+    'fer.stat1_value': '50+',
+    'fer.stat1_label': 'Escape Rooms Aangesloten',
+    'fer.stat2_value': '10.000+',
+    'fer.stat2_label': 'Boekingen Verwerkt',
+    'fer.stat3_value': '4.9/5',
+    'fer.stat3_label': 'Partnertevredenheid',
+
+    'fer.features_title': 'Alles wat je Nodig hebt om je',
+    'fer.features_highlight': 'Bedrijf te Runnen',
+    'fer.features_subtitle': 'Van boekingsbeheer tot spelerbetrokkenheid: wij bieden alle tools die jouw escape room nodig heeft om te groeien.',
+    'fer.feat_booking_title': 'Slim Boekingssysteem',
+    'fer.feat_booking_desc': 'Ontvang 24/7 boekingen via de widget op je website. Beheer tijdslots, capaciteit en beschikbaarheid moeiteloos. Spelers boeken direct, waardoor telefoontjes en handmatig werk afnemen.',
+    'fer.feat_widget_title': 'Inbouwbare Boekingswidget',
+    'fer.feat_widget_desc': 'Voeg onze boekingswidget toe aan je website met één regel code. Volledig in jouw huisstijl. Werkt op elk platform — WordPress, Wix, custom, noem maar op.',
+    'fer.feat_dashboard_title': 'Bedrijfsdashboard',
+    'fer.feat_dashboard_desc': 'Een compleet controlecentrum om kamers te beheren, boekingen te volgen, omzet te monitoren en statistieken te bekijken. Alles op één plek, toegankelijk vanaf elk apparaat.',
+    'fer.feat_analytics_title': 'Analyses & Inzichten',
+    'fer.feat_analytics_desc': 'Volg je prestaties met gedetailleerde statistieken: boekingen per kamer, omzettends, piekuren en spelerdemografieën. Neem datagedreven beslissingen.',
+    'fer.feat_photos_title': 'Foto-integratie',
+    'fer.feat_photos_desc': 'Maak teamfoto\'s na elk spel en deel ze direct. Spelers ontvangen hun foto\'s via een unieke link — ideaal om online delen en mond-tot-mondreclame te stimuleren.',
+    'fer.feat_listing_title': 'Platformvermelding',
+    'fer.feat_listing_desc': 'Je kamers worden vermeld op unlocked.gr, waar duizenden escape room-fans nieuwe ervaringen ontdekken. Word gevonden door spelers die zoeken op locatie, thema of moeilijkheidsgraad.',
+    'fer.feat_qr_title': 'QR-code Systeem',
+    'fer.feat_qr_desc': 'Genereer unieke QR-codes voor elke kamer. Hang ze op in je locatie zodat spelers reviews kunnen achterlaten, foto\'s kunnen bekijken en je kamers kunnen opslaan — met één scan.',
+    'fer.feat_website_title': 'Websiteontwikkeling',
+    'fer.feat_website_desc': 'Website nodig? Ons team bouwt professionele, SEO-geoptimaliseerde websites speciaal voor escape rooms. Mobiel-vriendelijk, snel en ontworpen om bezoekers om te zetten in spelers.',
+
+    'fer.pricing_title': 'Eenvoudige, Transparante',
+    'fer.pricing_highlight': 'Prijzen',
+    'fer.pricing_subtitle': 'Start gratis en upgrade wanneer je groeit. Geen verborgen kosten, geen verrassingen.',
+    'fer.plan_free': 'Gratis',
+    'fer.plan_free_price': '€0',
+    'fer.plan_free_desc': 'Perfect om te beginnen',
+    'fer.plan_free_f1': 'Toegang tot het bedrijfsportaal',
+    'fer.plan_free_f2': 'Boekingswidget voor je website',
+    'fer.plan_free_f3': '1 kamervermelding',
+    'fer.plan_free_f4': 'Basisbeheer van kamers',
+    'fer.plan_free_f5': 'E-mailondersteuning',
+    'fer.plan_free_f6': '€1,50 + btw per widgetboeking',
+    'fer.plan_starter': 'Starter',
+    'fer.plan_starter_price': '€58/mnd',
+    'fer.plan_starter_price_year': '€580/jr',
+    'fer.plan_starter_desc': 'Voor groeiende bedrijven',
+    'fer.plan_starter_f1': 'Alles uit het Gratis-plan',
+    'fer.plan_starter_f2': 'Foto-integratie',
+    'fer.plan_starter_f3': 'Basisanalyses',
+    'fer.plan_starter_f4': 'E-mailondersteuning',
+    'fer.plan_starter_f5': 'Geen kosten per boeking',
+    'fer.plan_starter_f6': '1 kamervermelding',
+    'fer.plan_pro': 'Pro',
+    'fer.plan_pro_price': '€98/mnd',
+    'fer.plan_pro_price_year': '€980/jr',
+    'fer.plan_pro_desc': 'Voor gevestigde escape rooms',
+    'fer.plan_pro_f1': 'Alles uit het Starter-plan',
+    'fer.plan_pro_f2': 'Tot 10 kamers',
+    'fer.plan_pro_f3': 'Geavanceerde analyses',
+    'fer.plan_pro_f4': 'Prioriteitsondersteuning',
+    'fer.plan_pro_f5': 'Abonnementensysteem',
+    'fer.plan_pro_f6': 'Toegang tot partnerprogramma',
+    'fer.plan_enterprise': 'Enterprise',
+    'fer.plan_enterprise_price': '€198/mnd',
+    'fer.plan_enterprise_price_year': '€1.980/jr',
+    'fer.plan_enterprise_desc': 'Voor bedrijven met meerdere locaties',
+    'fer.plan_enterprise_f1': 'Alles uit het Pro-plan',
+    'fer.plan_enterprise_f2': 'Onbeperkt aantal kamers',
+    'fer.plan_enterprise_f3': 'Eigen huisstijl (branding)',
+    'fer.plan_enterprise_f4': 'API-toegang',
+    'fer.plan_enterprise_f5': 'Vaste accountmanager',
+    'fer.plan_enterprise_f6': 'White-label boekingswidget',
+    'fer.plan_enterprise_f7': 'Ondersteuning meerdere locaties',
+    'fer.plan_enterprise_f8': 'Omzetanalyse per kamer',
+    'fer.plan_enterprise_f9': '24/7 telefoon- & chatondersteuning',
+    'fer.most_popular': 'POPULAIR',
+    'fer.per_booking_note': 'per widgetboeking',
+    'fer.select_plan': 'Aan de Slag',
+    'fer.contact_sales': 'Neem Contact Op',
+
+    'fer.how_title': 'Hoe het',
+    'fer.how_highlight': 'Werkt',
+    'fer.how_subtitle': 'In vier eenvoudige stappen staat je escape room op UNLOCKED.',
+    'fer.how_step1_title': 'Maak je Account aan',
+    'fer.how_step1_desc': 'Registreer je bedrijf op business.unlocked.gr. Het is gratis en duurt minder dan 2 minuten.',
+    'fer.how_step2_title': 'Voeg je Kamers toe',
+    'fer.how_step2_desc': 'Stel je escape rooms in met beschrijvingen, foto\'s, prijzen, moeilijkheidsgraden en tijdslots.',
+    'fer.how_step3_title': 'Installeer de Widget',
+    'fer.how_step3_desc': 'Kopieer en plak de code van onze boekingswidget op je website. Je spelers kunnen direct boeken.',
+    'fer.how_step4_title': 'Laat je Bedrijf Groeien',
+    'fer.how_step4_desc': 'Volg boekingen, analyseer je prestaties en bereik nieuwe spelers via het UNLOCKED-platform.',
+
+    'fer.faq_title': 'Veelgestelde',
+    'fer.faq_highlight': 'Vragen',
+    'fer.faq1_q': 'Wat kost het om je aan te sluiten bij UNLOCKED?',
+    'fer.faq1_a': 'Je kunt volledig gratis beginnen. Het Gratis-plan omvat portaaltoegang, een boekingswidget en basisbeheer van kamers. Je betaalt alleen €1,50 + btw per widgetboeking. Betaalde plannen (Starter vanaf €58/mnd, Pro vanaf €98/mnd, Enterprise vanaf €198/mnd) hebben geen boekingskosten en bieden extra functionaliteiten.',
+    'fer.faq2_q': 'Hoe werkt de boekingswidget?',
+    'fer.faq2_a': 'Onze widget is een stukje code dat je op je website plaatst. Het toont je beschikbare tijdslots en laat bezoekers direct boeken. Boekingen worden real-time gesynchroniseerd met je dashboard. De widget is volledig responsive en past bij jouw huisstijl.',
+    'fer.faq3_q': 'Kan ik UNLOCKED gebruiken met mijn bestaande website?',
+    'fer.faq3_a': 'Absoluut! De boekingswidget werkt op elke website — WordPress, Wix, Squarespace, custom HTML of elk ander platform. Plak gewoon de embedcode en je bent klaar.',
+    'fer.faq4_q': 'Hoe werken de betalingen?',
+    'fer.faq4_a': 'Abonnementen worden veilig verwerkt via Stripe. Je kunt maandelijks of jaarlijks betalen (bespaar 17% bij jaarabonnement). Voor het Gratis-plan worden boekingskosten maandelijks gefactureerd.',
+    'fer.faq5_q': 'Hoe lang duurt het goedkeuringsproces?',
+    'fer.faq5_a': 'Na registratie en plankeuze beoordeelt ons team je aanvraag. Dit duurt doorgaans 1-2 werkdagen. Je ontvangt een e-mail zodra je bent goedgekeurd.',
+    'fer.faq6_q': 'Kan ik later van plan wisselen?',
+    'fer.faq6_a': 'Ja! Je kunt op elk moment upgraden of downgraden vanuit je dashboard. Wijzigingen gaan direct in.',
+    'fer.faq7_q': 'Bouwen jullie ook websites voor escape rooms?',
+    'fer.faq7_a': 'Ja! Wij bieden professionele websiteontwikkeling vanaf €500. Onze sites zijn gebouwd met escape rooms in gedachten — snel, mobiel-vriendelijk, SEO-geoptimaliseerd en geïntegreerd met het UNLOCKED-boekingssysteem.',
+    'fer.faq8_q': 'Wat voor ondersteuning bieden jullie?',
+    'fer.faq8_a': 'Alle plannen omvatten e-mailondersteuning. Pro-plannen krijgen prioriteitsondersteuning met snellere responstijden. Enterprise-plannen omvatten een vaste accountmanager en 24/7 telefoon- & chatondersteuning.',
+
+    'fer.cta_title': 'Klaar om je',
+    'fer.cta_highlight': 'Escape Room te Laten Groeien?',
+    'fer.cta_subtitle': 'Sluit je vandaag aan bij UNLOCKED en bereik meer spelers, beheer boekingen moeiteloos en verhoog je omzet.',
+    'fer.cta_button': 'Maak je Gratis Account aan',
+    'fer.cta_contact': 'Vragen? Neem contact op',
+
+    // ── Contact Page ──
+    'contact.title': 'Neem',
+    'contact.title_highlight': 'Contact Op',
+    'contact.subtitle': 'Heb je een vraag, suggestie of wil je samenwerken? We horen graag van je.',
+    'contact.name': 'Naam',
+    'contact.email': 'E-mailadres',
+    'contact.subject': 'Onderwerp',
+    'contact.message': 'Bericht',
+    'contact.send': 'Versturen',
+    'contact.sending': 'Versturen...',
+    'contact.success': 'Bericht succesvol verstuurd!',
+    'contact.success_desc': 'Bedankt voor je bericht. We nemen zo snel mogelijk contact met je op.',
+    'contact.send_another': 'Nog een bericht versturen',
+    'contact.info_title': 'Contactinformatie',
+    'contact.email_label': 'E-mail',
+    'contact.hours_label': 'Beschikbaarheid',
+    'contact.hours_value': 'Ma-Vr: 09:00-18:00 CET',
+    'contact.location_label': 'Locatie',
+    'contact.location_value': 'Europa',
+
+    // ── Cookie Consent ──
+    'cookie.message': 'We gebruiken cookies om je ervaring te verbeteren.',
+    'cookie.accept': 'Accepteren',
+    'cookie.decline': 'Weigeren',
+    'cookie.learn_more': 'Meer informatie',
+  },
 };
 
 interface I18nContextType {
@@ -3672,11 +3853,11 @@ export function I18nProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const saved = typeof window !== 'undefined' ? localStorage.getItem('unlocked-lang') : null;
-    if (saved === 'en' || saved === 'el') {
+    if (saved === 'en' || saved === 'el' || saved === 'nl') {
       setLanguageState(saved);
     }
     // Sync initial language to DB on mount (if user is logged in)
-    const lang = saved === 'en' || saved === 'el' ? saved : 'el';
+    const lang = saved === 'en' || saved === 'el' || saved === 'nl' ? saved : 'el';
     syncLanguageToDb(lang);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 

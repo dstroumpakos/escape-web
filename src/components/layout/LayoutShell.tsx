@@ -10,8 +10,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { Unlock } from 'lucide-react';
 import { LanguageToggle } from '@/components/LanguageToggle';
+import { useTranslation } from '@/lib/i18n';
 
 export function LayoutShell({ children }: { children: React.ReactNode }) {
+  const { t } = useTranslation();
   const pathname = usePathname();
   const isCompanyRoute = pathname.startsWith('/company');
   const isPhotosApp = pathname.startsWith('/photos-app');
@@ -76,10 +78,10 @@ export function LayoutShell({ children }: { children: React.ReactNode }) {
               <div className="flex items-center gap-3">
                 <LanguageToggle />
                 <Link href="/company/login" className="btn-outline text-sm px-4 py-2">
-                  Login
+                  {t('nav.login')}
                 </Link>
                 <Link href="/company/register" className="btn-primary text-sm px-4 py-2">
-                  Register
+                  {t('nav.signup')}
                 </Link>
               </div>
             </div>
