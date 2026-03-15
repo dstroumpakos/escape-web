@@ -305,6 +305,7 @@ export default function EditRoomPage() {
             roomId: roomId as any,
             story: form.story,
             description: form.description,
+            sourceLang: language,
           });
         } catch {
           // auto-translate is best-effort, don't block save
@@ -558,6 +559,7 @@ export default function EditRoomPage() {
                             roomId: roomId as any,
                             story: form.story,
                             description: form.description,
+                            sourceLang: language,
                           });
                           if (result.storyTranslations) setStoryTranslations(result.storyTranslations);
                           if (result.descriptionTranslations) setDescTranslations(result.descriptionTranslations);

@@ -126,7 +126,7 @@ export default function NewRoomPage() {
   const [imageUploading, setImageUploading] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
 
   // ── Translation State ──
   const LANGS = [
@@ -334,6 +334,7 @@ export default function NewRoomPage() {
             roomId: roomId as any,
             story: form.story,
             description: form.description,
+            sourceLang: language,
           });
         } catch {
           // auto-translate is best-effort, don't block save
