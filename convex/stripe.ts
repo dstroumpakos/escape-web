@@ -36,6 +36,8 @@ export const createCheckoutSession = action({
     period: v.union(v.literal("monthly"), v.literal("yearly")),
     successUrl: v.string(),
     cancelUrl: v.string(),
+    trialDays: v.optional(v.number()),
+    discountCode: v.optional(v.string()),
   },
   handler: async (ctx, args): Promise<string> => {
     const stripe = getStripe();
@@ -68,6 +70,28 @@ export const createCheckoutSession = action({
       });
     }
 
+    // Build subscription_data with optional trial
+    const subscriptionData: any = {
+      metadata: {
+        companyId: args.companyId,
+        plan: args.plan,
+        period: args.period,
+      },
+    };
+    if (args.trialDays) {
+      subscriptionData.trial_period_days = args.trialDays;
+    }
+
+    // Build metadata with optional discount code
+    const sessionMetadata: Record<string, string> = {
+      companyId: args.companyId,
+      plan: args.plan,
+      period: args.period,
+    };
+    if (args.discountCode) {
+      sessionMetadata.discountCode = args.discountCode;
+    }
+
     // Create checkout session with a subscription
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
@@ -89,18 +113,8 @@ export const createCheckoutSession = action({
           quantity: 1,
         },
       ],
-      metadata: {
-        companyId: args.companyId,
-        plan: args.plan,
-        period: args.period,
-      },
-      subscription_data: {
-        metadata: {
-          companyId: args.companyId,
-          plan: args.plan,
-          period: args.period,
-        },
-      },
+      metadata: sessionMetadata,
+      subscription_data: subscriptionData,
       success_url: args.successUrl,
       cancel_url: args.cancelUrl,
     });

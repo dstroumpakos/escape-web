@@ -104,7 +104,6 @@ export default function CompanyOnboardingPage() {
   const selectPlan = useMutation(api.companies.selectPlan);
   const createCheckout = useAction(api.stripe.createCheckoutSession);
   const resubmit = useMutation(api.companies.resubmitForReview);
-  const redeemDiscount = useMutation(api.companies.redeemDiscountCode);
 
   const [loading, setLoading] = useState(false);
   const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
@@ -412,15 +411,24 @@ export default function CompanyOnboardingPage() {
                     }
                     setDiscountChecking(true);
                     try {
-                      const result = await redeemDiscount({
+                      const plan = discountValidation.plan as 'starter' | 'pro' | 'enterprise';
+                      const period = discountValidation.period as 'monthly' | 'yearly';
+                      const trialDays = (discountValidation.durationMonths || 12) * 30;
+                      const origin = window.location.origin;
+                      const successUrl = `${origin}${p('/company/onboarding/payment-success')}?plan=${plan}&period=${period}`;
+                      const cancelUrl = `${origin}${p('/company/onboarding')}`;
+
+                      const checkoutUrl = await createCheckout({
                         companyId: companyId as any,
-                        code: discountCode.trim(),
+                        plan,
+                        period,
+                        successUrl,
+                        cancelUrl,
+                        trialDays,
+                        discountCode: discountCode.trim(),
                       });
-                      setDiscountResult({ valid: true, ...result });
-                      refreshCompany({
-                        onboardingStatus: 'pending_review',
-                        platformPlan: result.plan as any,
-                      });
+
+                      window.location.href = checkoutUrl;
                     } catch (err: any) {
                       setDiscountResult({ valid: false, error: err.message || 'Failed to apply code' });
                     } finally {

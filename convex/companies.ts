@@ -710,13 +710,9 @@ export const validateDiscountCode = query({
 
 export const redeemDiscountCode = mutation({
   args: {
-    companyId: v.id("companies"),
     code: v.string(),
   },
   handler: async (ctx, args) => {
-    const company = await ctx.db.get(args.companyId);
-    if (!company) throw new Error("Company not found");
-
     const code = args.code.trim().toUpperCase();
     const discount = await ctx.db
       .query("discountCodes")
@@ -727,20 +723,6 @@ export const redeemDiscountCode = mutation({
     if (!discount.isActive) throw new Error("This code is no longer active");
     if (discount.expiresAt && discount.expiresAt < Date.now()) throw new Error("This code has expired");
     if (discount.maxUses && discount.usedCount >= discount.maxUses) throw new Error("This code has been fully redeemed");
-
-    // Apply the plan
-    const updates: any = {
-      platformPlan: discount.plan,
-      billingPeriod: discount.period,
-      platformSubscribedAt: Date.now(),
-      stripePaymentStatus: "active",
-    };
-
-    if (company.onboardingStatus === "pending_plan") {
-      updates.onboardingStatus = "pending_review";
-    }
-
-    await ctx.db.patch(args.companyId, updates);
 
     // Increment usage count
     await ctx.db.patch(discount._id, {

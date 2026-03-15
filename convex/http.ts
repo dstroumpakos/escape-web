@@ -127,6 +127,18 @@ const stripeWebhook = httpAction(async (ctx, request) => {
           period,
         });
 
+        // If a discount code was used, increment its usage
+        const discountCode = session.metadata?.discountCode;
+        if (discountCode) {
+          try {
+            await ctx.runMutation(api.companies.redeemDiscountCode, {
+              code: discountCode,
+            });
+          } catch (e) {
+            console.error("[Webhook] Failed to redeem discount code:", e);
+          }
+        }
+
         // Send subscription receipt to company
         try {
           const company = await ctx.runQuery(api.companies.getById, { id: companyId as any });

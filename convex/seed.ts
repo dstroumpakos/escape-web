@@ -218,12 +218,12 @@ export const seedDiscountCodes = mutation({
   handler: async (ctx) => {
     const existing = await ctx.db
       .query("discountCodes")
-      .withIndex("by_code", (q) => q.eq("code", "ENTERPRISE2025"))
+      .withIndex("by_code", (q) => q.eq("code", "UNLOCKEDVIP"))
       .first();
     if (existing) return "Discount code already exists";
 
     await ctx.db.insert("discountCodes", {
-      code: "ENTERPRISE2025",
+      code: "UNLOCKEDVIP",
       plan: "enterprise",
       period: "yearly",
       durationMonths: 12,
@@ -233,6 +233,6 @@ export const seedDiscountCodes = mutation({
       createdAt: Date.now(),
     });
 
-    return "Created ENTERPRISE2025 discount code";
+    return "Created UNLOCKEDVIP discount code";
   },
 });
