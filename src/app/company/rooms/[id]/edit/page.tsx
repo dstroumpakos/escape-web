@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { useQuery, useMutation, useAction } from 'convex/react';
+import { useQuery, useMutation } from 'convex/react';
 import dynamic from 'next/dynamic';
 import { api } from '../../../../../../convex/_generated/api';
 import { Id } from '../../../../../../convex/_generated/dataModel';
@@ -34,6 +34,7 @@ import {
   Languages,
 } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
+import { translateRoom } from '@/lib/translate';
 
 const LocationPicker = dynamic(
   () => import('@/components/map/LocationPicker'),
@@ -79,7 +80,6 @@ export default function EditRoomPage() {
 
   const room = useQuery(api.rooms.getById, roomId ? { id: roomId as any } : 'skip');
   const updateRoom = useMutation(api.companies.updateRoom);
-  const autoTranslateRoom = useAction(api.translate.autoTranslateRoom);
   const generateUploadUrl = useMutation(api.companies.generateUploadUrl);
   const getUrlMutation = useMutation(api.companies.getUrlMutation);
   const savePreset = useMutation(api.bookingPhotos.savePreset);
@@ -301,12 +301,14 @@ export default function EditRoomPage() {
       // Trigger auto-translate if company has it enabled
       if ((companyData as any)?.autoTranslateEnabled && form.story && form.description) {
         try {
-          await autoTranslateRoom({
-            roomId: roomId as any,
-            story: form.story,
-            description: form.description,
-            sourceLang: language,
-          });
+          const trResult = await translateRoom(form.story, form.description, language);
+          if (trResult.storyTranslations || trResult.descriptionTranslations) {
+            await updateRoom({
+              roomId: roomId as any,
+              storyTranslations: trResult.storyTranslations as any,
+              descriptionTranslations: trResult.descriptionTranslations as any,
+            } as any);
+          }
         } catch {
           // auto-translate is best-effort, don't block save
         }
@@ -555,12 +557,7 @@ export default function EditRoomPage() {
                         setTranslating(true);
                         setTranslateMsg('');
                         try {
-                          const result = await autoTranslateRoom({
-                            roomId: roomId as any,
-                            story: form.story,
-                            description: form.description,
-                            sourceLang: language,
-                          });
+                          const result = await translateRoom(form.story, form.description, language);
                           if (result.storyTranslations) setStoryTranslations(result.storyTranslations);
                           if (result.descriptionTranslations) setDescTranslations(result.descriptionTranslations);
                           setShowTranslations(true);

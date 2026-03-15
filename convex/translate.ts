@@ -47,7 +47,10 @@ export const autoTranslateRoom = action({
     const { roomId, story, description } = args;
     const sourceLang = args.sourceLang || "en";
 
+    console.log(`[AutoTranslate] Starting: roomId=${roomId}, sourceLang=${sourceLang}, storyLen=${story.length}, descLen=${description.length}`);
+
     const targetLangs = SUPPORTED_LANGUAGES.filter((l) => l !== sourceLang);
+    console.log(`[AutoTranslate] Target languages: ${targetLangs.join(", ")}`);
 
     const storyTranslations: Record<string, string> = {};
     const descriptionTranslations: Record<string, string> = {};
@@ -57,12 +60,15 @@ export const autoTranslateRoom = action({
         translateText(story, sourceLang, lang),
         translateText(description, sourceLang, lang),
       ]);
+      console.log(`[AutoTranslate] ${sourceLang}->${lang}: story=${translatedStory ? 'OK' : 'FAILED'}, desc=${translatedDesc ? 'OK' : 'FAILED'}`);
       if (translatedStory) storyTranslations[lang] = translatedStory;
       if (translatedDesc) descriptionTranslations[lang] = translatedDesc;
     }
 
     storyTranslations[sourceLang] = story;
     descriptionTranslations[sourceLang] = description;
+
+    console.log(`[AutoTranslate] Final keys: story=[${Object.keys(storyTranslations).join(",")}], desc=[${Object.keys(descriptionTranslations).join(",")}]`);
 
     await ctx.runMutation(internal.translateHelpers.saveTranslations, {
       roomId,

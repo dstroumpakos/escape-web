@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useMutation, useQuery, useAction } from 'convex/react';
+import { useMutation, useQuery } from 'convex/react';
 import dynamic from 'next/dynamic';
 import { api } from '../../../../../convex/_generated/api';
 import { Id } from '../../../../../convex/_generated/dataModel';
@@ -33,6 +33,7 @@ import {
   Languages,
 } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
+import { translateRoom } from '@/lib/translate';
 
 const LocationPicker = dynamic(
   () => import('@/components/map/LocationPicker'),
@@ -137,8 +138,6 @@ export default function NewRoomPage() {
   const [storyTranslations, setStoryTranslations] = useState<Record<string, string>>({});
   const [descTranslations, setDescTranslations] = useState<Record<string, string>>({});
   const [showTranslations, setShowTranslations] = useState(false);
-
-  const autoTranslateRoom = useAction(api.translate.autoTranslateRoom);
 
   // Company data for auto-translate check
   const companyData = useQuery(
@@ -330,12 +329,8 @@ export default function NewRoomPage() {
       // Trigger auto-translate if company has it enabled
       if ((companyData as any)?.autoTranslateEnabled && form.story && form.description) {
         try {
-          await autoTranslateRoom({
-            roomId: roomId as any,
-            story: form.story,
-            description: form.description,
-            sourceLang: language,
-          });
+          const trResult = await translateRoom(form.story, form.description, language);
+          // Translations will be saved with the next update
         } catch {
           // auto-translate is best-effort, don't block save
         }
