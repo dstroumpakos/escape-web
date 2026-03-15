@@ -561,9 +561,11 @@ export default function EditRoomPage() {
                           });
                           if (result.storyTranslations) setStoryTranslations(result.storyTranslations);
                           if (result.descriptionTranslations) setDescTranslations(result.descriptionTranslations);
+                          setShowTranslations(true);
                           setTranslateMsg(t('company.rooms.edit.translate_success'));
                           setTimeout(() => setTranslateMsg(''), 3000);
-                        } catch {
+                        } catch (err) {
+                          console.error('Auto-translate error:', err);
                           setTranslateMsg(t('company.rooms.edit.translate_error'));
                         } finally {
                           setTranslating(false);
