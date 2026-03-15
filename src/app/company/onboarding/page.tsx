@@ -135,6 +135,11 @@ export default function CompanyOnboardingPage() {
   useEffect(() => {
     if (companyData && company) {
       if (companyData.onboardingStatus !== company.onboardingStatus) {
+        // Don't downgrade from pending_review back to pending_plan
+        // (race condition: webhook may not have arrived yet after Stripe payment)
+        if (company.onboardingStatus === 'pending_review' && companyData.onboardingStatus === 'pending_plan') {
+          return;
+        }
         refreshCompany({
           onboardingStatus: companyData.onboardingStatus,
           platformPlan: companyData.platformPlan || undefined,

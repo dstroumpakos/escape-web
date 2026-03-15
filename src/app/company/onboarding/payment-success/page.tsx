@@ -2,6 +2,8 @@
 
 import { useEffect, useState, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useMutation } from 'convex/react';
+import { api } from '../../../../../convex/_generated/api';
 import { useCompanyAuth, useCompanyPath } from '@/lib/companyAuth';
 import { useTranslation } from '@/lib/i18n';
 import { CheckCircle, ArrowRight, Loader2 } from 'lucide-react';
@@ -11,15 +13,16 @@ function PaymentSuccessContent() {
   const { t } = useTranslation();
   const router = useRouter();
   const params = useSearchParams();
-  const { refreshCompany } = useCompanyAuth();
+  const { company, refreshCompany } = useCompanyAuth();
   const p = useCompanyPath();
+  const selectPlan = useMutation(api.companies.selectPlan);
   const [countdown, setCountdown] = useState(5);
   const initialized = useRef(false);
 
   const plan = params.get('plan') || 'starter';
   const period = params.get('period') || 'monthly';
 
-  // Update auth state once
+  // Update auth state AND server state once
   useEffect(() => {
     if (!initialized.current) {
       initialized.current = true;
@@ -27,6 +30,14 @@ function PaymentSuccessContent() {
         onboardingStatus: 'pending_review',
         platformPlan: plan as any,
       });
+      // Update server-side immediately so the onboarding page
+      // doesn't show plan selection again before the Stripe webhook arrives
+      if (company?.id) {
+        selectPlan({
+          companyId: company.id as any,
+          plan: plan as any,
+        }).catch(() => {});
+      }
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
