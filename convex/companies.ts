@@ -681,6 +681,15 @@ export const selectPlan = mutation({
     }
 
     await ctx.db.patch(args.companyId, updates);
+
+    // Notify admin of new application
+    if (updates.onboardingStatus === "pending_review") {
+      await ctx.scheduler.runAfter(0, internal.email.sendNewApplicationNotification, {
+        companyName: company.name,
+        companyEmail: company.email,
+        plan: args.plan,
+      });
+    }
   },
 });
 
@@ -1379,6 +1388,13 @@ export const completeStripePayment = mutation({
       billingPeriod: args.period,
       platformSubscribedAt: Date.now(),
       onboardingStatus: "pending_review",
+    });
+
+    // Notify admin of new application
+    await ctx.scheduler.runAfter(0, internal.email.sendNewApplicationNotification, {
+      companyName: company.name,
+      companyEmail: company.email,
+      plan: args.plan,
     });
   },
 });

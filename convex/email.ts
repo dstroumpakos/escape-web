@@ -911,3 +911,42 @@ ${TABLE(`
       .catch(e => console.error("[Email] Slot available email failed:", e));
   },
 });
+
+// ══════════════════════════════════════════════════════════════
+// Admin: new company application notification
+// ══════════════════════════════════════════════════════════════
+
+export const sendNewApplicationNotification = internalAction({
+  args: {
+    companyName: v.string(),
+    companyEmail: v.string(),
+    plan: v.string(),
+  },
+  handler: async (_ctx, d) => {
+    const resend = getResend();
+    if (!resend) return;
+
+    const html = shell(
+      "New Company Application",
+      "A new company is waiting for your review",
+      `<h2 style="color:#E53E3E; margin:0 0 16px">New Application Submitted</h2>
+<p style="color:#ccc; font-size:15px; margin:0 0 8px">
+  <strong>${d.companyName}</strong> has submitted a new application and is waiting for review.
+</p>
+<p style="color:#999; font-size:14px; margin:0 0 4px">Email: ${d.companyEmail}</p>
+<p style="color:#999; font-size:14px; margin:0 0 20px">Plan: ${d.plan}</p>
+<a href="https://business.unlocked.gr/admin" style="display:inline-block; background:#E53E3E; color:white; padding:12px 24px; border-radius:8px; text-decoration:none; font-weight:600;">
+  Review Application
+</a>`,
+      "You received this email because a new company registered on UNLOCKED."
+    );
+
+    await resend.emails.send({
+      from: fromAddr(),
+      to: "dstroumpakos@planeraai.app",
+      subject: `🏢 New Application: ${d.companyName} — Review Required`,
+      html,
+    }).then(r => console.log("[Email] Admin notification sent:", r))
+      .catch(e => console.error("[Email] Admin notification failed:", e));
+  },
+});
