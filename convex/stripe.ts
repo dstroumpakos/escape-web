@@ -426,3 +426,36 @@ export const retryBookingPayment = action({
     return { url: session.url };
   },
 });
+
+/**
+ * Admin: decline a company and cancel their Stripe subscription if one exists.
+ */
+export const declineCompanyWithCancel = action({
+  args: {
+    companyId: v.id("companies"),
+    notes: v.string(),
+    adminEmail: v.string(),
+  },
+  handler: async (ctx, args) => {
+    // Get company to check for subscription
+    const company: any = await ctx.runQuery(api.companies.getById, { id: args.companyId });
+    if (!company) throw new Error("Company not found");
+
+    // Cancel Stripe subscription if exists
+    if (company.stripeSubscriptionId) {
+      try {
+        const stripe = getStripe();
+        await stripe.subscriptions.cancel(company.stripeSubscriptionId);
+      } catch (e: any) {
+        console.error("[DeclineCompany] Failed to cancel Stripe subscription:", e.message);
+      }
+    }
+
+    // Run the existing decline mutation
+    await ctx.runMutation(api.companies.declineCompany, {
+      companyId: args.companyId,
+      notes: args.notes,
+      adminEmail: args.adminEmail,
+    });
+  },
+});

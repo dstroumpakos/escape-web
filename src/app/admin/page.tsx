@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useQuery, useMutation } from 'convex/react';
+import { useQuery, useMutation, useAction } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
 import { useTranslation } from '@/lib/i18n';
 import { useRouter } from 'next/navigation';
@@ -66,7 +66,7 @@ export default function AdminPage() {
   );
 
   const approveCompany = useMutation(api.companies.approveCompany);
-  const declineCompany = useMutation(api.companies.declineCompany);
+  const declineCompany = useAction(api.stripe.declineCompanyWithCancel);
 
   const handleLogout = () => {
     localStorage.removeItem('unlocked_admin');
