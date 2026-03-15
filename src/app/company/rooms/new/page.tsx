@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useMutation, useQuery } from 'convex/react';
+import { useMutation, useQuery, useAction } from 'convex/react';
 import dynamic from 'next/dynamic';
 import { api } from '../../../../../convex/_generated/api';
 import { Id } from '../../../../../convex/_generated/dataModel';
@@ -29,6 +29,8 @@ import {
   Image,
   ChevronDown,
   ChevronUp,
+  Globe,
+  Languages,
 } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
 
@@ -125,6 +127,24 @@ export default function NewRoomPage() {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { t } = useTranslation();
+
+  // ── Translation State ──
+  const LANGS = [
+    { code: 'en', label: 'English' },
+    { code: 'el', label: 'Ελληνικά' },
+    { code: 'nl', label: 'Nederlands' },
+  ] as const;
+  const [storyTranslations, setStoryTranslations] = useState<Record<string, string>>({});
+  const [descTranslations, setDescTranslations] = useState<Record<string, string>>({});
+  const [showTranslations, setShowTranslations] = useState(false);
+
+  const autoTranslateRoom = useAction(api.translate.autoTranslateRoom);
+
+  // Company data for auto-translate check
+  const companyData = useQuery(
+    api.companies.getById,
+    company?.id ? { id: company.id as any } : 'skip'
+  );
 
   // ── Photo Branding State ──
   const [photoBrandingOpen, setPhotoBrandingOpen] = useState(false);
@@ -263,7 +283,17 @@ export default function NewRoomPage() {
     }
     setLoading(true);
     try {
-      await createRoom({
+      // Build manual translations (filter empty strings)
+      const storyTrans: Record<string, string> = {};
+      const descTrans: Record<string, string> = {};
+      for (const [k, v] of Object.entries(storyTranslations)) {
+        if (v.trim()) storyTrans[k] = v;
+      }
+      for (const [k, v] of Object.entries(descTranslations)) {
+        if (v.trim()) descTrans[k] = v;
+      }
+
+      const roomId = await createRoom({
         companyId: company.id as any,
         title: form.title,
         location: form.location,
@@ -281,6 +311,8 @@ export default function NewRoomPage() {
         tags: form.tags,
         description: form.description,
         story: form.story,
+        storyTranslations: Object.keys(storyTrans).length > 0 ? storyTrans as any : undefined,
+        descriptionTranslations: Object.keys(descTrans).length > 0 ? descTrans as any : undefined,
         paymentTerms: form.paymentTerms,
         termsOfUse: form.termsOfUse || undefined,
         isSubscriptionOnly: form.isSubscriptionOnly || undefined,
@@ -294,6 +326,20 @@ export default function NewRoomPage() {
         overflowSlot: form.overflowSlot || undefined,
         releaseDate: form.releaseDate || undefined,
       });
+
+      // Trigger auto-translate if company has it enabled
+      if ((companyData as any)?.autoTranslateEnabled && form.story && form.description) {
+        try {
+          await autoTranslateRoom({
+            roomId: roomId as any,
+            story: form.story,
+            description: form.description,
+          });
+        } catch {
+          // auto-translate is best-effort, don't block save
+        }
+      }
+
       router.push(p('/company/rooms'));
     } catch (err: any) {
       setError(err?.message || t('company.rooms.new.failed_create'));
@@ -609,6 +655,66 @@ export default function NewRoomPage() {
               placeholder={t('company.rooms.new.description_placeholder')}
               required
             />
+          </div>
+
+          {/* Translations Section */}
+          <div className="mt-6 border-t border-white/10 pt-4">
+            <button
+              type="button"
+              onClick={() => setShowTranslations(!showTranslations)}
+              className="flex items-center gap-2 text-sm font-medium text-brand-text-secondary hover:text-white transition-colors"
+            >
+              <Globe className="w-4 h-4" />
+              {t('company.rooms.edit.translations')}
+              {showTranslations ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+            </button>
+
+            {showTranslations && (
+              <div className="mt-4 space-y-4">
+                {!(companyData as any)?.autoTranslateEnabled && (
+                  <p className="text-xs text-brand-text-muted">
+                    {t('company.rooms.edit.enable_auto_translate')}
+                  </p>
+                )}
+                {(companyData as any)?.autoTranslateEnabled && (
+                  <p className="text-xs text-green-400">
+                    {t('company.rooms.edit.auto_translate_on_save')}
+                  </p>
+                )}
+
+                {/* Per-language translation fields */}
+                {LANGS.map((lang) => (
+                  <div key={lang.code} className="p-3 bg-brand-bg rounded-xl border border-white/5">
+                    <p className="text-sm font-semibold mb-2 flex items-center gap-2">
+                      <Globe className="w-3.5 h-3.5 text-brand-text-secondary" />
+                      {lang.label}
+                    </p>
+                    <div className="space-y-2">
+                      <div>
+                        <label className="text-xs text-brand-text-muted">{t('company.rooms.edit.story')}</label>
+                        <textarea
+                          value={storyTranslations[lang.code] || ''}
+                          onChange={(e) => setStoryTranslations((prev) => ({ ...prev, [lang.code]: e.target.value }))}
+                          rows={2}
+                          className="w-full bg-brand-surface border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:border-brand-red focus:outline-none resize-none"
+                          placeholder={`${t('company.rooms.new.story_label')} (${lang.label})`}
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs text-brand-text-muted">{t('company.rooms.edit.description')}</label>
+                        <textarea
+                          value={descTranslations[lang.code] || ''}
+                          onChange={(e) => setDescTranslations((prev) => ({ ...prev, [lang.code]: e.target.value }))}
+                          rows={2}
+                          className="w-full bg-brand-surface border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:border-brand-red focus:outline-none resize-none"
+                          placeholder={`${t('company.rooms.new.description_label')} (${lang.label})`}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </Section>
 

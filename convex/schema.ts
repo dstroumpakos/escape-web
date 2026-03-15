@@ -49,6 +49,8 @@ export default defineSchema({
       v.literal("cancelled"),    // Subscription cancelled
       v.literal("past_due"),     // Payment failed
     )),
+    // Auto-translate room content to all supported languages
+    autoTranslateEnabled: v.optional(v.boolean()),
   })
     .index("by_email", ["email"])
     .index("by_stripeCustomerId", ["stripeCustomerId"])
@@ -74,6 +76,17 @@ export default defineSchema({
     tags: v.array(v.string()),
     description: v.string(),
     story: v.string(),
+    // Multi-language translations for story & description
+    storyTranslations: v.optional(v.object({
+      en: v.optional(v.string()),
+      el: v.optional(v.string()),
+      nl: v.optional(v.string()),
+    })),
+    descriptionTranslations: v.optional(v.object({
+      en: v.optional(v.string()),
+      el: v.optional(v.string()),
+      nl: v.optional(v.string()),
+    })),
     isNew: v.optional(v.boolean()),
     isFeatured: v.optional(v.boolean()),
     isTrending: v.optional(v.boolean()),

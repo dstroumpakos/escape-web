@@ -27,6 +27,7 @@ import type * as standalonePhotos from "../standalonePhotos.js";
 import type * as stats from "../stats.js";
 import type * as stripe from "../stripe.js";
 import type * as timeSlots from "../timeSlots.js";
+import type * as translate from "../translate.js";
 import type * as users from "../users.js";
 import type * as validation from "../validation.js";
 import type * as widget from "../widget.js";
@@ -57,6 +58,7 @@ declare const fullApi: ApiFromModules<{
   stats: typeof stats;
   stripe: typeof stripe;
   timeSlots: typeof timeSlots;
+  translate: typeof translate;
   users: typeof users;
   validation: typeof validation;
   widget: typeof widget;

@@ -49,6 +49,7 @@ import {
   Layers,
   AlertCircle,
   Lock,
+  Languages,
 } from 'lucide-react';
 import { PlanBadge } from '../PlanBadge';
 import { useTranslation } from '@/lib/i18n';
@@ -84,9 +85,14 @@ export default function CompanySettingsPage() {
   const [eaSaving, setEaSaving] = useState(false);
   const [eaMsg, setEaMsg] = useState('');
 
+  // Auto-translate state
+  const [autoTranslateEnabled, setAutoTranslateEnabled] = useState(false);
+  const [atSaving, setAtSaving] = useState(false);
+  const [atMsg, setAtMsg] = useState('');
+
   // Active tab
   const searchParams = useSearchParams();
-  const [activeTab, setActiveTab] = useState<'profile' | 'early-access' | 'widget'>('profile');
+  const [activeTab, setActiveTab] = useState<'profile' | 'early-access' | 'translations' | 'widget'>('profile');
 
   // Widget copy state
   const [widgetCopied, setWidgetCopied] = useState(false);
@@ -125,7 +131,7 @@ export default function CompanySettingsPage() {
   // Respect ?tab= query param
   useEffect(() => {
     const tab = searchParams.get('tab');
-    if (tab === 'widget' || tab === 'early-access' || tab === 'profile') {
+    if (tab === 'widget' || tab === 'early-access' || tab === 'profile' || tab === 'translations') {
       setActiveTab(tab);
     }
   }, [searchParams]);
@@ -160,6 +166,7 @@ export default function CompanySettingsPage() {
         description: (companyData as any).description || '',
       });
       setEarlyAccessEnabled((companyData as any).subscriptionEnabled || false);
+      setAutoTranslateEnabled((companyData as any).autoTranslateEnabled || false);
       setProfileLoaded(true);
       setEaLoaded(true);
     }
@@ -206,6 +213,26 @@ export default function CompanySettingsPage() {
       setEaMsg(t('company.settings.ea_error'));
     } finally {
       setEaSaving(false);
+    }
+  };
+
+  const handleToggleAutoTranslate = async () => {
+    const newValue = !autoTranslateEnabled;
+    setAutoTranslateEnabled(newValue);
+    setAtSaving(true);
+    setAtMsg('');
+    try {
+      await updateProfile({
+        id: companyId as any,
+        autoTranslateEnabled: newValue,
+      });
+      setAtMsg(newValue ? t('company.settings.at_enabled') : t('company.settings.at_disabled'));
+      setTimeout(() => setAtMsg(''), 3000);
+    } catch (err: any) {
+      setAutoTranslateEnabled(!newValue); // rollback
+      setAtMsg(t('company.settings.at_error'));
+    } finally {
+      setAtSaving(false);
     }
   };
 
@@ -334,6 +361,7 @@ export default function CompanySettingsPage() {
         {[
           { key: 'profile', label: t('company.settings.tab_profile'), icon: Building2 },
           { key: 'early-access', label: t('company.settings.tab_early_access'), icon: Zap },
+          { key: 'translations', label: t('company.settings.tab_translations'), icon: Languages },
           { key: 'widget', label: t('company.settings.tab_widget'), icon: Code },
         ].map(({ key, label, icon: Icon }) => (
           <button
@@ -640,6 +668,101 @@ export default function CompanySettingsPage() {
                 </div>
               ))}
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Translations Tab */}
+      {activeTab === 'translations' && (
+        <div className="space-y-6">
+          {/* Hero */}
+          <div className="relative overflow-hidden bg-gradient-to-br from-blue-500/20 via-brand-surface to-brand-surface rounded-2xl border border-blue-500/20 p-6 md:p-8">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+            <div className="relative">
+              <div className="inline-flex items-center gap-2 bg-blue-500/10 border border-blue-500/30 rounded-full px-3 py-1 mb-4">
+                <Languages className="w-3.5 h-3.5 text-blue-400" />
+                <span className="text-xs font-semibold text-blue-400 uppercase tracking-wide">
+                  {t('company.settings.at_badge')}
+                </span>
+              </div>
+              <h2 className="text-xl md:text-2xl font-bold mb-3">
+                {t('company.settings.at_title')}
+              </h2>
+              <p className="text-brand-text-secondary text-sm md:text-base max-w-2xl">
+                {t('company.settings.at_description')}
+              </p>
+            </div>
+          </div>
+
+          {/* How it works */}
+          <div className="bg-brand-surface rounded-2xl border border-white/5 p-6">
+            <h3 className="text-lg font-bold mb-4">{t('company.settings.at_how_title')}</h3>
+            <div className="space-y-3">
+              {[
+                t('company.settings.at_step1'),
+                t('company.settings.at_step2'),
+                t('company.settings.at_step3'),
+              ].map((step, i) => (
+                <div key={i} className="flex items-start gap-3">
+                  <div className="w-6 h-6 shrink-0 rounded-full bg-blue-500/15 flex items-center justify-center">
+                    <span className="text-xs font-bold text-blue-400">{i + 1}</span>
+                  </div>
+                  <p className="text-sm text-brand-text-secondary">{step}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Toggle */}
+          <div className="bg-brand-surface rounded-2xl border border-white/5 p-6">
+            {atMsg && (
+              <div
+                className={`rounded-xl p-3 mb-4 text-sm ${
+                  atMsg === t('company.settings.at_enabled') || atMsg === t('company.settings.at_disabled')
+                    ? 'bg-green-500/10 text-green-400'
+                    : 'bg-red-500/10 text-red-400'
+                }`}
+              >
+                {atMsg}
+              </div>
+            )}
+
+            <div className="flex items-center justify-between p-4 bg-brand-bg rounded-xl border border-white/5">
+              <div className="flex items-center gap-3">
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${autoTranslateEnabled ? 'bg-blue-500/20' : 'bg-white/5'}`}>
+                  <Languages className={`w-5 h-5 ${autoTranslateEnabled ? 'text-blue-400' : 'text-brand-text-secondary'}`} />
+                </div>
+                <div>
+                  <p className="font-semibold">
+                    {autoTranslateEnabled ? t('company.settings.at_active') : t('company.settings.at_inactive')}
+                  </p>
+                  <p className="text-sm text-brand-text-secondary">
+                    {autoTranslateEnabled
+                      ? t('company.settings.at_active_desc')
+                      : t('company.settings.at_inactive_desc')}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={handleToggleAutoTranslate}
+                disabled={atSaving}
+                className="shrink-0"
+              >
+                {atSaving ? (
+                  <div className="w-8 h-8 flex items-center justify-center">
+                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  </div>
+                ) : autoTranslateEnabled ? (
+                  <ToggleRight className="w-10 h-10 text-blue-400" />
+                ) : (
+                  <ToggleLeft className="w-10 h-10 text-brand-text-secondary" />
+                )}
+              </button>
+            </div>
+
+            <p className="text-xs text-brand-text-muted mt-3">
+              {t('company.settings.at_note')}
+            </p>
           </div>
         </div>
       )}

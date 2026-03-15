@@ -161,6 +161,7 @@ export const updateProfile = mutation({
     description: v.optional(v.string()),
     logo: v.optional(v.string()),
     subscriptionEnabled: v.optional(v.boolean()),
+    autoTranslateEnabled: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
     const { id, ...fields } = args;
@@ -409,6 +410,8 @@ export const createRoom = mutation({
     tags: v.array(v.string()),
     description: v.string(),
     story: v.string(),
+    storyTranslations: v.optional(v.object({ en: v.optional(v.string()), el: v.optional(v.string()), nl: v.optional(v.string()) })),
+    descriptionTranslations: v.optional(v.object({ en: v.optional(v.string()), el: v.optional(v.string()), nl: v.optional(v.string()) })),
     paymentTerms: v.array(v.union(v.literal("full"), v.literal("deposit_20"), v.literal("pay_on_arrival"))),
     termsOfUse: v.optional(v.string()),
     isSubscriptionOnly: v.optional(v.boolean()),
@@ -485,6 +488,8 @@ export const updateRoom = mutation({
     tags: v.optional(v.array(v.string())),
     description: v.optional(v.string()),
     story: v.optional(v.string()),
+    storyTranslations: v.optional(v.object({ en: v.optional(v.string()), el: v.optional(v.string()), nl: v.optional(v.string()) })),
+    descriptionTranslations: v.optional(v.object({ en: v.optional(v.string()), el: v.optional(v.string()), nl: v.optional(v.string()) })),
     paymentTerms: v.optional(v.array(v.union(v.literal("full"), v.literal("deposit_20"), v.literal("pay_on_arrival")))),
     termsOfUse: v.optional(v.string()),
     isSubscriptionOnly: v.optional(v.boolean()),

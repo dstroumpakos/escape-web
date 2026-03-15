@@ -33,7 +33,7 @@ export default function RoomDetailsPage() {
   const params = useParams();
   const roomId = params.id as string;
   const { user, isAuthenticated } = useAuth();
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
 
   const room = useQuery(api.rooms.getById, roomId ? { id: roomId as any } : 'skip');
   const toggleWishlist = useMutation(api.users.toggleWishlist);
@@ -298,7 +298,7 @@ export default function RoomDetailsPage() {
                   {t('room.the_story')}
                 </h3>
                 <p className="text-brand-text-secondary leading-relaxed italic">
-                  &ldquo;{room.story}&rdquo;
+                  &ldquo;{(room as any).storyTranslations?.[language] || room.story}&rdquo;
                 </p>
               </div>
             )}
@@ -308,7 +308,7 @@ export default function RoomDetailsPage() {
               <div className="mb-8">
                 <h3 className="text-lg font-semibold mb-3">{t('room.about')}</h3>
                 <p className="text-brand-text-secondary leading-relaxed">
-                  {room.description}
+                  {(room as any).descriptionTranslations?.[language] || room.description}
                 </p>
               </div>
             )}

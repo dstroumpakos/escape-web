@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { useQuery, useMutation } from 'convex/react';
+import { useQuery, useMutation, useAction } from 'convex/react';
 import dynamic from 'next/dynamic';
 import { api } from '../../../../../../convex/_generated/api';
 import { Id } from '../../../../../../convex/_generated/dataModel';
@@ -30,6 +30,8 @@ import {
   Image,
   ChevronDown,
   ChevronUp,
+  Globe,
+  Languages,
 } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
 
@@ -77,6 +79,7 @@ export default function EditRoomPage() {
 
   const room = useQuery(api.rooms.getById, roomId ? { id: roomId as any } : 'skip');
   const updateRoom = useMutation(api.companies.updateRoom);
+  const autoTranslateRoom = useAction(api.translate.autoTranslateRoom);
   const generateUploadUrl = useMutation(api.companies.generateUploadUrl);
   const getUrlMutation = useMutation(api.companies.getUrlMutation);
   const savePreset = useMutation(api.bookingPhotos.savePreset);
@@ -116,7 +119,25 @@ export default function EditRoomPage() {
   const [imageUploading, setImageUploading] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
+
+  // ── Translation State ──
+  const LANGS = [
+    { code: 'en', label: 'English' },
+    { code: 'el', label: 'Ελληνικά' },
+    { code: 'nl', label: 'Nederlands' },
+  ] as const;
+  const [storyTranslations, setStoryTranslations] = useState<Record<string, string>>({});
+  const [descTranslations, setDescTranslations] = useState<Record<string, string>>({});
+  const [translating, setTranslating] = useState(false);
+  const [translateMsg, setTranslateMsg] = useState('');
+  const [showTranslations, setShowTranslations] = useState(false);
+
+  // Company data for auto-translate check
+  const companyData = useQuery(
+    api.companies.getById,
+    company?.id ? { id: company.id as any } : 'skip'
+  );
 
   // ── Photo Branding State ──
   const [photoBrandingOpen, setPhotoBrandingOpen] = useState(false);
@@ -196,6 +217,9 @@ export default function EditRoomPage() {
         isFeatured: (room as any).isFeatured || false,
         releaseDate: (room as any).releaseDate || '',
       });
+      // Load existing translations
+      if ((room as any).storyTranslations) setStoryTranslations((room as any).storyTranslations);
+      if ((room as any).descriptionTranslations) setDescTranslations((room as any).descriptionTranslations);
       setLoaded(true);
     }
   }, [room, loaded]);
@@ -234,6 +258,16 @@ export default function EditRoomPage() {
     setError('');
     setLoading(true);
     try {
+      // Build manual translations object (filter empty strings)
+      const storyTrans: Record<string, string> = {};
+      const descTrans: Record<string, string> = {};
+      for (const [k, v] of Object.entries(storyTranslations)) {
+        if (v.trim()) storyTrans[k] = v;
+      }
+      for (const [k, v] of Object.entries(descTranslations)) {
+        if (v.trim()) descTrans[k] = v;
+      }
+
       await updateRoom({
         roomId: roomId as any,
         title: form.title,
@@ -252,6 +286,8 @@ export default function EditRoomPage() {
         tags: form.tags,
         description: form.description,
         story: form.story,
+        storyTranslations: Object.keys(storyTrans).length > 0 ? storyTrans as any : undefined,
+        descriptionTranslations: Object.keys(descTrans).length > 0 ? descTrans as any : undefined,
         paymentTerms: form.paymentTerms,
         termsOfUse: form.termsOfUse || undefined,
         isSubscriptionOnly: form.isSubscriptionOnly || undefined,
@@ -261,6 +297,20 @@ export default function EditRoomPage() {
         isFeatured: form.isFeatured || undefined,
         releaseDate: form.releaseDate || undefined,
       });
+
+      // Trigger auto-translate if company has it enabled
+      if ((companyData as any)?.autoTranslateEnabled && form.story && form.description) {
+        try {
+          await autoTranslateRoom({
+            roomId: roomId as any,
+            story: form.story,
+            description: form.description,
+          });
+        } catch {
+          // auto-translate is best-effort, don't block save
+        }
+      }
+
       router.push(p('/company/rooms'));
     } catch (err: any) {
       setError(err?.message || t('company.rooms.edit.failed_update'));
@@ -478,6 +528,98 @@ export default function EditRoomPage() {
             <textarea value={form.description} onChange={(e) => updateField('description', e.target.value)} rows={3}
               className="w-full bg-brand-bg border border-white/10 rounded-xl px-4 py-3 text-white focus:border-brand-red focus:outline-none resize-none" required
             />
+          </div>
+
+          {/* Translations Section */}
+          <div className="mt-6 border-t border-white/10 pt-4">
+            <button
+              type="button"
+              onClick={() => setShowTranslations(!showTranslations)}
+              className="flex items-center gap-2 text-sm font-medium text-brand-text-secondary hover:text-white transition-colors"
+            >
+              <Globe className="w-4 h-4" />
+              {t('company.rooms.edit.translations')}
+              {showTranslations ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+            </button>
+
+            {showTranslations && (
+              <div className="mt-4 space-y-4">
+                {/* Auto-translate button */}
+                {(companyData as any)?.autoTranslateEnabled && (
+                  <div className="flex items-center gap-3">
+                    <button
+                      type="button"
+                      disabled={translating || !form.story || !form.description}
+                      onClick={async () => {
+                        setTranslating(true);
+                        setTranslateMsg('');
+                        try {
+                          const result = await autoTranslateRoom({
+                            roomId: roomId as any,
+                            story: form.story,
+                            description: form.description,
+                          });
+                          if (result.storyTranslations) setStoryTranslations(result.storyTranslations);
+                          if (result.descriptionTranslations) setDescTranslations(result.descriptionTranslations);
+                          setTranslateMsg(t('company.rooms.edit.translate_success'));
+                          setTimeout(() => setTranslateMsg(''), 3000);
+                        } catch {
+                          setTranslateMsg(t('company.rooms.edit.translate_error'));
+                        } finally {
+                          setTranslating(false);
+                        }
+                      }}
+                      className="flex items-center gap-2 px-4 py-2 rounded-xl bg-brand-red/10 border border-brand-red/20 text-brand-red text-sm font-medium hover:bg-brand-red/20 transition-colors disabled:opacity-50"
+                    >
+                      <Languages className="w-4 h-4" />
+                      {translating ? t('company.rooms.edit.translating') : t('company.rooms.edit.auto_translate')}
+                    </button>
+                    {translateMsg && (
+                      <span className={`text-sm ${translateMsg === t('company.rooms.edit.translate_success') ? 'text-green-400' : 'text-red-400'}`}>
+                        {translateMsg}
+                      </span>
+                    )}
+                  </div>
+                )}
+                {!(companyData as any)?.autoTranslateEnabled && (
+                  <p className="text-xs text-brand-text-muted">
+                    {t('company.rooms.edit.enable_auto_translate')}
+                  </p>
+                )}
+
+                {/* Per-language translation fields */}
+                {LANGS.map((lang) => (
+                  <div key={lang.code} className="p-3 bg-brand-bg rounded-xl border border-white/5">
+                    <p className="text-sm font-semibold mb-2 flex items-center gap-2">
+                      <Globe className="w-3.5 h-3.5 text-brand-text-secondary" />
+                      {lang.label}
+                    </p>
+                    <div className="space-y-2">
+                      <div>
+                        <label className="text-xs text-brand-text-muted">{t('company.rooms.edit.story')}</label>
+                        <textarea
+                          value={storyTranslations[lang.code] || ''}
+                          onChange={(e) => setStoryTranslations((prev) => ({ ...prev, [lang.code]: e.target.value }))}
+                          rows={2}
+                          className="w-full bg-brand-surface border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:border-brand-red focus:outline-none resize-none"
+                          placeholder={`${t('company.rooms.edit.story')} (${lang.label})`}
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs text-brand-text-muted">{t('company.rooms.edit.description')}</label>
+                        <textarea
+                          value={descTranslations[lang.code] || ''}
+                          onChange={(e) => setDescTranslations((prev) => ({ ...prev, [lang.code]: e.target.value }))}
+                          rows={2}
+                          className="w-full bg-brand-surface border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:border-brand-red focus:outline-none resize-none"
+                          placeholder={`${t('company.rooms.edit.description')} (${lang.label})`}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </SectionCard>
 
