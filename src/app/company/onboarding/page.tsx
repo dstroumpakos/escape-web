@@ -121,7 +121,15 @@ export default function CompanyOnboardingPage() {
     discountCode.trim().length >= 3 ? { code: discountCode.trim() } : 'skip'
   );
 
-  const status = companyData?.onboardingStatus || company?.onboardingStatus;
+  const serverStatus = companyData?.onboardingStatus;
+  const localStatus = company?.onboardingStatus;
+
+  // Don't downgrade from pending_review to pending_plan in rendered view
+  // (race condition: Stripe webhook may not have arrived yet after payment)
+  const status =
+    localStatus === 'pending_review' && serverStatus === 'pending_plan'
+      ? 'pending_review'
+      : serverStatus || localStatus;
 
   // If approved, redirect to dashboard
   useEffect(() => {
