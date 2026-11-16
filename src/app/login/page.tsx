@@ -177,7 +177,7 @@ export default function LoginPage() {
         <p className="text-center text-sm text-brand-text-muted mt-6">
           {t('auth.business_question')}{' '}
           <Link
-            href="/login?type=company"
+            href="/company/login"
             className="text-brand-text-secondary hover:text-white transition-colors underline"
           >
             {t('auth.company_login')}

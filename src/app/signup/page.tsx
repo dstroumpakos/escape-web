@@ -374,7 +374,7 @@ export default function SignupPage() {
         <p className="text-center text-sm text-brand-text-muted mt-6">
           {t('auth.business_cta')}{' '}
           <Link
-            href="/signup?type=company"
+            href="/company/register"
             className="text-brand-text-secondary hover:text-white transition-colors underline"
           >
             {t('auth.register_business')}
