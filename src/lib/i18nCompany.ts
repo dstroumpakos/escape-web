@@ -6,6 +6,20 @@
  */
 export const companyTranslations: { en: Record<string, string>; el: Record<string, string>; nl: Record<string, string> } = {
   en: {
+    // ── Last-minute offers ──
+    'cx.nav.offers': 'Offers',
+    'cx.offers.title': 'Last-minute offers',
+    'cx.offers.subtitle': 'Fill empty slots of today and tomorrow with a discount.',
+    'cx.offers.today': 'Today',
+    'cx.offers.tomorrow': 'Tomorrow',
+    'cx.offers.no_free': 'No free slots left.',
+    'cx.offers.info': 'Only bookings made on UNLOCKED (site and app) get the discount. Your own widget keeps the normal price. Players who saved the room get a notification (once a day per room).',
+    'cx.offers.pick': 'Discount for {{time}}',
+    'cx.offers.remove': 'Remove offer',
+    'cx.offers.saved': 'Offer saved: -{{percent}}% at {{time}}',
+    'cx.offers.removed': 'Offer removed',
+    'cx.offers.active': '{{count}} active',
+    'cx.offers.tap_hint': 'Tap a free time to put a discount on it.',
     // ── Common ──
     'cx.common.cancel': 'Cancel',
     'cx.common.close': 'Close',
@@ -410,6 +424,20 @@ export const companyTranslations: { en: Record<string, string>; el: Record<strin
   },
 
   el: {
+    // ── Last-minute offers ──
+    'cx.nav.offers': 'Προσφορές',
+    'cx.offers.title': 'Προσφορές τελευταίας στιγμής',
+    'cx.offers.subtitle': 'Γεμίστε τις άδειες ώρες σήμερα και αύριο με μια έκπτωση.',
+    'cx.offers.today': 'Σήμερα',
+    'cx.offers.tomorrow': 'Αύριο',
+    'cx.offers.no_free': 'Δεν έμειναν ελεύθερες ώρες.',
+    'cx.offers.info': 'Την έκπτωση την παίρνουν μόνο οι κρατήσεις μέσω UNLOCKED (site και app). Το δικό σας widget κρατά την κανονική τιμή. Όσοι παίκτες έχουν αποθηκεύσει το δωμάτιο παίρνουν ειδοποίηση (μία φορά τη μέρα ανά δωμάτιο).',
+    'cx.offers.pick': 'Έκπτωση για τις {{time}}',
+    'cx.offers.remove': 'Κατάργηση προσφοράς',
+    'cx.offers.saved': 'Η προσφορά μπήκε: -{{percent}}% στις {{time}}',
+    'cx.offers.removed': 'Η προσφορά καταργήθηκε',
+    'cx.offers.active': '{{count}} ενεργές',
+    'cx.offers.tap_hint': 'Πατήστε μια ελεύθερη ώρα για να βάλετε έκπτωση.',
     // ── Common ──
     'cx.common.cancel': 'Ακύρωση',
     'cx.common.close': 'Κλείσιμο',
@@ -819,6 +847,20 @@ export const companyTranslations: { en: Record<string, string>; el: Record<strin
   },
   // Dutch: only keys translated so far; the rest falls back to English.
   nl: {
+    // ── Last-minute offers ──
+    'cx.nav.offers': 'Aanbiedingen',
+    'cx.offers.title': 'Last-minute aanbiedingen',
+    'cx.offers.subtitle': 'Vul lege tijden van vandaag en morgen met een korting.',
+    'cx.offers.today': 'Vandaag',
+    'cx.offers.tomorrow': 'Morgen',
+    'cx.offers.no_free': 'Geen vrije tijden meer.',
+    'cx.offers.info': 'Alleen boekingen via UNLOCKED (site en app) krijgen de korting. Je eigen widget houdt de normale prijs. Spelers die de kamer hebben bewaard krijgen een melding (één keer per dag per kamer).',
+    'cx.offers.pick': 'Korting voor {{time}}',
+    'cx.offers.remove': 'Aanbieding verwijderen',
+    'cx.offers.saved': 'Aanbieding opgeslagen: -{{percent}}% om {{time}}',
+    'cx.offers.removed': 'Aanbieding verwijderd',
+    'cx.offers.active': '{{count}} actief',
+    'cx.offers.tap_hint': 'Tik op een vrije tijd om er korting op te zetten.',
     // ── Bookings calendar ──
     'cx.bcal.view_day': 'Dag',
     'cx.bcal.view_2days': '2 dagen',

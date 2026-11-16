@@ -38,7 +38,7 @@ function CheckoutContent() {
   // appear when the escape room has connected its own Stripe or Viva account.
   const options = useQuery(
     api.companyPaymentsData.getCheckoutOptions,
-    roomId ? { roomId: roomId as any, players } : 'skip'
+    roomId ? { roomId: roomId as any, players, date, time } : 'skip'
   );
   const createBooking = useMutation(api.bookings.create);
   const startCheckout = useAction(api.companyPayments.startCheckout);
@@ -344,8 +344,19 @@ function CheckoutContent() {
                   <span className="text-brand-text-muted">
                     {players}x {t('checkout.tickets')}
                   </span>
-                  <span>€{total.toFixed(2)}</span>
+                  <span>
+                    {!!options?.offerPercent && (
+                      <span className="line-through text-brand-text-muted mr-2">€{options.fullPrice.toFixed(2)}</span>
+                    )}
+                    €{total.toFixed(2)}
+                  </span>
                 </div>
+                {!!options?.offerPercent && (
+                  <div className="flex justify-between text-brand-gold">
+                    <span>{t('offers.badge', { percent: String(options.offerPercent) })}</span>
+                    <span>-€{(options.fullPrice - total).toFixed(2)}</span>
+                  </div>
+                )}
                 {paymentTerms === 'deposit_20' && (
                   <div className="flex justify-between text-brand-text-muted">
                     <span>{t('checkout.deposit_label', { percent: String(depositPercent) })}</span>

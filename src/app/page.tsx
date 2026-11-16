@@ -6,11 +6,13 @@ import { ThemesSection } from '@/components/home/ThemesSection';
 import { DownloadCTA } from '@/components/home/DownloadCTA';
 import { SEOContent } from '@/components/home/SEOContent';
 import { SafeConvex } from '@/components/SafeConvex';
+import { LastMinuteOffers } from '@/components/home/LastMinuteOffers';
 
 export default function Home() {
   return (
     <>
       <SafeConvex><HeroSection /></SafeConvex>
+      <SafeConvex><LastMinuteOffers /></SafeConvex>
       <SafeConvex><FeaturedRooms /></SafeConvex>
       <LabyrinthSection />
       <ThemesSection />

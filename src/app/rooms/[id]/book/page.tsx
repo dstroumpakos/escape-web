@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import { isSlotPast, slotClosedReason, useNow } from '@/lib/slotTime';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useQuery, useMutation } from 'convex/react';
 import { api } from '../../../../../convex/_generated/api';
@@ -38,10 +38,24 @@ export default function BookingPage() {
   const room = useQuery(api.rooms.getById, roomId ? { id: roomId as any } : 'skip');
 
   const today = new Date();
-  const [currentMonth, setCurrentMonth] = useState(today.getMonth());
-  const [currentYear, setCurrentYear] = useState(today.getFullYear());
-  const [selectedDate, setSelectedDate] = useState<string | null>(null);
-  const [selectedTime, setSelectedTime] = useState<string | null>(null);
+  // ?date=YYYY-MM-DD&time=HH:MM (from an offer card) preselects that slot.
+  const searchParams = useSearchParams();
+  const qDate = searchParams.get('date');
+  const qTime = searchParams.get('time');
+  const isDigits = (x: string) => x.length > 0 && [...x].every((c) => c >= '0' && c <= '9');
+  const dParts = (qDate || '').split('-');
+  const initialDate =
+    dParts.length === 3 && dParts[0].length === 4 && dParts[1].length === 2 && dParts[2].length === 2 && dParts.every(isDigits)
+      ? qDate
+      : null;
+  const tParts = (qTime || '').split(':');
+  const validTime = tParts.length === 2 && tParts[1].length === 2 && tParts[0].length <= 2 && tParts.every(isDigits);
+  const [currentMonth, setCurrentMonth] = useState(initialDate ? parseInt(initialDate.slice(5, 7), 10) - 1 : today.getMonth());
+  const [currentYear, setCurrentYear] = useState(initialDate ? parseInt(initialDate.slice(0, 4), 10) : today.getFullYear());
+  const [selectedDate, setSelectedDate] = useState<string | null>(initialDate);
+  const [selectedTime, setSelectedTime] = useState<string | null>(
+    initialDate && validTime ? qTime : null
+  );
   const [playerCount, setPlayerCount] = useState(2);
   const [alertLoading, setAlertLoading] = useState<string | null>(null);
   const [phoneInput, setPhoneInput] = useState('');
@@ -66,6 +80,14 @@ export default function BookingPage() {
     api.bookings.getBookedTimes,
     selectedDate ? { roomId: roomId as any, date: selectedDate } : 'skip'
   );
+
+  // Last-minute offers on this date (the discount itself is applied by the server)
+  const offers = useQuery(
+    api.slotOffers.forRoomDate,
+    selectedDate ? { roomId: roomId as any, date: selectedDate } : 'skip'
+  );
+  const offerFor = (time: string | null) =>
+    (time && (offers ?? []).find((o: { time: string; percent: number }) => o.time === time)?.percent) || 0;
 
   // Slot alerts for current user + room + date
   const slotAlerts = useQuery(
@@ -128,6 +150,8 @@ export default function BookingPage() {
     }
     return room.price * playerCount;
   }, [room, playerCount]);
+  const offerPercent = offerFor(selectedTime);
+  const finalPrice = offerPercent ? Math.round(totalPrice * (100 - offerPercent)) / 100 : totalPrice;
 
   // Available time slots: combine default + custom, exclude booked.
   // Times that have already started are dropped, and so are free times inside the
@@ -208,7 +232,7 @@ export default function BookingPage() {
       date: selectedDate!,
       time: selectedTime!,
       players: String(playerCount),
-      total: String(totalPrice),
+      total: String(finalPrice),
     });
     router.push(`/checkout?${params.toString()}`);
   };
@@ -342,6 +366,9 @@ export default function BookingPage() {
                           }`}
                         >
                           {slot.time}
+                          {!slot.booked && offerFor(slot.time) > 0 && (
+                            <span className="block text-[11px] font-bold text-brand-gold leading-tight">-{offerFor(slot.time)}%</span>
+                          )}
                         </button>
                         {slot.booked && user?.id && (
                           <button
@@ -441,8 +468,14 @@ export default function BookingPage() {
                 <div className="border-t border-brand-border mt-4 pt-4">
                   <div className="flex justify-between items-baseline">
                     <span className="text-brand-text-muted">{t('book.total')}</span>
-                    <span className="text-3xl font-display font-black text-brand-bone tabular-nums">€{totalPrice}</span>
+                    <span className="text-3xl font-display font-black text-brand-bone tabular-nums">€{finalPrice}</span>
                   </div>
+                  {offerPercent > 0 && (
+                    <p className="mt-2 text-right text-xs text-brand-gold">
+                      <span className="line-through text-brand-text-muted mr-2 tabular-nums">€{totalPrice}</span>
+                      {t('offers.badge', { percent: String(offerPercent) })}
+                    </p>
+                  )}
                 </div>
 
                 {!isAuthenticated ? (

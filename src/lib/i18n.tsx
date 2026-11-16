@@ -13,6 +13,17 @@ export type Language = 'en' | 'el' | 'nl';
 
 const translations: Record<Language, Record<string, string>> = {
   en: {
+    'nav.offers': 'Offers',
+    'offers.kicker': 'Last minute',
+    'offers.title': 'Last-minute offers',
+    'offers.subtitle': 'Empty slots of today and tomorrow, at a discount. Only on UNLOCKED.',
+    'offers.today': 'Today',
+    'offers.tomorrow': 'Tomorrow',
+    'offers.per_person': '/ person',
+    'offers.see_all': 'All offers',
+    'offers.badge': 'Last-minute offer -{{percent}}%',
+    'offers.empty_title': 'No offers right now',
+    'offers.empty_desc': 'Escape rooms post discounts on empty slots of today and tomorrow. Save rooms to your wishlist to get notified.',
     // ── Navigation ──
     'nav.home': 'Home',
     'nav.discover': 'Discover',
@@ -2138,6 +2149,17 @@ const translations: Record<Language, Record<string, string>> = {
   },
 
   el: {
+    'nav.offers': 'Προσφορές',
+    'offers.kicker': 'Τελευταία στιγμή',
+    'offers.title': 'Προσφορές τελευταίας στιγμής',
+    'offers.subtitle': 'Άδειες ώρες για σήμερα και αύριο, με έκπτωση. Μόνο στο UNLOCKED.',
+    'offers.today': 'Σήμερα',
+    'offers.tomorrow': 'Αύριο',
+    'offers.per_person': '/ άτομο',
+    'offers.see_all': 'Όλες οι προσφορές',
+    'offers.badge': 'Προσφορά τελευταίας στιγμής -{{percent}}%',
+    'offers.empty_title': 'Δεν υπάρχουν προσφορές αυτή τη στιγμή',
+    'offers.empty_desc': 'Τα escape rooms βάζουν εκπτώσεις στις άδειες ώρες για σήμερα και αύριο. Αποθήκευσε δωμάτια στη λίστα σου για να ειδοποιηθείς.',
     // ── Navigation ──
     'nav.home': 'Αρχική',
     'nav.discover': 'Ανακάλυψε',
@@ -4263,6 +4285,17 @@ const translations: Record<Language, Record<string, string>> = {
   },
 
   nl: {
+    'nav.offers': 'Aanbiedingen',
+    'offers.kicker': 'Last minute',
+    'offers.title': 'Last-minute aanbiedingen',
+    'offers.subtitle': 'Lege tijden van vandaag en morgen, met korting. Alleen op UNLOCKED.',
+    'offers.today': 'Vandaag',
+    'offers.tomorrow': 'Morgen',
+    'offers.per_person': '/ persoon',
+    'offers.see_all': 'Alle aanbiedingen',
+    'offers.badge': 'Last-minute aanbieding -{{percent}}%',
+    'offers.empty_title': 'Nu geen aanbiedingen',
+    'offers.empty_desc': 'Escape rooms zetten kortingen op lege tijden van vandaag en morgen. Bewaar kamers in je verlanglijst om een melding te krijgen.',
     // ── Navigation ──
     'nav.home': 'Home',
     'nav.discover': 'Ontdek',
