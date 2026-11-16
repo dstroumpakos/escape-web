@@ -21,6 +21,7 @@ import {
   ExternalLink,
   Wallet,
   ShoppingBag,
+  Flame,
 } from 'lucide-react';
 import { EyeKeyhole } from '@/components/brand/EyeKeyhole';
 import { ConvexClientProvider } from '@/components/providers/ConvexClientProvider';
@@ -56,6 +57,7 @@ function CompanyShell({ children }: { children: React.ReactNode }) {
     { href: p('/company/rooms'), label: t('company.nav.rooms'), icon: DoorOpen },
   ];
   const secondaryLinks: NavLink[] = [
+    { href: p('/company/offers'), label: t('cx.nav.offers'), icon: Flame },
     { href: photosUrl, label: t('company.nav.photos'), icon: Camera, external: true },
     { href: p('/company/merch'), label: t('shop.portal.nav'), icon: ShoppingBag },
     { href: p('/company/payments'), label: t('company.nav.payments'), icon: Wallet },
@@ -74,7 +76,8 @@ function CompanyShell({ children }: { children: React.ReactNode }) {
   // Allow auth pages without redirect (check both /company/... and subdomain /... paths)
   const isAuthPage =
     pathname === '/company/login' || pathname === '/company/register' ||
-    pathname === '/login' || pathname === '/register';
+    pathname === '/login' || pathname === '/register' ||
+    pathname === '/company/forgot-password' || pathname === '/forgot-password';
   const isOnboardingPage =
     pathname.startsWith('/company/onboarding') || pathname.startsWith('/onboarding');
 
