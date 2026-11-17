@@ -13,7 +13,7 @@ import {
   useCallback,
   ReactNode,
 } from 'react';
-import { useMutation, useQuery, useAction } from 'convex/react';
+import { useMutation, useQuery, useAction, useConvex } from 'convex/react';
 import { api } from '../../convex/_generated/api';
 import { useTranslation } from './i18n';
 
@@ -34,6 +34,10 @@ interface AuthContextType {
   isLoading: boolean;
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<void>;
+  /** Google Identity Services ID token ("credential"). */
+  loginWithGoogle: (idToken: string) => Promise<void>;
+  /** Apple JS id_token; Apple only sends the name on the very first sign-in. */
+  loginWithApple: (idToken: string, fullName?: string) => Promise<void>;
   /** Step 1 of sign-up: checks the form and emails a 6-digit code (no account yet). */
   signup: (name: string, email: string, password: string) => Promise<void>;
   /** Step 2: the code from the email. Creates the account and logs in. Returns an error code or null. */
@@ -47,6 +51,8 @@ const AuthContext = createContext<AuthContextType>({
   isLoading: true,
   isAuthenticated: false,
   login: async () => {},
+  loginWithGoogle: async () => {},
+  loginWithApple: async () => {},
   signup: async () => {},
   confirmSignup: async () => null,
   resendSignupCode: async () => {},
@@ -61,6 +67,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const confirmRegister = useMutation(api.users.confirmRegister);
   const resendCode = useMutation(api.signupCodes.resend);
   const loginMutation = useAction(api.users.login);
+  const googleAction = useAction(api.users.loginWithGoogle);
+  const appleAction = useAction(api.users.loginWithApple);
   const logoutMutation = useMutation(api.userSession.logout);
   const { language } = useTranslation();
 
@@ -117,6 +125,46 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [loginMutation, persistUser]
   );
 
+  // Social sign-in: the server takes the email from the verified token, so
+  // read the profile back for the name and email the navbar shows.
+  const convex = useConvex();
+  const persistSocial = useCallback(
+    async (r: { userId: string; sessionToken: string }) => {
+      let profile: { name?: string; email?: string } | null = null;
+      try {
+        profile = await convex.query(api.users.getById, { sessionToken: r.sessionToken });
+      } catch {
+        // Signed in anyway; the name just shows up later.
+      }
+      persistUser({
+        id: r.userId,
+        name: profile?.name ?? '',
+        email: profile?.email ?? '',
+        sessionToken: r.sessionToken,
+        avatar: '',
+        title: '',
+        played: 0,
+        escaped: 0,
+        awards: 0,
+      });
+    },
+    [convex, persistUser]
+  );
+
+  const loginWithGoogle = useCallback(
+    async (idToken: string) => {
+      await persistSocial(await googleAction({ idToken, lang: language, client: 'web' }));
+    },
+    [googleAction, persistSocial, language]
+  );
+
+  const loginWithApple = useCallback(
+    async (idToken: string, fullName?: string) => {
+      await persistSocial(await appleAction({ identityToken: idToken, fullName, lang: language, client: 'web' }));
+    },
+    [appleAction, persistSocial, language]
+  );
+
   const signup = useCallback(
     async (name: string, email: string, password: string) => {
       await startRegister({ name, email, password, lang: language });
@@ -165,6 +213,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isLoading,
         isAuthenticated: !!user,
         login,
+        loginWithGoogle,
+        loginWithApple,
         signup,
         confirmSignup,
         resendSignupCode,

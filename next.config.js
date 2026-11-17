@@ -11,16 +11,18 @@ const isDev = process.env.NODE_ENV !== 'production';
 const cspReportOnly = [
   "default-src 'self'",
   // Next.js inlines small scripts; dev mode also needs eval for hot reload.
-  `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ''}`,
-  "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com",
+  // Google Identity Services + Sign in with Apple JS (login/signup buttons).
+  `script-src 'self' 'unsafe-inline' https://accounts.google.com/gsi/client https://appleid.cdn-apple.com${isDev ? " 'unsafe-eval'" : ''}`,
+  "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com https://accounts.google.com/gsi/style",
   "font-src 'self' data: https://fonts.gstatic.com",
   // Room images and photos come from Convex storage and company sites.
   "img-src 'self' data: blob: https:",
   "media-src 'self' blob: https:",
   // Convex (HTTP + websocket), map search, translations.
-  `connect-src 'self' https://*.convex.cloud wss://*.convex.cloud https://*.convex.site https://nominatim.openstreetmap.org https://api.mymemory.translated.net${isDev ? ' ws://localhost:* http://localhost:*' : ''}`,
+  `connect-src 'self' https://*.convex.cloud wss://*.convex.cloud https://*.convex.site https://nominatim.openstreetmap.org https://api.mymemory.translated.net https://accounts.google.com/gsi/${isDev ? ' ws://localhost:* http://localhost:*' : ''}`,
   "worker-src 'self' blob:",
-  "frame-src 'self'",
+  // The Google button is an iframe from accounts.google.com.
+  "frame-src 'self' https://accounts.google.com",
   "form-action 'self' https://checkout.stripe.com",
   "base-uri 'self'",
   "object-src 'none'",

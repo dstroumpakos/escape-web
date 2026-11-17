@@ -7,6 +7,7 @@ import { Mail, Lock, User, Eye, EyeOff, ArrowRight, Check } from 'lucide-react';
 import { EyeKeyhole } from '@/components/brand/EyeKeyhole';
 import { useAuth } from '@/lib/auth';
 import { useTranslation } from '@/lib/i18n';
+import { SocialSignIn } from '@/components/auth/SocialSignIn';
 
 export default function SignupPage() {
   const { t } = useTranslation();
@@ -208,6 +209,10 @@ export default function SignupPage() {
               </div>
             </form>
           ) : (
+          <>
+          <div className="mb-5">
+            <SocialSignIn mode="signup" />
+          </div>
           <form onSubmit={handleSubmit} className="space-y-5">
             {error && (
               <div className="bg-red-900/20 border border-red-800/30 text-red-400 text-sm rounded-xl px-4 py-3">
@@ -356,6 +361,7 @@ export default function SignupPage() {
               )}
             </button>
           </form>
+          </>
           )}
 
           {/* Login link */}
