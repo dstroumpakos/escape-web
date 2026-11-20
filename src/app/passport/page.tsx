@@ -97,7 +97,7 @@ export default function PassportPage() {
           </div>
           <div className="mt-5">
             <p className="text-xs text-brand-text-secondary">
-              {next ? t('mz.progress', { open: String(doorsOpen), all: String(chambers.length - 1), n: String(next - placed) }) : t('pp.maze_done')}
+              {next ? t('tw.progress', { open: String(doorsOpen), n: String(next - placed) }) : t('tw.soon_hint')}
             </p>
             <div className="h-2 rounded-full bg-black/50 mt-2 overflow-hidden">
               <div className="h-full bg-brand-red rounded-full transition-all" style={{ width: `${pct}%` }} />

@@ -2,12 +2,12 @@
 
 import { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
-import { ArrowUp, ArrowDown, RotateCcw, RotateCw, Stamp, Gift, Lock, Loader2, Volume2, VolumeX, Ghost } from 'lucide-react';
+import { ArrowUp, ArrowDown, RotateCcw, RotateCw, Stamp, Gift, Lock, Loader2, Volume2, VolumeX, Ghost, Maximize2, Minimize2 } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
 
 /**
- * The haunted tower (3D, first person). 11 floors joined by 10 doors to the
- * stairs; the door of floor f opens once `placed` >= chambers[f + 1] (first
+ * The haunted tower (3D, first person). Floors joined by doors to the stairs
+ * (one floor more than there are doors; new floors are added on the server); the door of floor f opens once `placed` >= chambers[f + 1] (first
  * door 5 stamps, then 10 more each). From floor 2 up every floor has a chest
  * with the gift of the door you just opened. Ghosts, monsters that jump at
  * you and lightning, all switchable off.
@@ -15,7 +15,6 @@ import { useTranslation } from '@/lib/i18n';
  * Stamps are placed through `onPlace`; the server keeps the count.
  */
 
-const FLOORS = 11;
 const LAYOUTS = [
   ['####D####', '#.......#', '#.#...#.#', '#.......#', '#..C....#', '#.......#', '#.#...#.#', '#.......#', '#########'],
   ['####D####', '#...#...#', '#.#...#.#', '#.#.#.#.#', '#.......#', '##.###.##', '#C......#', '#.......#', '#########'],
@@ -45,6 +44,7 @@ export function TowerGame({ placed, chambers, pocket, onPlace, busy }: Props) {
   const live = useRef({ placed, sound: true, scares: true });
   live.current.placed = placed;
   const doorsOpen = chambers.filter((c) => placed >= c).length - 1;
+  const FLOORS = chambers.length; // floors = doors + 1
 
   const [started, setStarted] = useState(false);
   const [floor, setFloor] = useState(0);
@@ -54,6 +54,30 @@ export function TowerGame({ placed, chambers, pocket, onPlace, busy }: Props) {
   const [scares, setScares] = useState(true);
   const [hint, setHint] = useState('');
   const floorRef = useRef(0);
+  const stage = useRef<HTMLDivElement>(null);
+  const [full, setFull] = useState(false);
+  // Real fullscreen where the browser allows it (not on iPhone): otherwise
+  // the game simply covers the whole window.
+  const toggleFull = async () => {
+    const el = stage.current as any;
+    if (!full) {
+      setFull(true);
+      try { await (el?.requestFullscreen?.() ?? el?.webkitRequestFullscreen?.()); } catch {}
+    } else {
+      setFull(false);
+      try { if (document.fullscreenElement) await document.exitFullscreen(); } catch {}
+    }
+  };
+  useEffect(() => {
+    const onFs = () => { if (!document.fullscreenElement) setFull(false); };
+    document.addEventListener('fullscreenchange', onFs);
+    return () => document.removeEventListener('fullscreenchange', onFs);
+  }, []);
+  useEffect(() => {
+    // No page scrolling behind the game while it covers the window.
+    document.body.style.overflow = full ? 'hidden' : '';
+    return () => { document.body.style.overflow = ''; };
+  }, [full]);
 
   useEffect(() => {
     const prefs = readJSON(PREF_KEY, { sound: true, scares: true });
@@ -79,13 +103,18 @@ export function TowerGame({ placed, chambers, pocket, onPlace, busy }: Props) {
     const host = wrap.current;
     const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setPixelRatio(Math.min(2, window.devicePixelRatio));
-    const size = () => renderer.setSize(host.clientWidth, (host.clientWidth * 9) / 16);
-    size();
     host.prepend(renderer.domElement);
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(0x040306);
     scene.fog = new THREE.Fog(0x040306, 1, 9);
     const cam = new THREE.PerspectiveCamera(70, 16 / 9, 0.05, 40);
+    const size = () => {
+      const w = host.clientWidth, h = host.clientHeight || (w * 9) / 16;
+      renderer.setSize(w, h);
+      cam.aspect = w / h;
+      cam.updateProjectionMatrix();
+    };
+    size();
 
     let sd = 5;
     const r = () => (sd = (sd * 16807) % 2147483647) / 2147483647;
@@ -123,7 +152,7 @@ export function TowerGame({ placed, chambers, pocket, onPlace, busy }: Props) {
       dx.fillStyle = '#3b2a1c'; dx.fillRect(0, 0, 256, 256);
       dx.fillStyle = '#4f3825'; for (let i = 0; i < 5; i++) dx.fillRect(10 + i * 50, 0, 40, 256);
       dx.fillStyle = '#c99a2e'; dx.font = 'bold 34px serif'; dx.textAlign = 'center';
-      if (top) { dx.fillText('★', 128, 140); doorT.needsUpdate = true; return; }
+      if (top) { dx.font = 'bold 26px serif'; dx.fillText(t('tw.soon_door'), 128, 140); doorT.needsUpdate = true; return; }
       const n = chambers[f + 1] - chambers[f], k = Math.max(0, Math.min(n, live.current.placed - chambers[f]));
       dx.fillStyle = '#2a2e33'; dx.fillRect(0, 90, 256, n > 5 ? 90 : 50);
       for (let i = 0; i < n; i++) {
@@ -262,7 +291,7 @@ export function TowerGame({ placed, chambers, pocket, onPlace, busy }: Props) {
         floorRef.current = f; setFloor(f);
         try { localStorage.setItem(FLOOR_KEY, String(f)); } catch {}
         buildLevel(f);
-        fade.textContent = f >= FLOORS - 1 ? t('tw.top') : t('tw.floor_title', { n: String(f + 1) });
+        fade.textContent = t('tw.floor_title', { n: String(f + 1) });
         setTimeout(() => { fade.style.opacity = '0'; climbing = false; }, 900);
       }, 650);
     };
@@ -371,75 +400,106 @@ export function TowerGame({ placed, chambers, pocket, onPlace, busy }: Props) {
     onPointerCancel: () => { keys.current[k] = false; },
   });
 
+  const pad = (
+    <div className="grid grid-cols-3 gap-2 w-[156px] select-none">
+      <span />
+      <button {...hold('ArrowUp')} className="h-12 rounded-lg bg-white/15 active:bg-white/30 backdrop-blur-sm flex items-center justify-center" aria-label={t('tw.forward')}><ArrowUp className="w-5 h-5" /></button>
+      <span />
+      <button {...hold('ArrowLeft')} className="h-12 rounded-lg bg-white/15 active:bg-white/30 backdrop-blur-sm flex items-center justify-center" aria-label={t('tw.turn_left')}><RotateCcw className="w-5 h-5" /></button>
+      <button {...hold('ArrowDown')} className="h-12 rounded-lg bg-white/15 active:bg-white/30 backdrop-blur-sm flex items-center justify-center" aria-label={t('tw.back')}><ArrowDown className="w-5 h-5" /></button>
+      <button {...hold('ArrowRight')} className="h-12 rounded-lg bg-white/15 active:bg-white/30 backdrop-blur-sm flex items-center justify-center" aria-label={t('tw.turn_right')}><RotateCw className="w-5 h-5" /></button>
+    </div>
+  );
+  const switches = (
+    <div className="flex gap-2">
+      <button onClick={() => setSound((v) => !v)} className="px-2.5 py-1.5 rounded-md bg-black/50 hover:bg-black/70 flex items-center gap-1.5 text-xs" aria-label={t('tw.sound')}>
+        {sound ? <Volume2 className="w-3.5 h-3.5" /> : <VolumeX className="w-3.5 h-3.5" />} <span className="hidden sm:inline">{t('tw.sound')}</span>
+      </button>
+      <button onClick={() => setScares((v) => !v)} className={`px-2.5 py-1.5 rounded-md flex items-center gap-1.5 text-xs ${scares ? 'bg-brand-red/40 text-white' : 'bg-black/50'}`}>
+        <Ghost className="w-3.5 h-3.5" /> <span className="hidden sm:inline">{scares ? t('tw.scares_on') : t('tw.scares_off')}</span>
+      </button>
+      {started && (
+        <button onClick={toggleFull} className="px-2.5 py-1.5 rounded-md bg-black/50 hover:bg-black/70 flex items-center gap-1.5 text-xs" aria-label={full ? t('tw.exit_full') : t('tw.full')}>
+          {full ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />} <span className="hidden sm:inline">{full ? t('tw.exit_full') : t('tw.full')}</span>
+        </button>
+      )}
+    </div>
+  );
+  const isLast = floor >= FLOORS - 1;
+  const panel = chestMsg !== null ? (
+    <div className="flex items-start gap-3">
+      <Gift className="w-5 h-5 text-brand-gold shrink-0 mt-0.5" />
+      <div className="flex-1">
+        <p className="font-semibold text-brand-bone">{t('tw.chest', { n: String(chestMsg + 1) })}</p>
+        <p className="text-brand-text-secondary">{t(`mz.gift_${chestMsg}`)} · {t('pp.won')}</p>
+      </div>
+      <button onClick={() => setChestMsg(null)} className="text-xs text-brand-text-muted hover:text-white">OK</button>
+    </div>
+  ) : nearDoor ? (
+    <div>
+      <p className="font-semibold text-brand-bone flex items-center gap-2">
+        <Lock className="w-4 h-4 text-brand-red-light" /> {t('tw.door', { n: String(floor + 2), placed: String(inDoor(floor)), need: String(need(floor)) })}
+      </p>
+      <div className="flex flex-wrap gap-1.5 my-2">
+        {Array.from({ length: need(floor) }, (_, i) => (
+          <span key={i} className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${i < inDoor(floor) ? 'border-brand-red bg-brand-red/30 text-brand-red-light' : 'border-dashed border-brand-border'}`}>
+            {i < inDoor(floor) && <Stamp className="w-3 h-3" />}
+          </span>
+        ))}
+      </div>
+      <div className="flex items-center gap-3 flex-wrap">
+        <button onClick={place} disabled={busy || pocket <= 0} className="btn-primary text-sm py-2! px-4! flex items-center gap-2 disabled:opacity-50">
+          {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Stamp className="w-4 h-4" />} {t('mz.place')}
+        </button>
+        <span className="text-xs text-brand-text-secondary">{pocket > 0 ? t('mz.in_pocket', { n: String(pocket) }) : t('mz.no_stamps')}</span>
+      </div>
+      {hint && <p className="text-xs text-brand-gold mt-1">{hint}</p>}
+    </div>
+  ) : (
+    <p className="text-brand-text-secondary">{isLast ? t('tw.soon_hint') : floor === 0 ? t('tw.hint_first') : t('tw.hint')}</p>
+  );
+
   return (
     <div>
-      <div className="flex flex-wrap items-center justify-between gap-2 mb-2 text-sm">
-        <span className="text-brand-text-secondary">{floor >= FLOORS - 1 ? t('tw.top') : t('tw.floor', { n: String(floor + 1), all: String(FLOORS) })}</span>
-        <div className="flex gap-2">
-          <button onClick={() => setSound((s) => !s)} className="px-2.5 py-1.5 rounded-md bg-white/10 hover:bg-white/15 flex items-center gap-1.5 text-xs">
-            {sound ? <Volume2 className="w-3.5 h-3.5" /> : <VolumeX className="w-3.5 h-3.5" />} {t('tw.sound')}
-          </button>
-          <button onClick={() => setScares((s) => !s)} className={`px-2.5 py-1.5 rounded-md flex items-center gap-1.5 text-xs ${scares ? 'bg-brand-red/25 text-brand-red-light' : 'bg-white/10'}`}>
-            <Ghost className="w-3.5 h-3.5" /> {scares ? t('tw.scares_on') : t('tw.scares_off')}
-          </button>
+      {!full && (
+        <div className="flex flex-wrap items-center justify-between gap-2 mb-2 text-sm">
+          <span className="text-brand-text-secondary">{t('tw.floor', { n: String(floor + 1) })}</span>
+          {switches}
+        </div>
+      )}
+
+      <div ref={stage} className={full ? 'fixed inset-0 z-[200] bg-black' : ''}>
+        <div ref={wrap} className={`relative overflow-hidden bg-black select-none ${full ? 'w-full h-full' : 'w-full aspect-video rounded-xl'}`}>
+          <div ref={fxRef} className="absolute inset-0 pointer-events-none opacity-0 transition-opacity duration-150" style={{ background: 'radial-gradient(circle at center, rgba(0,0,0,0) 30%, rgba(160,0,0,.75) 100%)' }} />
+          <div ref={fadeRef} className="absolute inset-0 pointer-events-none opacity-0 transition-opacity duration-500 bg-black flex items-center justify-center font-display text-2xl tracking-[0.2em] text-brand-bone" />
+          {!started && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-6 bg-black/85">
+              <p className="font-display text-2xl text-brand-bone mb-2">{t('tw.title')}</p>
+              <p className="text-sm text-brand-text-secondary max-w-sm mb-5">{t('tw.warning')}</p>
+              <button onClick={() => setStarted(true)} className="btn-primary">{t('tw.enter')}</button>
+            </div>
+          )}
+          {full && (
+            <>
+              <div className="absolute top-3 left-3 right-3 flex items-center justify-between gap-2 z-10">
+                <span className="px-2.5 py-1.5 rounded-md bg-black/50 text-sm text-brand-bone">{t('tw.floor', { n: String(floor + 1) })} · {t('mz.in_pocket', { n: String(pocket) })}</span>
+                {switches}
+              </div>
+              <div className="absolute left-4 z-10" style={{ bottom: 'max(1.5rem, env(safe-area-inset-bottom))' }}>{pad}</div>
+              <div className="absolute right-4 left-[190px] z-10 flex justify-end" style={{ bottom: 'max(1.5rem, env(safe-area-inset-bottom))' }}>
+                <div className="max-w-md w-full rounded-md bg-black/65 backdrop-blur-sm px-4 py-3 text-sm">{panel}</div>
+              </div>
+            </>
+          )}
         </div>
       </div>
 
-      <div ref={wrap} className="relative w-full aspect-video rounded-xl overflow-hidden bg-black select-none">
-        <div ref={fxRef} className="absolute inset-0 pointer-events-none opacity-0 transition-opacity duration-150" style={{ background: 'radial-gradient(circle at center, rgba(0,0,0,0) 30%, rgba(160,0,0,.75) 100%)' }} />
-        <div ref={fadeRef} className="absolute inset-0 pointer-events-none opacity-0 transition-opacity duration-500 bg-black flex items-center justify-center font-display text-2xl tracking-[0.2em] text-brand-bone" />
-        {!started && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-6 bg-black/85">
-            <p className="font-display text-2xl text-brand-bone mb-2">{t('tw.title')}</p>
-            <p className="text-sm text-brand-text-secondary max-w-sm mb-5">{t('tw.warning')}</p>
-            <button onClick={() => setStarted(true)} className="btn-primary">{t('tw.enter')}</button>
-          </div>
-        )}
-      </div>
-
-      <div className="mt-3 min-h-[64px] rounded-md bg-black/45 px-4 py-3 text-sm">
-        {chestMsg !== null ? (
-          <div className="flex items-start gap-3">
-            <Gift className="w-5 h-5 text-brand-gold shrink-0 mt-0.5" />
-            <div className="flex-1">
-              <p className="font-semibold text-brand-bone">{t('tw.chest', { n: String(chestMsg + 1) })}</p>
-              <p className="text-brand-text-secondary">{t(`mz.gift_${chestMsg}`)} · {t('pp.won')}</p>
-            </div>
-            <button onClick={() => setChestMsg(null)} className="text-xs text-brand-text-muted hover:text-white">OK</button>
-          </div>
-        ) : nearDoor ? (
-          <div>
-            <p className="font-semibold text-brand-bone flex items-center gap-2">
-              <Lock className="w-4 h-4 text-brand-red-light" /> {t('tw.door', { n: String(floor + 2), placed: String(inDoor(floor)), need: String(need(floor)) })}
-            </p>
-            <div className="flex flex-wrap gap-1.5 my-2">
-              {Array.from({ length: need(floor) }, (_, i) => (
-                <span key={i} className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${i < inDoor(floor) ? 'border-brand-red bg-brand-red/30 text-brand-red-light' : 'border-dashed border-brand-border'}`}>
-                  {i < inDoor(floor) && <Stamp className="w-3 h-3" />}
-                </span>
-              ))}
-            </div>
-            <div className="flex items-center gap-3 flex-wrap">
-              <button onClick={place} disabled={busy || pocket <= 0} className="btn-primary text-sm py-2! px-4! flex items-center gap-2 disabled:opacity-50">
-                {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Stamp className="w-4 h-4" />} {t('mz.place')}
-              </button>
-              <span className="text-xs text-brand-text-secondary">{pocket > 0 ? t('mz.in_pocket', { n: String(pocket) }) : t('mz.no_stamps')}</span>
-            </div>
-            {hint && <p className="text-xs text-brand-gold mt-1">{hint}</p>}
-          </div>
-        ) : (
-          <p className="text-brand-text-secondary">{floor >= FLOORS - 1 ? t('tw.top_hint') : floor === 0 ? t('tw.hint_first') : t('tw.hint')}</p>
-        )}
-      </div>
-
-      <div className="grid grid-cols-3 gap-2 w-[156px] mx-auto mt-3 select-none">
-        <span />
-        <button {...hold('ArrowUp')} className="h-12 rounded-lg bg-white/10 active:bg-white/20 flex items-center justify-center" aria-label={t('tw.forward')}><ArrowUp className="w-5 h-5" /></button>
-        <span />
-        <button {...hold('ArrowLeft')} className="h-12 rounded-lg bg-white/10 active:bg-white/20 flex items-center justify-center" aria-label={t('tw.turn_left')}><RotateCcw className="w-5 h-5" /></button>
-        <button {...hold('ArrowDown')} className="h-12 rounded-lg bg-white/10 active:bg-white/20 flex items-center justify-center" aria-label={t('tw.back')}><ArrowDown className="w-5 h-5" /></button>
-        <button {...hold('ArrowRight')} className="h-12 rounded-lg bg-white/10 active:bg-white/20 flex items-center justify-center" aria-label={t('tw.turn_right')}><RotateCw className="w-5 h-5" /></button>
-      </div>
+      {!full && (
+        <>
+          <div className="mt-3 min-h-[64px] rounded-md bg-black/45 px-4 py-3 text-sm">{panel}</div>
+          <div className="flex justify-center mt-3">{pad}</div>
+        </>
+      )}
     </div>
   );
 }
