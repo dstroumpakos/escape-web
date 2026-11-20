@@ -1,14 +1,16 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useQuery } from 'convex/react';
-import { BookOpen, Stamp, Map as MapIcon, Lock, Gift, QrCode, Loader2 } from 'lucide-react';
+import { useMutation, useQuery } from 'convex/react';
+import { BookOpen, Stamp, Map as MapIcon, Lock, QrCode, Loader2 } from 'lucide-react';
 import { api } from '../../../convex/_generated/api';
 import { useAuth } from '@/lib/auth';
 import { useTranslation } from '@/lib/i18n';
 import { StampSeal, tiltFor } from '@/components/passport/StampSeal';
+import { MazeGame } from '@/components/passport/MazeGame';
+import { cleanError } from '@/lib/errors';
 
 type Tab = 'stamps' | 'maze';
 
@@ -20,6 +22,21 @@ export default function PassportPage() {
   const data = useQuery(api.passport.mine, user?.sessionToken ? { sessionToken: user.sessionToken } : 'skip');
   const [tab, setTab] = useState<Tab>('stamps');
   const [picked, setPicked] = useState<any>(null);
+  const placeStamp = useMutation(api.passport.placeStamp);
+  const [placing, setPlacing] = useState(false);
+  const [placeErr, setPlaceErr] = useState('');
+  const onPlace = async () => {
+    if (!user?.sessionToken) return;
+    setPlacing(true);
+    setPlaceErr('');
+    try {
+      await placeStamp({ sessionToken: user.sessionToken });
+    } catch (e) {
+      setPlaceErr(cleanError(e));
+    } finally {
+      setPlacing(false);
+    }
+  };
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) router.replace('/login');
@@ -28,10 +45,12 @@ export default function PassportPage() {
   if (!data) return <div className="min-h-screen flex items-center justify-center"><Loader2 className="w-7 h-7 animate-spin text-brand-red" /></div>;
 
   const chambers = data.chambers;
-  const reached = chambers.filter((c) => data.total >= c).length - 1;
-  const next = chambers.find((c) => c > data.total);
-  const prev = chambers[reached];
-  const pct = next ? Math.round(((data.total - prev) / (next - prev)) * 100) : 100;
+  const placed = data.placed;
+  const pocket = Math.max(0, data.total - placed);
+  const doorsOpen = chambers.filter((c) => placed >= c).length - 1;
+  const next = chambers.find((c) => c > placed);
+  const prev = chambers[doorsOpen];
+  const pct = next ? Math.round(((placed - prev) / (next - prev)) * 100) : 100;
   const slots = Math.max(12, Math.ceil((data.total + 3) / 4) * 4);
 
   return (
@@ -72,7 +91,7 @@ export default function PassportPage() {
           </div>
           <div className="mt-5">
             <p className="text-xs text-brand-text-secondary">
-              {next ? t('pp.next_chamber', { n: String(next - data.total) }) : t('pp.maze_done')}
+              {next ? t('mz.progress', { open: String(doorsOpen), all: String(chambers.length - 1), n: String(next - placed) }) : t('pp.maze_done')}
             </p>
             <div className="h-2 rounded-full bg-black/50 mt-2 overflow-hidden">
               <div className="h-full bg-brand-red rounded-full transition-all" style={{ width: `${pct}%` }} />
@@ -127,82 +146,13 @@ export default function PassportPage() {
               </div>
             </>
           ) : (
-            <Maze total={data.total} chambers={chambers} />
+            <>
+              <MazeGame placed={placed} chambers={chambers} pocket={pocket} onPlace={onPlace} busy={placing} />
+              {placeErr && <p className="text-sm text-red-400 mt-2">{placeErr}</p>}
+            </>
           )}
         </div>
       </div>
     </section>
-  );
-}
-
-// Corridor through the chambers (same order as PASSPORT_CHAMBERS).
-const SPOTS = [
-  [70, 330], [250, 330], [430, 250], [610, 330], [610, 170], [430, 90], [250, 90], [250, 170], [70, 170], [70, 60],
-];
-const PATH = 'M70 330 H250 V250 H430 V330 H610 V170 H430 V90 H250 V170 H70 V60';
-
-function Maze({ total, chambers }: { total: number; chambers: number[] }) {
-  const { t } = useTranslation();
-  const lit = useRef<SVGPathElement>(null);
-  const [lens, setLens] = useState<number[] | null>(null);
-  const [sel, setSel] = useState<number | null>(null);
-  const reached = chambers.filter((c) => total >= c).length - 1;
-
-  useEffect(() => {
-    const p = lit.current;
-    if (!p) return;
-    const L = p.getTotalLength();
-    const out = SPOTS.map(([x, y]) => {
-      let best = 0, bd = Infinity;
-      for (let s = 0; s <= L; s += 4) {
-        const q = p.getPointAtLength(s);
-        const d = Math.hypot(q.x - x, q.y - y);
-        if (d < bd) { bd = d; best = s; }
-      }
-      return best;
-    });
-    setLens([...out, L]);
-  }, []);
-
-  const L = lens?.[SPOTS.length] ?? 4000;
-  const at = lens ? lens[reached] : 0;
-  const me = useMemo(() => (lit.current && lens ? lit.current.getPointAtLength(at) : { x: SPOTS[0][0], y: SPOTS[0][1] }), [lens, at]);
-  const show = sel ?? Math.min(reached + 1, SPOTS.length - 1);
-
-  return (
-    <div>
-      <svg viewBox="0 0 680 400" className="w-full h-auto" role="img" aria-label={t('pp.tab_maze')}>
-        <path d={PATH} fill="none" stroke="rgba(232,220,200,0.12)" strokeWidth={16} strokeLinecap="round" strokeLinejoin="round" />
-        <path ref={lit} d={PATH} fill="none" stroke="#c99a2e" strokeWidth={5} strokeLinecap="round" strokeLinejoin="round" strokeDasharray={L} strokeDashoffset={L - at} style={{ transition: 'stroke-dashoffset .8s ease-in-out', filter: 'drop-shadow(0 0 6px rgba(201,154,46,.7))' }} />
-        {SPOTS.map(([x, y], i) => {
-          const open = total >= chambers[i];
-          const isNext = !open && i === reached + 1;
-          return (
-            <g key={i} onClick={() => setSel(i)} className="cursor-pointer">
-              <rect x={x - 40} y={y - 27} width={80} height={54} rx={8} fill={open ? '#3a1210' : '#0d0807'} stroke={open ? '#e24b4a' : isNext ? '#c99a2e' : 'rgba(232,220,200,0.25)'} strokeWidth={sel === i ? 2.5 : 1.2} strokeDasharray={isNext ? '5 4' : undefined} />
-              <text x={x} y={y - 4} textAnchor="middle" fontSize={18}>{open ? (i === 0 ? '🚪' : '🎁') : '🔒'}</text>
-              <text x={x} y={y + 16} textAnchor="middle" fontSize={11} fill={open ? '#f3e9d8' : 'rgba(232,220,200,0.6)'}>
-                {i === 0 ? t('pp.entrance') : open ? t('pp.open') : t('pp.n_stamps', { n: String(chambers[i]) })}
-              </text>
-            </g>
-          );
-        })}
-        <g style={{ transform: `translate(${me.x}px, ${me.y - 38}px)`, transition: 'transform .8s ease-in-out' }}>
-          <circle r={12} fill="#c8101b" stroke="#f3e9d8" strokeWidth={2} />
-        </g>
-      </svg>
-      <div className="mt-3 rounded-md bg-black/40 px-4 py-3 text-sm flex gap-3 items-start">
-        <Gift className="w-5 h-5 shrink-0 text-brand-gold mt-0.5" />
-        <div>
-          <p className="font-semibold text-brand-bone">
-            {show === 0 ? t('pp.entrance') : t(`pp.ch_${show}`)} · {show === 0 ? t('pp.start') : t('pp.n_stamps', { n: String(chambers[show]) })}
-          </p>
-          <p className="text-brand-text-secondary">
-            {show === 0 ? t('pp.gift_0') : t(`pp.gift_${show}`)}
-            {show > 0 && (total >= chambers[show] ? ` · ${t('pp.won')}` : ` · ${t('pp.missing', { n: String(chambers[show] - total) })}`)}
-          </p>
-        </div>
-      </div>
-    </div>
   );
 }
