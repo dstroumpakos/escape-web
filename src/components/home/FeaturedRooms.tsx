@@ -8,94 +8,15 @@ import Link from 'next/link';
 import { RoomCard, toRoomCardData, type RoomCardData } from '@/components/rooms/RoomCard';
 import { AnimateIn, StaggerContainer, StaggerItem } from '@/components/animations/AnimateIn';
 
-const sampleRooms: RoomCardData[] = [
-  {
-    title: 'The Haunted Mansion',
-    theme: 'Horror',
-    rating: 4.8,
-    reviews: 142,
-    duration: '60 min',
-    difficulty: 4,
-    maxDifficulty: 5,
-    players: '2-6',
-    price: 25,
-    image: '',
-    isTrending: true,
-  },
-  {
-    title: 'Prison Break',
-    theme: 'Adventure',
-    rating: 4.9,
-    reviews: 203,
-    duration: '75 min',
-    difficulty: 5,
-    maxDifficulty: 5,
-    players: '3-8',
-    price: 30,
-    image: '',
-    isNew: true,
-  },
-  {
-    title: 'The Da Vinci Code',
-    theme: 'Mystery',
-    rating: 4.7,
-    reviews: 98,
-    duration: '60 min',
-    difficulty: 3,
-    maxDifficulty: 5,
-    players: '2-5',
-    price: 22,
-    image: '',
-  },
-  {
-    title: 'Zombie Apocalypse',
-    theme: 'Horror',
-    rating: 4.6,
-    reviews: 167,
-    duration: '60 min',
-    difficulty: 4,
-    maxDifficulty: 5,
-    players: '4-8',
-    price: 28,
-    image: '',
-    isTrending: true,
-  },
-  {
-    title: 'Egyptian Tomb',
-    theme: 'History',
-    rating: 4.9,
-    reviews: 256,
-    duration: '90 min',
-    difficulty: 5,
-    maxDifficulty: 5,
-    players: '2-6',
-    price: 35,
-    image: '',
-    isNew: true,
-  },
-  {
-    title: 'Cyber Heist',
-    theme: 'Sci-Fi',
-    rating: 4.5,
-    reviews: 78,
-    duration: '60 min',
-    difficulty: 3,
-    maxDifficulty: 5,
-    players: '2-4',
-    price: 20,
-    image: '',
-  },
-];
-
 export function FeaturedRooms() {
   const { t } = useTranslation();
   const convexRooms = useSafeQuery<any[]>(api.rooms.list);
 
-  // Map Convex rooms to our card format, fallback to sample data
+  // Map Convex rooms to our card format. No placeholder fallback: until there
+  // are real (active) rooms, the whole section stays hidden.
   // EA partner rooms get priority (Featured Spotlight benefit)
-  const rooms: RoomCardData[] =
-    convexRooms && convexRooms.length > 0
-      ? [...convexRooms]
+  const rooms: RoomCardData[] = convexRooms
+    ? [...convexRooms]
           .sort((a: any, b: any) => {
             // EA partner rooms first
             const aEA = a.isEarlyAccessPartner ? 1 : 0;
@@ -105,7 +26,9 @@ export function FeaturedRooms() {
           })
           .slice(0, 6)
           .map(toRoomCardData)
-      : sampleRooms;
+    : [];
+
+  if (rooms.length === 0) return null;
 
   return (
     <section id="rooms" className="relative py-24 md:py-32">
