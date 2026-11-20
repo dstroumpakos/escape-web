@@ -64,6 +64,7 @@ export function Navbar() {
   const navLinks: { href: string; label: string; Icon?: React.ElementType }[] = [
     { href: '/', label: t('nav.home') },
     { href: '/discover', label: t('nav.discover') },
+    { href: '/companies', label: t('nav.companies') },
     ...(BOOKING_ENABLED ? [{ href: '/offers', label: t('nav.offers') }] : []),
     { href: '/map', label: t('nav.map') },
     // The community is for logged-in players only.

@@ -22,12 +22,12 @@ export default function LoginPage() {
   // Redirect to home once authenticated
   useEffect(() => {
     if (isAuthenticated) {
-      // Came from an end-of-game QR (src/app/stamp/[token]): go back there.
+      // Came from an end-of-game QR (src/app/stamp/[token]) or a company profile: go back there.
       let next = '/';
       try {
         const saved = sessionStorage.getItem('unlocked_after_login') || '';
         sessionStorage.removeItem('unlocked_after_login');
-        if (saved.startsWith('/stamp/') && !saved.startsWith('//')) next = saved;
+        if ((saved.startsWith('/stamp/') || saved.startsWith('/companies/')) && !saved.startsWith('//')) next = saved;
       } catch {}
       router.replace(next);
     }
