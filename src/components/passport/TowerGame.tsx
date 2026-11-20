@@ -277,28 +277,145 @@ export function TowerGame({ placed, chambers, pocket, onPlace, busy, embedded = 
     scene.add(new THREE.Points(dustG, new THREE.PointsMaterial({ color: 0x9a8060, size: 0.008, transparent: true, opacity: 0.35, depthWrite: false, blending: THREE.AdditiveBlending })));
 
     // Monster and ghost
+    // The monster: a starved, hunched figure in rags, grey clammy skin with
+    // veins, a long skull with sunken glowing eyes and teeth, and long arms
+    // with claws that reach for you when it lunges. Its front faces +z.
     const monster = new THREE.Group();
+    const mParts = { upper: new THREE.Group(), head: new THREE.Group(), jaw: new THREE.Group(), arms: [] as THREE.Group[], fingers: [] as THREE.Mesh[] };
     {
-      const dark = new THREE.MeshStandardMaterial({ color: 0x0d0a09, roughness: 1 });
-      const body = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.2, 1.1, 7), dark); body.position.y = 0.65; monster.add(body);
-      const head = new THREE.Mesh(new THREE.SphereGeometry(0.16, 10, 10), new THREE.MeshStandardMaterial({ color: 0x9a8f86, roughness: 0.9 })); head.scale.set(1, 1.35, 1); head.position.y = 1.32; monster.add(head);
-      const eyeM = new THREE.MeshBasicMaterial({ color: 0xff1a1a });
-      [-0.06, 0.06].forEach((x) => { const e = new THREE.Mesh(new THREE.SphereGeometry(0.028, 8, 8), eyeM); e.position.set(x, 1.37, 0.13); monster.add(e); });
-      const mouth = new THREE.Mesh(new THREE.SphereGeometry(0.06, 8, 8), new THREE.MeshBasicMaterial({ color: 0x000000 })); mouth.scale.set(1, 1.8, 0.5); mouth.position.set(0, 1.22, 0.14); monster.add(mouth);
-      [-1, 1].forEach((s) => { const arm = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.02, 0.9, 5), dark); arm.position.set(s * 0.2, 0.9, 0.12); arm.rotation.z = s * 0.35; arm.rotation.x = -0.7; monster.add(arm); });
+      const skinT = tex((x) => {
+        x.fillStyle = '#8b8d82'; x.fillRect(0, 0, 256, 256);
+        for (let i = 0; i < 260; i++) { x.fillStyle = `rgba(${r() < 0.5 ? '40,45,30' : '120,95,95'},${0.05 + r() * 0.12})`; x.beginPath(); x.arc(r() * 256, r() * 256, 3 + r() * 18, 0, Math.PI * 2); x.fill(); }
+        for (let i = 0; i < 26; i++) {
+          x.strokeStyle = `rgba(${r() < 0.5 ? '60,20,40' : '30,40,70'},${0.35 + r() * 0.3})`; x.lineWidth = 0.6 + r() * 1.4; x.beginPath();
+          let vx = r() * 256, vy = r() * 256; x.moveTo(vx, vy);
+          for (let k = 0; k < 6; k++) { vx += (r() - 0.5) * 40; vy += (r() - 0.5) * 40; x.lineTo(vx, vy); }
+          x.stroke();
+        }
+        grit(x, 256, 3000);
+      });
+      const skin = new THREE.MeshStandardMaterial({ map: skinT, normalMap: reliefOf(skinT, 3), roughness: 0.5, metalness: 0.05 });
+      const rag = new THREE.MeshStandardMaterial({ color: 0x17120f, roughness: 1, side: THREE.DoubleSide });
+      const bone = new THREE.MeshStandardMaterial({ color: 0xc8bb98, roughness: 0.45 });
+      const hole = new THREE.MeshBasicMaterial({ color: 0x000000 });
+      const glowEye = new THREE.MeshBasicMaterial({ color: 0xff2a10 });
+      const jitter = (g: THREE.BufferGeometry, amt: number, f?: (v: THREE.Vector3) => void) => {
+        const pos = g.attributes.position as THREE.BufferAttribute, v = new THREE.Vector3();
+        for (let i = 0; i < pos.count; i++) { v.fromBufferAttribute(pos, i); f?.(v); v.x += (Math.random() - 0.5) * amt; v.y += (Math.random() - 0.5) * amt; v.z += (Math.random() - 0.5) * amt; pos.setXYZ(i, v.x, v.y, v.z); }
+        g.computeVertexNormals(); return g;
+      };
+      // Tattered robe from the waist down, its hem torn
+      const robeG = new THREE.LatheGeometry([0.05, 0.12, 0.16, 0.2, 0.24, 0.27].map((rr, i) => new THREE.Vector2(rr, 1.0 - i * 0.18)), 18);
+      jitter(robeG, 0.03, (v) => { if (v.y < 0.2) v.y += Math.random() * 0.25; });
+      const robe = new THREE.Mesh(robeG, rag); monster.add(robe);
+      // Upper body, bent forward from the hips
+      mParts.upper.position.y = 0.98; mParts.upper.rotation.x = 0.38; monster.add(mParts.upper);
+      const torsoG = new THREE.LatheGeometry([[0.11, 0], [0.085, 0.14], [0.15, 0.32], [0.16, 0.44], [0.12, 0.56], [0.045, 0.62]].map(([a, b]) => new THREE.Vector2(a, b)), 16);
+      const torso = new THREE.Mesh(jitter(torsoG, 0.008), skin); torso.scale.z = 0.72; mParts.upper.add(torso);
+      for (let i = 0; i < 5; i++) { // ribs pushing through the skin
+        const rib = new THREE.Mesh(new THREE.TorusGeometry(0.15 - Math.abs(i - 1.5) * 0.008, 0.0055, 5, 14, Math.PI * 0.7), skin);
+        rib.position.set(0, 0.24 + i * 0.05, 0.005); rib.rotation.set(Math.PI / 2, 0, Math.PI * 0.15); rib.scale.set(1, 0.72, 1); mParts.upper.add(rib);
+      }
+      // Head: long skull, hollow cheeks
+      mParts.head.position.set(0, 0.68, 0.04); mParts.upper.add(mParts.head);
+      const skullG = jitter(new THREE.SphereGeometry(0.12, 24, 18), 0.006, (v) => { if (v.y < 0) v.y *= 1.5; if (v.y < -0.02 && Math.abs(v.x) > 0.05) v.x *= 0.82; v.z *= 0.95; });
+      const skull = new THREE.Mesh(skullG, skin); skull.scale.set(0.9, 1.15, 1); mParts.head.add(skull);
+      [-1, 1].forEach((s) => {
+        const sock = new THREE.Mesh(new THREE.SphereGeometry(0.034, 12, 10), hole); sock.position.set(s * 0.045, 0.02, 0.092); sock.scale.set(1, 0.8, 0.5); mParts.head.add(sock);
+        const eye = new THREE.Mesh(new THREE.SphereGeometry(0.011, 8, 8), glowEye); eye.position.set(s * 0.045, 0.018, 0.1); mParts.head.add(eye);
+        const strand = new THREE.Mesh(new THREE.PlaneGeometry(0.03, 0.35), rag); strand.position.set(s * (0.07 + Math.random() * 0.04), -0.05, 0.03); strand.rotation.z = s * 0.15; mParts.head.add(strand);
+      });
+      const mouthHole = new THREE.Mesh(new THREE.SphereGeometry(0.05, 12, 10), hole); mouthHole.position.set(0, -0.085, 0.085); mouthHole.scale.set(1, 0.55, 0.4); mParts.head.add(mouthHole);
+      for (let i = 0; i < 7; i++) {
+        const tooth = new THREE.Mesh(new THREE.ConeGeometry(0.006, 0.026, 5), bone); tooth.position.set(-0.033 + i * 0.011, -0.07, 0.1); tooth.rotation.x = Math.PI; mParts.head.add(tooth);
+      }
+      mParts.jaw.position.set(0, -0.1, 0.06); mParts.head.add(mParts.jaw);
+      for (let i = 0; i < 6; i++) {
+        const tooth = new THREE.Mesh(new THREE.ConeGeometry(0.006, 0.024, 5), bone); tooth.position.set(-0.028 + i * 0.011, 0.005, 0.04); mParts.jaw.add(tooth);
+      }
+      const jawBone = new THREE.Mesh(new THREE.SphereGeometry(0.06, 12, 8, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2), skin); jawBone.scale.set(0.9, 0.6, 0.9); mParts.jaw.add(jawBone);
+      // Long arms: shoulder -> elbow -> hand with four claws
+      [-1, 1].forEach((s) => {
+        const sh = new THREE.Group(); sh.position.set(s * 0.15, 0.52, 0); mParts.upper.add(sh); mParts.arms.push(sh);
+        const up = new THREE.Mesh(jitter(new THREE.CylinderGeometry(0.03, 0.022, 0.42, 7), 0.004), skin); up.position.y = -0.21; sh.add(up);
+        const el = new THREE.Group(); el.position.y = -0.42; el.rotation.x = -0.5; sh.add(el);
+        const fo = new THREE.Mesh(jitter(new THREE.CylinderGeometry(0.022, 0.016, 0.46, 7), 0.004), skin); fo.position.y = -0.23; el.add(fo);
+        const hand = new THREE.Group(); hand.position.y = -0.47; el.add(hand);
+        const palm = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.06, 0.02), skin); hand.add(palm);
+        for (let k = 0; k < 4; k++) {
+          const fg = new THREE.Mesh(new THREE.ConeGeometry(0.006, 0.17, 5), bone); fg.position.set(-0.02 + k * 0.013, -0.1, 0); fg.rotation.set(0.15, 0, (k - 1.5) * 0.12); fg.rotation.x = Math.PI + 0.2; hand.add(fg); mParts.fingers.push(fg);
+        }
+        sh.rotation.set(-0.35, 0, s * 0.12);
+      });
     }
-    const monsterEye = new THREE.PointLight(0xff0000, 0, 2.5); monsterEye.position.set(0, 1.37, 0.3); monster.add(monsterEye);
-    monster.visible = false; scene.add(monster);
-    const ghostMat = new THREE.MeshBasicMaterial({ color: 0xd8e6ff, transparent: true, opacity: 0.35, depthWrite: false });
+    const monsterEye = new THREE.PointLight(0xff2010, 0, 2.5); monsterEye.position.set(0, 1.62, 0.35); monster.add(monsterEye);
+    monster.scale.setScalar(0.8); monster.visible = false; scene.add(monster);
+
+    // The ghost: a woman in a white gown, long black hair over the face, see-through
+    // and glowing, the hem rippling as she drifts.
+    const ghostTime = { value: 0 };
+    const ghostMats: [THREE.Material, number][] = [];
+    const ghostMat = new THREE.MeshStandardMaterial({ color: 0xcdd8ea, emissive: 0x5d6f94, emissiveIntensity: 0.6, roughness: 0.9, transparent: true, opacity: 0.4, depthWrite: false, side: THREE.DoubleSide });
+    ghostMat.onBeforeCompile = (shader) => {
+      shader.uniforms.uTime = ghostTime;
+      // The hem ripples, and the gown fades into nothing towards the floor.
+      shader.vertexShader = 'uniform float uTime;\nvarying float vGy;\n' + shader.vertexShader.replace('#include <begin_vertex>', `#include <begin_vertex>
+        float hem = clamp(1.0 - position.y / 1.45, 0.0, 1.0);
+        transformed.x += sin(position.y * 7.0 + uTime * 3.0 + position.z * 5.0) * 0.05 * hem;
+        transformed.z += cos(position.y * 6.0 + uTime * 2.4 + position.x * 5.0) * 0.05 * hem;
+        vGy = position.y;`);
+      shader.fragmentShader = 'varying float vGy;\n' + shader.fragmentShader.replace('#include <dithering_fragment>', `#include <dithering_fragment>
+        gl_FragColor.a *= smoothstep(0.0, 0.75, vGy);`);
+    };
+    ghostMats.push([ghostMat, 0.4]);
     const ghost = new THREE.Group();
     {
-      const body = new THREE.Mesh(new THREE.ConeGeometry(0.28, 1.1, 12, 1, true), ghostMat); body.position.y = 0.9; body.rotation.x = Math.PI; ghost.add(body);
-      const head = new THREE.Mesh(new THREE.SphereGeometry(0.18, 12, 12), ghostMat); head.position.y = 1.55; ghost.add(head);
-      const em = new THREE.MeshBasicMaterial({ color: 0x000000 });
-      [-0.06, 0.06].forEach((x) => { const e = new THREE.Mesh(new THREE.SphereGeometry(0.035, 8, 8), em); e.position.set(x, 1.58, 0.15); ghost.add(e); });
-      const l = new THREE.PointLight(0x9fc0ff, 0.6, 2); l.position.y = 1.3; ghost.add(l);
+      const faceT = tex((x) => {
+        x.fillStyle = '#d9dde6'; x.fillRect(0, 0, 256, 256);
+        const sock = (cx: number) => { const g = x.createRadialGradient(cx, 118, 4, cx, 118, 34); g.addColorStop(0, 'rgba(0,0,0,1)'); g.addColorStop(0.6, 'rgba(20,20,30,.8)'); g.addColorStop(1, 'rgba(60,60,80,0)'); x.fillStyle = g; x.beginPath(); x.arc(cx, 118, 34, 0, Math.PI * 2); x.fill(); };
+        sock(100); sock(156);
+        const m = x.createRadialGradient(128, 186, 2, 128, 186, 30); m.addColorStop(0, 'rgba(0,0,0,1)'); m.addColorStop(1, 'rgba(40,40,60,0)'); x.fillStyle = m; x.beginPath(); x.ellipse(128, 186, 16, 30, 0, 0, Math.PI * 2); x.fill();
+      });
+      const gownG = new THREE.LatheGeometry([[0.07, 1.45], [0.13, 1.38], [0.12, 1.15], [0.16, 0.8], [0.22, 0.4], [0.3, 0]].map(([a, b]) => new THREE.Vector2(a, b)), 28);
+      { // torn hem
+        const gp = gownG.attributes.position as THREE.BufferAttribute;
+        for (let i = 0; i < gp.count; i++) if (gp.getY(i) < 0.01) gp.setY(i, Math.random() * 0.3);
+        gownG.computeVertexNormals();
+      }
+      const gown = new THREE.Mesh(gownG, ghostMat);
+      ghost.add(gown);
+      const faceMat = new THREE.MeshStandardMaterial({ map: faceT, emissive: 0x8090b0, emissiveIntensity: 0.5, roughness: 0.9, transparent: true, opacity: 0.6, depthWrite: false });
+      ghostMats.push([faceMat, 0.6]);
+      const face = new THREE.Mesh(new THREE.SphereGeometry(0.1, 20, 16), faceMat); face.scale.set(0.85, 1.15, 0.9); face.position.y = 1.58; face.rotation.y = -Math.PI / 2; ghost.add(face);
+      // Hair: strands painted on soft see-through ribbons, thinning out at the ends
+      const hairT = (() => {
+        const c = document.createElement('canvas'); c.width = 128; c.height = 256;
+        const x = c.getContext('2d')!;
+        for (let i = 0; i < 70; i++) {
+          const sx = Math.random() * 128, len = 150 + Math.random() * 106;
+          const g = x.createLinearGradient(0, 0, 0, len); g.addColorStop(0, 'rgba(8,6,8,.95)'); g.addColorStop(0.75, 'rgba(8,6,8,.7)'); g.addColorStop(1, 'rgba(8,6,8,0)');
+          x.strokeStyle = g; x.lineWidth = 1 + Math.random() * 2.5; x.beginPath(); x.moveTo(sx, 0);
+          x.bezierCurveTo(sx + (Math.random() - 0.5) * 20, len * 0.4, sx + (Math.random() - 0.5) * 24, len * 0.7, sx + (Math.random() - 0.5) * 16, len); x.stroke();
+        }
+        const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t;
+      })();
+      const hairMat = new THREE.MeshStandardMaterial({ map: hairT, color: 0xffffff, roughness: 0.55, transparent: true, opacity: 0.95, depthWrite: false, side: THREE.DoubleSide });
+      ghostMats.push([hairMat, 0.95]);
+      for (let i = 0; i < 9; i++) { // around the head, and hanging over the face
+        const a = (i / 9) * Math.PI * 2, front = Math.cos(a) > 0.5;
+        const h = new THREE.Mesh(new THREE.PlaneGeometry(0.11, front ? 0.6 : 0.85), hairMat);
+        const rr = front ? 0.1 : 0.09;
+        h.position.set(Math.sin(a) * rr, 1.66 - (front ? 0.26 : 0.38), Math.cos(a) * rr);
+        h.rotation.set(front ? -0.12 : 0.05, a, (Math.random() - 0.5) * 0.1);
+        ghost.add(h);
+      }
+      const crown = new THREE.Mesh(new THREE.SphereGeometry(0.105, 16, 10, 0, Math.PI * 2, 0, Math.PI * 0.45), new THREE.MeshStandardMaterial({ color: 0x080608, roughness: 0.5, transparent: true, opacity: 0.95, depthWrite: false }));
+      crown.position.y = 1.6; ghostMats.push([crown.material as THREE.Material, 0.95]); ghost.add(crown);
+      const armMat = faceMat;
+      [-1, 1].forEach((s) => { const arm = new THREE.Mesh(new THREE.CylinderGeometry(0.018, 0.012, 0.6, 6), armMat); arm.position.set(s * 0.14, 1.08, 0.03); arm.rotation.z = s * 0.08; ghost.add(arm); });
+      const l = new THREE.PointLight(0x9fc0ff, 0.5, 3); l.position.set(0, 1.2, 0.7); ghost.add(l);
     }
-    ghost.visible = false; scene.add(ghost);
+    ghost.scale.setScalar(0.85); ghost.visible = false; scene.add(ghost);
 
     // Sound, generated (no files)
     let ac: AudioContext | null = null;
@@ -495,15 +612,25 @@ export function TowerGame({ placed, chambers, pocket, onPlace, busy, embedded = 
       if (ghostT >= 0) {
         ghostT += dt; ghost.position.x += Math.cos(ang) * ghostDir * 0.03; ghost.position.z += -Math.sin(ang) * ghostDir * 0.03;
         ghost.position.y = 0.1 + Math.sin(tt * 3) * 0.08; ghost.lookAt(px, ghost.position.y, pz);
-        ghostMat.opacity = 0.35 * Math.max(0, Math.min(1, Math.min(ghostT, 2.4 - ghostT) * 2));
+        const gf = Math.max(0, Math.min(1, Math.min(ghostT, 2.4 - ghostT) * 2));
+        ghostMats.forEach(([m, o]) => (m.opacity = o * gf));
+        ghostTime.value = tt;
         if (ghostT > 2.4) { ghost.visible = false; ghostT = -1; }
       }
       if (scare) {
         scare.t += dt;
-        if (scare.t < 0.35) hand.intensity = 0.05;
+        // Standing in the dark: head cocked, twitching. Then the lunge: it bends
+        // down at you, jaw open, claws reaching, head shaking.
+        const lunge = Math.max(0, Math.min(1, (scare.t - 0.35) * 5));
+        mParts.head.rotation.set(-0.25 * lunge + (Math.random() - 0.5) * 0.12 * (1 + lunge * 2), (Math.random() - 0.5) * 0.15, 0.35 * (1 - lunge) + Math.sin(tt * 47) * 0.1 * lunge);
+        mParts.jaw.rotation.x = 0.1 + lunge * 0.55 + Math.sin(tt * 60) * 0.05 * lunge;
+        mParts.upper.rotation.x = 0.38 + lunge * 0.75;
+        mParts.arms.forEach((a, i) => { a.rotation.x = -0.35 - lunge * 1.15 + Math.sin(tt * 30 + i) * 0.05 * lunge; a.rotation.z = (i ? 1 : -1) * (0.12 + lunge * 0.25); });
+        mParts.fingers.forEach((f, i) => (f.rotation.z = ((i % 4) - 1.5) * (0.12 + lunge * 0.2)));
+        if (scare.t < 0.35) { /* standing still in the dark */ }
         else {
           if (scare.t < 0.37) { sting(); fx.style.opacity = '1'; shake = 0.6; }
-          const tx = px - Math.sin(ang) * 0.45, tz = pz - Math.cos(ang) * 0.45;
+          const tx = px - Math.sin(ang) * 0.95, tz = pz - Math.cos(ang) * 0.95;
           monster.position.x += (tx - monster.position.x) * 0.25; monster.position.z += (tz - monster.position.z) * 0.25; monster.lookAt(px, 0, pz); monsterEye.intensity = 3;
         }
         if (scare.t > 1.1) { monster.visible = false; monsterEye.intensity = 0; fx.style.opacity = '0'; scare = null; }
@@ -512,7 +639,8 @@ export function TowerGame({ placed, chambers, pocket, onPlace, busy, embedded = 
       cam.position.set(px + (Math.random() - 0.5) * shake * 0.15, 0.9 + Math.sin(tt * 8) * (mv ? 0.02 : 0) + (Math.random() - 0.5) * shake * 0.15, pz);
       cam.rotation.set(0, ang, (Math.random() - 0.5) * shake * 0.1);
       hand.position.set(px - Math.sin(ang) * 0.3, 1.05, pz - Math.cos(ang) * 0.3);
-      if (!(scare && scare.t < 0.35)) hand.intensity = 3 + Math.sin(tt * 13) * 0.3;
+      // The lantern: steady while you walk, nearly out while the monster is on you.
+      hand.intensity = !scare ? 3 + Math.sin(tt * 13) * 0.3 : scare.t < 0.35 ? 0.05 : 0.25 + Math.random() * 0.5;
       torches.forEach((l, i) => {
         const fl = 0.85 + Math.sin(tt * 11 + i) * 0.1 + Math.sin(tt * 23.7 + i * 2) * 0.06 + (Math.random() - 0.5) * 0.08;
         l.intensity = 7 * fl;
@@ -538,7 +666,7 @@ export function TowerGame({ placed, chambers, pocket, onPlace, busy, embedded = 
       composer.render();
     };
     raf = requestAnimationFrame(frame);
-    const down =(e: KeyboardEvent) => {
+    const down = (e: KeyboardEvent) => {
       if (e.key.startsWith('Arrow') || 'wasd'.includes(e.key)) { keys.current[e.key] = true; if (e.key.startsWith('Arrow')) e.preventDefault(); }
     };
     const up = (e: KeyboardEvent) => { keys.current[e.key] = false; };
