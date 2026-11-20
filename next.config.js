@@ -21,8 +21,8 @@ const cspReportOnly = [
   // Convex (HTTP + websocket), map search, translations.
   `connect-src 'self' https://*.convex.cloud wss://*.convex.cloud https://*.convex.site https://nominatim.openstreetmap.org https://api.mymemory.translated.net https://accounts.google.com/gsi/${isDev ? ' ws://localhost:* http://localhost:*' : ''}`,
   "worker-src 'self' blob:",
-  // The Google button is an iframe from accounts.google.com.
-  "frame-src 'self' https://accounts.google.com",
+  // The Google button is an iframe from accounts.google.com; room trailers are YouTube/Vimeo.
+  "frame-src 'self' https://accounts.google.com https://www.youtube-nocookie.com https://player.vimeo.com",
   "form-action 'self' https://checkout.stripe.com",
   "base-uri 'self'",
   "object-src 'none'",

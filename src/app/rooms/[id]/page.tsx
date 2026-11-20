@@ -11,6 +11,7 @@ import { BOOKING_ENABLED } from '@/lib/features';
 import { useTranslation } from '@/lib/i18n';
 import { themeLabel } from '@/lib/roomThemes';
 import { RoomMerchStrip } from '@/components/shop/RoomMerch';
+import { shownRating, formatRating, videoEmbedUrl } from '@/lib/roomMedia';
 import {
   Star,
   Skull,
@@ -29,6 +30,7 @@ import {
   ChevronDown,
   ChevronUp,
   CheckCircle,
+  PlayCircle,
 } from 'lucide-react';
 
 export default function RoomDetailsPage() {
@@ -83,6 +85,10 @@ export default function RoomDetailsPage() {
       </div>
     );
   }
+
+  // Our own reviews, or the room's rating on another site if that has more
+  const shown = shownRating(room);
+  const trailer = videoEmbedUrl((room as any).videoUrl);
 
   const handleWishlist = async () => {
     if (!isAuthenticated || !user) return;
@@ -206,9 +212,21 @@ export default function RoomDetailsPage() {
             {/* Stats row */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-px mb-8 overflow-hidden rounded-md border border-brand-border bg-brand-border">
               <div className="bg-brand-dark p-4 text-center">
-                <Star className={`w-5 h-5 mx-auto mb-1.5 ${room.reviews > 0 ? 'text-brand-gold fill-brand-gold' : 'text-brand-text-muted'}`} />
-                <div className="text-xl font-display font-bold text-brand-bone tabular-nums">{room.reviews > 0 ? room.rating : '—'}</div>
-                <div className="text-xs text-brand-text-muted mt-0.5">{room.reviews} {t('featured.reviews')}</div>
+                <Star className={`w-5 h-5 mx-auto mb-1.5 ${shown ? 'text-brand-gold fill-brand-gold' : 'text-brand-text-muted'}`} />
+                <div className="text-xl font-display font-bold text-brand-bone tabular-nums">{shown ? formatRating(shown.rating) : '—'}</div>
+                <div className="text-xs text-brand-text-muted mt-0.5">
+                  {shown?.source ? (
+                    shown.url ? (
+                      <a href={shown.url} target="_blank" rel="noopener noreferrer nofollow" className="underline decoration-dotted underline-offset-2 hover:text-brand-text">
+                        {t('room.reviews_on', { count: shown.count.toLocaleString(), source: shown.source })}
+                      </a>
+                    ) : (
+                      t('room.reviews_on', { count: shown.count.toLocaleString(), source: shown.source })
+                    )
+                  ) : (
+                    <>{shown?.count ?? 0} {t('featured.reviews')}</>
+                  )}
+                </div>
               </div>
               <div className="bg-brand-dark p-4 text-center">
                 <Clock className="w-5 h-5 text-brand-red-light mx-auto mb-1.5" />
@@ -260,6 +278,27 @@ export default function RoomDetailsPage() {
                 <p className="border-l-2 border-brand-red/60 pl-4 font-display text-lg text-brand-text leading-relaxed italic text-pretty">
                   &ldquo;{(room as any).storyTranslations?.[language] || room.story}&rdquo;
                 </p>
+              </div>
+            )}
+
+            {/* Trailer */}
+            {trailer && (
+              <div className="mb-8">
+                <h3 className="flex items-center gap-2 text-xl font-display font-bold text-brand-bone mb-3">
+                  <PlayCircle className="w-5 h-5 text-brand-red-light" />
+                  {t('room.trailer')}
+                </h3>
+                <div className="relative aspect-video w-full overflow-hidden rounded-md border border-brand-border bg-black">
+                  <iframe
+                    src={trailer}
+                    title={`${room.title} – ${t('room.trailer')}`}
+                    className="absolute inset-0 h-full w-full"
+                    loading="lazy"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    referrerPolicy="strict-origin-when-cross-origin"
+                    allowFullScreen
+                  />
+                </div>
               </div>
             )}
 
