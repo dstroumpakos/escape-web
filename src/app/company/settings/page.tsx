@@ -57,6 +57,7 @@ import {
   Languages,
 } from 'lucide-react';
 import { PlanBadge } from '../PlanBadge';
+import { BOOKING_ENABLED } from '@/lib/features';
 import { useTranslation } from '@/lib/i18n';
 
 export default function CompanySettingsPage() {
@@ -108,7 +109,7 @@ export default function CompanySettingsPage() {
   // Respect ?tab= query param
   useEffect(() => {
     const tab = searchParams.get('tab');
-    if (tab === 'widget' || tab === 'early-access' || tab === 'profile' || tab === 'translations') {
+    if ((tab === 'widget' && BOOKING_ENABLED) || tab === 'early-access' || tab === 'profile' || tab === 'translations') {
       setActiveTab(tab);
     }
   }, [searchParams]);
@@ -246,8 +247,8 @@ export default function CompanySettingsPage() {
         {t('company.settings.subtitle')}
       </p>
 
-      {/* Current Plan Card */}
-      {currentPlan && (() => {
+      {/* Current Plan Card (per-booking plans: only while UNLOCKED booking is on) */}
+      {BOOKING_ENABLED && currentPlan && (() => {
         const id = asPlanId(currentPlan);
         const pl = PLANS[id];
         const features = pl.features.map((k) => t(k));
@@ -296,7 +297,7 @@ export default function CompanySettingsPage() {
           { key: 'profile', label: t('company.settings.tab_profile'), icon: Building2 },
           { key: 'early-access', label: t('company.settings.tab_early_access'), icon: Zap },
           { key: 'translations', label: t('company.settings.tab_translations'), icon: Languages },
-          { key: 'widget', label: t('company.settings.tab_widget'), icon: Code },
+          ...(BOOKING_ENABLED ? [{ key: 'widget', label: t('company.settings.tab_widget'), icon: Code }] : []),
         ].map(({ key, label, icon: Icon }) => (
           <button
             key={key}

@@ -6,6 +6,7 @@ import { api } from '../../../../convex/_generated/api';
 import { useTranslation } from '@/lib/i18n';
 import { useToast } from '@/components/company/Toast';
 import { friendlyError } from '@/lib/errors';
+import { BOOKING_ENABLED } from '@/lib/features';
 import {
   AlertCircle,
   CheckCircle,
@@ -186,7 +187,7 @@ export default function CompanyPaymentsPage() {
     <div className="max-w-3xl mx-auto space-y-6">
       <div>
         <h1 className="text-2xl font-bold">{t('cx.pay.title')}</h1>
-        <p className="text-brand-text-secondary mt-1">{t('cx.pay.subtitle')}</p>
+        <p className="text-brand-text-secondary mt-1">{t(BOOKING_ENABLED ? 'cx.pay.subtitle' : 'cx.pay.subtitle_merch')}</p>
       </div>
 
       {!settings.serverReady && (
@@ -247,7 +248,7 @@ export default function CompanyPaymentsPage() {
             )}
             {confirmDisconnect && (
               <div className="mt-4 space-y-3">
-                <p className="text-sm text-red-200">{t('cx.pay.disconnect_warning')}</p>
+                <p className="text-sm text-red-200">{t(BOOKING_ENABLED ? 'cx.pay.disconnect_warning' : 'cx.pay.disconnect_warning_merch')}</p>
                 <Field
                   label={t('cx.pay.your_password')}
                   type="password"
@@ -278,7 +279,7 @@ export default function CompanyPaymentsPage() {
           </div>
         )}
 
-        {!connected && <p className="text-sm text-brand-text-secondary mb-4">{t('cx.pay.not_connected')}</p>}
+        {!connected && <p className="text-sm text-brand-text-secondary mb-4">{t(BOOKING_ENABLED ? 'cx.pay.not_connected' : 'cx.pay.not_connected_merch')}</p>}
 
         {showForm && (
           <form onSubmit={handleConnect} className="space-y-4">
@@ -399,7 +400,8 @@ export default function CompanyPaymentsPage() {
         )}
       </section>
 
-      {/* ── Deposit & fee ── */}
+      {/* ── Deposit & fee (room bookings only) ── */}
+      {BOOKING_ENABLED && (
       <section className="bg-brand-surface rounded-2xl border border-white/5 p-6">
         <h2 className="text-lg font-bold mb-1 flex items-center gap-2">
           <Percent className="w-5 h-5 text-brand-red-light" />
@@ -474,6 +476,7 @@ export default function CompanyPaymentsPage() {
           </button>
         </form>
       </section>
+      )}
 
       {/* ── How it works ── */}
       <section className="bg-brand-surface rounded-2xl border border-white/5 p-6">
@@ -482,9 +485,9 @@ export default function CompanyPaymentsPage() {
           {t('cx.pay.how_title')}
         </h2>
         <ul className="text-sm text-brand-text-secondary space-y-2 list-disc pl-5">
-          <li>{t('cx.pay.how_1')}</li>
+          <li>{t(BOOKING_ENABLED ? 'cx.pay.how_1' : 'cx.pay.how_1_merch')}</li>
           <li>{t('cx.pay.how_2')}</li>
-          <li>{t('cx.pay.how_3')}</li>
+          {BOOKING_ENABLED && <li>{t('cx.pay.how_3')}</li>}
           <li>{t('cx.pay.how_4')}</li>
         </ul>
       </section>
