@@ -1,0 +1,10 @@
+3D models of the haunted tower (TowerGame.tsx)
+
+All from Poly Haven (https://polyhaven.com/models), licence CC0 (public domain).
+Downloaded at 1k, then compressed with gltf-transform (512px WebP textures, meshopt).
+
+treasure_chest, Rockingchair_01, GothicCabinet_01, GothicCommode_01, GothicBed_01,
+WoodenChair_01, wooden_bookshelf_worn, Lantern_01, vintage_grandfather_clock_01,
+ornate_mirror_01, Barrel_01, marble_bust_01
+
+Each model's page: https://polyhaven.com/a/<name>
