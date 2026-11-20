@@ -10,6 +10,7 @@ import { ChangePasswordForm } from '@/components/auth/PasswordForms';
 import { cleanError } from '@/lib/errors';
 import { ReportsAboutMe, LateCancelsAboutMe } from '@/components/reports/ReportsAboutMe';
 import { useTranslation } from '@/lib/i18n';
+import { ProfileView } from '@/components/profile/ProfileView';
 import { AnimateIn, StaggerContainer, StaggerItem } from '@/components/animations/AnimateIn';
 import {
   User,
@@ -102,92 +103,11 @@ export default function ProfilePage() {
 
   return (
     <>
-      {/* Profile Header */}
-      <section className="pt-28 pb-8 relative overflow-hidden">
-        <div className="absolute inset-0 bg-linear-to-b from-brand-red/10 via-brand-bg to-brand-dark" />
-        <div className="absolute top-1/3 right-1/4 w-80 h-80 bg-brand-red/5 rounded-full blur-3xl" />
+      {/* Public profile, Instagram + Facebook style (convex/social.ts) */}
+      {user?.id && <ProfileView userId={user.id} />}
 
-        <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          {/* Avatar */}
-          <AnimateIn animation="scaleIn">
-          <div className="relative inline-block mb-4">
-            <div className="w-24 h-24 rounded-full bg-brand-surface border-4 border-brand-red/30 flex items-center justify-center overflow-hidden">
-              {profile.avatar ? (
-                <img
-                  src={profile.avatar}
-                  alt={profile.name}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <span className="text-3xl font-bold text-brand-red-light">
-                  {profile.name?.charAt(0)?.toUpperCase() || '?'}
-                </span>
-              )}
-            </div>
-          </div>
-          </AnimateIn>
-
-          {/* Name & info */}
-          <AnimateIn animation="fadeUp" delay={0.15}>
-          <h1 className="text-2xl font-display font-bold mb-1">{profile.name}</h1>
-          <p className="text-brand-text-muted text-sm mb-1">{profile.email}</p>
-          {(convexUser as any)?.phone && (
-            <p className="text-brand-text-muted text-xs flex items-center justify-center gap-1">
-              <Phone className="w-3 h-3" /> {(convexUser as any).phone}
-            </p>
-          )}
-          <div className="flex items-center justify-center gap-2 flex-wrap mb-2">
-            {profile.title && (
-              <span className="inline-block text-xs font-medium px-3 py-1 rounded-full bg-brand-red/10 text-brand-red-light border border-brand-red/20">
-                {t(`profile.${profile.title}`)}
-              </span>
-            )}
-            {(convexUser as any)?.isPremium && (
-              <span className="inline-flex items-center gap-1 text-xs font-bold px-3 py-1 rounded-full bg-yellow-500/10 text-yellow-400 border border-yellow-500/20">
-                <Diamond className="w-3 h-3" /> {t('profile.premium_badge')}
-              </span>
-            )}
-          </div>
-          {(profile as any).memberSince && (
-            <p className="text-xs text-brand-text-muted">
-              {t('profile.member_since')} {(profile as any).memberSince}
-            </p>
-          )}
-          </AnimateIn>
-        </div>
-      </section>
-
-      {/* Stats */}
       <section className="pb-6">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <AnimateIn animation="scaleUp" duration={0.7}>
-          <div className="glass rounded-2xl p-6">
-            <StaggerContainer stagger={0.1} className="grid grid-cols-3 gap-3 sm:gap-6">
-              <StaggerItem animation="fadeUp">
-              <div className="text-center">
-                <DoorOpen className="w-5 h-5 text-brand-red-light mx-auto mb-1" />
-                <div className="text-2xl font-display font-bold">{profile.played ?? 0}</div>
-                <div className="text-xs text-brand-text-muted">{t('profile.rooms_played')}</div>
-              </div>
-              </StaggerItem>
-              <StaggerItem animation="fadeUp">
-              <div className="text-center">
-                <Trophy className="w-5 h-5 text-green-400 mx-auto mb-1" />
-                <div className="text-2xl font-display font-bold">{profile.escaped ?? 0}</div>
-                <div className="text-xs text-brand-text-muted">{t('profile.escaped')}</div>
-              </div>
-              </StaggerItem>
-              <StaggerItem animation="fadeUp">
-              <div className="text-center">
-                <Award className="w-5 h-5 text-brand-gold mx-auto mb-1" />
-                <div className="text-2xl font-display font-bold">{profile.awards ?? 0}</div>
-                <div className="text-xs text-brand-text-muted">{t('profile.awards')}</div>
-              </div>
-              </StaggerItem>
-            </StaggerContainer>
-          </div>
-          </AnimateIn>
-
           {/* Change password (convex/passwordReset.ts) */}
           {user?.sessionToken && (
             <div className="card p-6 mt-6">

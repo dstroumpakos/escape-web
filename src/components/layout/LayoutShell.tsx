@@ -6,6 +6,7 @@ import { Navbar } from './Navbar';
 import { Footer } from './Footer';
 import { CookieConsent } from './CookieConsent';
 import { PhonePrompt } from './PhonePrompt';
+import { BOOKING_ENABLED } from '@/lib/features';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { EyeKeyhole } from '@/components/brand/EyeKeyhole';
@@ -139,7 +140,8 @@ export function LayoutShell({ children }: { children: React.ReactNode }) {
       <Footer />
       <HorrorFX />
       <CookieConsent />
-      <PhonePrompt />
+      {/* The phone is only needed to book on UNLOCKED */}
+      {BOOKING_ENABLED && <PhonePrompt />}
     </>
   );
 }
