@@ -17,6 +17,7 @@ const TowerGame = dynamic(() => import('@/components/passport/TowerGame').then((
   loading: () => <div className="aspect-video rounded-xl bg-black/60 flex items-center justify-center"><Loader2 className="w-6 h-6 animate-spin text-brand-red" /></div>,
 });
 import { cleanError } from '@/lib/errors';
+import { formatPlayed, shortPlayed } from '@/lib/playTime';
 
 type Tab = 'stamps' | 'maze';
 
@@ -127,7 +128,7 @@ export default function PassportPage() {
                     key={s._id}
                     title={s.roomTitle}
                     theme={s.theme}
-                    date={new Date(s.createdAt).toLocaleDateString()}
+                    date={shortPlayed(s.playedAt, s.createdAt)}
                     escaped={s.escaped}
                     tilt={tiltFor(s._id)}
                     onClick={() => setPicked(s)}
@@ -143,7 +144,7 @@ export default function PassportPage() {
                 {picked ? (
                   <>
                     <Link href={`/rooms/${picked.roomId}`} className="font-semibold text-brand-bone hover:underline">{picked.roomTitle}</Link>
-                    {' · '}{picked.companyName}{' · '}{new Date(picked.createdAt).toLocaleDateString()}{' · '}
+                    {' · '}{picked.companyName}{' · '}{formatPlayed(picked.playedAt, picked.createdAt)}{' · '}
                     {picked.escaped
                       ? t('pp.escaped_in', { time: picked.escapeSeconds ? `${Math.floor(picked.escapeSeconds / 60)}:${String(picked.escapeSeconds % 60).padStart(2, '0')}` : '' })
                       : t('pp.trapped')}

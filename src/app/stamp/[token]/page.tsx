@@ -1,5 +1,6 @@
 'use client';
 
+import { formatPlayed, shortPlayed } from '@/lib/playTime';
 import { useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
@@ -51,11 +52,11 @@ export default function StampPage() {
           <>
             <p className="horror-label mb-2">{t('pp.kicker')}</p>
             <h1 className="text-2xl font-display font-bold text-brand-bone">{info.roomTitle}</h1>
-            <p className="text-sm text-brand-text-muted mb-6">{info.companyName}</p>
+            <p className="text-sm text-brand-text-muted mb-6">{info.companyName} · {formatPlayed(info.playedAt, Date.now())}</p>
 
             <div className="flex justify-center mb-6 min-h-[150px] items-center">
               {done && !done.already ? (
-                <StampSeal title={info.roomTitle} theme={info.roomTheme} date={new Date().toLocaleDateString()} escaped={info.escaped} tilt={-8} size={150} slam />
+                <StampSeal title={info.roomTitle} theme={info.roomTheme} date={shortPlayed(info.playedAt, Date.now())} escaped={info.escaped} tilt={-8} size={150} slam />
               ) : (
                 <div className="w-[150px] h-[150px] rounded-full border-2 border-dashed border-brand-border flex items-center justify-center text-brand-text-muted">
                   <Stamp className="w-10 h-10" />

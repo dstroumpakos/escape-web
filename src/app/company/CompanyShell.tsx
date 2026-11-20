@@ -26,7 +26,7 @@ import {
 } from 'lucide-react';
 import { EyeKeyhole } from '@/components/brand/EyeKeyhole';
 import { ConvexClientProvider } from '@/components/providers/ConvexClientProvider';
-import { CompanyAuthProvider, useCompanyAuth, useCompanyPath, photosPortalUrl } from '@/lib/companyAuth';
+import { CompanyAuthProvider, useCompanyAuth, useCompanyPath, photosPortalUrl, useMainSiteUrl } from '@/lib/companyAuth';
 import { ToastProvider } from '@/components/company/Toast';
 import { LanguageToggle } from '@/components/LanguageToggle';
 import { PlanBadge } from './PlanBadge';
@@ -43,6 +43,7 @@ type NavLink = {
 function CompanyShell({ children }: { children: React.ReactNode }) {
   const { t } = useTranslation();
   const { company, isLoading, isAuthenticated, logout } = useCompanyAuth();
+  const homeUrl = useMainSiteUrl();
   const router = useRouter();
   const pathname = usePathname();
   const p = useCompanyPath();
@@ -224,7 +225,7 @@ function CompanyShell({ children }: { children: React.ReactNode }) {
             {t('company.nav.logout')}
           </button>
           <Link
-            href="https://unlocked.gr"
+            href={homeUrl}
             className="flex items-center gap-3 px-3 py-2 mt-1 rounded-xl text-xs text-brand-text-secondary/60 hover:text-brand-text-secondary transition-all"
           >
             {t('company.nav.back_to_site')}

@@ -7,6 +7,7 @@ import { api } from '../../../../convex/_generated/api';
 import { useCompanyAuth, useCompanyMutation, useCompanyQuery } from '@/lib/companyAuth';
 import { useTranslation } from '@/lib/i18n';
 import { friendlyError } from '@/lib/errors';
+import { defaultStartTime, startTimeToMs, formatPlayed } from '@/lib/playTime';
 
 /**
  * End of game: the company picks the room, players and result, and shows the
@@ -25,6 +26,9 @@ export default function CompanyPassportPage() {
   const [players, setPlayers] = useState(4);
   const [escaped, setEscaped] = useState(true);
   const [minutes, setMinutes] = useState('');
+  const [startTime, setStartTime] = useState('');
+  // Set after mount: it depends on the device's clock.
+  useEffect(() => setStartTime(defaultStartTime()), []);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -39,7 +43,9 @@ export default function CompanyPassportPage() {
     setBusy(true);
     try {
       const m = minutes.trim() ? Number(minutes.replace(',', '.')) : undefined;
-      const r = await start({ roomId: roomId as any, players, escaped, escapeMinutes: escaped ? m : undefined });
+      const playedAt = startTimeToMs(startTime);
+      if (startTime && playedAt === undefined) { setError(t('cx.pp.start_time_bad')); return; }
+      const r = await start({ roomId: roomId as any, players, escaped, escapeMinutes: escaped ? m : undefined, playedAt });
       setSessionId(r.sessionId);
     } catch (e) {
       setError(friendlyError(e, t));
@@ -63,6 +69,11 @@ export default function CompanyPassportPage() {
           <select value={roomId} onChange={(e) => setRoomId(e.target.value)} className="w-full bg-brand-bg border border-white/10 rounded-xl px-3 py-3 text-white focus:border-brand-red focus:outline-hidden">
             {bookable.map((r: any) => <option key={r._id} value={r._id}>{r.title}</option>)}
           </select>
+        </label>
+
+        <label className="block">
+          <span className="block text-sm text-brand-text-secondary mb-1.5">{t('cx.pp.start_time')}</span>
+          <input type="time" step={300} value={startTime} onChange={(e) => setStartTime(e.target.value)} className="w-40 bg-brand-bg border border-white/10 rounded-xl px-3 py-3 text-white scheme-dark focus:border-brand-red focus:outline-hidden" />
         </label>
 
         <div>
@@ -106,7 +117,7 @@ export default function CompanyPassportPage() {
           <div className="bg-brand-surface rounded-2xl border border-white/5 divide-y divide-white/5">
             {recent.map((s) => (
               <button key={s._id} onClick={() => setSessionId(s._id)} className="w-full flex items-center justify-between px-4 py-3 text-sm hover:bg-white/5 text-left">
-                <span className="truncate">{s.roomTitle} · {new Date(s.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                <span className="truncate">{s.roomTitle} · {new Date(s.playedAt ?? s.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                 <span className="tabular-nums text-brand-text-secondary">{s.claimed}/{s.players}</span>
               </button>
             ))}
@@ -146,7 +157,8 @@ function LiveQr({ sessionId, onNew }: { sessionId: string; onNew: () => void }) 
   return (
     <div className="p-4 md:p-8 max-w-xl mx-auto text-center">
       <p className="text-sm text-brand-text-secondary">{t('cx.pp.scan_now')}</p>
-      <h1 className="text-2xl font-bold mt-1 mb-5">{s.roomTitle}</h1>
+      <h1 className="text-2xl font-bold mt-1">{s.roomTitle}</h1>
+      <p className="text-sm text-brand-text-secondary mb-5">{formatPlayed(s.playedAt, Date.now())}</p>
       <div className="inline-block rounded-2xl bg-white p-3">
         {qr && !expired && !full ? (
           // eslint-disable-next-line @next/next/no-img-element
