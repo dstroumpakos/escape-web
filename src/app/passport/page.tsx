@@ -87,8 +87,8 @@ export default function PassportPage() {
               <p className="font-mono text-brand-bone">{data.passportNo}</p>
             </div>
           </div>
-          <div className="grid grid-cols-3 gap-2 mt-5 text-center">
-            {[[data.total, t('pp.stamps')], [data.cities, t('pp.cities')], [`${data.escapedPct}%`, t('pp.escapes')]].map(([v, l]) => (
+          <div className="grid grid-cols-2 gap-2 mt-5 text-center">
+            {[[data.total, t('pp.stamps')], [data.cities, t('pp.cities')]].map(([v, l]) => (
               <div key={String(l)} className="rounded-md bg-black/40 py-2">
                 <div className="text-xl font-display font-bold text-brand-bone tabular-nums">{v}</div>
                 <div className="text-[11px] text-brand-text-muted">{l}</div>
