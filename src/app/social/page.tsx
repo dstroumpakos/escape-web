@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useMutation, useQuery } from 'convex/react';
-import { Users, Bell, Compass, Trophy, ImagePlus, MessageCircle, UserPlus, Check, Map as MapIcon } from 'lucide-react';
+import { Users, Bell, ImagePlus, MessageCircle, UserPlus, Check } from 'lucide-react';
 import { api } from '../../../convex/_generated/api';
 import { useAuth } from '@/lib/auth';
 import { useTranslation } from '@/lib/i18n';
@@ -26,10 +26,8 @@ export default function CommunityPage() {
 
   const shortcuts = [
     ...(user ? [{ href: `/u/${user.id}`, label: myName, avatar: true }] : []),
+    // Discover, map and leaderboard are already in the top bar.
     { href: '/friends', label: t('cm.friends'), Icon: Users },
-    { href: '/discover', label: t('nav.discover'), Icon: Compass },
-    { href: '/map', label: t('nav.map'), Icon: MapIcon },
-    { href: '/leaderboard', label: t('nav.leaderboard'), Icon: Trophy },
     ...(user ? [{ href: '/notifications', label: t('cm.notifications'), Icon: Bell }] : []),
   ];
 

@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Menu, X, LogOut, User, Bell, Ticket } from 'lucide-react';
+import { Vault, ScrollText, Menu, X, LogOut, User, Bell, Ticket } from 'lucide-react';
 import { EyeKeyhole } from '@/components/brand/EyeKeyhole';
 import { useAuth } from '@/lib/auth';
 import { useTranslation } from '@/lib/i18n';
@@ -37,15 +37,16 @@ export function Navbar() {
   const { user, isAuthenticated, logout } = useAuth();
   const { t } = useTranslation();
 
-  const navLinks = [
+  // Shop and contact show as small icons on the desktop bar (a vault, a scroll).
+  const navLinks: { href: string; label: string; Icon?: React.ElementType }[] = [
     { href: '/', label: t('nav.home') },
     { href: '/discover', label: t('nav.discover') },
     ...(BOOKING_ENABLED ? [{ href: '/offers', label: t('nav.offers') }] : []),
     { href: '/map', label: t('nav.map') },
     { href: '/social', label: t('nav.social') },
     { href: '/leaderboard', label: t('nav.leaderboard') },
-    { href: '/shop', label: t('nav.shop') },
-    { href: '/contact', label: t('nav.contact') },
+    { href: '/shop', label: t('nav.shop'), Icon: Vault },
+    { href: '/contact', label: t('nav.contact'), Icon: ScrollText },
   ];
 
   const handleLogout = () => {
@@ -93,8 +94,18 @@ export function Navbar() {
             {navLinks.map((link) => {
               const active = pathname === link.href;
               return (
-                <Link key={link.href} href={link.href} className={linkClass(active)}>
-                  {link.label}
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={link.Icon ? `${linkClass(active)} px-2.5!` : linkClass(active)}
+                  title={link.Icon ? link.label : undefined}
+                  aria-label={link.Icon ? link.label : undefined}
+                >
+                  {link.Icon ? (
+                    <link.Icon className="w-5 h-5 transition-transform duration-300 group-hover/link:scale-110 group-hover/link:drop-shadow-[0_0_6px_rgba(255,59,59,0.8)]" />
+                  ) : (
+                    link.label
+                  )}
                   {/* Scratch underline */}
                   <span
                     className={`absolute left-3 right-3 -bottom-0.5 h-[2px] origin-left bg-linear-to-r from-brand-red-light via-brand-red to-transparent transition-transform duration-300 ${
