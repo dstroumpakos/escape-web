@@ -22,7 +22,6 @@ import {
   DoorOpen,
   Zap,
   BookOpen,
-  Shield,
   Diamond,
   CalendarClock,
   BadgeCheck,
@@ -30,8 +29,6 @@ import {
   ChevronDown,
   ChevronUp,
   CheckCircle,
-  AlertTriangle,
-  X,
 } from 'lucide-react';
 
 export default function RoomDetailsPage() {
@@ -60,7 +57,6 @@ export default function RoomDetailsPage() {
   const [reviewSuccess, setReviewSuccess] = useState(false);
   const [showAllReviews, setShowAllReviews] = useState(false);
   const [showReviewForm, setShowReviewForm] = useState(false);
-  const [showTestPopup, setShowTestPopup] = useState(true);
   const [imageFailed, setImageFailed] = useState(false);
 
   const isWishlisted = false; // Would need to query user's wishlist
@@ -99,56 +95,6 @@ export default function RoomDetailsPage() {
 
   return (
     <>
-      {/* Test Room Popup */}
-      {showTestPopup && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="test-room-title"
-          className="fixed inset-0 z-100 flex items-center justify-center bg-black/80 backdrop-blur-xs p-4"
-        >
-          <div className="panel relative border-brand-gold/40! p-6 md:p-8 max-w-md w-full shadow-[0_0_60px_-10px_rgba(201,154,46,0.35),0_30px_80px_rgba(0,0,0,0.8)] animate-scale-in">
-            {/* Hazard stripe along the top edge */}
-            <div
-              aria-hidden
-              className="absolute inset-x-0 top-0 h-1.5 rounded-t-lg opacity-80 bg-[repeating-linear-gradient(-45deg,#c99a2e_0_10px,#110909_10px_20px)]"
-            />
-            <div className="flex items-start justify-between mb-4 mt-1">
-              <div className="w-12 h-12 rounded-md border border-brand-gold/40 bg-brand-gold/10 flex items-center justify-center">
-                <AlertTriangle className="w-6 h-6 text-brand-gold" />
-              </div>
-              <button
-                onClick={() => setShowTestPopup(false)}
-                aria-label="Close"
-                className="p-1.5 rounded-md hover:bg-brand-surface transition-colors text-brand-text-muted hover:text-brand-bone"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-            <h2 id="test-room-title" className="text-2xl font-display font-bold mb-2 text-brand-gold">{t('room.test_popup_title')}</h2>
-            <p className="text-brand-text-secondary text-sm leading-relaxed mb-4" dangerouslySetInnerHTML={{ __html: t('room.test_popup_desc') }} />
-            <div className="bg-brand-gold/10 border border-brand-gold/25 rounded-md p-3 mb-3">
-              <p className="text-xs leading-relaxed text-brand-gold flex items-center gap-2">
-                <Shield className="w-4 h-4 shrink-0" />
-                {t('room.test_popup_notice')}
-              </p>
-            </div>
-            <div className="bg-brand-red/10 border border-brand-red/30 rounded-md p-3 mb-6">
-              <p className="text-xs leading-relaxed text-brand-text">
-                {t('room.test_popup_disclaimer')}
-              </p>
-            </div>
-            <button
-              onClick={() => setShowTestPopup(false)}
-              autoFocus
-              className="w-full py-3 rounded-md border border-brand-gold/50 bg-brand-gold/15 font-semibold tracking-wide text-brand-gold hover:bg-brand-gold hover:text-black transition-colors"
-            >
-              {t('room.test_popup_button')}
-            </button>
-          </div>
-        </div>
-      )}
-
       {/* Hero Image */}
       <section className="relative h-[44vh] md:h-[56vh] overflow-hidden bg-black">
         {room.image && !imageFailed ? (
