@@ -2,7 +2,7 @@
 
 import { useRef } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
-import { Search, CalendarCheck, KeyRound, DoorOpen } from 'lucide-react';
+import { Search, Users, KeyRound, DoorOpen } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
 import { StaggerContainer, StaggerItem } from '@/components/animations/AnimateIn';
 import { HorrorHeading } from '@/components/horror/HorrorHeading';
@@ -15,7 +15,7 @@ export function HowItWorks() {
 
   const steps = [
     { icon: Search, title: t('how.step1.title'), description: t('how.step1.desc'), step: 'I' },
-    { icon: CalendarCheck, title: t('how.step2.title'), description: t('how.step2.desc'), step: 'II' },
+    { icon: Users, title: t('how.step2.title'), description: t('how.step2.desc'), step: 'II' },
     { icon: KeyRound, title: t('how.step3.title'), description: t('how.step3.desc'), step: 'III' },
     { icon: DoorOpen, title: t('how.step4.title'), description: t('how.step4.desc'), step: 'IV' },
   ];
