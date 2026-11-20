@@ -2,6 +2,11 @@
 
 import { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
+import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
+import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
+import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
 import { ArrowUp, ArrowDown, RotateCcw, RotateCw, Stamp, Gift, Lock, Loader2, Volume2, VolumeX, Ghost, Maximize2, Minimize2, X } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
 
@@ -20,6 +25,27 @@ const LAYOUTS = [
   ['####D####', '#..#.#..#', '#.#...#.#', '#.#.#.#.#', '#.......#', '##.###.##', '#C......#', '#.......#', '#########'],
   ['####D####', '#.......#', '#.##.##.#', '#.......#', '##.#.#.##', '#...#...#', '#.#...#C#', '#.......#', '#########'],
 ];
+// Film look on top of the render: vignette, grain, faded colour, and a colour
+// split that jumps while a monster lunges (fear).
+const FILM = {
+  uniforms: { tDiffuse: { value: null }, time: { value: 0 }, fear: { value: 0 } },
+  vertexShader: `varying vec2 vUv;
+void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
+  fragmentShader: `uniform sampler2D tDiffuse; uniform float time; uniform float fear; varying vec2 vUv;
+float rnd(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233)) + time * 7.0) * 43758.5453); }
+void main() {
+  vec2 d = vUv - 0.5;
+  float ab = 0.002 + fear * 0.012;
+  vec3 c = vec3(texture2D(tDiffuse, vUv + d * ab).r, texture2D(tDiffuse, vUv).g, texture2D(tDiffuse, vUv - d * ab).b);
+  c *= mix(0.25, 1.0, smoothstep(0.9, 0.2, length(d)));
+  c += (rnd(vUv * 731.0) - 0.5) * 0.05;
+  float g = dot(c, vec3(0.3, 0.59, 0.11));
+  c = mix(c, vec3(g) * vec3(1.06, 0.97, 0.9), 0.22);
+  c.r += fear * 0.08;
+  gl_FragColor = vec4(c, 1.0);
+}`,
+};
+
 const FLOOR_KEY = 'unlocked_tower_floor';
 const CHEST_KEY = 'unlocked_tower_chests';
 const PREF_KEY = 'unlocked_tower_prefs';
@@ -105,16 +131,31 @@ export function TowerGame({ placed, chambers, pocket, onPlace, busy, embedded = 
   useEffect(() => {
     if (!started || !wrap.current) return;
     const host = wrap.current;
+    // Shadows and bloom on computers; phones and weak devices get the light version.
+    const hi = !window.matchMedia('(pointer: coarse)').matches && ((navigator as any).deviceMemory ?? 8) >= 4;
     const renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setPixelRatio(Math.min(2, window.devicePixelRatio));
+    const ratio = Math.min(hi ? 2 : 1.5, window.devicePixelRatio);
+    renderer.setPixelRatio(ratio);
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.6;
+    renderer.shadowMap.enabled = hi;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     host.prepend(renderer.domElement);
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x040306);
-    scene.fog = new THREE.Fog(0x040306, 1, 9);
+    scene.background = new THREE.Color(0x030206);
+    scene.fog = new THREE.FogExp2(0x050309, 0.12);
     const cam = new THREE.PerspectiveCamera(70, 16 / 9, 0.05, 40);
+    const composer = new EffectComposer(renderer);
+    composer.setPixelRatio(ratio);
+    composer.addPass(new RenderPass(scene, cam));
+    if (hi) composer.addPass(new UnrealBloomPass(new THREE.Vector2(256, 256), 0.6, 0.55, 0.8));
+    composer.addPass(new OutputPass());
+    const film = new ShaderPass(FILM);
+    composer.addPass(film);
     const size = () => {
       const w = host.clientWidth, h = host.clientHeight || (w * 9) / 16;
       renderer.setSize(w, h);
+      composer.setSize(w, h);
       cam.aspect = w / h;
       cam.updateProjectionMatrix();
     };
@@ -122,35 +163,85 @@ export function TowerGame({ placed, chambers, pocket, onPlace, busy, embedded = 
 
     let sd = 5;
     const r = () => (sd = (sd * 16807) % 2147483647) / 2147483647;
-    const tex = (draw: (x: CanvasRenderingContext2D) => void) => {
+    const tex = (draw: (x: CanvasRenderingContext2D) => void, sz = 256) => {
       const c = document.createElement('canvas');
-      c.width = c.height = 256;
+      c.width = c.height = sz;
       draw(c.getContext('2d')!);
       const tx = new THREE.CanvasTexture(c);
       tx.wrapS = tx.wrapT = THREE.RepeatWrapping;
+      tx.colorSpace = THREE.SRGBColorSpace;
+      tx.anisotropy = renderer.capabilities.getMaxAnisotropy();
       return tx;
     };
-    const stone = tex((x) => {
-      x.fillStyle = '#24202a'; x.fillRect(0, 0, 256, 256);
-      for (let row = 0; row < 8; row++) for (let b = -1; b < 4; b++) {
-        const off = (row % 2) * 32, n = r();
-        x.fillStyle = `rgb(${(66 + n * 36) | 0},${(62 + n * 30) | 0},${(70 + n * 30) | 0})`; x.fillRect(b * 64 + off + 3, row * 32 + 3, 58, 26);
-        x.fillStyle = 'rgba(0,0,0,.3)'; x.fillRect(b * 64 + off + 3, row * 32 + 24, 58, 5);
+    // Relief from brightness: dark mortar and cracks sink, bright stone stands out.
+    const reliefOf = (t: THREE.Texture, k: number) => {
+      const src = t.image as HTMLCanvasElement, w = src.width, h = src.height;
+      const g = src.getContext('2d')!.getImageData(0, 0, w, h).data;
+      const L = (x: number, y: number) => { const i = (((y + h) % h) * w + ((x + w) % w)) * 4; return (g[i] + g[i + 1] + g[i + 2]) / 765; };
+      const c = document.createElement('canvas'); c.width = w; c.height = h;
+      const cx = c.getContext('2d')!, img = cx.createImageData(w, h);
+      for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+        const dx = (L(x + 1, y) - L(x - 1, y)) * k, dy = (L(x, y + 1) - L(x, y - 1)) * k;
+        const len = Math.hypot(dx, dy, 1), i = (y * w + x) * 4;
+        img.data[i] = (-dx / len * 0.5 + 0.5) * 255; img.data[i + 1] = (dy / len * 0.5 + 0.5) * 255; img.data[i + 2] = (0.5 / len + 0.5) * 255; img.data[i + 3] = 255;
       }
-      x.strokeStyle = 'rgba(20,60,30,.35)'; x.lineWidth = 3;
-      for (let i = 0; i < 5; i++) { x.beginPath(); const sx = r() * 256; x.moveTo(sx, 0); x.bezierCurveTo(sx + 20, 80, sx - 20, 160, sx + 10, 256); x.stroke(); }
-    });
+      cx.putImageData(img, 0, 0);
+      const n = new THREE.CanvasTexture(c); n.wrapS = n.wrapT = THREE.RepeatWrapping; n.repeat.copy(t.repeat);
+      return n;
+    };
+    const grit = (x: CanvasRenderingContext2D, sz: number, n: number) => {
+      for (let i = 0; i < n; i++) { x.fillStyle = r() < 0.5 ? 'rgba(0,0,0,.18)' : 'rgba(255,240,220,.07)'; x.fillRect(r() * sz, r() * sz, 1 + r() * 2, 1 + r() * 2); }
+    };
+    const stone = tex((x) => {
+      x.fillStyle = '#141216'; x.fillRect(0, 0, 512, 512);
+      // 11 courses of blocks about 40 x 20 cm on a 1 x 2.2 m wall face
+      for (let row = 0; row < 11; row++) for (let b = -1; b < 3; b++) {
+        const RH = 512 / 11, BW = 205, off = (row % 2) * BW * 0.5 + r() * 20, n = r(), bx = b * BW + off + 4, by = row * RH + 4 + r() * 1.5, bw = BW - 8 - r() * 10, bh = RH - 7 - r() * 2;
+        const base = 58 + n * 40;
+        x.fillStyle = `rgb(${base | 0},${(base - 4 - r() * 6) | 0},${(base + 2) | 0})`; x.fillRect(bx, by, bw, bh);
+        for (let k = 0; k < 14; k++) { x.fillStyle = `rgba(${r() < 0.5 ? '0,0,0' : '255,245,230'},${0.04 + r() * 0.08})`; x.fillRect(bx + r() * bw * 0.8, by + r() * bh * 0.7, 8 + r() * 30, 4 + r() * 14); }
+        x.fillStyle = 'rgba(255,240,220,.10)'; x.fillRect(bx, by, bw, 3); x.fillRect(bx, by, 3, bh);
+        x.fillStyle = 'rgba(0,0,0,.45)'; x.fillRect(bx, by + bh - 5, bw, 5); x.fillRect(bx + bw - 4, by, 4, bh);
+        if (r() < 0.3) { x.strokeStyle = 'rgba(0,0,0,.55)'; x.lineWidth = 1.5; x.beginPath(); let cx = bx + r() * bw, cy = by; x.moveTo(cx, cy); for (let k = 0; k < 4; k++) { cx += (r() - 0.5) * 20; cy += bh / 4; x.lineTo(cx, cy); } x.stroke(); }
+      }
+      // Damp and moss running down from the top
+      for (let i = 0; i < 7; i++) {
+        const sx = r() * 512, gr = x.createLinearGradient(0, 0, 0, 512);
+        gr.addColorStop(0, 'rgba(18,40,22,.55)'); gr.addColorStop(0.5 + r() * 0.4, 'rgba(10,20,12,.25)'); gr.addColorStop(1, 'rgba(0,0,0,0)');
+        x.fillStyle = gr; x.fillRect(sx, 0, 10 + r() * 40, 512);
+      }
+      grit(x, 512, 9000);
+    }, 512);
     const floorT = tex((x) => {
-      x.fillStyle = '#1a1418'; x.fillRect(0, 0, 256, 256);
-      for (let i = 0; i < 4; i++) for (let j = 0; j < 4; j++) { const n = r(); x.fillStyle = `rgb(${(44 + n * 20) | 0},${(36 + n * 16) | 0},${(40 + n * 16) | 0})`; x.fillRect(i * 64 + 2, j * 64 + 2, 60, 60); }
-    });
+      x.fillStyle = '#0d0a0c'; x.fillRect(0, 0, 512, 512);
+      for (let i = 0; i < 4; i++) for (let j = 0; j < 4; j++) {
+        const n = r(), fx = i * 128 + 4, fy = j * 128 + 4, base = 40 + n * 22;
+        x.fillStyle = `rgb(${base | 0},${(base - 7) | 0},${(base - 3) | 0})`; x.fillRect(fx, fy, 120, 120);
+        for (let k = 0; k < 18; k++) { x.fillStyle = `rgba(${r() < 0.6 ? '0,0,0' : '255,240,220'},${0.04 + r() * 0.07})`; x.beginPath(); x.arc(fx + r() * 120, fy + r() * 120, 4 + r() * 22, 0, Math.PI * 2); x.fill(); }
+        x.fillStyle = 'rgba(255,240,220,.08)'; x.fillRect(fx, fy, 120, 3);
+        x.fillStyle = 'rgba(0,0,0,.5)'; x.fillRect(fx, fy + 116, 120, 4);
+        if (r() < 0.4) { x.strokeStyle = 'rgba(0,0,0,.6)'; x.lineWidth = 1.5; x.beginPath(); let cx = fx, cy = fy + r() * 120; x.moveTo(cx, cy); for (let k = 0; k < 5; k++) { cx += 24; cy += (r() - 0.5) * 30; x.lineTo(cx, cy); } x.stroke(); }
+      }
+      grit(x, 512, 8000);
+    }, 512);
     floorT.repeat.set(9, 11);
-    const wallMat = new THREE.MeshStandardMaterial({ map: stone, roughness: 0.95 });
+    const wallMat = new THREE.MeshStandardMaterial({ map: stone, normalMap: reliefOf(stone, 5), normalScale: new THREE.Vector2(1.4, 1.4), roughness: 0.9 });
+    const floorMat = new THREE.MeshStandardMaterial({ map: floorT, normalMap: reliefOf(floorT, 4), roughness: 0.72 });
+    // Flame: a soft glowing blob (bloom makes it burn)
+    const flameTex = (() => {
+      const c = document.createElement('canvas'); c.width = 64; c.height = 128;
+      const x = c.getContext('2d')!, gr = x.createRadialGradient(32, 80, 2, 32, 72, 52);
+      gr.addColorStop(0, 'rgba(255,250,220,1)'); gr.addColorStop(0.25, 'rgba(255,190,80,.9)'); gr.addColorStop(0.6, 'rgba(230,80,20,.35)'); gr.addColorStop(1, 'rgba(0,0,0,0)');
+      x.fillStyle = gr; x.fillRect(0, 0, 64, 128);
+      const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t;
+    })();
+    const flameMat = new THREE.SpriteMaterial({ map: flameTex, color: 0xffffff, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true });
+    const holderMat = new THREE.MeshStandardMaterial({ color: 0x22180f, roughness: 0.6, metalness: 0.4 });
     const boxG = new THREE.BoxGeometry(1, 2.2, 1);
 
     // Door with stamp slots
     const doorC = document.createElement('canvas'); doorC.width = doorC.height = 256;
-    const dx = doorC.getContext('2d')!; const doorT = new THREE.CanvasTexture(doorC);
+    const dx = doorC.getContext('2d')!; const doorT = new THREE.CanvasTexture(doorC); doorT.colorSpace = THREE.SRGBColorSpace;
     const paintDoor = (f: number) => {
       const top = f >= FLOORS - 1;
       dx.fillStyle = '#3b2a1c'; dx.fillRect(0, 0, 256, 256);
@@ -177,8 +268,13 @@ export function TowerGame({ placed, chambers, pocket, onPlace, busy, embedded = 
     const band = new THREE.Mesh(new THREE.BoxGeometry(0.52, 0.05, 0.37), new THREE.MeshStandardMaterial({ color: 0xc99a2e, metalness: 0.6 })); band.position.y = 0.22;
     chest.add(chestBody, lid, band); scene.add(chest);
     const glow = new THREE.PointLight(0xffd76a, 0, 2); scene.add(glow);
-    const ambient = new THREE.AmbientLight(0x2a2440, 0.45); scene.add(ambient);
-    const hand = new THREE.PointLight(0xffa040, 1.5, 5, 2); scene.add(hand);
+    const ambient = new THREE.AmbientLight(0x3a3050, 0.45); scene.add(ambient);
+    const hand = new THREE.PointLight(0xffa040, 3, 6, 2); scene.add(hand);
+    // Dust drifting in the torchlight
+    const dustN = hi ? 600 : 220, dustPos = new Float32Array(dustN * 3);
+    for (let i = 0; i < dustN; i++) { dustPos[i * 3] = 0.5 + Math.random() * 7; dustPos[i * 3 + 1] = Math.random() * 2.2; dustPos[i * 3 + 2] = -0.5 + Math.random() * 9; }
+    const dustG = new THREE.BufferGeometry(); dustG.setAttribute('position', new THREE.BufferAttribute(dustPos, 3));
+    scene.add(new THREE.Points(dustG, new THREE.PointsMaterial({ color: 0x9a8060, size: 0.008, transparent: true, opacity: 0.35, depthWrite: false, blending: THREE.AdditiveBlending })));
 
     // Monster and ghost
     const monster = new THREE.Group();
@@ -262,10 +358,11 @@ export function TowerGame({ placed, chambers, pocket, onPlace, busy, embedded = 
     let doorCell: [number, number] = [4, 0], chestCell: [number, number] = [3, 4];
     const windows: THREE.Mesh[] = [];
     const torches: THREE.PointLight[] = [];
+    const flames: THREE.Sprite[] = [];
     let px = 4, pz = 7, ang = 0, lift = 0, gotChest = false;
     const buildLevel = (f: number, from: 'below' | 'above' = 'below') => {
       if (level) scene.remove(level);
-      level = new THREE.Group(); scene.add(level); windows.length = 0; torches.length = 0;
+      level = new THREE.Group(); scene.add(level); windows.length = 0; torches.length = 0; flames.length = 0;
       MAP = LAYOUTS[f % LAYOUTS.length];
       MAP.forEach((row, z) => [...row].forEach((ch, x) => {
         const stairsDown = f > 0 && x === 4 && z === 8;
@@ -286,15 +383,17 @@ export function TowerGame({ placed, chambers, pocket, onPlace, busy, embedded = 
         const sign = new THREE.Mesh(new THREE.PlaneGeometry(0.6, 0.3), new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(cv) }));
         sign.position.set(4, 1.9, 9.49); sign.rotation.y = Math.PI; level.add(sign);
       }
-      const fl = new THREE.Mesh(new THREE.PlaneGeometry(9, 11), new THREE.MeshStandardMaterial({ map: floorT, roughness: 1 })); fl.rotation.x = -Math.PI / 2; fl.position.set(4, 0, 3); level.add(fl);
+      const fl = new THREE.Mesh(new THREE.PlaneGeometry(9, 11), floorMat); fl.rotation.x = -Math.PI / 2; fl.position.set(4, 0, 3); level.add(fl);
       const ce = new THREE.Mesh(new THREE.PlaneGeometry(9, 11), new THREE.MeshStandardMaterial({ color: 0x0b080c })); ce.rotation.x = Math.PI / 2; ce.position.set(4, 2.2, 3); level.add(ce);
       [[0, 2], [8, 4], [0, 6], [8, 6]].forEach(([x, z]) => {
         const w = new THREE.Mesh(new THREE.PlaneGeometry(0.5, 0.8), new THREE.MeshBasicMaterial({ color: 0x111a2a }));
         w.position.set(x === 0 ? 0.51 : 7.49, 1.4, z); w.rotation.y = x === 0 ? Math.PI / 2 : -Math.PI / 2; level!.add(w); windows.push(w);
       });
       [[1, 1], [7, 7], [7, 1]].forEach(([x, z]) => {
-        const l = new THREE.PointLight(0xff8a2a, 1, 3.5, 2); l.position.set(x, 1.4, z); level!.add(l); torches.push(l);
-        const fm = new THREE.Mesh(new THREE.SphereGeometry(0.05, 8, 8), new THREE.MeshBasicMaterial({ color: 0xffc060 })); fm.position.copy(l.position); level!.add(fm);
+        const l = new THREE.PointLight(0xff8a2a, 7, 9, 2); l.position.set(x, 1.45, z); level!.add(l); torches.push(l);
+        if (hi) { l.castShadow = true; l.shadow.mapSize.set(512, 512); l.shadow.bias = -0.001; l.shadow.normalBias = 0.03; l.shadow.camera.near = 0.05; l.shadow.camera.far = 7; }
+        const fm = new THREE.Sprite(flameMat); fm.scale.set(0.2, 0.32, 1); fm.position.set(x, 1.47, z); level!.add(fm); flames.push(fm);
+        const st = new THREE.Mesh(new THREE.CylinderGeometry(0.018, 0.03, 0.32, 6), holderMat); st.position.set(x, 1.22, z); st.userData.noShadow = true; level!.add(st);
       });
       const top = f >= FLOORS - 1;
       door.position.set(doorCell[0], 1.1, doorCell[1]);
@@ -308,6 +407,11 @@ export function TowerGame({ placed, chambers, pocket, onPlace, busy, embedded = 
       gotChest = opened.includes(f);
       lid.rotation.x = gotChest ? -1.2 : 0; lid.position.z = gotChest ? -0.1 : 0;
       glow.position.set(chestCell[0], 0.6, chestCell[1]); glow.intensity = 0;
+      // Everything solid casts and catches shadows (not the see-through ghost).
+      scene.traverse((o) => {
+        const m = o as THREE.Mesh;
+        if (m.isMesh && !(m.material as THREE.Material).transparent) { m.castShadow = !m.userData.noShadow; m.receiveShadow = true; }
+      });
       // Coming up: start by the stairs. Coming down: stand in front of the (open) door, facing into the room.
       if (from === 'below') { px = 4; pz = 7; ang = 0; } else { px = 4; pz = 1; ang = Math.PI; }
     };
@@ -408,8 +512,16 @@ export function TowerGame({ placed, chambers, pocket, onPlace, busy, embedded = 
       cam.position.set(px + (Math.random() - 0.5) * shake * 0.15, 0.9 + Math.sin(tt * 8) * (mv ? 0.02 : 0) + (Math.random() - 0.5) * shake * 0.15, pz);
       cam.rotation.set(0, ang, (Math.random() - 0.5) * shake * 0.1);
       hand.position.set(px - Math.sin(ang) * 0.3, 1.05, pz - Math.cos(ang) * 0.3);
-      if (!(scare && scare.t < 0.35)) hand.intensity = 1.5 + Math.sin(tt * 13) * 0.15;
-      torches.forEach((l, i) => (l.intensity = 1 + Math.sin(tt * 11 + i) * 0.25));
+      if (!(scare && scare.t < 0.35)) hand.intensity = 3 + Math.sin(tt * 13) * 0.3;
+      torches.forEach((l, i) => {
+        const fl = 0.85 + Math.sin(tt * 11 + i) * 0.1 + Math.sin(tt * 23.7 + i * 2) * 0.06 + (Math.random() - 0.5) * 0.08;
+        l.intensity = 7 * fl;
+        flames[i]?.scale.set(0.17 + fl * 0.05, 0.28 * fl + 0.04, 1);
+      });
+      for (let i = 0; i < dustN; i++) { dustPos[i * 3] += Math.cos(tt * 0.3 + i * 1.7) * 0.0012; dustPos[i * 3 + 1] += Math.sin(tt * 0.5 + i) * 0.0015; }
+      dustG.attributes.position.needsUpdate = true;
+      film.uniforms.time.value = tt % 100;
+      film.uniforms.fear.value = scare && scare.t > 0.35 ? 1 : Math.max(0, film.uniforms.fear.value - 0.04);
 
       // Chest (floors 2+)
       if (f > 0 && !gotChest && Math.hypot(px - chestCell[0], pz - chestCell[1]) < 0.8) {
@@ -423,7 +535,7 @@ export function TowerGame({ placed, chambers, pocket, onPlace, busy, embedded = 
       if (near !== lastNear) { lastNear = near; setNearDoor(near); setHint(''); }
       // Heartbeat while standing at a closed door
       if (near) { nextBeat -= dt; if (nextBeat <= 0) { nextBeat = 0.95; heart(); } } else nextBeat = 0;
-      renderer.render(scene, cam);
+      composer.render();
     };
     raf = requestAnimationFrame(frame);
     const down =(e: KeyboardEvent) => {
@@ -438,6 +550,7 @@ export function TowerGame({ placed, chambers, pocket, onPlace, busy, embedded = 
       window.removeEventListener('keydown', down);
       window.removeEventListener('keyup', up);
       ro.disconnect();
+      composer.dispose();
       renderer.dispose();
       renderer.domElement.remove();
       ac?.close().catch(() => {});
