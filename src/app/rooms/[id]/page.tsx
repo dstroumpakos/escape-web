@@ -329,6 +329,7 @@ export default function RoomDetailsPage() {
 
             {/* Price & Book */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-t border-brand-border pt-6">
+              {BOOKING_ENABLED ? (
               <div>
                 <div className="text-sm text-brand-text-muted">{t('room.starting_from')}</div>
                 <div className="text-4xl font-display font-black text-brand-bone tabular-nums">
@@ -341,6 +342,7 @@ export default function RoomDetailsPage() {
                   </div>
                 )}
               </div>
+              ) : <div />}
               <div className="flex flex-col items-stretch sm:items-end gap-1.5">
                 <BookNowButton roomId={roomId} target={(room as any).bookingTarget} />
                 {!BOOKING_ENABLED && (room as any).bookingTarget?.kind === 'url' && (
@@ -352,7 +354,7 @@ export default function RoomDetailsPage() {
             </div>
 
             {/* Per-group pricing */}
-            {room.pricePerGroup && room.pricePerGroup.length > 0 && (
+            {BOOKING_ENABLED && room.pricePerGroup && room.pricePerGroup.length > 0 && (
               <div className="mt-6 border-t border-brand-border pt-6">
                 <h4 className="text-sm font-semibold mb-3">{t('room.price_per_group')}</h4>
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">

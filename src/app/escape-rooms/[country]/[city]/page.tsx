@@ -11,7 +11,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!data) return {};
   return {
     title: `Best Escape Rooms in ${data.city}, ${data.country} (${new Date().getFullYear()}) | UNLOCKED`,
-    description: `Discover ${data.roomCount}+ escape rooms in ${data.city}. Browse ${data.themes.slice(0, 3).join(', ')} themes, compare difficulty & prices from ${data.avgPrice}. Find your next adventure on UNLOCKED.`,
+    description: `Discover ${data.roomCount}+ escape rooms in ${data.city}. Browse ${data.themes.slice(0, 3).join(', ')} themes, compare difficulty and see photos. Find your next adventure on UNLOCKED.`,
     alternates: { canonical: `https://unlocked.gr/escape-rooms/${country}/${city}` },
     openGraph: {
       title: `${data.roomCount}+ Escape Rooms in ${data.city} | UNLOCKED`,
