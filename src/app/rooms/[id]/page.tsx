@@ -99,8 +99,8 @@ export default function RoomDetailsPage() {
 
   return (
     <>
-      {/* Test Room Popup */}
-      {showTestPopup && (
+      {/* Test Room Popup: about online payments, so only while UNLOCKED's own booking is on */}
+      {BOOKING_ENABLED && showTestPopup && (
         <div
           role="dialog"
           aria-modal="true"

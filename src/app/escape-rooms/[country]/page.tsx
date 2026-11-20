@@ -13,7 +13,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const totalRooms = cities.reduce((s, c) => s + c.roomCount, 0);
   return {
     title: `Best Escape Rooms in ${name} – ${cities.length} Cities, ${totalRooms}+ Rooms | UNLOCKED`,
-    description: `Explore ${totalRooms}+ escape rooms across ${cities.length} cities in ${name}. Compare themes, difficulty & prices. Book your next adventure on UNLOCKED.`,
+    description: `Explore ${totalRooms}+ escape rooms across ${cities.length} cities in ${name}. Compare themes, difficulty & prices. Find your next adventure on UNLOCKED.`,
     alternates: { canonical: `https://unlocked.gr/escape-rooms/${country}` },
   };
 }
