@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import QRCode from 'qrcode';
 import { Stamp, Minus, Plus, Loader2, RotateCcw, Trophy, Lock } from 'lucide-react';
 import { api } from '../../../../convex/_generated/api';
-import { useCompanyAuth, useCompanyMutation, useCompanyQuery } from '@/lib/companyAuth';
+import { useCompanyAuth, useCompanyMutation, useCompanyQuery, mainSiteUrl } from '@/lib/companyAuth';
 import { useTranslation } from '@/lib/i18n';
 import { friendlyError } from '@/lib/errors';
 import { defaultStartTime, startTimeToMs, formatPlayed } from '@/lib/playTime';
@@ -137,7 +137,8 @@ function LiveQr({ sessionId, onNew }: { sessionId: string; onNew: () => void }) 
     const i = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(i);
   }, []);
-  const link = s?.token && typeof window !== 'undefined' ? `${window.location.origin}/stamp/${s.token}` : '';
+  // Always the players' site: on business.* /stamp/ would land in the company portal.
+  const link = s?.token && typeof window !== 'undefined' ? new URL(mainSiteUrl(`/stamp/${s.token}`), window.location.origin).href : '';
   useEffect(() => {
     if (!link) return;
     let alive = true;
