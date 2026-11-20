@@ -6,6 +6,7 @@ import { useQuery, useMutation } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
 import { useAuth } from '@/lib/auth';
 import { useTranslation } from '@/lib/i18n';
+import { rankLabel } from '@/components/profile/ProfileView';
 import {
   Users,
   Search,
@@ -237,7 +238,7 @@ export default function FriendsPage() {
                       <div className="flex-1 min-w-0">
                         <h3 className="font-medium truncate">{friend.name}</h3>
                         <p className="text-xs text-brand-text-muted truncate">
-                          {friend.title && t(`profile.${friend.title}`)}
+                          {friend.title && rankLabel(t, friend.title)}
                         </p>
                       </div>
                       <button
@@ -391,7 +392,7 @@ export default function FriendsPage() {
                       <div className="flex-1 min-w-0">
                         <h3 className="font-medium truncate">{u.name}</h3>
                         <p className="text-xs text-brand-text-muted truncate">
-                          {u.title && t(`profile.${u.title}`)}
+                          {u.title && rankLabel(t, u.title)}
                         </p>
                       </div>
 

@@ -56,7 +56,7 @@ function useAvatarUpload(token: string | undefined) {
 type Tab = 'posts' | 'about' | 'rooms';
 
 // users.title is stored in English ("Escape Rookie"); show it in the UI language.
-const RANKS: Record<string, string> = {
+export const RANKS: Record<string, string> = {
   'Escape Rookie': 'profile.rank_rookie',
   'Escape Explorer': 'profile.rank_explorer',
   'Escape Adventurer': 'profile.rank_adventurer',
@@ -65,6 +65,8 @@ const RANKS: Record<string, string> = {
   'Escape Master': 'profile.rank_master',
   'Escape Legend': 'profile.rank_legend',
 };
+/** A rank title in the UI language (unknown titles are shown as they are). */
+export const rankLabel = (t: (k: string) => string, title: string) => (RANKS[title] ? t(RANKS[title]) : title);
 // memberSince is stored as "Member since Nov 2026": keep just the date.
 const since = (s: string) => s.replace('Member since', '').trim();
 
@@ -171,7 +173,7 @@ export function ProfileView({ userId }: { userId: string }) {
               {profile.name}
               {profile.isPremium && <Diamond className="w-5 h-5 text-yellow-400 shrink-0" />}
             </h1>
-            {profile.title && <p className="text-sm text-brand-red-light">{RANKS[profile.title] ? t(RANKS[profile.title]) : profile.title}</p>}
+            {profile.title && <p className="text-sm text-brand-red-light">{rankLabel(t, profile.title)}</p>}
           </div>
           <div className="flex gap-2 sm:pb-2">
             {profile.viewer.isMe ? (
