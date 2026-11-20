@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { useMutation, useQuery } from 'convex/react';
 import {
   Camera, Grid3x3, Info, DoorOpen, Heart, MessageCircle, MapPin, CalendarDays, Trophy,
-  UserPlus, UserCheck, Pencil, X, Loader2, Diamond, Star, PlusSquare,
+  UserPlus, UserCheck, Pencil, X, Loader2, Diamond, Star, PlusSquare, Settings,
 } from 'lucide-react';
 import { api } from '../../../convex/_generated/api';
 import { useAuth } from '@/lib/auth';
@@ -106,6 +106,9 @@ export function ProfileView({ userId }: { userId: string }) {
                 <button onClick={() => setEditing(true)} className="btn-ghost text-sm flex items-center gap-2 py-2! px-4!">
                   <Pencil className="w-4 h-4" /> {t('pf.edit')}
                 </button>
+                <Link href="/profile/settings" className="btn-ghost text-sm flex items-center justify-center py-2! px-3!" title={t('pf.settings')} aria-label={t('pf.settings')}>
+                  <Settings className="w-4 h-4" />
+                </Link>
                 <Link href="/social/create" className="btn-primary text-sm flex items-center gap-2 py-2! px-4!">
                   <PlusSquare className="w-4 h-4" /> {t('pf.new_post')}
                 </Link>

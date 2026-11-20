@@ -13,6 +13,8 @@ export type Language = 'en' | 'el' | 'nl';
 
 const translations: Record<Language, Record<string, string>> = {
   en: {
+    'pf.settings': 'Settings',
+    'pf.back_to_profile': 'My profile',
     'cm.just_now': 'Just now',
     'cm.minutes': '{{n}} min',
     'cm.hours': '{{n}} h',
@@ -2217,6 +2219,8 @@ const translations: Record<Language, Record<string, string>> = {
   },
 
   el: {
+    'pf.settings': 'Ρυθμίσεις',
+    'pf.back_to_profile': 'Το προφίλ μου',
     'cm.just_now': 'Μόλις τώρα',
     'cm.minutes': '{{n}} λεπ.',
     'cm.hours': '{{n}} ώρ.',
@@ -4421,6 +4425,8 @@ const translations: Record<Language, Record<string, string>> = {
   },
 
   nl: {
+    'pf.settings': 'Instellingen',
+    'pf.back_to_profile': 'Mijn profiel',
     'cm.just_now': 'Zojuist',
     'cm.minutes': '{{n}} min',
     'cm.hours': '{{n}} u',
