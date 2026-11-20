@@ -38,7 +38,7 @@ export function ProfileView({ userId }: { userId: string }) {
   const { user } = useAuth();
   const token = user?.sessionToken;
   const profile = useQuery(api.social.profile, { userId: userId as any, sessionToken: token });
-  const posts = useQuery(api.social.userPosts, { userId: userId as any });
+  const posts = useQuery(api.social.userPosts, { userId: userId as any, sessionToken: token });
   const follow = useMutation(api.social.follow);
   const unfollow = useMutation(api.social.unfollow);
   const [tab, setTab] = useState<Tab>('posts');
@@ -248,7 +248,7 @@ function About({ profile }: { profile: any }) {
 
 function Rooms({ userId }: { userId: string }) {
   const { t } = useTranslation();
-  const rooms = useQuery(api.social.userRooms, { userId: userId as any });
+  const rooms = useQuery(api.social.userRooms, { userId: userId as any, sessionToken: useAuth().user?.sessionToken });
   if (rooms === undefined) return <div className="h-24 panel animate-pulse" />;
   if (rooms.length === 0) return <p className="text-center text-sm text-brand-text-secondary py-12">{t('pf.no_rooms')}</p>;
   return (

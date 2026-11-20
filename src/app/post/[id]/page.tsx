@@ -1,7 +1,8 @@
 'use client';
 
+import { useEffect } from 'react';
 import Link from 'next/link';
-import { useParams } from 'next/navigation';
+import { useParams , useRouter } from 'next/navigation';
 import { useQuery } from 'convex/react';
 import { ArrowLeft } from 'lucide-react';
 import { api } from '../../../../convex/_generated/api';
@@ -11,6 +12,13 @@ import { PostCard, type FeedPost } from '@/components/community/PostCard';
 
 /** One Community post, for shared links. */
 export default function PostPage() {
+
+  // The community is for logged-in players only.
+  const { isAuthenticated: loggedIn, isLoading: authLoading } = useAuth();
+  const routerForGuard = useRouter();
+  useEffect(() => {
+    if (!authLoading && !loggedIn) routerForGuard.replace('/login');
+  }, [authLoading, loggedIn, routerForGuard]);
   const params = useParams();
   const { t } = useTranslation();
   const { user } = useAuth();

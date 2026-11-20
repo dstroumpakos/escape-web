@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useState , useEffect } from 'react';
 import Link from 'next/link';
 import { useMutation, useQuery } from 'convex/react';
 import { Users, Bell, ImagePlus, MessageCircle, UserPlus, Check } from 'lucide-react';
@@ -14,6 +15,13 @@ type Mode = 'all' | 'following';
 
 /** Community, Facebook style: shortcuts on the left, the feed, people to follow on the right. */
 export default function CommunityPage() {
+
+  // The community is for logged-in players only.
+  const { isAuthenticated: loggedIn, isLoading: authLoading } = useAuth();
+  const routerForGuard = useRouter();
+  useEffect(() => {
+    if (!authLoading && !loggedIn) routerForGuard.replace('/login');
+  }, [authLoading, loggedIn, routerForGuard]);
   const { t } = useTranslation();
   const { user, isAuthenticated } = useAuth();
   const token = user?.sessionToken;

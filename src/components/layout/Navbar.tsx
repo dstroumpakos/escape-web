@@ -43,7 +43,8 @@ export function Navbar() {
     { href: '/discover', label: t('nav.discover') },
     ...(BOOKING_ENABLED ? [{ href: '/offers', label: t('nav.offers') }] : []),
     { href: '/map', label: t('nav.map') },
-    { href: '/social', label: t('nav.social') },
+    // The community is for logged-in players only.
+    ...(isAuthenticated ? [{ href: '/social', label: t('nav.social') }] : []),
     { href: '/leaderboard', label: t('nav.leaderboard') },
     ...(isAuthenticated ? [{ href: '/passport', label: t('nav.passport'), Icon: BookOpen }] : []),
     { href: '/shop', label: t('nav.shop'), Icon: Vault },
