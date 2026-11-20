@@ -5,6 +5,7 @@ import { v } from "convex/values";
 import { checkLengths } from "./validation";
 import { requireUser, optionalUser, legacyUserIdV } from "./userSession";
 import { rateLimit, HOUR } from "./rateLimit";
+import { avatarUrl } from "./avatars";
 
 /**
  * Room reviews, only from players who really played the room: they have the
@@ -33,7 +34,7 @@ export const getByRoom = query({
         return {
           ...r,
           user: user
-            ? { name: user.name, avatar: user.avatar }
+            ? { name: user.name, avatar: await avatarUrl(ctx, user) }
             : { name: "Unknown", avatar: "" },
         };
       })
