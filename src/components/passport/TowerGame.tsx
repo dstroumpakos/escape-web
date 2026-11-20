@@ -17,7 +17,7 @@ import { useTranslation } from '@/lib/i18n';
 
 const LAYOUTS = [
   ['####D####', '#.......#', '#.#...#.#', '#.......#', '#..C....#', '#.......#', '#.#...#.#', '#.......#', '#########'],
-  ['####D####', '#...#...#', '#.#...#.#', '#.#.#.#.#', '#.......#', '##.###.##', '#C......#', '#.......#', '#########'],
+  ['####D####', '#..#.#..#', '#.#...#.#', '#.#.#.#.#', '#.......#', '##.###.##', '#C......#', '#.......#', '#########'],
   ['####D####', '#.......#', '#.##.##.#', '#.......#', '##.#.#.##', '#...#...#', '#.#...#C#', '#.......#', '#########'],
 ];
 const FLOOR_KEY = 'unlocked_tower_floor';
@@ -202,10 +202,24 @@ export function TowerGame({ placed, chambers, pocket, onPlace, busy }: Props) {
 
     // Sound, generated (no files)
     let ac: AudioContext | null = null;
+    let master: GainNode | null = null, windF: BiquadFilterNode | null = null, droneF: BiquadFilterNode | null = null;
     try {
       ac = new (window.AudioContext || (window as any).webkitAudioContext)();
-      const o = ac.createOscillator(), g = ac.createGain(); o.type = 'sine'; o.frequency.value = 44; g.gain.value = 0.05; o.connect(g).connect(ac.destination); o.start();
+      ac.resume().catch(() => {});
+      // Everything goes through one master volume, so the sound switch mutes it all.
+      master = ac.createGain(); master.gain.value = live.current.sound ? 1 : 0; master.connect(ac.destination);
+      // A low, uneasy drone that breathes slowly
+      droneF = ac.createBiquadFilter(); droneF.type = 'lowpass'; droneF.frequency.value = 160;
+      const dg = ac.createGain(); dg.gain.value = 0.07; droneF.connect(dg).connect(master);
+      [41, 43.6, 61.8].forEach((fq) => { const o = ac!.createOscillator(); o.type = 'sawtooth'; o.frequency.value = fq; o.connect(droneF!); o.start(); });
+      // Wind howling through the tower
+      const wb = ac.createBuffer(1, ac.sampleRate * 4, ac.sampleRate), wd = wb.getChannelData(0);
+      for (let i = 0; i < wd.length; i++) wd[i] = Math.random() * 2 - 1;
+      const ws = ac.createBufferSource(); ws.buffer = wb; ws.loop = true;
+      windF = ac.createBiquadFilter(); windF.type = 'bandpass'; windF.frequency.value = 500; windF.Q.value = 7;
+      const wg = ac.createGain(); wg.gain.value = 0.06; ws.connect(windF).connect(wg).connect(master); ws.start();
     } catch {}
+    const out = () => master!;
     const noise = (sec: number, shape: (p: number) => number) => {
       const n = ac!.createBuffer(1, ac!.sampleRate * sec, ac!.sampleRate), d = n.getChannelData(0);
       for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * shape(i / d.length);
@@ -214,11 +228,29 @@ export function TowerGame({ placed, chambers, pocket, onPlace, busy }: Props) {
     const canPlay = () => !!ac && live.current.sound;
     const sting = () => {
       if (!canPlay()) return; const a = ac!, tt = a.currentTime;
-      const s = noise(0.9, (p) => Math.pow(1 - p, 2)), bp = a.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 1400; const g = a.createGain(); g.gain.value = 0.9; s.connect(bp).connect(g).connect(a.destination); s.start(tt);
-      [220, 233, 311].forEach((f) => { const o = a.createOscillator(), gg = a.createGain(); o.type = 'sawtooth'; o.frequency.setValueAtTime(f, tt); o.frequency.exponentialRampToValueAtTime(f * 0.5, tt + 1); gg.gain.setValueAtTime(0.12, tt); gg.gain.exponentialRampToValueAtTime(0.001, tt + 1.1); o.connect(gg).connect(a.destination); o.start(tt); o.stop(tt + 1.2); });
+      const s = noise(0.9, (p) => Math.pow(1 - p, 2)), bp = a.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 1400; const g = a.createGain(); g.gain.value = 0.9; s.connect(bp).connect(g).connect(out()); s.start(tt);
+      [220, 233, 311].forEach((f) => { const o = a.createOscillator(), gg = a.createGain(); o.type = 'sawtooth'; o.frequency.setValueAtTime(f, tt); o.frequency.exponentialRampToValueAtTime(f * 0.5, tt + 1); gg.gain.setValueAtTime(0.12, tt); gg.gain.exponentialRampToValueAtTime(0.001, tt + 1.1); o.connect(gg).connect(out()); o.start(tt); o.stop(tt + 1.2); });
     };
-    const thunder = () => { if (!canPlay()) return; const a = ac!; const s = noise(2.5, (p) => Math.pow(1 - p, 1.5) * (p < 0.05 ? p * 20 : 1)), lp = a.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 220; const g = a.createGain(); g.gain.value = 1.2; s.connect(lp).connect(g).connect(a.destination); s.start(); };
-    const moan = () => { if (!canPlay()) return; const a = ac!, tt = a.currentTime, o = a.createOscillator(), g = a.createGain(); o.type = 'sine'; o.frequency.setValueAtTime(320, tt); o.frequency.linearRampToValueAtTime(180, tt + 1.6); g.gain.setValueAtTime(0, tt); g.gain.linearRampToValueAtTime(0.12, tt + 0.4); g.gain.linearRampToValueAtTime(0, tt + 1.8); o.connect(g).connect(a.destination); o.start(tt); o.stop(tt + 1.9); };
+    const thunder = () => { if (!canPlay()) return; const a = ac!; const s = noise(2.5, (p) => Math.pow(1 - p, 1.5) * (p < 0.05 ? p * 20 : 1)), lp = a.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 220; const g = a.createGain(); g.gain.value = 1.2; s.connect(lp).connect(g).connect(out()); s.start(); };
+    const moan = () => { if (!canPlay()) return; const a = ac!, tt = a.currentTime, o = a.createOscillator(), g = a.createGain(); o.type = 'sine'; o.frequency.setValueAtTime(320, tt); o.frequency.linearRampToValueAtTime(180, tt + 1.6); g.gain.setValueAtTime(0, tt); g.gain.linearRampToValueAtTime(0.12, tt + 0.4); g.gain.linearRampToValueAtTime(0, tt + 1.8); o.connect(g).connect(out()); o.start(tt); o.stop(tt + 1.9); };
+    // A wooden creak somewhere in the dark
+    const creak = () => {
+      if (!canPlay()) return; const a = ac!, tt = a.currentTime, o = a.createOscillator(), bp = a.createBiquadFilter(), g = a.createGain();
+      const f0 = 55 + Math.random() * 40; o.type = 'square'; o.frequency.setValueAtTime(f0, tt); o.frequency.linearRampToValueAtTime(f0 * (1.4 + Math.random() * 0.6), tt + 0.9);
+      bp.type = 'bandpass'; bp.frequency.value = 700 + Math.random() * 500; bp.Q.value = 9;
+      g.gain.setValueAtTime(0, tt); g.gain.linearRampToValueAtTime(0.05, tt + 0.15); g.gain.linearRampToValueAtTime(0.03, tt + 0.6); g.gain.linearRampToValueAtTime(0, tt + 1);
+      o.connect(bp).connect(g).connect(out()); o.start(tt); o.stop(tt + 1.05);
+    };
+    // A distant bell from the top of the tower
+    const bell = () => {
+      if (!canPlay()) return; const a = ac!, tt = a.currentTime;
+      [1, 2.76, 5.4].forEach((m, i) => { const o = a.createOscillator(), g = a.createGain(); o.type = 'sine'; o.frequency.value = 196 * m; g.gain.setValueAtTime(0.05 / (i + 1), tt); g.gain.exponentialRampToValueAtTime(0.0001, tt + 4.5 - i); o.connect(g).connect(out()); o.start(tt); o.stop(tt + 4.6); });
+    };
+    // One heartbeat: two low thumps
+    const heart = () => {
+      if (!canPlay()) return; const a = ac!;
+      [0, 0.24].forEach((d, i) => { const tt = a.currentTime + d, o = a.createOscillator(), g = a.createGain(); o.type = 'sine'; o.frequency.setValueAtTime(62, tt); o.frequency.exponentialRampToValueAtTime(34, tt + 0.16); g.gain.setValueAtTime(i ? 0.22 : 0.32, tt); g.gain.exponentialRampToValueAtTime(0.001, tt + 0.2); o.connect(g).connect(out()); o.start(tt); o.stop(tt + 0.22); });
+    };
 
     // Level
     let level: THREE.Group | null = null;
@@ -227,17 +259,29 @@ export function TowerGame({ placed, chambers, pocket, onPlace, busy }: Props) {
     const windows: THREE.Mesh[] = [];
     const torches: THREE.PointLight[] = [];
     let px = 4, pz = 7, ang = 0, lift = 0, gotChest = false;
-    const buildLevel = (f: number) => {
+    const buildLevel = (f: number, from: 'below' | 'above' = 'below') => {
       if (level) scene.remove(level);
       level = new THREE.Group(); scene.add(level); windows.length = 0; torches.length = 0;
       MAP = LAYOUTS[f % LAYOUTS.length];
       MAP.forEach((row, z) => [...row].forEach((ch, x) => {
-        if (ch === '#') { const m = new THREE.Mesh(boxG, wallMat); m.position.set(x, 1.1, z); level!.add(m); }
+        const stairsDown = f > 0 && x === 4 && z === 8;
+        if (ch === '#' && !stairsDown) { const m = new THREE.Mesh(boxG, wallMat); m.position.set(x, 1.1, z); level!.add(m); }
         if (ch === 'D') doorCell = [x, z];
         if (ch === 'C') chestCell = [x, z];
       }));
       for (const [x, z] of [[3, -1], [5, -1], [3, -2], [4, -2], [5, -2]]) { const m = new THREE.Mesh(boxG, wallMat); m.position.set(x, 1.1, z); level.add(m); }
       for (let i = 0; i < 4; i++) { const st = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.12, 0.25), new THREE.MeshStandardMaterial({ color: 0x3a3036 })); st.position.set(4, 0.06 + i * 0.14, -0.6 - i * 0.2); level.add(st); }
+      // From floor 2 up: stairs down behind the start, back to the floor below
+      if (f > 0) {
+        for (const [x, z] of [[3, 9], [5, 9], [4, 10]]) { const m = new THREE.Mesh(boxG, wallMat); m.position.set(x, 1.1, z); level.add(m); }
+        for (let i = 0; i < 5; i++) { const st = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.12, 0.25), new THREE.MeshStandardMaterial({ color: 0x2a2228 })); st.position.set(4, -0.06 - i * 0.14, 8.15 + i * 0.25); level.add(st); }
+        const cap = new THREE.Mesh(new THREE.PlaneGeometry(1, 2), new THREE.MeshStandardMaterial({ color: 0x0b080c })); cap.rotation.x = Math.PI / 2; cap.position.set(4, 2.2, 9); level.add(cap);
+        const cv = document.createElement('canvas'); cv.width = 128; cv.height = 64;
+        const c2 = cv.getContext('2d')!; c2.fillStyle = '#1a0f0b'; c2.fillRect(0, 0, 128, 64); c2.strokeStyle = '#8a6a3a'; c2.lineWidth = 4; c2.strokeRect(2, 2, 124, 60);
+        c2.fillStyle = '#e8d9b5'; c2.font = 'bold 40px serif'; c2.textAlign = 'center'; c2.textBaseline = 'middle'; c2.fillText('↓ ' + f, 64, 34);
+        const sign = new THREE.Mesh(new THREE.PlaneGeometry(0.6, 0.3), new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(cv) }));
+        sign.position.set(4, 1.9, 9.49); sign.rotation.y = Math.PI; level.add(sign);
+      }
       const fl = new THREE.Mesh(new THREE.PlaneGeometry(9, 11), new THREE.MeshStandardMaterial({ map: floorT, roughness: 1 })); fl.rotation.x = -Math.PI / 2; fl.position.set(4, 0, 3); level.add(fl);
       const ce = new THREE.Mesh(new THREE.PlaneGeometry(9, 11), new THREE.MeshStandardMaterial({ color: 0x0b080c })); ce.rotation.x = Math.PI / 2; ce.position.set(4, 2.2, 3); level.add(ce);
       [[0, 2], [8, 4], [0, 6], [8, 6]].forEach(([x, z]) => {
@@ -260,13 +304,16 @@ export function TowerGame({ placed, chambers, pocket, onPlace, busy }: Props) {
       gotChest = opened.includes(f);
       lid.rotation.x = gotChest ? -1.2 : 0; lid.position.z = gotChest ? -0.1 : 0;
       glow.position.set(chestCell[0], 0.6, chestCell[1]); glow.intensity = 0;
-      px = 4; pz = 7; ang = 0;
+      // Coming up: start by the stairs. Coming down: stand in front of the (open) door, facing into the room.
+      if (from === 'below') { px = 4; pz = 7; ang = 0; } else { px = 4; pz = 1; ang = Math.PI; }
     };
     buildLevel(floorRef.current);
 
     const solid = (x: number, z: number) => {
-      const cx = Math.round(x), cz = Math.round(z);
+      const cx = Math.round(x), cz = Math.round(z), fl = floorRef.current;
       if (cz < 0) return !(cx === 4 && cz === -1);
+      if (cz > 8) return !(fl > 0 && cx === 4 && cz === 9);
+      if (fl > 0 && cx === 4 && cz === 8) return false;
       const ch = MAP[cz]?.[cx];
       return !ch || ch === '#' || (ch === 'D' && lift < 1.8);
     };
@@ -280,17 +327,20 @@ export function TowerGame({ placed, chambers, pocket, onPlace, busy }: Props) {
       return null;
     };
 
-    let raf = 0, t0 = performance.now(), nextScare = 8, nextGhost = 4, nextBolt = 5, walked = 0, shake = 0, climbing = false, boltT = -1, ghostT = -1, ghostDir = 1, lastNear = false;
+    let raf = 0, t0 = performance.now(), nextScare = 8, nextGhost = 4, nextBolt = 5, walked = 0, shake = 0, climbing = false, boltT = -1, ghostT = -1, ghostDir = 1, lastNear = false, nextAmb = 5, nextBeat = 0;
     let scare: { t: number } | null = null;
     const fx = fxRef.current!, fade = fadeRef.current!;
-    const climb = () => {
+    // Move one floor up (+1) through an open door, or down (-1) by the stairs
+    const go = (delta: 1 | -1) => {
       if (climbing) return;
+      const f = Math.max(0, Math.min(FLOORS - 1, floorRef.current + delta));
+      if (f === floorRef.current) return;
       climbing = true; fade.textContent = ''; fade.style.opacity = '1';
+      if (delta < 0) creak();
       setTimeout(() => {
-        const f = Math.min(FLOORS - 1, floorRef.current + 1);
         floorRef.current = f; setFloor(f);
         try { localStorage.setItem(FLOOR_KEY, String(f)); } catch {}
-        buildLevel(f);
+        buildLevel(f, delta > 0 ? 'below' : 'above');
         fade.textContent = t('tw.floor_title', { n: String(f + 1) });
         setTimeout(() => { fade.style.opacity = '0'; climbing = false; }, 900);
       }, 650);
@@ -310,7 +360,15 @@ export function TowerGame({ placed, chambers, pocket, onPlace, busy }: Props) {
         if (!solid(px, nz + Math.sign(nz - pz) * rr)) pz = nz;
         walked += Math.abs(sp);
       }
-      if (doorOpen && pz < -0.55 && Math.abs(px - 4) < 0.5) climb();
+      if (doorOpen && pz < -0.55 && Math.abs(px - 4) < 0.5) go(1);
+      if (f > 0 && pz > 8.7 && Math.abs(px - 4) < 0.5) go(-1);
+
+      // Ambience: master volume, slow wind and drone, random creaks and bells
+      if (master) master.gain.value = live.current.sound ? 1 : 0;
+      if (windF) windF.frequency.value = 450 + Math.sin(tt * 0.23) * 250 + Math.sin(tt * 0.61) * 120;
+      if (droneF) droneF.frequency.value = 150 + Math.sin(tt * 0.13) * 60;
+      nextAmb -= dt;
+      if (nextAmb <= 0) { nextAmb = 7 + Math.random() * 12; (Math.random() < 0.7 ? creak : bell)(); }
       if (doorOpen && lift < 2.2) { lift += 0.025; door.position.y = 1.1 + lift; }
 
       // Lightning
@@ -359,11 +417,12 @@ export function TowerGame({ placed, chambers, pocket, onPlace, busy }: Props) {
       if (gotChest && lid.rotation.x > -1.2) { lid.rotation.x -= 0.04; lid.position.z = -0.1; }
       const near = f < FLOORS - 1 && !doorOpen && Math.hypot(px - doorCell[0], pz - doorCell[1]) < 1.4;
       if (near !== lastNear) { lastNear = near; setNearDoor(near); setHint(''); }
+      // Heartbeat while standing at a closed door
+      if (near) { nextBeat -= dt; if (nextBeat <= 0) { nextBeat = 0.95; heart(); } } else nextBeat = 0;
       renderer.render(scene, cam);
     };
     raf = requestAnimationFrame(frame);
-
-    const down = (e: KeyboardEvent) => {
+    const down =(e: KeyboardEvent) => {
       if (e.key.startsWith('Arrow') || 'wasd'.includes(e.key)) { keys.current[e.key] = true; if (e.key.startsWith('Arrow')) e.preventDefault(); }
     };
     const up = (e: KeyboardEvent) => { keys.current[e.key] = false; };
