@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Building2, Mail, Lock, Eye, EyeOff, ArrowRight, Shield, Calendar, Ticket, BarChart2, Code, Globe } from 'lucide-react';
 import { EyeKeyhole } from '@/components/brand/EyeKeyhole';
-import { useCompanyAuth, useCompanyPath } from '@/lib/companyAuth';
+import { useCompanyAuth, useCompanyPath, useMainSiteUrl } from '@/lib/companyAuth';
 import { useTranslation } from '@/lib/i18n';
 import { LanguageToggle } from '@/components/LanguageToggle';
 import { useMutation } from 'convex/react';
@@ -17,6 +17,7 @@ export default function CompanyLoginPage() {
   const router = useRouter();
   const { login, isAuthenticated } = useCompanyAuth();
   const p = useCompanyPath();
+  const homeUrl = useMainSiteUrl();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -180,9 +181,9 @@ export default function CompanyLoginPage() {
         </div>
 
         <p className="text-center text-xs text-brand-text-secondary mt-6">
-          <Link href="/" className="hover:text-white transition-colors">
+          <a href={homeUrl} className="hover:text-white transition-colors">
             {t('company.auth.back_to_unlocked')}
-          </Link>
+          </a>
         </p>
       </div>
 

@@ -9,7 +9,7 @@ import { Building2, Mail, Lock, Eye, EyeOff, Phone, MapPin, FileText, ArrowRight
 import { EyeKeyhole } from '@/components/brand/EyeKeyhole';
 import { useTranslation } from '@/lib/i18n';
 import { LanguageToggle } from '@/components/LanguageToggle';
-import { useCompanyAuth, useCompanyPath } from '@/lib/companyAuth';
+import { useCompanyAuth, useCompanyPath, useMainSiteUrl } from '@/lib/companyAuth';
 import { friendlyError } from '@/lib/errors';
 import { CompanySignupCodeStep } from '@/components/auth/SignupCodeStep';
 
@@ -24,6 +24,7 @@ export default function CompanyRegisterPage() {
   const { t, language } = useTranslation();
   const router = useRouter();
   const p = useCompanyPath();
+  const homeUrl = useMainSiteUrl();
   const registerMutation = useMutation(api.companies.startRegister);
   // Step 2: the 6-digit code we emailed (convex/signupCodes.ts)
   const [codeStep, setCodeStep] = useState(false);
@@ -327,9 +328,9 @@ export default function CompanyRegisterPage() {
         </div>
 
         <p className="text-center text-xs text-brand-text-secondary mt-6">
-          <Link href="/" className="hover:text-white transition-colors">
+          <a href={homeUrl} className="hover:text-white transition-colors">
             {t('company.register.back_to_site')}
-          </Link>
+          </a>
         </p>
       </div>
     </div>

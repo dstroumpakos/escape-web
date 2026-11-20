@@ -78,7 +78,9 @@ export default function AdminPage() {
     localStorage.removeItem('unlocked_admin');
     setAdminEmail(null);
     setAdminToken(null);
-    router.replace('https://business.unlocked.gr/login');
+    // Stay on the site you are on (localhost, unlocked.gr or business.): the
+    // business subdomain maps /company/login to its own /login.
+    router.replace('/company/login');
   };
 
   if (isLoading) {
@@ -97,7 +99,7 @@ export default function AdminPage() {
           <h1 className="text-2xl font-bold mb-2">{t('admin.access_required')}</h1>
           <p className="text-brand-text-secondary mb-6">{t('admin.access_desc')}</p>
           <Link
-            href="https://business.unlocked.gr/login"
+            href="/company/login"
             className="btn-primary inline-flex items-center gap-2"
           >
             <ArrowLeft className="w-4 h-4" /> {t('admin.go_to_login')}

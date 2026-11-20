@@ -278,6 +278,26 @@ export function useCompanyPath() {
   return p;
 }
 
+/**
+ * A link to the players' site. On business./photos. subdomains "/" is the
+ * portal itself, so "back to UNLOCKED" must leave the subdomain, or it loops
+ * back to the business login.
+ */
+export function mainSiteUrl(path = '/'): string {
+  if (typeof window === 'undefined') return path;
+  const { hostname, port, protocol } = window.location;
+  if (hostname.endsWith('.localhost')) return `${protocol}//localhost${port ? ':' + port : ''}${path}`;
+  if (hostname.endsWith('.unlocked.gr')) return `https://unlocked.gr${path}`;
+  return path;
+}
+
+/** mainSiteUrl() after mount (the server can't know the host the same way). */
+export function useMainSiteUrl(path = '/'): string {
+  const [url, setUrl] = useState(path);
+  useEffect(() => setUrl(mainSiteUrl(path)), [path]);
+  return url;
+}
+
 /** URL of the Photos portal for the current environment. */
 export function photosPortalUrl(): string {
   if (typeof window === 'undefined') return 'https://photos.unlocked.gr';
