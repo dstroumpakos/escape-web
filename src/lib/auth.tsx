@@ -106,15 +106,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.setItem('unlocked_user', JSON.stringify(u));
   }, []);
 
+  const convex = useConvex();
   const login = useCallback(
     async (email: string, password: string) => {
       const { userId, sessionToken } = await loginMutation({ email, password, client: 'web' });
+      // Read the profile back for the name and avatar the site shows.
+      let profile: { name?: string; avatar?: string } | null = null;
+      try {
+        profile = await convex.query(api.users.getById, { sessionToken });
+      } catch {
+        // Logged in anyway; the name shows up later.
+      }
       const authUser: AuthUser = {
         id: userId as string,
-        name: '',
+        name: profile?.name ?? '',
         email: email.toLowerCase(),
         sessionToken,
-        avatar: '',
+        avatar: profile?.avatar ?? '',
         title: '',
         played: 0,
         escaped: 0,
@@ -122,12 +130,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       };
       persistUser(authUser);
     },
-    [loginMutation, persistUser]
+    [loginMutation, persistUser, convex]
   );
 
   // Social sign-in: the server takes the email from the verified token, so
   // read the profile back for the name and email the navbar shows.
-  const convex = useConvex();
   const persistSocial = useCallback(
     async (r: { userId: string; sessionToken: string }) => {
       let profile: { name?: string; email?: string } | null = null;

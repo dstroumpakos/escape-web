@@ -1,326 +1,166 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 import Link from 'next/link';
-import { useQuery, useMutation } from 'convex/react';
+import { useMutation, useQuery } from 'convex/react';
+import { Users, Bell, Compass, Trophy, ImagePlus, MessageCircle, UserPlus, Check, Map as MapIcon } from 'lucide-react';
 import { api } from '../../../convex/_generated/api';
 import { useAuth } from '@/lib/auth';
 import { useTranslation } from '@/lib/i18n';
-import {
-  Heart,
-  MessageCircle,
-  Share2,
-  Star,
-  DoorOpen,
-  Plus,
-  User,
-  CheckCircle,
-  Building2,
-  Send,
-} from 'lucide-react';
+import { PostCard, Avatar, type FeedPost } from '@/components/community/PostCard';
 
-export default function SocialPage() {
-  const router = useRouter();
-  const { user, isAuthenticated } = useAuth();
+type Mode = 'all' | 'following';
+
+/** Community, Facebook style: shortcuts on the left, the feed, people to follow on the right. */
+export default function CommunityPage() {
   const { t } = useTranslation();
+  const { user, isAuthenticated } = useAuth();
+  const token = user?.sessionToken;
+  const [mode, setMode] = useState<Mode>('all');
+  const feed = useQuery(api.community.feed, { sessionToken: token, mode }) as FeedPost[] | undefined;
+  const [hidden, setHidden] = useState<Set<string>>(new Set());
+  // Name and avatar from the server (older logins stored them empty).
+  const me = useQuery(api.users.getById, token ? { sessionToken: token } : 'skip') as any;
+  const myName: string = me?.name || user?.name || '';
+  const myAvatar: string = me?.avatar || user?.avatar || '';
 
-  const feed = useQuery(api.posts.getFeed);
-  const userLikes = useQuery(
-    api.posts.getUserLikes,
-    user?.sessionToken ? { sessionToken: user.sessionToken } : 'skip'
-  );
-  const toggleLike = useMutation(api.posts.toggleLike);
-
-  const [expandedComments, setExpandedComments] = useState<string | null>(null);
-  const [commentText, setCommentText] = useState('');
-  const [showCreatePost, setShowCreatePost] = useState(false);
-
-  const likedPostIds = new Set((userLikes ?? []) as string[]);
-
-  const handleLike = async (postId: string) => {
-    if (!isAuthenticated || !user) {
-      router.push('/login');
-      return;
-    }
-    try {
-      await toggleLike({ postId: postId as any, sessionToken: user.sessionToken });
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  const timeAgo = (timestamp: number) => {
-    const diff = Date.now() - timestamp;
-    const mins = Math.floor(diff / 60000);
-    if (mins < 60) return `${mins}m ago`;
-    const hours = Math.floor(mins / 60);
-    if (hours < 24) return `${hours}h ago`;
-    const days = Math.floor(hours / 24);
-    return `${days}d ago`;
-  };
+  const shortcuts = [
+    ...(user ? [{ href: `/u/${user.id}`, label: myName, avatar: true }] : []),
+    { href: '/friends', label: t('cm.friends'), Icon: Users },
+    { href: '/discover', label: t('nav.discover'), Icon: Compass },
+    { href: '/map', label: t('nav.map'), Icon: MapIcon },
+    { href: '/leaderboard', label: t('nav.leaderboard'), Icon: Trophy },
+    ...(user ? [{ href: '/notifications', label: t('cm.notifications'), Icon: Bell }] : []),
+  ];
 
   return (
-    <>
-      {/* Hero */}
-      <section className="pt-28 pb-6 relative overflow-hidden">
-        <div className="absolute inset-0 bg-linear-to-b from-brand-bg via-brand-bg to-brand-dark" />
-        <div className="relative z-10 max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="section-heading mb-2">
-            {t('social.title')} <span className="text-gradient">{t('social.title_highlight')}</span>
-          </h1>
-          <p className="text-brand-text-secondary mb-6">
-            {t('social.subtitle')}
-          </p>
-        </div>
-      </section>
-
-      {/* Feed */}
-      <section className="pb-20">
-        <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Create Post Button */}
-          {isAuthenticated && (
-            <Link
-              href="/social/create"
-              className="card p-4 flex items-center gap-3 mb-6 hover:border-brand-red/30"
-            >
-              <div className="w-10 h-10 rounded-full bg-brand-red/20 flex items-center justify-center">
-                <Plus className="w-5 h-5 text-brand-red-light" />
-              </div>
-              <span className="text-brand-text-muted text-sm">
-                {t('social.share_prompt')}
-              </span>
+    <div className="max-w-7xl mx-auto px-3 sm:px-6 pt-24 pb-20 grid gap-6 lg:grid-cols-[230px_minmax(0,1fr)] xl:grid-cols-[260px_minmax(0,1fr)_300px]">
+      {/* Left: shortcuts */}
+      <aside className="hidden lg:block">
+        <nav className="sticky top-24 space-y-1">
+          {shortcuts.map((s: any) => (
+            <Link key={s.href} href={s.href} className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-white/5 text-sm font-medium text-brand-text">
+              {s.avatar ? (
+                <Avatar src={myAvatar} name={myName} size={32} />
+              ) : (
+                <span className="w-8 h-8 rounded-full bg-brand-red/15 flex items-center justify-center"><s.Icon className="w-4 h-4 text-brand-red-light" /></span>
+              )}
+              <span className="truncate">{s.label}</span>
             </Link>
-          )}
+          ))}
+        </nav>
+      </aside>
 
-          {!feed ? (
-            <div className="text-center py-20">
-              <div className="w-8 h-8 border-2 border-brand-red/30 border-t-brand-red rounded-full animate-spin mx-auto mb-4" />
-              <p className="text-brand-text-muted">{t('social.loading')}</p>
+      {/* Middle: composer + feed */}
+      <main className="min-w-0 max-w-[640px] w-full mx-auto space-y-4">
+        {isAuthenticated && user ? (
+          <div className="panel p-4">
+            <div className="flex items-center gap-3">
+              <Link href={`/u/${user.id}`}><Avatar src={myAvatar} name={myName} /></Link>
+              <Link href="/social/create" className="flex-1 bg-white/5 hover:bg-white/10 rounded-full px-4 py-2.5 text-sm text-brand-text-muted">
+                {t('cm.whats_new', { name: myName.split(' ')[0] })}
+              </Link>
             </div>
-          ) : feed.length === 0 ? (
-            <div className="text-center py-20">
-              <MessageCircle className="w-16 h-16 text-brand-border mx-auto mb-4" />
-              <h3 className="text-xl font-semibold mb-2">{t('social.no_posts')}</h3>
-              <p className="text-brand-text-muted">
-                {t('social.no_posts_desc')}
-              </p>
+            <div className="mt-3 pt-3 border-t border-brand-border/60 flex">
+              <Link href="/social/create" className="flex-1 flex items-center justify-center gap-2 py-1.5 rounded-md hover:bg-white/5 text-sm font-semibold text-brand-text-secondary">
+                <ImagePlus className="w-5 h-5 text-green-400" /> {t('cm.photo')}
+              </Link>
+              <Link href="/social/create" className="flex-1 flex items-center justify-center gap-2 py-1.5 rounded-md hover:bg-white/5 text-sm font-semibold text-brand-text-secondary">
+                <MessageCircle className="w-5 h-5 text-brand-gold" /> {t('cm.review_room')}
+              </Link>
             </div>
-          ) : (
-            <div className="space-y-4">
-              {feed.map((post: any) => (
-                <div key={post._id} className="card p-5">
-                  {/* Author */}
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="w-10 h-10 rounded-full bg-brand-surface flex items-center justify-center overflow-hidden">
-                      {post.authorAvatar ? (
-                        <img
-                          src={post.authorAvatar}
-                          alt={post.authorName}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : post.authorType === 'company' ? (
-                        <Building2 className="w-5 h-5 text-brand-text-muted" />
-                      ) : (
-                        <User className="w-5 h-5 text-brand-text-muted" />
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-1.5">
-                        <span className="font-medium text-sm truncate">
-                          {post.authorName}
-                        </span>
-                        {post.authorVerified && (
-                          <CheckCircle className="w-3.5 h-3.5 text-blue-400 shrink-0" />
-                        )}
-                        {post.authorType === 'company' && (
-                          <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-sm bg-brand-red/20 text-brand-red-light">
-                            {t('social.business_badge')}
-                          </span>
-                        )}
-                      </div>
-                      <span className="text-xs text-brand-text-muted">
-                        {timeAgo(post.createdAt)}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Room tag */}
-                  {post.roomTitle && (
-                    <div className="flex items-center gap-1.5 mb-2">
-                      <DoorOpen className="w-3.5 h-3.5 text-brand-red-light" />
-                      <span className="text-xs font-medium text-brand-red-light">
-                        {post.roomTitle}
-                      </span>
-                    </div>
-                  )}
-
-                  {/* Rating */}
-                  {post.rating && (
-                    <div className="flex items-center gap-1 mb-2">
-                      {Array.from({ length: 5 }).map((_, i) => (
-                        <Star
-                          key={i}
-                          className={`w-4 h-4 ${
-                            i < post.rating
-                              ? 'text-brand-gold fill-brand-gold'
-                              : 'text-brand-border'
-                          }`}
-                        />
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Text */}
-                  <p className="text-sm text-brand-text-secondary mb-3 leading-relaxed">
-                    {post.text}
-                  </p>
-
-                  {/* Media */}
-                  {post.media && post.media.length > 0 && (
-                    <div className="flex gap-2 mb-3 overflow-x-auto">
-                      {post.media.map((m: any, i: number) => (
-                        <div
-                          key={i}
-                          className="w-48 h-48 rounded-xl overflow-hidden shrink-0 bg-brand-surface"
-                        >
-                          {m.type === 'image' ? (
-                            <img
-                              src={m.url}
-                              alt=""
-                              className="w-full h-full object-cover"
-                              onError={(e) => {
-                                // Hide broken images (e.g. HEIC format not supported)
-                                (e.target as HTMLImageElement).style.display = 'none';
-                                (e.target as HTMLImageElement).parentElement!.style.display = 'none';
-                              }}
-                            />
-                          ) : (
-                            <video
-                              src={m.url}
-                              className="w-full h-full object-cover"
-                              controls
-                            />
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Actions */}
-                  <div className="flex items-center gap-6 pt-2 border-t border-brand-border/30">
-                    <button
-                      onClick={() => handleLike(post._id)}
-                      className="flex items-center gap-1.5 text-sm transition-colors hover:text-brand-red-light"
-                    >
-                      <Heart
-                        className={`w-4 h-4 ${
-                          likedPostIds.has(post._id)
-                            ? 'fill-brand-red text-brand-red-light'
-                            : 'text-brand-text-muted'
-                        }`}
-                      />
-                      <span className={likedPostIds.has(post._id) ? 'text-brand-red-light' : 'text-brand-text-muted'}>
-                        {post.likes}
-                      </span>
-                    </button>
-                    <button
-                      onClick={() =>
-                        setExpandedComments(
-                          expandedComments === post._id ? null : post._id
-                        )
-                      }
-                      className="flex items-center gap-1.5 text-sm text-brand-text-muted hover:text-white transition-colors"
-                    >
-                      <MessageCircle className="w-4 h-4" />
-                      {post.commentCount}
-                    </button>
-                    <button className="flex items-center gap-1.5 text-sm text-brand-text-muted hover:text-white transition-colors">
-                      <Share2 className="w-4 h-4" />
-                    </button>
-                  </div>
-
-                  {/* Comments Section */}
-                  {expandedComments === post._id && (
-                    <CommentsSection postId={post._id} sessionToken={user?.sessionToken} />
-                  )}
-                </div>
-              ))}
+          </div>
+        ) : (
+          <div className="panel p-5 text-center">
+            <p className="font-display font-bold text-brand-bone text-lg">{t('cm.join_title')}</p>
+            <p className="text-sm text-brand-text-secondary mt-1 mb-4">{t('cm.join_desc')}</p>
+            <div className="flex gap-2 justify-center">
+              <Link href="/signup" className="btn-primary text-sm">{t('nav.signup')}</Link>
+              <Link href="/login" className="btn-ghost text-sm">{t('nav.login')}</Link>
             </div>
-          )}
+          </div>
+        )}
+
+        {isAuthenticated && (
+          <div className="flex bg-brand-surface border border-brand-border rounded-xl p-1 w-fit" role="tablist">
+            {(['all', 'following'] as const).map((m) => (
+              <button
+                key={m}
+                role="tab"
+                aria-selected={mode === m}
+                onClick={() => setMode(m)}
+                className={`px-4 py-1.5 rounded-lg text-sm font-semibold transition-colors ${mode === m ? 'bg-brand-red text-white' : 'text-brand-text-secondary hover:text-white'}`}
+              >
+                {m === 'all' ? t('cm.for_you') : t('cm.following')}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {feed === undefined ? (
+          [0, 1].map((i) => <div key={i} className="panel h-64 animate-pulse" />)
+        ) : feed.length === 0 ? (
+          <div className="panel p-10 text-center text-brand-text-secondary">
+            <Users className="w-10 h-10 mx-auto mb-3 opacity-40" />
+            <p>{mode === 'following' ? t('cm.empty_following') : t('cm.empty')}</p>
+          </div>
+        ) : (
+          feed
+            .filter((p) => !hidden.has(p._id) && !(p.author.id && hidden.has(p.author.id)))
+            .map((p) => (
+              <PostCard
+                key={p._id}
+                post={p}
+                onRemoved={() => setHidden((h) => new Set([...h, p._id, ...(p.isMine ? [] : p.author.id ? [p.author.id] : [])]))}
+              />
+            ))
+        )}
+      </main>
+
+      {/* Right: people to follow */}
+      <aside className="hidden xl:block">
+        <div className="sticky top-24">
+          <Suggestions />
         </div>
-      </section>
-    </>
+      </aside>
+    </div>
   );
 }
 
-function CommentsSection({ postId, sessionToken }: { postId: string; sessionToken?: string }) {
+function Suggestions() {
   const { t } = useTranslation();
-  const comments = useQuery(api.posts.getComments, { postId: postId as any });
-  const addComment = useMutation(api.posts.addComment);
-  const [text, setText] = useState('');
-  const [sending, setSending] = useState(false);
-
-  const handleSubmit = async () => {
-    if (!text.trim() || !sessionToken) return;
-    setSending(true);
-    try {
-      await addComment({ postId: postId as any, sessionToken, text: text.trim() });
-      setText('');
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setSending(false);
-    }
-  };
-
-  const timeAgo = (timestamp: number) => {
-    const diff = Date.now() - timestamp;
-    const mins = Math.floor(diff / 60000);
-    if (mins < 60) return `${mins}m`;
-    const hours = Math.floor(mins / 60);
-    if (hours < 24) return `${hours}h`;
-    return `${Math.floor(hours / 24)}d`;
-  };
-
+  const { user } = useAuth();
+  const people = useQuery(api.community.suggestions, { sessionToken: user?.sessionToken });
+  const follow = useMutation(api.social.follow);
+  const [done, setDone] = useState<Set<string>>(new Set());
+  if (!people || people.length === 0) return null;
   return (
-    <div className="mt-3 pt-3 border-t border-brand-border/30 space-y-3">
-      {comments?.map((c: any) => (
-        <div key={c._id} className="flex items-start gap-2">
-          <div className="w-7 h-7 rounded-full bg-brand-surface flex items-center justify-center shrink-0">
-            {c.userAvatar ? (
-              <img src={c.userAvatar} alt="" className="w-full h-full rounded-full object-cover" />
-            ) : (
-              <User className="w-3.5 h-3.5 text-brand-text-muted" />
+    <div className="panel p-4">
+      <h3 className="text-sm font-semibold text-brand-text-secondary mb-3">{t('cm.suggested')}</h3>
+      <div className="space-y-3">
+        {people.map((p) => (
+          <div key={p._id} className="flex items-center gap-3">
+            <Link href={`/u/${p._id}`}><Avatar src={p.avatar} name={p.name} size={40} /></Link>
+            <div className="flex-1 min-w-0">
+              <Link href={`/u/${p._id}`} className="block text-sm font-semibold text-brand-bone truncate hover:underline">{p.name}</Link>
+              <p className="text-xs text-brand-text-muted">{t('cm.posts_n', { n: String(p.posts) })}</p>
+            </div>
+            {user && (
+              <button
+                onClick={async () => {
+                  await follow({ sessionToken: user.sessionToken, userId: p._id }).catch(() => {});
+                  setDone((d) => new Set([...d, p._id]));
+                }}
+                disabled={done.has(p._id)}
+                className="text-xs font-semibold px-3 py-1.5 rounded-md bg-brand-red/15 text-brand-red-light hover:bg-brand-red/25 disabled:bg-white/5 disabled:text-brand-text-muted flex items-center gap-1"
+              >
+                {done.has(p._id) ? <Check className="w-3.5 h-3.5" /> : <UserPlus className="w-3.5 h-3.5" />}
+                {done.has(p._id) ? t('pf.following_btn') : t('pf.follow')}
+              </button>
             )}
           </div>
-          <div className="flex-1 min-w-0">
-            <span className="text-xs font-medium">{c.userName}</span>
-            <span className="text-[10px] text-brand-text-muted ml-2">{timeAgo(c.createdAt)}</span>
-            <p className="text-xs text-brand-text-secondary">{c.text}</p>
-          </div>
-        </div>
-      ))}
-
-      {sessionToken && (
-        <div className="flex items-center gap-2">
-          <input
-            type="text"
-            placeholder={t('social.comment_placeholder')}
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
-            className="input-field py-2! text-sm! flex-1"
-          />
-          <button
-            disabled={sending || !text.trim()}
-            onClick={handleSubmit}
-            className="p-2 rounded-lg bg-brand-red text-white disabled:opacity-30 hover:bg-brand-red-hover transition-colors"
-          >
-            <Send className="w-4 h-4" />
-          </button>
-        </div>
-      )}
+        ))}
+      </div>
     </div>
   );
 }
