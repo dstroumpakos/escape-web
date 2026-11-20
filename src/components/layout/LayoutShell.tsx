@@ -60,8 +60,10 @@ export function LayoutShell({ children }: { children: React.ReactNode }) {
     pathname.startsWith('/for-escape-rooms');
 
   const isComingSoon = pathname === '/coming-soon';
+  // Pages shown inside the phone app (WebView): no site chrome at all.
+  const isEmbed = pathname.startsWith('/embed/');
 
-  const hideMainLayout = isCompanyRoute || isPhotosApp || isComingSoon || (isSubdomain && !isPublicPage);
+  const hideMainLayout = isEmbed || isCompanyRoute || isPhotosApp || isComingSoon || (isSubdomain && !isPublicPage);
 
   if (hideMainLayout) {
     // Company portal / Photos app have their own layout — no main Navbar/Footer
@@ -70,7 +72,7 @@ export function LayoutShell({ children }: { children: React.ReactNode }) {
         <HorrorDefs />
         {children}
         {/* Keep the coming-soon password form clear; consent is asked once inside */}
-        {!isComingSoon && <CookieConsent />}
+        {!isComingSoon && !isEmbed && <CookieConsent />}
       </>
     );
   }

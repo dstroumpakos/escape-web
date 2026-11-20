@@ -6,7 +6,7 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: '*',
         allow: '/',
-        disallow: ['/admin', '/company/login', '/company/register', '/company/onboarding'],
+        disallow: ['/admin', '/embed/', '/company/login', '/company/register', '/company/onboarding'],
       },
     ],
     sitemap: 'https://unlocked.gr/sitemap.xml',

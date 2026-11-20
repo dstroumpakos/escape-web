@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
-import { ArrowUp, ArrowDown, RotateCcw, RotateCw, Stamp, Gift, Lock, Loader2, Volume2, VolumeX, Ghost, Maximize2, Minimize2 } from 'lucide-react';
+import { ArrowUp, ArrowDown, RotateCcw, RotateCw, Stamp, Gift, Lock, Loader2, Volume2, VolumeX, Ghost, Maximize2, Minimize2, X } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
 
 /**
@@ -24,7 +24,11 @@ const FLOOR_KEY = 'unlocked_tower_floor';
 const CHEST_KEY = 'unlocked_tower_chests';
 const PREF_KEY = 'unlocked_tower_prefs';
 
-type Props = { placed: number; chambers: number[]; pocket: number; onPlace: () => Promise<unknown>; busy: boolean };
+type Props = {
+  placed: number; chambers: number[]; pocket: number; onPlace: () => Promise<unknown>; busy: boolean;
+  /** Inside the phone app: always full screen, and the corner button closes the game. */
+  embedded?: boolean; onClose?: () => void;
+};
 
 function readJSON<T>(key: string, fallback: T): T {
   try {
@@ -35,7 +39,7 @@ function readJSON<T>(key: string, fallback: T): T {
   }
 }
 
-export function TowerGame({ placed, chambers, pocket, onPlace, busy }: Props) {
+export function TowerGame({ placed, chambers, pocket, onPlace, busy, embedded = false, onClose }: Props) {
   const { t } = useTranslation();
   const wrap = useRef<HTMLDivElement>(null);
   const fxRef = useRef<HTMLDivElement>(null);
@@ -55,7 +59,7 @@ export function TowerGame({ placed, chambers, pocket, onPlace, busy }: Props) {
   const [hint, setHint] = useState('');
   const floorRef = useRef(0);
   const stage = useRef<HTMLDivElement>(null);
-  const [full, setFull] = useState(false);
+  const [full, setFull] = useState(embedded);
   // Real fullscreen where the browser allows it (not on iPhone): otherwise
   // the game simply covers the whole window.
   const toggleFull = async () => {
@@ -69,7 +73,7 @@ export function TowerGame({ placed, chambers, pocket, onPlace, busy }: Props) {
     }
   };
   useEffect(() => {
-    const onFs = () => { if (!document.fullscreenElement) setFull(false); };
+    const onFs = () => { if (!document.fullscreenElement && !embedded) setFull(false); };
     document.addEventListener('fullscreenchange', onFs);
     return () => document.removeEventListener('fullscreenchange', onFs);
   }, []);
@@ -477,7 +481,11 @@ export function TowerGame({ placed, chambers, pocket, onPlace, busy }: Props) {
       <button onClick={() => setScares((v) => !v)} className={`px-2.5 py-1.5 rounded-md flex items-center gap-1.5 text-xs ${scares ? 'bg-brand-red/40 text-white' : 'bg-black/50'}`}>
         <Ghost className="w-3.5 h-3.5" /> <span className="hidden sm:inline">{scares ? t('tw.scares_on') : t('tw.scares_off')}</span>
       </button>
-      {started && (
+      {embedded ? (
+        <button onClick={onClose} className="px-2.5 py-1.5 rounded-md bg-black/50 hover:bg-black/70 flex items-center gap-1.5 text-xs" aria-label={t('tw.exit_full')}>
+          <X className="w-3.5 h-3.5" />
+        </button>
+      ) : started && (
         <button onClick={toggleFull} className="px-2.5 py-1.5 rounded-md bg-black/50 hover:bg-black/70 flex items-center gap-1.5 text-xs" aria-label={full ? t('tw.exit_full') : t('tw.full')}>
           {full ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />} <span className="hidden sm:inline">{full ? t('tw.exit_full') : t('tw.full')}</span>
         </button>
@@ -540,12 +548,12 @@ export function TowerGame({ placed, chambers, pocket, onPlace, busy }: Props) {
           )}
           {full && (
             <>
-              <div className="absolute top-3 left-3 right-3 flex items-center justify-between gap-2 z-10">
-                <span className="px-2.5 py-1.5 rounded-md bg-black/50 text-sm text-brand-bone">{t('tw.floor', { n: String(floor + 1) })} · {t('mz.in_pocket', { n: String(pocket) })}</span>
+              <div className="absolute left-3 right-3 flex items-center justify-between gap-2 z-10" style={{ top: 'max(0.75rem, env(safe-area-inset-top))' }}>
+                <span className="min-w-0 truncate px-2.5 py-1.5 rounded-md bg-black/50 text-xs sm:text-sm text-brand-bone">{t('tw.floor', { n: String(floor + 1) })} · {t('mz.in_pocket', { n: String(pocket) })}</span>
                 {switches}
               </div>
               <div className="absolute left-4 z-10" style={{ bottom: 'max(1.5rem, env(safe-area-inset-bottom))' }}>{pad}</div>
-              <div className="absolute right-4 left-[190px] z-10 flex justify-end" style={{ bottom: 'max(1.5rem, env(safe-area-inset-bottom))' }}>
+              <div className="absolute z-10 flex justify-end left-3 right-3 top-[calc(env(safe-area-inset-top)+3.5rem)] sm:top-auto sm:left-[190px] sm:right-4 sm:bottom-6">
                 <div className="max-w-md w-full rounded-md bg-black/65 backdrop-blur-sm px-4 py-3 text-sm">{panel}</div>
               </div>
             </>

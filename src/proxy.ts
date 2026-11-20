@@ -10,6 +10,8 @@ function isGateExempt(pathname: string) {
     // Widget guests confirm bookings from email links (no preview cookie)
     pathname === '/verify-email' ||
     pathname === '/robots.txt' ||
+    // The phone app's WebView pages (they hold no data; the app sends it in)
+    pathname.startsWith('/embed/') ||
     pathname.startsWith('/icon') ||
     pathname.startsWith('/apple-icon') ||
     pathname.startsWith('/_next')
