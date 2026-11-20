@@ -23,6 +23,7 @@ import {
   ShoppingBag,
   Flame,
   Stamp,
+  ListChecks,
 } from 'lucide-react';
 import { EyeKeyhole } from '@/components/brand/EyeKeyhole';
 import { ConvexClientProvider } from '@/components/providers/ConvexClientProvider';
@@ -61,6 +62,7 @@ function CompanyShell({ children }: { children: React.ReactNode }) {
     { href: p('/company/rooms'), label: t('company.nav.rooms'), icon: DoorOpen },
   ];
   const secondaryLinks: NavLink[] = [
+    { href: p('/company/plays'), label: t('cx.nav.plays'), icon: ListChecks },
     ...(BOOKING_ENABLED ? [{ href: p('/company/offers'), label: t('cx.nav.offers'), icon: Flame }] : []),
     { href: photosUrl, label: t('company.nav.photos'), icon: Camera, external: true },
     { href: p('/company/merch'), label: t('shop.portal.nav'), icon: ShoppingBag },

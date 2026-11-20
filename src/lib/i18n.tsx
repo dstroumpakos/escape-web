@@ -9,6 +9,7 @@ import { createContext, useContext, useState, ReactNode, useCallback, useEffect 
 import { companyTranslations } from './i18nCompany';
 import { shopTranslations } from './i18nShop';
 import { chatTranslations } from './i18nChat';
+import { playsTranslations } from './i18nPlays';
 
 export type Language = 'en' | 'el' | 'nl';
 
@@ -6872,6 +6873,9 @@ Object.assign(translations.nl, shopTranslations.nl);
 Object.assign(translations.en, chatTranslations.en);
 Object.assign(translations.el, chatTranslations.el);
 Object.assign(translations.nl, chatTranslations.nl);
+Object.assign(translations.en, playsTranslations.en);
+Object.assign(translations.el, playsTranslations.el);
+Object.assign(translations.nl, playsTranslations.nl);
 
 interface I18nContextType {
   language: Language;

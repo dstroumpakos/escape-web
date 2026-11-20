@@ -38,9 +38,11 @@ import {
   Search,
   Flag,
   ShoppingBag,
+  ListChecks,
 } from 'lucide-react';
 import { AdminReports } from '@/components/admin/AdminReports';
 import { AdminShop } from '@/components/admin/AdminShop';
+import { AdminPlays } from '@/components/admin/AdminPlays';
 
 export default function AdminPage() {
   const { t } = useTranslation();
@@ -48,7 +50,7 @@ export default function AdminPage() {
   const [adminEmail, setAdminEmail] = useState<string | null>(null);
   const [adminToken, setAdminToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'overview' | 'companies' | 'bookings' | 'users' | 'reports' | 'shop'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'companies' | 'bookings' | 'users' | 'reports' | 'plays' | 'shop'>('overview');
   const [companySearch, setCompanySearch] = useState('');
   const [expandedCompany, setExpandedCompany] = useState<string | null>(null);
 
@@ -135,6 +137,7 @@ export default function AdminPage() {
     { id: 'bookings' as const, label: t('admin.tab_bookings'), icon: CalendarCheck },
     { id: 'users' as const, label: t('admin.tab_users'), icon: Users },
     { id: 'reports' as const, label: t('admin.tab_reports'), icon: Flag },
+    { id: 'plays' as const, label: t('admin.pl.tab'), icon: ListChecks },
     { id: 'shop' as const, label: t('shop.admin.tab'), icon: ShoppingBag },
   ];
 
@@ -163,7 +166,7 @@ export default function AdminPage() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Tabs */}
-        <div className="flex gap-1 mb-8 bg-brand-surface rounded-xl p-1 border border-white/5 max-w-2xl">
+        <div className="flex gap-1 mb-8 bg-brand-surface rounded-xl p-1 border border-white/5 max-w-3xl">
           {tabs.map((tab) => (
             <button
               key={tab.id}
@@ -506,6 +509,8 @@ export default function AdminPage() {
 
         {/* ══════════ REPORTS TAB ══════════ */}
         {activeTab === 'reports' && adminToken && <AdminReports sessionToken={adminToken} />}
+
+        {activeTab === 'plays' && adminToken && <AdminPlays sessionToken={adminToken} />}
 
         {activeTab === 'shop' && adminToken && <AdminShop sessionToken={adminToken} />}
 

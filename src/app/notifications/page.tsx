@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { useQuery, useMutation } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
 import { useAuth } from '@/lib/auth';
@@ -287,6 +288,16 @@ export default function NotificationsPage() {
                       )}
                       {isBookingInvite && doneAction === 'declined' && (
                         <p className="text-xs text-brand-text-muted mt-2">{t('friends.invite_declined')}</p>
+                      )}
+                      {/* Rooms Played (convex/plays.ts): verified, vouch requests, teammates */}
+                      {['plays', 'vouch', 'plays_teammate', 'passport'].includes(n.data?.kind) && (
+                        <Link
+                          href={n.data?.kind === 'passport' ? '/passport' : '/passport?tab=played'}
+                          onClick={() => !n.read && handleMarkRead(n._id)}
+                          className="inline-block text-xs text-brand-red-light hover:underline mt-2"
+                        >
+                          {n.data?.kind === 'vouch' ? t('pl.notif.answer') : t('pl.notif.open')}
+                        </Link>
                       )}
                     </div>
                     {!n.read && !hasAction && (

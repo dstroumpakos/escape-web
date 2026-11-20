@@ -4,7 +4,8 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useMutation, useQuery } from 'convex/react';
-import { BookOpen, Stamp, Castle, Lock, QrCode, Loader2 } from 'lucide-react';
+import { BookOpen, Stamp, Castle, Lock, QrCode, Loader2, ListChecks, Map as MapIcon } from 'lucide-react';
+import { PlaysTab, useMyPlays } from '@/components/plays/PlaysTab';
 import { api } from '../../../convex/_generated/api';
 import { useAuth } from '@/lib/auth';
 import { useTranslation } from '@/lib/i18n';
@@ -19,7 +20,12 @@ const TowerGame = dynamic(() => import('@/components/passport/TowerGame').then((
 import { cleanError } from '@/lib/errors';
 import { formatPlayed, shortPlayed } from '@/lib/playTime';
 
-type Tab = 'stamps' | 'maze';
+type Tab = 'stamps' | 'played' | 'map' | 'maze';
+
+const PlaysMap = dynamic(() => import('@/components/plays/PlaysMap'), {
+  ssr: false,
+  loading: () => <div className="h-[420px] rounded-xl bg-black/60 flex items-center justify-center"><Loader2 className="w-6 h-6 animate-spin text-brand-red" /></div>,
+});
 
 /** My Passport: the stamps of the rooms you played and the maze they open. */
 export default function PassportPage() {
@@ -28,6 +34,12 @@ export default function PassportPage() {
   const { user, isAuthenticated, isLoading } = useAuth();
   const data = useQuery(api.passport.mine, user?.sessionToken ? { sessionToken: user.sessionToken } : 'skip');
   const [tab, setTab] = useState<Tab>('stamps');
+  const plays = useMyPlays();
+  // ?tab=played from notifications
+  useEffect(() => {
+    const want = new URLSearchParams(window.location.search).get('tab');
+    if (want === 'played' || want === 'map') setTab(want);
+  }, []);
   const [picked, setPicked] = useState<any>(null);
   const placeStamp = useMutation(api.passport.placeStamp);
   const [placing, setPlacing] = useState(false);
@@ -112,9 +124,9 @@ export default function PassportPage() {
 
         {/* Right page */}
         <div className="p-4 sm:p-6 min-w-0">
-          <div className="flex bg-black/40 border border-brand-border rounded-xl p-1 w-fit mb-5" role="tablist">
-            {([['stamps', Stamp, t('pp.tab_stamps')], ['maze', Castle, t('tw.tab')]] as const).map(([k, Icon, label]) => (
-              <button key={k} role="tab" aria-selected={tab === k} onClick={() => setTab(k)} className={`px-4 py-1.5 rounded-lg text-sm font-semibold flex items-center gap-2 ${tab === k ? 'bg-brand-red text-white' : 'text-brand-text-secondary hover:text-white'}`}>
+          <div className="flex bg-black/40 border border-brand-border rounded-xl p-1 w-fit max-w-full overflow-x-auto mb-5" role="tablist">
+            {([['stamps', Stamp, t('pp.tab_stamps')], ['played', ListChecks, t('pl.tab')], ['map', MapIcon, t('pl.map_tab')], ['maze', Castle, t('tw.tab')]] as const).map(([k, Icon, label]) => (
+              <button key={k} role="tab" aria-selected={tab === k} onClick={() => setTab(k)} className={`shrink-0 px-3 sm:px-4 py-1.5 rounded-lg text-sm font-semibold flex items-center gap-2 ${tab === k ? 'bg-brand-red text-white' : 'text-brand-text-secondary hover:text-white'}`}>
                 <Icon className="w-4 h-4" /> {label}
               </button>
             ))}
@@ -152,6 +164,10 @@ export default function PassportPage() {
                 ) : data.total === 0 ? t('pp.empty_hint') : t('pp.tap_stamp')}
               </div>
             </>
+          ) : tab === 'map' ? (
+            <PlaysMap pins={plays?.pins ?? []} />
+          ) : tab === 'played' ? (
+            <PlaysTab data={plays ?? undefined} stampCount={data.stamps.length} />
           ) : (
             <>
               <TowerGame placed={placed} chambers={chambers} pocket={pocket} onPlace={onPlace} busy={placing} />
