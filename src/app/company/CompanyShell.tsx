@@ -56,9 +56,9 @@ function CompanyShell({ children }: { children: React.ReactNode }) {
   // Main links (also the phone bottom bar) and the rest (sidebar + "More" sheet).
   const primaryLinks: NavLink[] = [
     { href: p('/company'), label: t('company.nav.dashboard'), icon: LayoutDashboard },
-    { href: p('/company/slots'), label: t('cx.nav.slots'), icon: Clock },
+    ...(BOOKING_ENABLED ? [{ href: p('/company/slots'), label: t('cx.nav.slots'), icon: Clock }] : []),
     { href: p('/company/passport'), label: t('cx.nav.passport'), icon: Stamp },
-    { href: p('/company/bookings'), label: t('company.nav.bookings'), icon: CalendarDays },
+    ...(BOOKING_ENABLED ? [{ href: p('/company/bookings'), label: t('company.nav.bookings'), icon: CalendarDays }] : []),
     { href: p('/company/rooms'), label: t('company.nav.rooms'), icon: DoorOpen },
   ];
   const secondaryLinks: NavLink[] = [
@@ -67,7 +67,7 @@ function CompanyShell({ children }: { children: React.ReactNode }) {
     { href: photosUrl, label: t('company.nav.photos'), icon: Camera, external: true },
     { href: p('/company/merch'), label: t('shop.portal.nav'), icon: ShoppingBag },
     { href: p('/company/payments'), label: t('company.nav.payments'), icon: Wallet },
-    { href: p('/company/billing'), label: t('company.nav.billing'), icon: CreditCard },
+    ...(BOOKING_ENABLED ? [{ href: p('/company/billing'), label: t('company.nav.billing'), icon: CreditCard }] : []),
     { href: p('/company/settings'), label: t('company.nav.settings'), icon: Settings },
     { href: p('/company/docs'), label: t('company.nav.docs'), icon: BookOpen },
     { href: '/services/website', label: t('company.nav.web_services'), icon: Globe },
@@ -186,7 +186,7 @@ function CompanyShell({ children }: { children: React.ReactNode }) {
           </div>
           {company?.platformPlan && (
             <Link href={p('/company/billing')} className="inline-block mt-3" title={t('company.nav.billing')}>
-              <PlanBadge plan={company.platformPlan} />
+              {BOOKING_ENABLED && <PlanBadge plan={company.platformPlan} />}
             </Link>
           )}
         </div>

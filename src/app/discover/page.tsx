@@ -6,6 +6,7 @@ import { RoomCard, toRoomCardData } from '@/components/rooms/RoomCard';
 import { useQuery } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
 import { Search, SlidersHorizontal, DoorOpen, X } from 'lucide-react';
+import { BOOKING_ENABLED } from '@/lib/features';
 import { useTranslation } from '@/lib/i18n';
 import { ROOM_THEME_VALUES, themeLabel as roomThemeLabel } from '@/lib/roomThemes';
 import { useAuth } from '@/lib/auth';
@@ -163,7 +164,7 @@ export default function DiscoverPage() {
             <div className="flex justify-center gap-2 mb-4">
               {[
                 { value: 'rating' as const, label: t('discover.sort_top_rated') },
-                { value: 'price' as const, label: t('discover.sort_lowest_price') },
+                ...(BOOKING_ENABLED ? [{ value: 'price' as const, label: t('discover.sort_lowest_price') }] : []),
                 { value: 'duration' as const, label: t('discover.sort_shortest') },
               ].map((s) => (
                 <button

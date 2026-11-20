@@ -23,8 +23,14 @@ import {
   BadgeCheck,
   Sparkles,
   Rocket,
+  DoorOpen,
+  ExternalLink,
+  Stamp,
+  ShoppingBag,
+  MousePointerClick,
 } from 'lucide-react';
 import { useState } from 'react';
+import { BOOKING_ENABLED } from '@/lib/features';
 
 function Section({
   icon: Icon,
@@ -114,10 +120,151 @@ function Step({ n, title, desc }: { n: number; title: string; desc: string }) {
   );
 }
 
+/**
+ * The guide while UNLOCKED's own booking is off (src/lib/features.ts): rooms
+ * are adverts, players book on the company's own site, the company gives out
+ * QR stamps and sells merch. No plans, slots, widget or room payments.
+ */
+function AdvertGuide({ g }: { g: (el: string, en: string) => string }) {
+  return (
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8">
+      <div className="mb-8">
+        <div className="flex items-center gap-3 mb-2">
+          <div className="w-12 h-12 rounded-2xl bg-brand-red/10 flex items-center justify-center shrink-0">
+            <BookOpen className="w-6 h-6 text-brand-red-light" />
+          </div>
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-display font-bold">{g('Οδηγός Πλατφόρμας', 'Platform Guide')}</h1>
+            <p className="text-brand-text-secondary text-sm">
+              {g(
+                'Όλα όσα χρειάζεστε για να φέρνετε παίκτες στο escape room σας με το UNLOCKED',
+                'Everything you need to bring players to your escape room with UNLOCKED'
+              )}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div className="space-y-3">
+        {/* 1. Getting started */}
+        <Section icon={Rocket} title={g('Ξεκινώντας', 'Getting Started')} defaultOpen>
+          <Card>
+            <div className="space-y-4">
+              <Step n={1} title={g('Αποδοχή όρων', 'Accept the terms')} desc={g('Αποδεχτείτε τους όρους χρήσης και την πολιτική απορρήτου.', 'Accept the terms of service and the privacy policy.')} />
+              <Step n={2} title={g('Επιβεβαίωση', 'Confirm')} desc={g('Πατήστε «Συνέχεια». Για πακέτα και τιμές θα επικοινωνήσουμε μαζί σας.', 'Tap "Continue". We will get in touch about packages and prices.')} />
+              <Step n={3} title={g('Έλεγχος στοιχείων', 'Account review')} desc={g('Ελέγχουμε τα στοιχεία σας, συνήθως μέσα σε 1 με 2 εργάσιμες. Θα λάβετε email μόλις εγκριθεί ο λογαριασμός σας.', 'We check your details, usually within 1 to 2 working days. You get an email as soon as your account is approved.')} />
+              <Step n={4} title={g('Λίστα εκκίνησης', 'Getting-started checklist')} desc={g('Μόλις συνδεθείτε, μια σύντομη λίστα στον πίνακα ελέγχου σας οδηγεί: προφίλ εταιρείας, πρώτο δωμάτιο και φωτογραφία δωματίου.', 'Once you sign in, a short checklist on your dashboard walks you through it: company profile, first room and a room photo.')} />
+            </div>
+          </Card>
+        </Section>
+
+        {/* 2. Rooms and the booking link */}
+        <Section icon={DoorOpen} title={g('Δωμάτια & Κράτηση στο Site σας', 'Rooms & Booking on Your Site')}>
+          <p>
+            {g(
+              'Κάθε δωμάτιο έχει δική του σελίδα στο UNLOCKED με φωτογραφίες, περιγραφή, θέμα, δυσκολία, διάρκεια και αριθμό παικτών. Το UNLOCKED δεν κάνει κρατήσεις και δεν παίρνει πληρωμές για τα δωμάτια.',
+              'Every room has its own page on UNLOCKED with photos, description, theme, difficulty, duration and number of players. UNLOCKED takes no bookings or payments for rooms.'
+            )}
+          </p>
+          <Card title={g('Πού πάει ο παίκτης', 'Where players go')}>
+            <div className="space-y-3">
+              <div className="flex gap-3 items-start">
+                <ExternalLink className="w-4 h-4 text-brand-red-light shrink-0 mt-0.5" />
+                <span>{g('Ο παίκτης πατά «Κλείσε στο Site τους» και πηγαίνει στο «Link κράτησης» του δωματίου (στην επεξεργασία δωματίου) ή, αν είναι κενό, στο website σας από τις Ρυθμίσεις.', 'Players tap "Book on Their Site" and go to the room\'s "Booking link" (in the room editor) or, if it is empty, to your website from Settings.')}</span>
+              </div>
+              <div className="flex gap-3 items-start">
+                <Bell className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+                <span>{g('Χωρίς κανέναν σύνδεσμο, εμφανίζεται το τηλέφωνο της εταιρείας σας.', 'With no link at all, your company phone number is shown.')}</span>
+              </div>
+              <div className="flex gap-3 items-start">
+                <MousePointerClick className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                <span>{g('Στον πίνακα ελέγχου βλέπετε πόσοι παίκτες πάτησαν το κουμπί τις τελευταίες 30 ημέρες, ανά δωμάτιο.', 'On your dashboard you see how many players tapped the button in the last 30 days, per room.')}</span>
+              </div>
+            </div>
+          </Card>
+        </Section>
+
+        {/* 3. QR stamps */}
+        <Section icon={Stamp} title={g('Σφραγίδες QR', 'QR Stamps')}>
+          <p>
+            {g(
+              'Στο τέλος κάθε παιχνιδιού δίνετε στην ομάδα τη σφραγίδα του δωματίου σας για το UNLOCKED διαβατήριό τους.',
+              'At the end of every game you give the team your room\'s stamp for their UNLOCKED passport.'
+            )}
+          </p>
+          <Card title={g('Βήματα', 'Steps')}>
+            <div className="space-y-4">
+              <Step n={1} title={g('Σφραγίδες QR', 'QR Stamps')} desc={g('Ανοίξτε «Σφραγίδες QR» από το μενού (ή από την εφαρμογή).', 'Open "QR Stamps" from the menu (or from the app).')} />
+              <Step n={2} title={g('Στοιχεία παιχνιδιού', 'Game details')} desc={g('Διαλέξτε δωμάτιο, ώρα έναρξης της ομάδας, αριθμό παικτών και αν απέδρασαν (με τον χρόνο τους, αν θέλετε).', 'Pick the room, the team\'s start time, the number of players and whether they escaped (with their time, if you like).')} />
+              <Step n={3} title={g('Δείξτε το QR', 'Show the QR')} desc={g('Κάθε παίκτης το σκανάρει με το κινητό του και παίρνει τη σφραγίδα. Βλέπετε ζωντανά πόσοι την πήραν.', 'Each player scans it with their phone and gets the stamp. You see live how many took it.')} />
+            </div>
+          </Card>
+          <Card>
+            <ul className="space-y-2 list-disc pl-5">
+              <li>{g('Το QR ισχύει 30 λεπτά και δίνει τόσες σφραγίδες όσοι οι παίκτες.', 'The QR is valid for 30 minutes and gives as many stamps as there are players.')}</li>
+              <li>{g('Κάθε παίκτης παίρνει μία σφραγίδα ανά δωμάτιο.', 'Each player gets one stamp per room.')}</li>
+              <li>{g('Οι σφραγίδες ανοίγουν ορόφους και δώρα στο παιχνίδι του Στοιχειωμένου Πύργου, οπότε οι παίκτες θέλουν να έρθουν ξανά.', 'Stamps open floors and gifts in the Haunted Tower game, so players want to come back.')}</li>
+            </ul>
+          </Card>
+        </Section>
+
+        {/* 4. Merch */}
+        <Section icon={ShoppingBag} title={g('Merch', 'Merch')}>
+          <p>
+            {g(
+              'Από το «Merch» ανεβάζετε προϊόντα των δωματίων σας (μπλουζάκια, κούπες, αναμνηστικά) στο κατάστημα του UNLOCKED. Εσείς είστε ο πωλητής.',
+              'From "Merch" you add products of your rooms (t-shirts, mugs, souvenirs) to the UNLOCKED shop. You are the seller.'
+            )}
+          </p>
+          <Card>
+            <ul className="space-y-2 list-disc pl-5">
+              <li>{g('Για online πληρωμές συνδέστε τον λογαριασμό Stripe ή Viva σας από τις «Πληρωμές». Τα χρήματα πηγαίνουν απευθείας σε εσάς.', 'For online payments connect your Stripe or Viva account from "Payments". The money goes straight to you.')}</li>
+              <li>{g('Χωρίς συνδεδεμένο λογαριασμό, οι παίκτες πληρώνουν στην παραλαβή.', 'Without a connected account, players pay at pickup.')}</li>
+              <li>{g('Εσείς αναλαμβάνετε παραλαβή ή αποστολή, επιστροφές και επιστροφές χρημάτων.', 'You handle pickup or shipping, returns and refunds.')}</li>
+            </ul>
+          </Card>
+        </Section>
+
+        {/* 5. Photos */}
+        <Section icon={Camera} title={g('Φωτογραφίες Ομάδων', 'Team Photos')}>
+          <p>
+            {g(
+              'Η εφαρμογή Photos (από το μενού του portal, με τον ίδιο λογαριασμό) σας επιτρέπει να ανεβάζετε φωτογραφίες ομάδων, να βάζετε το branding σας και να τις στέλνετε στους παίκτες με email. Κάθε φωτογραφία έχει δική της σελίδα με link, και βλέπετε προβολές και λήψεις.',
+              'The Photos app (from the portal menu, with the same account) lets you upload team photos, add your branding and email them to the players. Every photo gets its own page link, and you can see views and downloads.'
+            )}
+          </p>
+        </Section>
+
+        {/* 6. Early Access */}
+        <Section icon={Sparkles} title={g('Πρόγραμμα Early Access', 'Early Access Partner Program')}>
+          <p>{g('Ενταχθείτε από τις Ρυθμίσεις → Early Access. Ως Early Access Partner:', 'Join from Settings → Early Access. As an Early Access Partner:')}</p>
+          <Card>
+            <ul className="space-y-2 list-disc pl-5">
+              <li>{g('Τα δωμάτιά σας εμφανίζονται στο Featured Spotlight της αρχικής σελίδας', 'Your rooms appear in the Featured Spotlight on the home page')}</li>
+              <li>{g('Ορίζετε ημερομηνία κυκλοφορίας και οι Premium παίκτες βλέπουν το δωμάτιο έως 3 ημέρες νωρίτερα', 'You set a release date and Premium players see the room up to 3 days early')}</li>
+              <li>{g('Οι Premium παίκτες ειδοποιούνται όταν προσθέτετε νέο δωμάτιο', 'Premium players are notified when you add a new room')}</li>
+              <li>{g('Τα δωμάτιά σας έχουν το σήμα "Early Access"', 'Your rooms show the "Early Access" badge')}</li>
+            </ul>
+          </Card>
+        </Section>
+
+        <div className="mt-8 bg-brand-surface rounded-2xl border border-white/5 p-6 text-center">
+          <p className="text-brand-text-secondary text-sm">
+            {g('Χρειάζεστε βοήθεια; Στείλτε μας email στο', 'Need help? Email us at')}{' '}
+            <a href="mailto:hello@unlocked.gr" className="text-brand-red-light hover:underline">hello@unlocked.gr</a>
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function DocsPage() {
   const { language } = useTranslation();
   const isGreek = language === 'el';
   const g = (el: string, en: string) => (isGreek ? el : en);
+
+  if (!BOOKING_ENABLED) return <AdvertGuide g={g} />;
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8">

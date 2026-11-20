@@ -16,7 +16,11 @@ import {
   Zap,
   Shield,
   CreditCard,
+  ExternalLink,
+  Stamp,
+  ShoppingBag,
 } from 'lucide-react';
+import { BOOKING_ENABLED } from '@/lib/features';
 import { EyeKeyhole } from '@/components/brand/EyeKeyhole';
 import Link from 'next/link';
 import { useTranslation } from '@/lib/i18n';
@@ -49,16 +53,29 @@ export default function ForEscapeRoomsPage() {
   const { t } = useTranslation();
   const platformStats = useQuery(api.stats.getPlatformStats);
 
-  const features = [
-    { icon: Calendar, key: 'booking' },
-    { icon: Code, key: 'widget' },
-    { icon: LayoutDashboard, key: 'dashboard' },
-    { icon: BarChart2, key: 'analytics' },
-    { icon: Camera, key: 'photos' },
-    { icon: MapPin, key: 'listing' },
-    { icon: CreditCard, key: 'payments' },
-    { icon: Globe, key: 'website' },
-  ];
+  // With UNLOCKED's own booking off (src/lib/features.ts) the platform is a
+  // showcase + community: no booking widget, no room payments, no prices here.
+  const features = BOOKING_ENABLED
+    ? [
+        { icon: Calendar, key: 'booking' },
+        { icon: Code, key: 'widget' },
+        { icon: LayoutDashboard, key: 'dashboard' },
+        { icon: BarChart2, key: 'analytics' },
+        { icon: Camera, key: 'photos' },
+        { icon: MapPin, key: 'listing' },
+        { icon: CreditCard, key: 'payments' },
+        { icon: Globe, key: 'website' },
+      ]
+    : [
+        { icon: MapPin, key: 'listing' },
+        { icon: ExternalLink, key: 'booknow' },
+        { icon: Stamp, key: 'passport' },
+        { icon: Users, key: 'community' },
+        { icon: BarChart2, key: 'analytics' },
+        { icon: Camera, key: 'photos' },
+        { icon: ShoppingBag, key: 'merch' },
+        { icon: Globe, key: 'website' },
+      ];
 
   const plans = [
     {
@@ -170,7 +187,8 @@ export default function ForEscapeRoomsPage() {
         </div>
       </section>
 
-      {/* Pricing */}
+      {/* Pricing: per-booking plans, so only while UNLOCKED's own booking is on */}
+      {BOOKING_ENABLED && (
       <section id="pricing" className="py-20 border-t border-brand-border/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-14">
@@ -233,6 +251,7 @@ export default function ForEscapeRoomsPage() {
           </div>
         </div>
       </section>
+      )}
 
       {/* How It Works */}
       <section className="py-20 border-t border-brand-border/30">

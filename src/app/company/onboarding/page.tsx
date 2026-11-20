@@ -17,11 +17,13 @@ import {
   ChevronDown,
   CreditCard,
   Tag,
+  Loader2,
 } from 'lucide-react';
 import { EyeKeyhole } from '@/components/brand/EyeKeyhole';
 import { LanguageToggle } from '@/components/LanguageToggle';
 import { friendlyError } from '@/lib/errors';
 import { PLANS as PLAN_DATA, UNLIMITED_PRICE, PAYG_FEE, asPlanId, SUPPORT_EMAIL, mailto } from '@/lib/plans';
+import { BOOKING_ENABLED } from '@/lib/features';
 
 // Pay as you go needs no checkout; Unlimited goes through Stripe.
 const PLANS = [
@@ -150,7 +152,7 @@ export default function CompanyOnboardingPage() {
 
   const steps = [
     t('company.onboarding.step_terms'),
-    t('company.onboarding.step_plan'),
+    BOOKING_ENABLED ? t('company.onboarding.step_plan') : t('cx.onboarding.step_confirm'),
     t('company.onboarding.step_review'),
   ];
 
@@ -336,6 +338,32 @@ export default function CompanyOnboardingPage() {
         setSelectedPlanId(null);
       }
     };
+
+    // No per-booking plans while UNLOCKED's own booking is off (src/lib/features.ts):
+    // no prices here, the company just confirms and goes to review. Packages are
+    // agreed with the team directly.
+    if (!BOOKING_ENABLED) {
+      return (
+        <div className="min-h-screen bg-brand-bg">
+          <div className="max-w-2xl mx-auto">
+            {renderHeader(t('cx.onboarding.confirm_title'))}
+            {renderSteps()}
+            <div className="px-6 pb-12 text-center">
+              <p className="text-brand-text-secondary mb-8">{t('cx.onboarding.confirm_text')}</p>
+              {actionError && <p className="text-sm text-red-400 mb-4">{actionError}</p>}
+              <button
+                onClick={() => handleSelectPlan('payg')}
+                disabled={loading}
+                className="btn-primary px-10 py-3 inline-flex items-center gap-2 disabled:opacity-50"
+              >
+                {loading && <Loader2 className="w-4 h-4 animate-spin" />}
+                {t('cx.onboarding.confirm_button')}
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
 
     return (
       <div className="min-h-screen bg-brand-bg">

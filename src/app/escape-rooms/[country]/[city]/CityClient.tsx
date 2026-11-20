@@ -5,6 +5,7 @@ import {
   MapPin, Star, Clock, Users, DoorOpen, ArrowRight, ChevronRight,
   Puzzle, Lightbulb, Shield, Sparkles, CalendarCheck, TrendingUp,
 } from 'lucide-react';
+import { BOOKING_ENABLED } from '@/lib/features';
 import { useTranslation } from '@/lib/i18n';
 import { jsonLd } from '@/lib/jsonLd';
 import { CityData } from '@/data/cities';
@@ -31,7 +32,7 @@ export default function CityClient({ city, nearby }: { city: CityData; nearby: C
 
   const faqs = [
     { q: t('dir.faq1_q').replace('{city}', city.city), a: t('dir.faq1_a').replace('{city}', city.city).replace('{rooms}', String(city.roomCount)).replace('{themes}', city.themes.join(', ')) },
-    { q: t('dir.faq2_q').replace('{city}', city.city), a: t('dir.faq2_a').replace('{city}', city.city).replace('{price}', city.avgPrice) },
+    ...(BOOKING_ENABLED ? [{ q: t('dir.faq2_q').replace('{city}', city.city), a: t('dir.faq2_a').replace('{city}', city.city).replace('{price}', city.avgPrice) }] : []),
     { q: t('dir.faq3_q').replace('{city}', city.city), a: t('dir.faq3_a').replace('{city}', city.city).replace('{duration}', city.avgDuration).replace('{group}', city.avgGroupSize) },
     { q: t('dir.faq4_q').replace('{city}', city.city), a: t('dir.faq4_a').replace('{city}', city.city) },
   ];
@@ -167,6 +168,7 @@ export default function CityClient({ city, nearby }: { city: CityData; nearby: C
             </div>
           </div>
 
+          {BOOKING_ENABLED && (
           <div>
             <h2 className="text-2xl font-display font-bold mb-4">
               {t('dir.pricing_title')}
@@ -183,6 +185,7 @@ export default function CityClient({ city, nearby }: { city: CityData; nearby: C
               </p>
             </div>
           </div>
+          )}
         </div>
       </section>
 

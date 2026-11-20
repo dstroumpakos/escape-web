@@ -16,9 +16,9 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: 'Discover & Book Escape Rooms Worldwide | UNLOCKED',
+  title: 'Discover Escape Rooms & Collect Stamps | UNLOCKED',
   description:
-    'Find and book the best escape rooms near you. Browse by theme, difficulty & location. Instant online booking, player reviews & team leaderboards on UNLOCKED.',
+    'Discover the best escape rooms near you, join the community of players and collect a stamp with every escape. Browse by theme, difficulty & location on UNLOCKED.',
   keywords: [
     'escape room',
     'book escape room',
@@ -28,7 +28,6 @@ export const metadata: Metadata = {
     'puzzle rooms',
     'adventure games',
     'escape room near me',
-    'online booking',
     'player reviews',
   ],
   manifest: '/manifest.json',
@@ -47,9 +46,9 @@ export const metadata: Metadata = {
     canonical: 'https://unlocked.gr',
   },
   openGraph: {
-    title: 'Discover & Book Escape Rooms Worldwide | UNLOCKED',
+    title: 'Discover Escape Rooms & Collect Stamps | UNLOCKED',
     description:
-      'Find and book the best escape rooms near you. Browse by theme, difficulty & location. Instant booking & player reviews.',
+      'Discover the best escape rooms near you, join the community and collect a stamp with every escape.',
     type: 'website',
     url: 'https://unlocked.gr',
     siteName: 'UNLOCKED',
@@ -57,9 +56,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Discover & Book Escape Rooms Worldwide | UNLOCKED',
+    title: 'Discover Escape Rooms & Collect Stamps | UNLOCKED',
     description:
-      'Find and book the best escape rooms near you. Browse by theme, difficulty & location on UNLOCKED.',
+      'Discover the best escape rooms near you and collect a stamp with every escape on UNLOCKED.',
   },
 };
 
@@ -74,14 +73,14 @@ export default function RootLayout({
     name: 'UNLOCKED',
     url: 'https://unlocked.gr',
     description:
-      'Discover and book the best escape rooms around the world. Browse rooms by theme, difficulty and location with instant online booking.',
+      'Discover escape rooms around the world, join the community of players and collect a stamp with every escape.',
     applicationCategory: 'EntertainmentApplication',
     operatingSystem: 'Web',
     offers: {
       '@type': 'Offer',
       price: '0',
       priceCurrency: 'EUR',
-      description: 'Free to browse and book escape rooms',
+      description: 'Free for players',
     },
     creator: {
       '@type': 'Organization',

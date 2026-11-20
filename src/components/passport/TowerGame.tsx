@@ -7,6 +7,8 @@ import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
 import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
 import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
 import { ArrowUp, ArrowDown, RotateCcw, RotateCw, Stamp, Gift, Lock, Loader2, Volume2, VolumeX, Ghost, Maximize2, Minimize2, X } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
 
@@ -45,6 +47,46 @@ void main() {
   gl_FragColor = vec4(c, 1.0);
 }`,
 };
+
+// Furniture: real models from Poly Haven (CC0), compressed into public/models/tower.
+// One set per map. w = against that outer wall (N/S/E/W), top = on the previous
+// piece (x offset), y = hung on the wall at that height.
+type Prop = { m: string; w?: 'N' | 'S' | 'E' | 'W'; x?: number; z?: number; r?: number; y?: number; top?: number };
+const MODEL_SCALE: Record<string, number> = { GothicCabinet_01: 0.62, GothicBed_01: 0.7, WoodenChair_01: 0.6, treasure_chest: 0.7 };
+const PROPS: Prop[][] = [
+  [
+    { m: 'wooden_bookshelf_worn', w: 'W', z: 4 },
+    { m: 'vintage_grandfather_clock_01', w: 'E', z: 3 },
+    { m: 'GothicCommode_01', w: 'N', x: 6 },
+    { m: 'marble_bust_01', top: -0.3 },
+    { m: 'Lantern_01', top: 0.3 },
+    { m: 'Rockingchair_01', x: 5.6, z: 5.4, r: -2.3 },
+    { m: 'Barrel_01', x: 1.3, z: 7.25 },
+    { m: 'ornate_mirror_01', w: 'E', z: 2, y: 1.5 },
+  ],
+  [
+    { m: 'GothicCabinet_01', w: 'N', x: 2.0 },
+    { m: 'vintage_grandfather_clock_01', w: 'W', z: 4 },
+    { m: 'GothicBed_01', w: 'S', x: 6.75, r: Math.PI / 2 },
+    { m: 'WoodenChair_01', x: 6.3, z: 1.3, r: -2.4 },
+    { m: 'ornate_mirror_01', w: 'W', z: 7, y: 1.5 },
+    { m: 'Barrel_01', x: 2.3, z: 7.25 },
+    { m: 'Lantern_01', x: 2.8, z: 7.3 },
+  ],
+  [
+    { m: 'wooden_bookshelf_worn', w: 'N', x: 2.2 },
+    { m: 'GothicCommode_01', w: 'N', x: 6 },
+    { m: 'marble_bust_01', top: 0.3 },
+    { m: 'Lantern_01', top: -0.3 },
+    { m: 'Rockingchair_01', x: 1.4, z: 5.6, r: 1.9 },
+    { m: 'vintage_grandfather_clock_01', w: 'E', z: 3 },
+    { m: 'Barrel_01', x: 1.3, z: 7.25 },
+    { m: 'ornate_mirror_01', w: 'W', z: 3, y: 1.5 },
+  ],
+];
+// Chains hanging from the ceiling (made in code), per map.
+const CHAINS: [number, number][][] = [[[3, 2.5], [5.5, 3], [2.5, 5.6]], [[4, 2], [2, 4.2], [5.2, 6.3]], [[4, 3], [6, 5.6]]];
+const MODEL_NAMES = ['treasure_chest', ...new Set(PROPS.flat().map((q) => q.m))];
 
 const FLOOR_KEY = 'unlocked_tower_floor';
 const CHEST_KEY = 'unlocked_tower_chests';
@@ -137,13 +179,13 @@ export function TowerGame({ placed, chambers, pocket, onPlace, busy, embedded = 
     const ratio = Math.min(hi ? 2 : 1.5, window.devicePixelRatio);
     renderer.setPixelRatio(ratio);
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.6;
+    renderer.toneMappingExposure = 2.0;
     renderer.shadowMap.enabled = hi;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     host.prepend(renderer.domElement);
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(0x030206);
-    scene.fog = new THREE.FogExp2(0x050309, 0.12);
+    scene.fog = new THREE.FogExp2(0x050309, 0.09);
     const cam = new THREE.PerspectiveCamera(70, 16 / 9, 0.05, 40);
     const composer = new EffectComposer(renderer);
     composer.setPixelRatio(ratio);
@@ -267,9 +309,21 @@ export function TowerGame({ placed, chambers, pocket, onPlace, busy, embedded = 
     const lid = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.1, 0.35), new THREE.MeshStandardMaterial({ color: 0x8a5422 })); lid.position.y = 0.35;
     const band = new THREE.Mesh(new THREE.BoxGeometry(0.52, 0.05, 0.37), new THREE.MeshStandardMaterial({ color: 0xc99a2e, metalness: 0.6 })); band.position.y = 0.22;
     chest.add(chestBody, lid, band); scene.add(chest);
+    // The real chest model replaces the box once it has loaded; lidNode is what opens.
+    let lidNode: THREE.Object3D = lid;
+    // How the lid opens: around which axis, which way, and how far it is open now.
+    let lidAxis: 'x' | 'z' = 'x', lidSign = -1, lidOpen = 0;
+    const applyLid = () => {
+      lidNode.rotation.set(0, 0, 0);
+      lidNode.rotation[lidAxis] = lidSign * lidOpen;
+      if (lidNode === lid) lid.position.z = lidOpen > 0 ? -0.1 : 0;
+    };
+    const models: Record<string, THREE.Object3D> = {};
+    let propBoxes: THREE.Box3[] = [];
+    const rockers: THREE.Object3D[] = [], chains: THREE.Object3D[] = [], clocks: THREE.Vector3[] = [];
     const glow = new THREE.PointLight(0xffd76a, 0, 2); scene.add(glow);
-    const ambient = new THREE.AmbientLight(0x3a3050, 0.45); scene.add(ambient);
-    const hand = new THREE.PointLight(0xffa040, 3, 6, 2); scene.add(hand);
+    const ambient = new THREE.AmbientLight(0x6e5f78, 1.0); scene.add(ambient);
+    const hand = new THREE.PointLight(0xffa040, 8, 8, 2); scene.add(hand);
     // Dust drifting in the torchlight
     const dustN = hi ? 600 : 220, dustPos = new Float32Array(dustN * 3);
     for (let i = 0; i < dustN; i++) { dustPos[i * 3] = 0.5 + Math.random() * 7; dustPos[i * 3 + 1] = Math.random() * 2.2; dustPos[i * 3 + 2] = -0.5 + Math.random() * 9; }
@@ -348,7 +402,8 @@ export function TowerGame({ placed, chambers, pocket, onPlace, busy, embedded = 
         sh.rotation.set(-0.35, 0, s * 0.12);
       });
     }
-    const monsterEye = new THREE.PointLight(0xff2010, 0, 2.5); monsterEye.position.set(0, 1.62, 0.35); monster.add(monsterEye);
+    const monsterEye = new THREE.PointLight(0xff2010, 0, 2.5); scene.add(monsterEye);
+    const tmpV = new THREE.Vector3();
     monster.scale.setScalar(0.8); monster.visible = false; scene.add(monster);
 
     // The ghost: a woman in a white gown, long black hair over the face, see-through
@@ -413,9 +468,10 @@ export function TowerGame({ placed, chambers, pocket, onPlace, busy, embedded = 
       crown.position.y = 1.6; ghostMats.push([crown.material as THREE.Material, 0.95]); ghost.add(crown);
       const armMat = faceMat;
       [-1, 1].forEach((s) => { const arm = new THREE.Mesh(new THREE.CylinderGeometry(0.018, 0.012, 0.6, 6), armMat); arm.position.set(s * 0.14, 1.08, 0.03); arm.rotation.z = s * 0.08; ghost.add(arm); });
-      const l = new THREE.PointLight(0x9fc0ff, 0.5, 3); l.position.set(0, 1.2, 0.7); ghost.add(l);
+
     }
     ghost.scale.setScalar(0.85); ghost.visible = false; scene.add(ghost);
+    const ghostLight = new THREE.PointLight(0x9fc0ff, 0, 3); scene.add(ghostLight);
 
     // Sound, generated (no files)
     let ac: AudioContext | null = null;
@@ -449,6 +505,19 @@ export function TowerGame({ placed, chambers, pocket, onPlace, busy, embedded = 
       [220, 233, 311].forEach((f) => { const o = a.createOscillator(), gg = a.createGain(); o.type = 'sawtooth'; o.frequency.setValueAtTime(f, tt); o.frequency.exponentialRampToValueAtTime(f * 0.5, tt + 1); gg.gain.setValueAtTime(0.12, tt); gg.gain.exponentialRampToValueAtTime(0.001, tt + 1.1); o.connect(gg).connect(out()); o.start(tt); o.stop(tt + 1.2); });
     };
     const thunder = () => { if (!canPlay()) return; const a = ac!; const s = noise(2.5, (p) => Math.pow(1 - p, 1.5) * (p < 0.05 ? p * 20 : 1)), lp = a.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 220; const g = a.createGain(); g.gain.value = 1.2; s.connect(lp).connect(g).connect(out()); s.start(); };
+    // A soft footstep on stone
+    const footstep = () => {
+      if (!canPlay()) return; const a = ac!, tt = a.currentTime;
+      const s2 = noise(0.09, (q) => Math.pow(1 - q, 3)), lp = a.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 380 + Math.random() * 160;
+      const g = a.createGain(); g.gain.value = 0.22 + Math.random() * 0.08; s2.connect(lp).connect(g).connect(out()); s2.start(tt);
+    };
+    // Grandfather clock: tick ... tock
+    let tickTock = false;
+    const tick = () => {
+      if (!canPlay()) return; const a = ac!, tt = a.currentTime;
+      const s2 = noise(0.04, (q) => Math.pow(1 - q, 6)), hp = a.createBiquadFilter(); hp.type = 'bandpass'; hp.frequency.value = (tickTock = !tickTock) ? 2600 : 2100; hp.Q.value = 4;
+      const g = a.createGain(); g.gain.value = 0.35; s2.connect(hp).connect(g).connect(out()); s2.start(tt);
+    };
     const moan = () => { if (!canPlay()) return; const a = ac!, tt = a.currentTime, o = a.createOscillator(), g = a.createGain(); o.type = 'sine'; o.frequency.setValueAtTime(320, tt); o.frequency.linearRampToValueAtTime(180, tt + 1.6); g.gain.setValueAtTime(0, tt); g.gain.linearRampToValueAtTime(0.12, tt + 0.4); g.gain.linearRampToValueAtTime(0, tt + 1.8); o.connect(g).connect(out()); o.start(tt); o.stop(tt + 1.9); };
     // A wooden creak somewhere in the dark
     const creak = () => {
@@ -477,6 +546,73 @@ export function TowerGame({ placed, chambers, pocket, onPlace, busy, embedded = 
     const torches: THREE.PointLight[] = [];
     const flames: THREE.Sprite[] = [];
     let px = 4, pz = 7, ang = 0, lift = 0, gotChest = false;
+    const chainLinkG = new THREE.TorusGeometry(0.045, 0.011, 6, 14);
+    const chainMat = new THREE.MeshStandardMaterial({ color: 0x5a4a40, metalness: 0.7, roughness: 0.45 });
+    const placeChains = (f: number) => {
+      chains.length = 0;
+      for (const [x, z] of CHAINS[f % LAYOUTS.length]) {
+        const g = new THREE.Group(); g.position.set(x, 2.2, z);
+        const n = 8 + Math.floor(Math.random() * 6);
+        for (let i = 0; i < n; i++) { const l = new THREE.Mesh(chainLinkG, chainMat); l.position.y = -0.045 - i * 0.075; l.rotation.y = i % 2 ? Math.PI / 2 : 0; l.userData.noShadow = true; g.add(l); }
+        level!.add(g); chains.push(g);
+      }
+    };
+    const placeProps = (f: number) => {
+      rockers.length = 0; clocks.length = 0;
+      let base: THREE.Box3 | null = null;
+      for (const q of PROPS[f % LAYOUTS.length]) {
+        const src = models[q.m]; if (!src) continue;
+        const o = src.clone(true);
+        o.scale.setScalar(MODEL_SCALE[q.m] ?? 0.75);
+        o.rotation.order = 'YXZ';
+        o.rotation.y = q.r ?? (q.w === 'W' ? Math.PI / 2 : q.w === 'E' ? -Math.PI / 2 : q.w === 'S' ? Math.PI : 0);
+        level!.add(o); o.updateMatrixWorld(true);
+        let b = new THREE.Box3().setFromObject(o);
+        const mx = (b.min.x + b.max.x) / 2, mz = (b.min.z + b.max.z) / 2;
+        if (q.top !== undefined && base) {
+          o.position.set((base.min.x + base.max.x) / 2 + q.top - mx, base.max.y - b.min.y, (base.min.z + base.max.z) / 2 - mz);
+        } else {
+          let tx = (q.x ?? 4) - mx, tz = (q.z ?? 4) - mz;
+          if (q.w === 'W') tx = 0.52 - b.min.x;
+          if (q.w === 'E') tx = 7.48 - b.max.x;
+          if (q.w === 'N') tz = 0.52 - b.min.z;
+          if (q.w === 'S') tz = 7.48 - b.max.z;
+          o.position.set(tx, q.y !== undefined ? q.y - (b.min.y + b.max.y) / 2 : -b.min.y, tz);
+        }
+        o.updateMatrixWorld(true);
+        b = new THREE.Box3().setFromObject(o);
+        if (q.top === undefined) base = b;
+        // Big pieces on the floor block the way; small ones and wall pieces don't.
+        if (q.top === undefined && q.y === undefined && q.m !== 'Lantern_01') propBoxes.push(b);
+        if (q.m === 'Rockingchair_01') rockers.push(o);
+        if (q.m.includes('clock')) clocks.push(new THREE.Vector3((b.min.x + b.max.x) / 2, 0, (b.min.z + b.max.z) / 2));
+        o.traverse((c) => { const m = c as THREE.Mesh; if (m.isMesh) { m.castShadow = true; m.receiveShadow = true; } });
+      }
+    };
+    const setupChest = () => {
+      const cm = models.treasure_chest;
+      if (!cm || lidNode !== lid) return;
+      const o = cm.clone(true); o.scale.setScalar(MODEL_SCALE.treasure_chest);
+      chest.add(o); chestBody.visible = lid.visible = band.visible = false;
+      o.traverse((c) => { const m = c as THREE.Mesh; if (m.isMesh) { m.castShadow = true; m.receiveShadow = true; } });
+      const ln = o.getObjectByName('treasure_chest_lid');
+      if (!ln || !ln.parent) return;
+      // Hinge the lid on its bottom edge at the back: the side away from the lock.
+      chest.updateMatrixWorld(true);
+      const lb = new THREE.Box3().setFromObject(ln), cb = new THREE.Box3().setFromObject(o);
+      const lock = o.getObjectByName('treasure_chest_lock');
+      const kc = lock ? new THREE.Box3().setFromObject(lock).getCenter(new THREE.Vector3()) : new THREE.Vector3(0, 0, cb.max.z);
+      const cc = cb.getCenter(new THREE.Vector3());
+      const fx = kc.x - cc.x, fz = kc.z - cc.z;
+      const hinge = new THREE.Vector3((lb.min.x + lb.max.x) / 2, lb.min.y, (lb.min.z + lb.max.z) / 2);
+      if (Math.abs(fz) >= Math.abs(fx)) { hinge.z = fz > 0 ? lb.min.z : lb.max.z; lidAxis = 'x'; lidSign = fz > 0 ? -1 : 1; }
+      else { hinge.x = fx > 0 ? lb.min.x : lb.max.x; lidAxis = 'z'; lidSign = fx > 0 ? 1 : -1; }
+      const parent = ln.parent; parent.worldToLocal(hinge);
+      const pivot = new THREE.Group(); pivot.position.copy(hinge); parent.add(pivot); pivot.attach(ln);
+      lidNode = pivot;
+      applyLid();
+    };
+
     const buildLevel = (f: number, from: 'below' | 'above' = 'below') => {
       if (level) scene.remove(level);
       level = new THREE.Group(); scene.add(level); windows.length = 0; torches.length = 0; flames.length = 0;
@@ -522,7 +658,10 @@ export function TowerGame({ placed, chambers, pocket, onPlace, busy, embedded = 
       chest.visible = f > 0;
       chest.position.set(chestCell[0], 0, chestCell[1]);
       gotChest = opened.includes(f);
-      lid.rotation.x = gotChest ? -1.2 : 0; lid.position.z = gotChest ? -0.1 : 0;
+      lidOpen = gotChest ? 1.2 : 0; applyLid();
+      propBoxes = [];
+      placeChains(f);
+      placeProps(f);
       glow.position.set(chestCell[0], 0.6, chestCell[1]); glow.intensity = 0;
       // Everything solid casts and catches shadows (not the see-through ghost).
       scene.traverse((o) => {
@@ -533,8 +672,23 @@ export function TowerGame({ placed, chambers, pocket, onPlace, busy, embedded = 
       if (from === 'below') { px = 4; pz = 7; ang = 0; } else { px = 4; pz = 1; ang = Math.PI; }
     };
     buildLevel(floorRef.current);
+    monster.visible = ghost.visible = true;
+    renderer.compile(scene, cam);
+    monster.visible = ghost.visible = false;
+    // Load the models in the background; the floor fills in when they arrive.
+    let disposed = false;
+    {
+      const loader = new GLTFLoader(); loader.setMeshoptDecoder(MeshoptDecoder);
+      Promise.all(MODEL_NAMES.map((n) => loader.loadAsync(`/models/tower/${n}.glb`).then((g) => { models[n] = g.scene; }).catch(() => {}))).then(() => {
+        if (disposed) return;
+        setupChest();
+        placeProps(floorRef.current);
+        renderer.compile(scene, cam);
+      });
+    }
 
     const solid = (x: number, z: number) => {
+      for (const b of propBoxes) if (x > b.min.x && x < b.max.x && z > b.min.z && z < b.max.z) return true;
       const cx = Math.round(x), cz = Math.round(z), fl = floorRef.current;
       if (cz < 0) return !(cx === 4 && cz === -1);
       if (cz > 8) return !(fl > 0 && cx === 4 && cz === 9);
@@ -552,7 +706,7 @@ export function TowerGame({ placed, chambers, pocket, onPlace, busy, embedded = 
       return null;
     };
 
-    let raf = 0, t0 = performance.now(), nextScare = 8, nextGhost = 4, nextBolt = 5, walked = 0, shake = 0, climbing = false, boltT = -1, ghostT = -1, ghostDir = 1, lastNear = false, nextAmb = 5, nextBeat = 0;
+    let raf = 0, t0 = performance.now(), nextScare = 8, nextGhost = 4, nextBolt = 5, walked = 0, shake = 0, climbing = false, boltT = -1, ghostT = -1, ghostDir = 1, vel = 0, turnV = 0, stepPhase = 0, lastStep = 0, nextTick = 1, lastNear = false, nextAmb = 5, nextBeat = 0;
     let scare: { t: number } | null = null;
     const fx = fxRef.current!, fade = fadeRef.current!;
     // Move one floor up (+1) through an open door, or down (-1) by the stairs
@@ -577,13 +731,18 @@ export function TowerGame({ placed, chambers, pocket, onPlace, busy, embedded = 
       const tt = (now - t0) / 1000, dt = 1 / 60, k = keys.current, f = floorRef.current;
       if (live.current.placed !== lastPlaced) { lastPlaced = live.current.placed; paintDoor(f); }
       const doorOpen = f < FLOORS - 1 && live.current.placed >= chambers[f + 1];
-      if (!climbing) { if (k.ArrowLeft || k.a) ang += 0.035; if (k.ArrowRight || k.d) ang -= 0.035; }
+      const turn = climbing ? 0 : (k.ArrowLeft || k.a ? 1 : 0) - (k.ArrowRight || k.d ? 1 : 0);
+      turnV += (turn * 0.028 - turnV) * 0.18; ang += turnV;
       const mv = climbing ? 0 : (k.ArrowUp || k.w ? 1 : 0) - (k.ArrowDown || k.s ? 1 : 0);
-      if (mv && !scare) {
-        const sp = 0.035 * mv, nx = px - Math.sin(ang) * sp, nz = pz - Math.cos(ang) * sp, rr = 0.22;
+      vel += ((scare ? 0 : mv) * (mv < 0 ? 0.016 : 0.024) - vel) * 0.1;
+      if (Math.abs(vel) > 0.0004) {
+        const sp = vel, nx = px - Math.sin(ang) * sp, nz = pz - Math.cos(ang) * sp, rr = 0.22;
         if (!solid(nx + Math.sign(nx - px) * rr, pz)) px = nx;
         if (!solid(px, nz + Math.sign(nz - pz) * rr)) pz = nz;
         walked += Math.abs(sp);
+        stepPhase += Math.abs(sp) * 9;
+        const st = Math.floor(stepPhase / Math.PI);
+        if (st !== lastStep) { lastStep = st; footstep(); }
       }
       if (doorOpen && pz < -0.55 && Math.abs(px - 4) < 0.5) go(1);
       if (f > 0 && pz > 8.7 && Math.abs(px - 4) < 0.5) go(-1);
@@ -601,8 +760,8 @@ export function TowerGame({ placed, chambers, pocket, onPlace, busy, embedded = 
       if (nextBolt <= 0) { nextBolt = 8 + Math.random() * 10; boltT = 0; setTimeout(thunder, 400 + Math.random() * 600); }
       if (boltT >= 0) {
         boltT += dt; const fl = boltT < 0.08 || (boltT > 0.18 && boltT < 0.26) ? 1 : 0;
-        ambient.intensity = 0.45 + fl * 2.2; windows.forEach((w) => (w.material as THREE.MeshBasicMaterial).color.setHex(fl ? 0xdfe8ff : 0x111a2a));
-        if (boltT > 0.4) { boltT = -1; ambient.intensity = 0.45; }
+        ambient.intensity = 1.0 + fl * 2.2; windows.forEach((w) => (w.material as THREE.MeshBasicMaterial).color.setHex(fl ? 0xdfe8ff : 0x111a2a));
+        if (boltT > 0.4) { boltT = -1; ambient.intensity = 1.0; }
       }
       // Ghosts and monsters
       if (live.current.scares && walked > 0) {
@@ -614,8 +773,9 @@ export function TowerGame({ placed, chambers, pocket, onPlace, busy, embedded = 
         ghost.position.y = 0.1 + Math.sin(tt * 3) * 0.08; ghost.lookAt(px, ghost.position.y, pz);
         const gf = Math.max(0, Math.min(1, Math.min(ghostT, 2.4 - ghostT) * 2));
         ghostMats.forEach(([m, o]) => (m.opacity = o * gf));
+        ghostLight.position.copy(ghost.localToWorld(tmpV.set(0, 1.2, 0.7))); ghostLight.intensity = 0.5 * gf;
         ghostTime.value = tt;
-        if (ghostT > 2.4) { ghost.visible = false; ghostT = -1; }
+        if (ghostT > 2.4) { ghost.visible = false; ghostT = -1; ghostLight.intensity = 0; }
       }
       if (scare) {
         scare.t += dt;
@@ -631,16 +791,22 @@ export function TowerGame({ placed, chambers, pocket, onPlace, busy, embedded = 
         else {
           if (scare.t < 0.37) { sting(); fx.style.opacity = '1'; shake = 0.6; }
           const tx = px - Math.sin(ang) * 0.95, tz = pz - Math.cos(ang) * 0.95;
-          monster.position.x += (tx - monster.position.x) * 0.25; monster.position.z += (tz - monster.position.z) * 0.25; monster.lookAt(px, 0, pz); monsterEye.intensity = 3;
+          monster.position.x += (tx - monster.position.x) * 0.25; monster.position.z += (tz - monster.position.z) * 0.25; monster.lookAt(px, 0, pz); monsterEye.intensity = 3; monsterEye.position.copy(monster.localToWorld(tmpV.set(0, 1.62, 0.35)));
         }
         if (scare.t > 1.1) { monster.visible = false; monsterEye.intensity = 0; fx.style.opacity = '0'; scare = null; }
       }
       shake *= 0.88;
-      cam.position.set(px + (Math.random() - 0.5) * shake * 0.15, 0.9 + Math.sin(tt * 8) * (mv ? 0.02 : 0) + (Math.random() - 0.5) * shake * 0.15, pz);
-      cam.rotation.set(0, ang, (Math.random() - 0.5) * shake * 0.1);
+      const walkAmt = Math.min(1, Math.abs(vel) / 0.024);
+      const bob = Math.abs(Math.sin(stepPhase)) * 0.032 * walkAmt, sway = Math.sin(stepPhase) * 0.012 * walkAmt;
+      cam.position.set(
+        px + Math.cos(ang) * sway + (Math.random() - 0.5) * shake * 0.15,
+        0.885 + bob + Math.sin(tt * 1.3) * 0.004 + (Math.random() - 0.5) * shake * 0.15,
+        pz - Math.sin(ang) * sway,
+      );
+      cam.rotation.set(-walkAmt * 0.01, ang, Math.sin(stepPhase) * 0.006 * walkAmt - turnV * 0.4 + (Math.random() - 0.5) * shake * 0.1);
       hand.position.set(px - Math.sin(ang) * 0.3, 1.05, pz - Math.cos(ang) * 0.3);
       // The lantern: steady while you walk, nearly out while the monster is on you.
-      hand.intensity = !scare ? 3 + Math.sin(tt * 13) * 0.3 : scare.t < 0.35 ? 0.05 : 0.25 + Math.random() * 0.5;
+      hand.intensity = !scare ? 8 + Math.sin(tt * 13) * 0.5 : scare.t < 0.35 ? 0.05 : 0.25 + Math.random() * 0.5;
       torches.forEach((l, i) => {
         const fl = 0.85 + Math.sin(tt * 11 + i) * 0.1 + Math.sin(tt * 23.7 + i * 2) * 0.06 + (Math.random() - 0.5) * 0.08;
         l.intensity = 7 * fl;
@@ -658,7 +824,12 @@ export function TowerGame({ placed, chambers, pocket, onPlace, busy, embedded = 
         if (!opened.includes(f)) { try { localStorage.setItem(CHEST_KEY, JSON.stringify([...opened, f])); } catch {} }
         setChestMsg(f);
       }
-      if (gotChest && lid.rotation.x > -1.2) { lid.rotation.x -= 0.04; lid.position.z = -0.1; }
+      if (gotChest && lidOpen < 1.2) { lidOpen = Math.min(1.2, lidOpen + 0.04); applyLid(); }
+      // The rocking chair rocks by itself, the chains sway, the clock ticks.
+      rockers.forEach((o, i) => (o.rotation.x = Math.sin(tt * 1.7 + i) * 0.07));
+      chains.forEach((c, i) => { c.rotation.z = Math.sin(tt * 0.8 + i * 2) * 0.05; c.rotation.x = Math.cos(tt * 0.6 + i) * 0.04; });
+      nextTick -= dt;
+      if (nextTick <= 0) { nextTick = 1; if (clocks.some((c) => Math.hypot(c.x - px, c.z - pz) < 3)) tick(); }
       const near = f < FLOORS - 1 && !doorOpen && Math.hypot(px - doorCell[0], pz - doorCell[1]) < 1.4;
       if (near !== lastNear) { lastNear = near; setNearDoor(near); setHint(''); }
       // Heartbeat while standing at a closed door
@@ -678,6 +849,7 @@ export function TowerGame({ placed, chambers, pocket, onPlace, busy, embedded = 
       window.removeEventListener('keydown', down);
       window.removeEventListener('keyup', up);
       ro.disconnect();
+      disposed = true;
       composer.dispose();
       renderer.dispose();
       renderer.domElement.remove();
@@ -777,13 +949,13 @@ export function TowerGame({ placed, chambers, pocket, onPlace, busy, embedded = 
       )}
 
       <div ref={stage} className={full ? 'fixed inset-0 z-[200] bg-black' : ''}>
-        <div ref={wrap} className={`relative overflow-hidden bg-black select-none ${full ? 'w-full h-full' : 'w-full aspect-video rounded-xl'}`}>
+        <div ref={wrap} className={`relative overflow-hidden bg-black select-none ${full ? 'w-full h-full' : 'w-full aspect-[4/5] sm:aspect-video rounded-xl'}`}>
           <div ref={fxRef} className="absolute inset-0 pointer-events-none opacity-0 transition-opacity duration-150" style={{ background: 'radial-gradient(circle at center, rgba(0,0,0,0) 30%, rgba(160,0,0,.75) 100%)' }} />
           <div ref={fadeRef} className="absolute inset-0 pointer-events-none opacity-0 transition-opacity duration-500 bg-black flex items-center justify-center font-display text-2xl tracking-[0.2em] text-brand-bone" />
           {!started && (
-            <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-6 bg-black/85">
-              <p className="font-display text-2xl text-brand-bone mb-2">{t('tw.title')}</p>
-              <p className="text-sm text-brand-text-secondary max-w-sm mb-5">{t('tw.warning')}</p>
+            <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-4 sm:p-6 bg-black/85">
+              <p className="font-display text-xl sm:text-2xl text-brand-bone mb-2">{t('tw.title')}</p>
+              <p className="text-xs sm:text-sm text-brand-text-secondary max-w-sm mb-4 sm:mb-5">{t('tw.warning')}</p>
               <button onClick={() => setStarted(true)} className="btn-primary">{t('tw.enter')}</button>
             </div>
           )}

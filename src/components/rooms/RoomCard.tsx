@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import { Star, Clock, Users, Zap, DoorOpen, BadgeCheck, Skull, Flame, MapPin } from 'lucide-react';
+import { BOOKING_ENABLED } from '@/lib/features';
 import { useTranslation } from '@/lib/i18n';
 import { themeLabel } from '@/lib/roomThemes';
 import { shownRating, formatRating } from '@/lib/roomMedia';
@@ -134,13 +135,15 @@ export function RoomCard({ room }: { room: RoomCardData }) {
           )}
         </div>
 
-        {/* Price */}
+        {/* Price (only while UNLOCKED's own booking is on) */}
+        {BOOKING_ENABLED && (
         <div className="absolute top-3 right-3 z-20">
           <span className="bg-black/80 backdrop-blur-xs text-brand-bone text-sm font-bold px-3 py-1.5 rounded-sm border border-brand-red/40">
             €{room.price}
             <span className="text-brand-text-secondary font-normal text-xs">{t('featured.per_person')}</span>
           </span>
         </div>
+        )}
       </div>
 
       {/* Content */}

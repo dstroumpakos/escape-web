@@ -144,7 +144,7 @@ export default function CompanyDashboardPage() {
       href: p('/company/settings?tab=widget'),
       icon: Code,
     },
-  ];
+  ].filter((s) => BOOKING_ENABLED || (s.key !== 'times' && s.key !== 'widget'));
   const doneCount = steps.filter((s) => s.done).length;
   const showChecklist = !!companyData && rooms !== undefined && !checklistDismissed && doneCount < steps.length;
 
@@ -174,18 +174,20 @@ export default function CompanyDashboardPage() {
             <h1 className="text-2xl md:text-3xl font-bold">
               {getGreeting(t)}, <span className="text-brand-red-light">{company?.name}</span>
             </h1>
-            <p className="text-brand-text-secondary mt-1.5 text-sm">
+            {BOOKING_ENABLED && <p className="text-brand-text-secondary mt-1.5 text-sm">
               {todayBookings
                 ? todayBookings.length > 0
                   ? `${t('company.dashboard.you_have')} ${todayBookings.length} ${todayBookings.length !== 1 ? t('company.dashboard.bookings_plural') : t('company.dashboard.booking_singular')} ${t('company.dashboard.today')} · ${upcomingCount} ${t('company.dashboard.upcoming')}, ${completedCount} ${t('company.dashboard.completed')}`
                   : t('company.dashboard.no_bookings_today')
                 : t('company.dashboard.loading_schedule')}
-            </p>
+            </p>}
           </div>
           <div className="flex flex-wrap items-center gap-2 md:gap-3 shrink-0">
+            {BOOKING_ENABLED && (
             <Link href={p('/company/slots')} className="btn-ghost text-sm flex items-center gap-2 py-2.5! px-4!">
               <Clock className="w-4 h-4" /> {t('cx.nav.slots')}
             </Link>
+            )}
             {atLimit ? (
               <Link
                 href={p('/company/billing')}
@@ -269,7 +271,7 @@ export default function CompanyDashboardPage() {
       {!BOOKING_ENABLED && companyId && <BookClicksCard companyId={companyId} />}
 
       {/* ── Bookings calendar: rooms side by side, tap a time to book it ── */}
-      {bookableRooms.length > 0 && (
+      {BOOKING_ENABLED && bookableRooms.length > 0 && (
         <div>
           <div className="flex items-center justify-between mb-3">
             <h2 className="font-bold flex items-center gap-2">
@@ -283,6 +285,7 @@ export default function CompanyDashboardPage() {
         </div>
       )}
 
+      {BOOKING_ENABLED && (<>
       {/* ── Today's Metrics (live pulse) ── */}
       <StaggerContainer stagger={0.1} className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
         <MetricCard
@@ -567,6 +570,7 @@ export default function CompanyDashboardPage() {
         </div>
         );
       })()}
+      </>)}
 
       {/* ── Quick Actions ── */}
       <div>
@@ -583,6 +587,7 @@ export default function CompanyDashboardPage() {
             disabled={atLimit}
             disabledHref={p('/company/billing')}
           />
+          {BOOKING_ENABLED && (
           <QuickAction
             href={p('/company/slots')}
             icon={Clock}
@@ -590,6 +595,8 @@ export default function CompanyDashboardPage() {
             desc={t('cx.dashboard.slots_desc')}
             color="text-emerald-400"
           />
+          )}
+          {BOOKING_ENABLED && (
           <QuickAction
             href={p('/company/bookings')}
             icon={CalendarDays}
@@ -597,6 +604,7 @@ export default function CompanyDashboardPage() {
             desc={t('company.dashboard.manage_reservations')}
             color="text-blue-400"
           />
+          )}
           <QuickAction
             href={p('/company/rooms')}
             icon={DoorOpen}
@@ -604,6 +612,7 @@ export default function CompanyDashboardPage() {
             desc={t('company.dashboard.edit_listings')}
             color="text-purple-400"
           />
+          {BOOKING_ENABLED && (
           <QuickAction
             href={p('/company/settings?tab=widget')}
             icon={Code}
@@ -611,6 +620,7 @@ export default function CompanyDashboardPage() {
             desc={t('company.dashboard.widget_desc')}
             color="text-orange-400"
           />
+          )}
           <QuickAction
             href={p('/company/settings')}
             icon={Settings}
