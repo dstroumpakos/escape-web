@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { useQuery, useMutation } from 'convex/react';
@@ -52,6 +52,15 @@ export default function RoomDetailsPage() {
       : 'skip'
   );
   const submitReview = useMutation(api.reviews.submit);
+
+  // Count the visit for the company's stats (once per room per browser session)
+  const trackView = useMutation(api.companyStats.trackRoomView);
+  useEffect(() => {
+    if (!roomId) return;
+    const key = 'unlocked_viewed_' + roomId;
+    try { if (sessionStorage.getItem(key)) return; sessionStorage.setItem(key, '1'); } catch {}
+    trackView({ roomId: roomId as any }).catch(() => {});
+  }, [roomId, trackView]);
 
   const [reviewRating, setReviewRating] = useState(0);
   const [reviewHover, setReviewHover] = useState(0);
@@ -434,13 +443,13 @@ export default function RoomDetailsPage() {
                 <button
                   disabled={reviewRating === 0 || reviewSubmitting}
                   onClick={async () => {
-                    if (!user || !canReviewData?.bookingId || reviewRating === 0) return;
+                    if (!user || !canReviewData?.canReview || reviewRating === 0) return;
                     setReviewSubmitting(true);
                     try {
                       await submitReview({
                         sessionToken: user.sessionToken,
                         roomId: roomId as any,
-                        bookingId: canReviewData.bookingId as any,
+                        bookingId: (canReviewData.bookingId ?? undefined) as any,
                         rating: reviewRating,
                         text: reviewText.trim() || undefined,
                       });
@@ -470,6 +479,14 @@ export default function RoomDetailsPage() {
                 <CheckCircle className="w-5 h-5 text-emerald-400 shrink-0" />
                 <span className="text-emerald-400 font-medium">{t('reviews.success')}</span>
               </div>
+            )}
+
+            {/* Who can review: players with the room's stamp */}
+            {!reviewSuccess && !canReviewData?.canReview && canReviewData?.reason !== 'reviewed' && (
+              <p className="mb-6 text-sm text-brand-text-secondary flex items-start gap-2">
+                <BadgeCheck className="w-4 h-4 text-brand-red-light shrink-0 mt-0.5" />
+                {canReviewData?.reason === 'need_stamp' ? t('reviews.need_stamp') : t('reviews.only_players')}
+              </p>
             )}
 
             {/* Reviews List */}

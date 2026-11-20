@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useCompanyQuery, useCompanyAuth, useCompanyPath, uiLocale, localDateKey } from '@/lib/companyAuth';
 import { api } from '../../../convex/_generated/api';
 import { BOOKING_ENABLED } from '@/lib/features';
-import { BookClicksCard } from '@/components/company/BookClicksCard';
+import { CompanyStatsCard } from '@/components/company/CompanyStatsCard';
 import { roomLimitFor } from '@/lib/plans';
 import Link from 'next/link';
 import {
@@ -267,8 +267,8 @@ export default function CompanyDashboardPage() {
         </div>
       )}
 
-      {/* ── Players sent to their own site by "Book now" (externalLinks.ts) ── */}
-      {!BOOKING_ENABLED && companyId && <BookClicksCard companyId={companyId} />}
+      {/* ── Views, players sent to their site, followers, stamps, rating (companyStats.ts) ── */}
+      {companyId && <CompanyStatsCard companyId={companyId} />}
 
       {/* ── Bookings calendar: rooms side by side, tap a time to book it ── */}
       {BOOKING_ENABLED && bookableRooms.length > 0 && (

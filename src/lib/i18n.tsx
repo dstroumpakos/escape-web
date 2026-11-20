@@ -11,6 +11,7 @@ import { shopTranslations } from './i18nShop';
 import { chatTranslations } from './i18nChat';
 import { playsTranslations } from './i18nPlays';
 import { companiesTranslations } from './i18nCompanies';
+import { statsTranslations } from './i18nStats';
 
 export type Language = 'en' | 'el' | 'nl';
 
@@ -6904,6 +6905,9 @@ Object.assign(translations.nl, playsTranslations.nl);
 Object.assign(translations.en, companiesTranslations.en);
 Object.assign(translations.el, companiesTranslations.el);
 Object.assign(translations.nl, companiesTranslations.nl);
+Object.assign(translations.en, statsTranslations.en);
+Object.assign(translations.el, statsTranslations.el);
+Object.assign(translations.nl, statsTranslations.nl);
 
 interface I18nContextType {
   language: Language;
