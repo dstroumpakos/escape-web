@@ -11,6 +11,7 @@ import { BOOKING_ENABLED } from '@/lib/features';
 import { useTranslation } from '@/lib/i18n';
 import { themeLabel } from '@/lib/roomThemes';
 import { RoomMerchStrip } from '@/components/shop/RoomMerch';
+import { shownRating, formatRating, videoEmbedUrl } from '@/lib/roomMedia';
 import {
   Star,
   Skull,
@@ -22,7 +23,6 @@ import {
   DoorOpen,
   Zap,
   BookOpen,
-  Shield,
   Diamond,
   CalendarClock,
   BadgeCheck,
@@ -30,8 +30,7 @@ import {
   ChevronDown,
   ChevronUp,
   CheckCircle,
-  AlertTriangle,
-  X,
+  PlayCircle,
 } from 'lucide-react';
 
 export default function RoomDetailsPage() {
@@ -60,7 +59,6 @@ export default function RoomDetailsPage() {
   const [reviewSuccess, setReviewSuccess] = useState(false);
   const [showAllReviews, setShowAllReviews] = useState(false);
   const [showReviewForm, setShowReviewForm] = useState(false);
-  const [showTestPopup, setShowTestPopup] = useState(true);
   const [imageFailed, setImageFailed] = useState(false);
 
   const isWishlisted = false; // Would need to query user's wishlist
@@ -88,6 +86,10 @@ export default function RoomDetailsPage() {
     );
   }
 
+  // Our own reviews, or the room's rating on another site if that has more
+  const shown = shownRating(room);
+  const trailer = videoEmbedUrl((room as any).videoUrl);
+
   const handleWishlist = async () => {
     if (!isAuthenticated || !user) return;
     try {
@@ -99,56 +101,6 @@ export default function RoomDetailsPage() {
 
   return (
     <>
-      {/* Test Room Popup */}
-      {showTestPopup && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="test-room-title"
-          className="fixed inset-0 z-100 flex items-center justify-center bg-black/80 backdrop-blur-xs p-4"
-        >
-          <div className="panel relative border-brand-gold/40! p-6 md:p-8 max-w-md w-full shadow-[0_0_60px_-10px_rgba(201,154,46,0.35),0_30px_80px_rgba(0,0,0,0.8)] animate-scale-in">
-            {/* Hazard stripe along the top edge */}
-            <div
-              aria-hidden
-              className="absolute inset-x-0 top-0 h-1.5 rounded-t-lg opacity-80 bg-[repeating-linear-gradient(-45deg,#c99a2e_0_10px,#110909_10px_20px)]"
-            />
-            <div className="flex items-start justify-between mb-4 mt-1">
-              <div className="w-12 h-12 rounded-md border border-brand-gold/40 bg-brand-gold/10 flex items-center justify-center">
-                <AlertTriangle className="w-6 h-6 text-brand-gold" />
-              </div>
-              <button
-                onClick={() => setShowTestPopup(false)}
-                aria-label="Close"
-                className="p-1.5 rounded-md hover:bg-brand-surface transition-colors text-brand-text-muted hover:text-brand-bone"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-            <h2 id="test-room-title" className="text-2xl font-display font-bold mb-2 text-brand-gold">{t('room.test_popup_title')}</h2>
-            <p className="text-brand-text-secondary text-sm leading-relaxed mb-4" dangerouslySetInnerHTML={{ __html: t('room.test_popup_desc') }} />
-            <div className="bg-brand-gold/10 border border-brand-gold/25 rounded-md p-3 mb-3">
-              <p className="text-xs leading-relaxed text-brand-gold flex items-center gap-2">
-                <Shield className="w-4 h-4 shrink-0" />
-                {t('room.test_popup_notice')}
-              </p>
-            </div>
-            <div className="bg-brand-red/10 border border-brand-red/30 rounded-md p-3 mb-6">
-              <p className="text-xs leading-relaxed text-brand-text">
-                {t('room.test_popup_disclaimer')}
-              </p>
-            </div>
-            <button
-              onClick={() => setShowTestPopup(false)}
-              autoFocus
-              className="w-full py-3 rounded-md border border-brand-gold/50 bg-brand-gold/15 font-semibold tracking-wide text-brand-gold hover:bg-brand-gold hover:text-black transition-colors"
-            >
-              {t('room.test_popup_button')}
-            </button>
-          </div>
-        </div>
-      )}
-
       {/* Hero Image */}
       <section className="relative h-[44vh] md:h-[56vh] overflow-hidden bg-black">
         {room.image && !imageFailed ? (
@@ -260,9 +212,21 @@ export default function RoomDetailsPage() {
             {/* Stats row */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-px mb-8 overflow-hidden rounded-md border border-brand-border bg-brand-border">
               <div className="bg-brand-dark p-4 text-center">
-                <Star className={`w-5 h-5 mx-auto mb-1.5 ${room.reviews > 0 ? 'text-brand-gold fill-brand-gold' : 'text-brand-text-muted'}`} />
-                <div className="text-xl font-display font-bold text-brand-bone tabular-nums">{room.reviews > 0 ? room.rating : '—'}</div>
-                <div className="text-xs text-brand-text-muted mt-0.5">{room.reviews} {t('featured.reviews')}</div>
+                <Star className={`w-5 h-5 mx-auto mb-1.5 ${shown ? 'text-brand-gold fill-brand-gold' : 'text-brand-text-muted'}`} />
+                <div className="text-xl font-display font-bold text-brand-bone tabular-nums">{shown ? formatRating(shown.rating) : '—'}</div>
+                <div className="text-xs text-brand-text-muted mt-0.5">
+                  {shown?.source ? (
+                    shown.url ? (
+                      <a href={shown.url} target="_blank" rel="noopener noreferrer nofollow" className="underline decoration-dotted underline-offset-2 hover:text-brand-text">
+                        {t('room.reviews_on', { count: shown.count.toLocaleString(), source: shown.source })}
+                      </a>
+                    ) : (
+                      t('room.reviews_on', { count: shown.count.toLocaleString(), source: shown.source })
+                    )
+                  ) : (
+                    <>{shown?.count ?? 0} {t('featured.reviews')}</>
+                  )}
+                </div>
               </div>
               <div className="bg-brand-dark p-4 text-center">
                 <Clock className="w-5 h-5 text-brand-red-light mx-auto mb-1.5" />
@@ -314,6 +278,27 @@ export default function RoomDetailsPage() {
                 <p className="border-l-2 border-brand-red/60 pl-4 font-display text-lg text-brand-text leading-relaxed italic text-pretty">
                   &ldquo;{(room as any).storyTranslations?.[language] || room.story}&rdquo;
                 </p>
+              </div>
+            )}
+
+            {/* Trailer */}
+            {trailer && (
+              <div className="mb-8">
+                <h3 className="flex items-center gap-2 text-xl font-display font-bold text-brand-bone mb-3">
+                  <PlayCircle className="w-5 h-5 text-brand-red-light" />
+                  {t('room.trailer')}
+                </h3>
+                <div className="relative aspect-video w-full overflow-hidden rounded-md border border-brand-border bg-black">
+                  <iframe
+                    src={trailer}
+                    title={`${room.title} – ${t('room.trailer')}`}
+                    className="absolute inset-0 h-full w-full"
+                    loading="lazy"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    referrerPolicy="strict-origin-when-cross-origin"
+                    allowFullScreen
+                  />
+                </div>
               </div>
             )}
 

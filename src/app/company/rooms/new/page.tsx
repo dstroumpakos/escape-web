@@ -118,6 +118,7 @@ export default function NewRoomPage() {
     depositPercent: '',
     termsOfUse: '',
     bookingUrl: '',
+    videoUrl: '',
     isSubscriptionOnly: false,
     bookingMode: 'unlocked_primary' as 'unlocked_primary' | 'external_primary',
     operatingDays: [1, 2, 3, 4, 5, 6] as number[],
@@ -320,6 +321,7 @@ export default function NewRoomPage() {
         depositPercent: form.depositPercent ? Number(form.depositPercent) : undefined,
         termsOfUse: form.termsOfUse || undefined,
         bookingUrl: form.bookingUrl.trim() || undefined,
+        videoUrl: form.videoUrl.trim() || undefined,
         isSubscriptionOnly: form.isSubscriptionOnly || undefined,
         bookingMode: form.bookingMode || undefined,
         latitude: form.latitude,
@@ -1190,6 +1192,18 @@ export default function NewRoomPage() {
                   className="w-full bg-brand-bg border border-white/10 rounded-xl px-4 py-3 text-white text-sm placeholder-brand-text-secondary/50 focus:border-brand-red focus:outline-hidden"
                 />
                 <p className="text-xs text-brand-text-secondary mt-1.5">{t('cx.booking_url.hint')}</p>
+              </div>
+              <div className="mt-4">
+                <label className="block text-sm text-brand-text-secondary mb-1.5">{t('cx.video_url.label')}</label>
+                <input
+                  type="url"
+                  inputMode="url"
+                  value={form.videoUrl}
+                  onChange={(e) => updateField('videoUrl', e.target.value)}
+                  placeholder="https://www.youtube.com/watch?v=..."
+                  className="w-full bg-brand-bg border border-white/10 rounded-xl px-4 py-3 text-white text-sm placeholder-brand-text-secondary/50 focus:border-brand-red focus:outline-hidden"
+                />
+                <p className="text-xs text-brand-text-secondary mt-1.5">{t('cx.video_url.hint')}</p>
               </div>
             </div>
           </div>

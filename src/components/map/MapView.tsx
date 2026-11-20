@@ -9,6 +9,7 @@ import { useQuery } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
 import Link from 'next/link';
 import { MapPin, Star, Clock } from 'lucide-react';
+import { shownRating, formatRating } from '@/lib/roomMedia';
 
 // Fix Leaflet default icon issue in Next.js
 if (typeof window !== 'undefined') {
@@ -139,7 +140,7 @@ export default function MapView() {
                   <div className="flex items-center justify-between text-xs text-brand-text-secondary mb-3">
                     <div className="flex items-center">
                       <Star className="w-3 h-3 text-yellow-400 mr-1" />
-                      <span>{room.rating?.toFixed(1) || t('map.new_rating')}</span>
+                      <span>{shownRating(room) ? formatRating(shownRating(room)!.rating) : t('map.new_rating')}</span>
                     </div>
                     <div className="flex items-center">
                       <Clock className="w-3 h-3 mr-1" />

@@ -1,7 +1,39 @@
 import { MetadataRoute } from 'next';
 import { CITIES, getCountries } from '@/data/cities';
 
-export default function sitemap(): MetadataRoute.Sitemap {
+// Regenerate hourly so new rooms appear without a rebuild.
+export const revalidate = 3600;
+
+type SitemapRoom = { _id: string; isActive?: boolean; photosOnly?: boolean };
+
+// Public room pages, read straight from Convex. Never fail the sitemap if
+// Convex is unreachable: fall back to the static routes only.
+async function getRoomRoutes(baseUrl: string): Promise<MetadataRoute.Sitemap> {
+  const convexUrl = process.env.NEXT_PUBLIC_CONVEX_URL;
+  if (!convexUrl) return [];
+  try {
+    const res = await fetch(`${convexUrl}/api/query`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ path: 'rooms:list', args: {}, format: 'json' }),
+      next: { revalidate: 3600 },
+    });
+    if (!res.ok) return [];
+    const data = await res.json();
+    if (data.status !== 'success' || !Array.isArray(data.value)) return [];
+    return (data.value as SitemapRoom[])
+      .filter((r) => r.isActive !== false && !r.photosOnly)
+      .map((r) => ({
+        url: `${baseUrl}/rooms/${r._id}`,
+        changeFrequency: 'weekly' as const,
+        priority: 0.8,
+      }));
+  } catch {
+    return [];
+  }
+}
+
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = 'https://unlocked.gr';
 
   const staticRoutes: MetadataRoute.Sitemap = [
@@ -28,6 +60,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       lastModified: new Date(),
       changeFrequency: 'weekly',
       priority: 0.9,
+    },
+    {
+      url: `${baseUrl}/offers`,
+      lastModified: new Date(),
+      changeFrequency: 'daily',
+      priority: 0.8,
     },
     {
       url: `${baseUrl}/map`,
@@ -119,5 +157,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.7,
   }));
 
-  return [...staticRoutes, ...countryRoutes, ...cityRoutes];
+  const roomRoutes = await getRoomRoutes(baseUrl);
+
+  return [...staticRoutes, ...roomRoutes, ...countryRoutes, ...cityRoutes];
 }

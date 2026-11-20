@@ -7,6 +7,7 @@ import { useTranslation } from '@/lib/i18n';
 import Link from 'next/link';
 import { RoomCard, toRoomCardData, type RoomCardData } from '@/components/rooms/RoomCard';
 import { AnimateIn, StaggerContainer, StaggerItem } from '@/components/animations/AnimateIn';
+import { shownRating } from '@/lib/roomMedia';
 
 export function FeaturedRooms() {
   const { t } = useTranslation();
@@ -22,7 +23,7 @@ export function FeaturedRooms() {
             const aEA = a.isEarlyAccessPartner ? 1 : 0;
             const bEA = b.isEarlyAccessPartner ? 1 : 0;
             if (aEA !== bEA) return bEA - aEA;
-            return (b.rating ?? 0) - (a.rating ?? 0);
+            return (shownRating(b)?.rating ?? 0) - (shownRating(a)?.rating ?? 0);
           })
           .slice(0, 6)
           .map(toRoomCardData)

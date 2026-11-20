@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { Star, Clock, Users, Zap, DoorOpen, BadgeCheck, Skull, Flame, MapPin } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
 import { themeLabel } from '@/lib/roomThemes';
+import { shownRating, formatRating } from '@/lib/roomMedia';
 
 export interface RoomCardData {
   id?: string;
@@ -12,6 +13,8 @@ export interface RoomCardData {
   theme: string;
   rating: number;
   reviews: number;
+  /** Set when rating/reviews come from another site (e.g. "EscapeAll"). */
+  ratingSource?: string;
   duration: string;
   difficulty: number;
   maxDifficulty: number;
@@ -45,12 +48,14 @@ const themeColors: Record<string, string> = {
 
 /** Map a Convex room document to the card's shape. */
 export function toRoomCardData(r: any): RoomCardData {
+  const shown = shownRating(r);
   return {
     id: r._id,
     title: r.title || 'Untitled Room',
     theme: r.theme || 'Mystery',
-    rating: r.rating ?? 0,
-    reviews: r.reviews ?? 0,
+    rating: shown?.rating ?? 0,
+    reviews: shown?.count ?? 0,
+    ratingSource: shown?.source,
     duration: typeof r.duration === 'number' ? `${r.duration} min` : r.duration || '60 min',
     difficulty: r.difficulty ?? 3,
     maxDifficulty: r.maxDifficulty ?? 5,
@@ -169,8 +174,14 @@ export function RoomCard({ room }: { room: RoomCardData }) {
         {/* Rating */}
         <div className="flex items-center gap-2 mb-4">
           <Star className={`w-4 h-4 ${room.reviews > 0 ? 'text-brand-gold fill-brand-gold' : 'text-brand-text-muted'}`} />
-          {room.reviews > 0 && <span className="text-sm font-medium">{room.rating}</span>}
-          <span className="text-sm text-brand-text-muted">({room.reviews} {t('featured.reviews')})</span>
+          {room.reviews > 0 && <span className="text-sm font-medium">{formatRating(room.rating)}</span>}
+          <span className="text-sm text-brand-text-muted truncate">
+            (
+            {room.ratingSource
+              ? t('room.reviews_on', { count: room.reviews.toLocaleString(), source: room.ratingSource })
+              : `${room.reviews} ${t('featured.reviews')}`}
+            )
+          </span>
         </div>
 
         {/* Meta */}
