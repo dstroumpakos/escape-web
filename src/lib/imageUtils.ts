@@ -42,3 +42,32 @@ export function convertToWebFormat(file: File): Promise<File> {
     img.src = URL.createObjectURL(file);
   });
 }
+
+/**
+ * A profile photo: the centre square of the picture, at most `size` px,
+ * as JPEG. Keeps uploads small and avatars sharp in every circle.
+ */
+export function squareAvatar(file: File, size = 512): Promise<Blob> {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const img = new window.Image();
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      const side = Math.min(img.naturalWidth, img.naturalHeight);
+      const out = Math.min(size, side);
+      const canvas = document.createElement('canvas');
+      canvas.width = out;
+      canvas.height = out;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return reject(new Error('canvas'));
+      ctx.imageSmoothingQuality = 'high';
+      ctx.drawImage(img, (img.naturalWidth - side) / 2, (img.naturalHeight - side) / 2, side, side, 0, 0, out, out);
+      canvas.toBlob((b) => (b ? resolve(b) : reject(new Error('encode'))), 'image/jpeg', 0.88);
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      reject(new Error('decode'));
+    };
+    img.src = url;
+  });
+}

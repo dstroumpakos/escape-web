@@ -13,6 +13,45 @@ import { useAuth } from '@/lib/auth';
 import { useTranslation } from '@/lib/i18n';
 import { cleanError } from '@/lib/errors';
 import { FOLLOW_ENABLED } from '@/lib/features';
+import { squareAvatar } from '@/lib/imageUtils';
+
+/** Uploads a profile photo (centre square, 512 px) and saves it on the account. */
+function useAvatarUpload(token: string | undefined) {
+  const uploadUrl = useMutation(api.users.generateUploadUrl);
+  const updateProfile = useMutation(api.users.updateProfile);
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState('');
+  const upload = async (file: File | undefined) => {
+    if (!file || !token) return;
+    setBusy(true);
+    setErr('');
+    try {
+      const blob = await squareAvatar(file);
+      const url = await uploadUrl({ sessionToken: token });
+      const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'image/jpeg' }, body: blob });
+      if (!res.ok) throw new Error('upload');
+      const { storageId } = await res.json();
+      await updateProfile({ sessionToken: token, avatarStorageId: storageId });
+    } catch (e) {
+      setErr(cleanError(e) || 'Upload failed');
+    } finally {
+      setBusy(false);
+    }
+  };
+  const remove = async () => {
+    if (!token) return;
+    setBusy(true);
+    setErr('');
+    try {
+      await updateProfile({ sessionToken: token, avatar: '' });
+    } catch (e) {
+      setErr(cleanError(e));
+    } finally {
+      setBusy(false);
+    }
+  };
+  return { upload, remove, busy, err };
+}
 
 type Tab = 'posts' | 'about' | 'rooms';
 
@@ -46,6 +85,8 @@ export function ProfileView({ userId }: { userId: string }) {
   const [editing, setEditing] = useState(false);
   const [list, setList] = useState<'followers' | 'following' | null>(null);
   const [openPost, setOpenPost] = useState<any>(null);
+  const photo = useAvatarUpload(token);
+  const photoInput = useRef<HTMLInputElement>(null);
 
   if (profile === undefined) {
     return <div className="max-w-4xl mx-auto px-4 pt-28"><div className="h-80 panel animate-pulse" /></div>;
@@ -86,12 +127,43 @@ export function ProfileView({ userId }: { userId: string }) {
       {/* Avatar + name + actions */}
       <div className="px-4 sm:px-6 -mt-12 sm:-mt-16 relative">
         <div className="flex flex-col sm:flex-row sm:items-end gap-3 sm:gap-5">
-          <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-full border-4 border-brand-bg bg-brand-surface overflow-hidden flex items-center justify-center shrink-0 shadow-[0_0_24px_rgba(200,16,27,0.35)]">
-            {profile.avatar ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={profile.avatar} alt={profile.name} className="w-full h-full object-cover" />
-            ) : (
-              <span className="text-4xl font-bold text-brand-red-light">{profile.name.charAt(0).toUpperCase()}</span>
+          <div className="relative w-24 h-24 sm:w-32 sm:h-32 shrink-0">
+            <div className="w-full h-full rounded-full border-4 border-brand-bg bg-brand-surface overflow-hidden flex items-center justify-center shadow-[0_0_24px_rgba(200,16,27,0.35)]">
+              {profile.avatar ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={profile.avatar} alt={profile.name} className="w-full h-full object-cover" />
+              ) : (
+                <span className="text-4xl font-bold text-brand-red-light">{profile.name.charAt(0).toUpperCase()}</span>
+              )}
+              {photo.busy && (
+                <span className="absolute inset-1 rounded-full bg-black/60 flex items-center justify-center">
+                  <Loader2 className="w-6 h-6 animate-spin text-white" />
+                </span>
+              )}
+            </div>
+            {profile.viewer.isMe && (
+              <>
+                <button
+                  type="button"
+                  onClick={() => photoInput.current?.click()}
+                  disabled={photo.busy}
+                  className="absolute bottom-0.5 right-0.5 w-9 h-9 rounded-full bg-brand-red text-white border-2 border-brand-bg flex items-center justify-center hover:bg-brand-red-light transition-colors"
+                  aria-label={profile.avatar ? t('pf.change_photo') : t('pf.add_photo')}
+                  title={profile.avatar ? t('pf.change_photo') : t('pf.add_photo')}
+                >
+                  <Camera className="w-4 h-4" />
+                </button>
+                <input
+                  ref={photoInput}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => {
+                    photo.upload(e.target.files?.[0]);
+                    e.target.value = '';
+                  }}
+                />
+              </>
             )}
           </div>
           <div className="flex-1 min-w-0 sm:pb-2">
@@ -114,6 +186,22 @@ export function ProfileView({ userId }: { userId: string }) {
                   <PlusSquare className="w-4 h-4" /> {t('pf.new_post')}
                 </Link>
               </>
+            ) : profile.viewer.isFriend ? (
+              <>
+                <Link href={`/messages?to=${profile._id}`} className="btn-primary text-sm flex items-center gap-2 py-2! px-5!">
+                  <MessageCircle className="w-4 h-4" /> {t('pf.message')}
+                </Link>
+                {FOLLOW_ENABLED && (
+                  <button
+                    onClick={toggleFollow}
+                    disabled={busy}
+                    className="btn-ghost text-sm flex items-center gap-2 py-2! px-4!"
+                    aria-label={profile.viewer.isFollowing ? t('pf.following_btn') : t('pf.follow')}
+                  >
+                    {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : profile.viewer.isFollowing ? <UserCheck className="w-4 h-4" /> : <UserPlus className="w-4 h-4" />}
+                  </button>
+                )}
+              </>
             ) : !FOLLOW_ENABLED ? null : profile.viewer.loggedIn ? (
               <button
                 onClick={toggleFollow}
@@ -130,6 +218,8 @@ export function ProfileView({ userId }: { userId: string }) {
             )}
           </div>
         </div>
+
+        {photo.err && <p className="mt-2 text-sm text-red-400">{photo.err}</p>}
 
         {/* Counters (Instagram) */}
         <div className="flex justify-around sm:justify-start sm:gap-8 mt-5 py-3 border-y border-brand-border/60">
@@ -172,7 +262,9 @@ export function ProfileView({ userId }: { userId: string }) {
         {tab === 'rooms' && <Rooms userId={profile._id} />}
       </div>
 
-      {editing && token && <EditProfile token={token} bio={profile.bio} hasCover={!!profile.cover} onClose={() => setEditing(false)} />}
+      {editing && token && (
+        <EditProfile token={token} bio={profile.bio} hasCover={!!profile.cover} avatar={profile.avatar} name={profile.name} onClose={() => setEditing(false)} />
+      )}
       {list && <FollowList userId={profile._id} which={list} onClose={() => setList(null)} />}
       {openPost && <PostModal post={openPost} author={profile} onClose={() => setOpenPost(null)} />}
     </div>
@@ -400,7 +492,9 @@ function PostModal({ post, author, onClose }: { post: any; author: any; onClose:
   );
 }
 
-function EditProfile({ token, bio, hasCover, onClose }: { token: string; bio: string; hasCover: boolean; onClose: () => void }) {
+function EditProfile({
+  token, bio, hasCover, avatar, name, onClose,
+}: { token: string; bio: string; hasCover: boolean; avatar: string; name: string; onClose: () => void }) {
   const { t } = useTranslation();
   const update = useMutation(api.social.updateProfileInfo);
   const uploadUrl = useMutation(api.posts.generateUploadUrl);
@@ -408,6 +502,8 @@ function EditProfile({ token, bio, hasCover, onClose }: { token: string; bio: st
   const [saving, setSaving] = useState(false);
   const [err, setErr] = useState('');
   const fileRef = useRef<HTMLInputElement>(null);
+  const photo = useAvatarUpload(token);
+  const photoRef = useRef<HTMLInputElement>(null);
 
   const save = async () => {
     setSaving(true);
@@ -444,6 +540,40 @@ function EditProfile({ token, bio, hasCover, onClose }: { token: string; bio: st
         <button onClick={onClose} aria-label={t('cx.common.close')}><X className="w-5 h-5" /></button>
       </div>
       <div className="p-4 space-y-4">
+        <div>
+          <label className="block text-sm text-brand-text-muted mb-1.5">{t('pf.photo')}</label>
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+            <div className="w-14 h-14 rounded-full bg-brand-bg overflow-hidden flex items-center justify-center shrink-0 border border-brand-border/60">
+              {photo.busy ? (
+                <Loader2 className="w-5 h-5 animate-spin text-brand-text-muted" />
+              ) : avatar ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={avatar} alt="" className="w-full h-full object-cover" />
+              ) : (
+                <span className="text-xl font-bold text-brand-red-light">{name.charAt(0).toUpperCase()}</span>
+              )}
+            </div>
+            <button type="button" onClick={() => photoRef.current?.click()} disabled={photo.busy} className="btn-ghost text-sm flex items-center gap-2 py-2! px-4! whitespace-nowrap">
+              <Camera className="w-4 h-4 shrink-0" /> {photo.busy ? t('pf.uploading') : avatar ? t('pf.change_photo') : t('pf.add_photo')}
+            </button>
+            {avatar && !photo.busy && (
+              <button type="button" onClick={photo.remove} className="text-sm text-brand-text-muted hover:text-red-400 whitespace-nowrap">
+                {t('pf.remove_photo')}
+              </button>
+            )}
+          </div>
+          <input
+            ref={photoRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={(e) => {
+              photo.upload(e.target.files?.[0]);
+              e.target.value = '';
+            }}
+          />
+          {photo.err && <p className="text-sm text-red-400 mt-1">{photo.err}</p>}
+        </div>
         <div>
           <label className="block text-sm text-brand-text-muted mb-1.5">{t('pf.cover')}</label>
           <div className="flex gap-2">

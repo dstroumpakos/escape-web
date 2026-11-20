@@ -11,6 +11,7 @@
 import type * as adminSession from "../adminSession.js";
 import type * as appStore from "../appStore.js";
 import type * as appleAuth from "../appleAuth.js";
+import type * as avatars from "../avatars.js";
 import type * as badges from "../badges.js";
 import type * as billing from "../billing.js";
 import type * as billingStripe from "../billingStripe.js";
@@ -36,6 +37,7 @@ import type * as http from "../http.js";
 import type * as merch from "../merch.js";
 import type * as merchPayments from "../merchPayments.js";
 import type * as merchRules from "../merchRules.js";
+import type * as messages from "../messages.js";
 import type * as migrations from "../migrations.js";
 import type * as moderation from "../moderation.js";
 import type * as notificationTexts from "../notificationTexts.js";
@@ -83,6 +85,7 @@ declare const fullApi: ApiFromModules<{
   adminSession: typeof adminSession;
   appStore: typeof appStore;
   appleAuth: typeof appleAuth;
+  avatars: typeof avatars;
   badges: typeof badges;
   billing: typeof billing;
   billingStripe: typeof billingStripe;
@@ -108,6 +111,7 @@ declare const fullApi: ApiFromModules<{
   merch: typeof merch;
   merchPayments: typeof merchPayments;
   merchRules: typeof merchRules;
+  messages: typeof messages;
   migrations: typeof migrations;
   moderation: typeof moderation;
   notificationTexts: typeof notificationTexts;

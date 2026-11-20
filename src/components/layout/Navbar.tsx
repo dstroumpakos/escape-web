@@ -3,7 +3,10 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Vault, ScrollText, BookOpen, Menu, X, LogOut, User, Bell, Ticket } from 'lucide-react';
+import { Vault, ScrollText, BookOpen, Menu, X, LogOut, User, Bell, Ticket, MessageCircle } from 'lucide-react';
+import { useQuery } from 'convex/react';
+import { api } from '../../../convex/_generated/api';
+import { useBackgroundKeySharing } from '@/lib/useChat';
 import { EyeKeyhole } from '@/components/brand/EyeKeyhole';
 import { useAuth } from '@/lib/auth';
 import { useTranslation } from '@/lib/i18n';
@@ -29,6 +32,22 @@ export function Logo({ size = 'md' }: { size?: 'md' | 'lg' }) {
   );
 }
 
+/** Registers this browser for encrypted chat and passes keys on to friends' new devices. */
+function ChatKeySharer() {
+  useBackgroundKeySharing();
+  return null;
+}
+
+/** Unread-chats badge. */
+function UnreadBadge({ n, className = '' }: { n: number; className?: string }) {
+  if (!n) return null;
+  return (
+    <span className={`min-w-[18px] h-[18px] px-1 rounded-full bg-brand-red text-white text-[10px] font-bold flex items-center justify-center ${className}`}>
+      {n > 9 ? '9+' : n}
+    </span>
+  );
+}
+
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
@@ -36,6 +55,10 @@ export function Navbar() {
   const router = useRouter();
   const { user, isAuthenticated, logout } = useAuth();
   const { t } = useTranslation();
+  const token = user?.sessionToken;
+  const unread = useQuery(api.messages.unreadCount, token ? { sessionToken: token } : 'skip') ?? 0;
+  const me = useQuery(api.users.getById, token ? { sessionToken: token } : 'skip');
+  const myAvatar = (me as any)?.avatar || user?.avatar || '';
 
   // Shop and contact show as small icons on the desktop bar (a vault, a scroll).
   const navLinks: { href: string; label: string; Icon?: React.ElementType }[] = [
@@ -85,6 +108,7 @@ export function Navbar() {
         <BloodDrips count={18} seed={7} maxLength={26} speed={5} className="top-full!" />
       </div>
 
+      {isAuthenticated && <ChatKeySharer />}
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 md:h-20">
           <Link href="/" aria-label="UNLOCKED">
@@ -125,6 +149,15 @@ export function Navbar() {
             {isAuthenticated ? (
               <>
                 <Link
+                  href="/messages"
+                  className="p-2 rounded-md text-brand-text-secondary hover:text-brand-red-light hover:bg-brand-red/10 transition-colors relative"
+                  aria-label={t('nav.messages')}
+                  title={t('nav.messages')}
+                >
+                  <MessageCircle className="w-5 h-5" />
+                  <UnreadBadge n={unread} className="absolute -top-0.5 -right-0.5" />
+                </Link>
+                <Link
                   href="/notifications"
                   className="p-2 rounded-md text-brand-text-secondary hover:text-brand-red-light hover:bg-brand-red/10 transition-colors relative"
                 >
@@ -142,8 +175,13 @@ export function Navbar() {
                   href="/profile"
                   className="flex items-center gap-2 px-3 py-1.5 rounded-md border border-brand-border bg-black/40 hover:border-brand-red/60 transition-colors"
                 >
-                  <div className="w-7 h-7 rounded-full bg-brand-red/20 border border-brand-red/40 flex items-center justify-center text-brand-red-light text-xs font-bold">
-                    {user?.name?.charAt(0)?.toUpperCase() || <User className="w-4 h-4" />}
+                  <div className="w-7 h-7 rounded-full bg-brand-red/20 border border-brand-red/40 flex items-center justify-center text-brand-red-light text-xs font-bold overflow-hidden">
+                    {myAvatar ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={myAvatar} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                      user?.name?.charAt(0)?.toUpperCase() || <User className="w-4 h-4" />
+                    )}
                   </div>
                   <span className="text-sm font-medium max-w-[120px] truncate">{user?.name || user?.email}</span>
                 </Link>
@@ -166,10 +204,11 @@ export function Navbar() {
           {/* Mobile Menu Toggle */}
           <button
             onClick={() => setIsOpen(!isOpen)}
-            className="md:hidden p-2 rounded-md text-brand-text-secondary hover:text-brand-red-light hover:bg-brand-red/10 transition-colors"
+            className="md:hidden relative p-2 rounded-md text-brand-text-secondary hover:text-brand-red-light hover:bg-brand-red/10 transition-colors"
             aria-label="Toggle menu"
           >
             {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            {!isOpen && unread > 0 && <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 rounded-full bg-brand-red" />}
           </button>
         </div>
 
@@ -206,6 +245,10 @@ export function Navbar() {
                   )}
                   <Link href="/profile" className="px-4 py-3 rounded-md text-sm font-medium text-brand-text-secondary hover:text-brand-bone hover:bg-brand-red/5 flex items-center gap-2">
                     <User className="w-4 h-4" /> {t('nav.profile')}
+                  </Link>
+                  <Link href="/messages" className="px-4 py-3 rounded-md text-sm font-medium text-brand-text-secondary hover:text-brand-bone hover:bg-brand-red/5 flex items-center gap-2">
+                    <MessageCircle className="w-4 h-4" /> {t('nav.messages')}
+                    <UnreadBadge n={unread} className="ml-auto" />
                   </Link>
                   <Link href="/notifications" className="px-4 py-3 rounded-md text-sm font-medium text-brand-text-secondary hover:text-brand-bone hover:bg-brand-red/5 flex items-center gap-2">
                     <Bell className="w-4 h-4" /> {t('nav.notifications')}

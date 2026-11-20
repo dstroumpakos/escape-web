@@ -18,6 +18,7 @@ import {
   ChevronRight,
   Trash2,
   Mail,
+  MessageCircle,
 } from 'lucide-react';
 
 // Debounce hook
@@ -239,6 +240,14 @@ export default function FriendsPage() {
                           {friend.title && t(`profile.${friend.title}`)}
                         </p>
                       </div>
+                      <button
+                        onClick={() => router.push(`/messages?to=${friend._id}`)}
+                        className="p-2 rounded-lg text-brand-text-muted hover:text-brand-red-light hover:bg-brand-red/10 transition-colors"
+                        title={t('pf.message')}
+                        aria-label={`${t('pf.message')} ${friend.name}`}
+                      >
+                        <MessageCircle className="w-4 h-4" />
+                      </button>
                       <button
                         onClick={() => handleRemove(friend.friendshipId)}
                         disabled={actionLoading === friend.friendshipId}

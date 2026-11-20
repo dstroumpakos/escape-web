@@ -8,6 +8,7 @@
 import { createContext, useContext, useState, ReactNode, useCallback, useEffect } from 'react';
 import { companyTranslations } from './i18nCompany';
 import { shopTranslations } from './i18nShop';
+import { chatTranslations } from './i18nChat';
 
 export type Language = 'en' | 'el' | 'nl';
 
@@ -6852,6 +6853,10 @@ Object.assign(translations.nl, companyTranslations.nl);
 Object.assign(translations.en, shopTranslations.en);
 Object.assign(translations.el, shopTranslations.el);
 Object.assign(translations.nl, shopTranslations.nl);
+// Encrypted chat + profile photo texts live in ./i18nChat.
+Object.assign(translations.en, chatTranslations.en);
+Object.assign(translations.el, chatTranslations.el);
+Object.assign(translations.nl, chatTranslations.nl);
 
 interface I18nContextType {
   language: Language;
