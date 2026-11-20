@@ -7,6 +7,7 @@ import { Menu, X, LogOut, User, Bell, Ticket } from 'lucide-react';
 import { EyeKeyhole } from '@/components/brand/EyeKeyhole';
 import { useAuth } from '@/lib/auth';
 import { useTranslation } from '@/lib/i18n';
+import { BOOKING_ENABLED } from '@/lib/features';
 import { LanguageToggle } from '@/components/LanguageToggle';
 import { BloodDrips } from '@/components/horror/BloodDrips';
 
@@ -39,7 +40,7 @@ export function Navbar() {
   const navLinks = [
     { href: '/', label: t('nav.home') },
     { href: '/discover', label: t('nav.discover') },
-    { href: '/offers', label: t('nav.offers') },
+    ...(BOOKING_ENABLED ? [{ href: '/offers', label: t('nav.offers') }] : []),
     { href: '/map', label: t('nav.map') },
     { href: '/social', label: t('nav.social') },
     { href: '/leaderboard', label: t('nav.leaderboard') },
@@ -116,12 +117,14 @@ export function Navbar() {
                 >
                   <Bell className="w-5 h-5" />
                 </Link>
+                {BOOKING_ENABLED && (
                 <Link
                   href="/tickets"
                   className="p-2 rounded-md text-brand-text-secondary hover:text-brand-red-light hover:bg-brand-red/10 transition-colors"
                 >
                   <Ticket className="w-5 h-5" />
                 </Link>
+                )}
                 <Link
                   href="/profile"
                   className="flex items-center gap-2 px-3 py-1.5 rounded-md border border-brand-border bg-black/40 hover:border-brand-red/60 transition-colors"
@@ -183,9 +186,11 @@ export function Navbar() {
               <div className="mb-2"><LanguageToggle /></div>
               {isAuthenticated ? (
                 <>
+                  {BOOKING_ENABLED && (
                   <Link href="/tickets" className="px-4 py-3 rounded-md text-sm font-medium text-brand-text-secondary hover:text-brand-bone hover:bg-brand-red/5 flex items-center gap-2">
                     <Ticket className="w-4 h-4" /> {t('nav.tickets')}
                   </Link>
+                  )}
                   <Link href="/profile" className="px-4 py-3 rounded-md text-sm font-medium text-brand-text-secondary hover:text-brand-bone hover:bg-brand-red/5 flex items-center gap-2">
                     <User className="w-4 h-4" /> {t('nav.profile')}
                   </Link>

@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react';
 import { useCompanyQuery, useCompanyAuth, useCompanyPath, uiLocale, localDateKey } from '@/lib/companyAuth';
 import { api } from '../../../convex/_generated/api';
+import { BOOKING_ENABLED } from '@/lib/features';
+import { BookClicksCard } from '@/components/company/BookClicksCard';
 import { roomLimitFor } from '@/lib/plans';
 import Link from 'next/link';
 import {
@@ -262,6 +264,9 @@ export default function CompanyDashboardPage() {
           </div>
         </div>
       )}
+
+      {/* ── Players sent to their own site by "Book now" (externalLinks.ts) ── */}
+      {!BOOKING_ENABLED && companyId && <BookClicksCard companyId={companyId} />}
 
       {/* ── Bookings calendar: rooms side by side, tap a time to book it ── */}
       {bookableRooms.length > 0 && (

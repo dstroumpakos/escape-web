@@ -30,6 +30,7 @@ import { ToastProvider } from '@/components/company/Toast';
 import { LanguageToggle } from '@/components/LanguageToggle';
 import { PlanBadge } from './PlanBadge';
 import { useTranslation } from '@/lib/i18n';
+import { BOOKING_ENABLED } from '@/lib/features';
 
 type NavLink = {
   href: string;
@@ -57,7 +58,7 @@ function CompanyShell({ children }: { children: React.ReactNode }) {
     { href: p('/company/rooms'), label: t('company.nav.rooms'), icon: DoorOpen },
   ];
   const secondaryLinks: NavLink[] = [
-    { href: p('/company/offers'), label: t('cx.nav.offers'), icon: Flame },
+    ...(BOOKING_ENABLED ? [{ href: p('/company/offers'), label: t('cx.nav.offers'), icon: Flame }] : []),
     { href: photosUrl, label: t('company.nav.photos'), icon: Camera, external: true },
     { href: p('/company/merch'), label: t('shop.portal.nav'), icon: ShoppingBag },
     { href: p('/company/payments'), label: t('company.nav.payments'), icon: Wallet },

@@ -81,6 +81,7 @@ export default function CompanySettingsPage() {
     city: '',
     vatNumber: '',
     description: '',
+    website: '',
   });
   const [profileLoaded, setProfileLoaded] = useState(false);
   const [profileSaving, setProfileSaving] = useState(false);
@@ -122,6 +123,7 @@ export default function CompanySettingsPage() {
         city: (companyData as any).city || '',
         vatNumber: (companyData as any).vatNumber || '',
         description: (companyData as any).description || '',
+        website: (companyData as any).website || '',
       });
       setEarlyAccessEnabled((companyData as any).subscriptionEnabled || false);
       setAutoTranslateEnabled((companyData as any).autoTranslateEnabled || false);
@@ -143,6 +145,7 @@ export default function CompanySettingsPage() {
         city: profile.city,
         vatNumber: profile.vatNumber || undefined,
         description: profile.description,
+        website: profile.website,
       });
       refreshCompany({ name: profile.name });
       setProfileMsg(t('company.settings.profile_success'));
@@ -355,6 +358,22 @@ export default function CompanySettingsPage() {
                   required
                 />
               </div>
+            </div>
+
+            <div>
+              <label className="block text-sm text-brand-text-secondary mb-1.5">{t('cx.website.label')}</label>
+              <div className="relative">
+                <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-brand-text-secondary" />
+                <input
+                  type="url"
+                  inputMode="url"
+                  value={profile.website}
+                  onChange={(e) => setProfile({ ...profile, website: e.target.value })}
+                  placeholder="https://"
+                  className="w-full bg-brand-bg border border-white/10 rounded-xl pl-11 pr-4 py-3 text-white focus:border-brand-red focus:outline-hidden"
+                />
+              </div>
+              <p className="text-xs text-brand-text-secondary mt-1.5">{t('cx.website.hint')}</p>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

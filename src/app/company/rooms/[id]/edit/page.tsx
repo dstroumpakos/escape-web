@@ -111,6 +111,7 @@ export default function EditRoomPage() {
     paymentTerms: ['full'] as ('full' | 'deposit_20' | 'pay_on_arrival')[],
     depositPercent: '',
     termsOfUse: '',
+    bookingUrl: '',
     isSubscriptionOnly: false,
     operatingDays: [1, 2, 3, 4, 5, 6] as number[],
     defaultTimeSlots: [{ time: '10:00', price: 15 }] as { time: string; price: number }[],
@@ -216,6 +217,7 @@ export default function EditRoomPage() {
         paymentTerms: (room as any).paymentTerms || ['full'],
         depositPercent: (room as any).depositPercent ? String((room as any).depositPercent) : '',
         termsOfUse: (room as any).termsOfUse || '',
+        bookingUrl: (room as any).bookingUrl || '',
         isSubscriptionOnly: (room as any).isSubscriptionOnly || false,
         operatingDays: (room as any).operatingDays || [1, 2, 3, 4, 5, 6],
         defaultTimeSlots: (room as any).defaultTimeSlots || [{ time: '10:00', price: 15 }],
@@ -298,6 +300,7 @@ export default function EditRoomPage() {
         // 0 clears the room's own % so the company default applies
         depositPercent: form.depositPercent ? Number(form.depositPercent) : 0,
         termsOfUse: form.termsOfUse || undefined,
+        bookingUrl: form.bookingUrl.trim(),
         isSubscriptionOnly: form.isSubscriptionOnly || undefined,
         operatingDays: form.operatingDays,
         defaultTimeSlots: form.defaultTimeSlots.filter((s) => s.time),
@@ -1069,6 +1072,19 @@ export default function EditRoomPage() {
               {t('company.rooms.edit.clear_terms')}
             </button>
           )}
+
+          <div className="mt-6">
+            <label className="block text-sm text-brand-text-secondary mb-1.5">{t('cx.booking_url.label')}</label>
+            <input
+              type="url"
+              inputMode="url"
+              value={form.bookingUrl}
+              onChange={(e) => updateField('bookingUrl', e.target.value)}
+              placeholder="https://"
+              className="w-full bg-brand-bg border border-white/10 rounded-xl px-4 py-3 text-white text-sm placeholder-brand-text-secondary/50 focus:border-brand-red focus:outline-hidden"
+            />
+            <p className="text-xs text-brand-text-secondary mt-1.5">{t('cx.booking_url.hint')}</p>
+          </div>
         </SectionCard>
 
         {/* Submit - Save */}

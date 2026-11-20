@@ -6,6 +6,13 @@
  */
 export const companyTranslations: { en: Record<string, string>; el: Record<string, string>; nl: Record<string, string> } = {
   en: {
+    'cx.website.label': "Your website",
+    'cx.website.hint': "Players press \"Book now\" on UNLOCKED and land here to book.",
+    'cx.booking_url.label': "Booking link for this room (optional)",
+    'cx.booking_url.hint': "If this room has its own booking page on your site. Empty = your website from Settings.",
+    'cx.clicks.title': "Players sent to your site",
+    'cx.clicks.desc': "\"Book now\" clicks in the last 30 days",
+    'cx.clicks.no_site': "Add your website in Settings so \"Book now\" takes players there.",
     // ── Last-minute offers ──
     'cx.nav.offers': 'Offers',
     'cx.offers.title': 'Last-minute offers',
@@ -424,6 +431,13 @@ export const companyTranslations: { en: Record<string, string>; el: Record<strin
   },
 
   el: {
+    'cx.website.label': "Το website σας",
+    'cx.website.hint': "Οι παίκτες πατούν «Κράτηση» στο UNLOCKED και έρχονται εδώ για να κλείσουν.",
+    'cx.booking_url.label': "Link κράτησης για αυτό το δωμάτιο (προαιρετικό)",
+    'cx.booking_url.hint': "Αν το δωμάτιο έχει δική του σελίδα κράτησης στο site σας. Κενό = το website σας από τις Ρυθμίσεις.",
+    'cx.clicks.title': "Παίκτες που στείλαμε στο site σας",
+    'cx.clicks.desc': "Κλικ στο «Κράτηση» τις τελευταίες 30 ημέρες",
+    'cx.clicks.no_site': "Προσθέστε το website σας στις Ρυθμίσεις, για να πηγαίνει εκεί το «Κράτηση».",
     // ── Last-minute offers ──
     'cx.nav.offers': 'Προσφορές',
     'cx.offers.title': 'Προσφορές τελευταίας στιγμής',
@@ -847,6 +861,13 @@ export const companyTranslations: { en: Record<string, string>; el: Record<strin
   },
   // Dutch: only keys translated so far; the rest falls back to English.
   nl: {
+    'cx.website.label': "Je website",
+    'cx.website.hint': "Spelers drukken op \"Boek nu\" op UNLOCKED en komen hier om te boeken.",
+    'cx.booking_url.label': "Boekingslink voor deze kamer (optioneel)",
+    'cx.booking_url.hint': "Als deze kamer een eigen boekingspagina op je site heeft. Leeg = je website uit Instellingen.",
+    'cx.clicks.title': "Spelers naar je site gestuurd",
+    'cx.clicks.desc': "Klikken op \"Boek nu\" in de laatste 30 dagen",
+    'cx.clicks.no_site': "Voeg je website toe in Instellingen, dan stuurt \"Boek nu\" spelers daarheen.",
     // ── Last-minute offers ──
     'cx.nav.offers': 'Aanbiedingen',
     'cx.offers.title': 'Last-minute aanbiedingen',

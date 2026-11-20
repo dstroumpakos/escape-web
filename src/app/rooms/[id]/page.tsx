@@ -6,6 +6,8 @@ import Link from 'next/link';
 import { useQuery, useMutation } from 'convex/react';
 import { api } from '../../../../convex/_generated/api';
 import { useAuth } from '@/lib/auth';
+import { BookNowButton } from '@/components/rooms/BookNowButton';
+import { BOOKING_ENABLED } from '@/lib/features';
 import { useTranslation } from '@/lib/i18n';
 import { themeLabel } from '@/lib/roomThemes';
 import { RoomMerchStrip } from '@/components/shop/RoomMerch';
@@ -339,13 +341,14 @@ export default function RoomDetailsPage() {
                   </div>
                 )}
               </div>
-              <Link
-                href={`/rooms/${roomId}/book`}
-                className="btn-primary flex items-center justify-center gap-2 text-lg py-4! px-10!"
-              >
-                {t('room.book_now')}
-                <DoorOpen className="w-5 h-5" />
-              </Link>
+              <div className="flex flex-col items-stretch sm:items-end gap-1.5">
+                <BookNowButton roomId={roomId} target={(room as any).bookingTarget} />
+                {!BOOKING_ENABLED && (room as any).bookingTarget?.kind === 'url' && (
+                  <span className="text-xs text-brand-text-muted text-center sm:text-right">
+                    {t('room.book_on_site', { company: (room as any).companyName || '' })}
+                  </span>
+                )}
+              </div>
             </div>
 
             {/* Per-group pricing */}

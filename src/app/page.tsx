@@ -7,12 +7,13 @@ import { DownloadCTA } from '@/components/home/DownloadCTA';
 import { SEOContent } from '@/components/home/SEOContent';
 import { SafeConvex } from '@/components/SafeConvex';
 import { LastMinuteOffers } from '@/components/home/LastMinuteOffers';
+import { BOOKING_ENABLED } from '@/lib/features';
 
 export default function Home() {
   return (
     <>
       <SafeConvex><HeroSection /></SafeConvex>
-      <SafeConvex><LastMinuteOffers /></SafeConvex>
+      {BOOKING_ENABLED && <SafeConvex><LastMinuteOffers /></SafeConvex>}
       <SafeConvex><FeaturedRooms /></SafeConvex>
       <LabyrinthSection />
       <ThemesSection />

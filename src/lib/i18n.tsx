@@ -13,6 +13,8 @@ export type Language = 'en' | 'el' | 'nl';
 
 const translations: Record<Language, Record<string, string>> = {
   en: {
+    'room.call_to_book': 'Call to book',
+    'room.book_on_site': 'You book on the {{company}} website',
     'nav.offers': 'Offers',
     'offers.kicker': 'Last minute',
     'offers.title': 'Last-minute offers',
@@ -2152,6 +2154,8 @@ const translations: Record<Language, Record<string, string>> = {
   },
 
   el: {
+    'room.call_to_book': 'Κάλεσε για κράτηση',
+    'room.book_on_site': 'Η κράτηση γίνεται στο site της {{company}}',
     'nav.offers': 'Προσφορές',
     'offers.kicker': 'Τελευταία στιγμή',
     'offers.title': 'Προσφορές τελευταίας στιγμής',
@@ -4291,6 +4295,8 @@ const translations: Record<Language, Record<string, string>> = {
   },
 
   nl: {
+    'room.call_to_book': 'Bel om te boeken',
+    'room.book_on_site': 'Je boekt op de website van {{company}}',
     'nav.offers': 'Aanbiedingen',
     'offers.kicker': 'Last minute',
     'offers.title': 'Last-minute aanbiedingen',
