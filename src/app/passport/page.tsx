@@ -4,12 +4,18 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useMutation, useQuery } from 'convex/react';
-import { BookOpen, Stamp, Map as MapIcon, Lock, QrCode, Loader2 } from 'lucide-react';
+import { BookOpen, Stamp, Castle, Lock, QrCode, Loader2 } from 'lucide-react';
 import { api } from '../../../convex/_generated/api';
 import { useAuth } from '@/lib/auth';
 import { useTranslation } from '@/lib/i18n';
 import { StampSeal, tiltFor } from '@/components/passport/StampSeal';
-import { MazeGame } from '@/components/passport/MazeGame';
+import dynamic from 'next/dynamic';
+
+// three.js is heavy: load the tower only when its tab opens, and only in the browser.
+const TowerGame = dynamic(() => import('@/components/passport/TowerGame').then((m) => m.TowerGame), {
+  ssr: false,
+  loading: () => <div className="aspect-video rounded-xl bg-black/60 flex items-center justify-center"><Loader2 className="w-6 h-6 animate-spin text-brand-red" /></div>,
+});
 import { cleanError } from '@/lib/errors';
 
 type Tab = 'stamps' | 'maze';
@@ -106,7 +112,7 @@ export default function PassportPage() {
         {/* Right page */}
         <div className="p-4 sm:p-6 min-w-0">
           <div className="flex bg-black/40 border border-brand-border rounded-xl p-1 w-fit mb-5" role="tablist">
-            {([['stamps', Stamp, t('pp.tab_stamps')], ['maze', MapIcon, t('pp.tab_maze')]] as const).map(([k, Icon, label]) => (
+            {([['stamps', Stamp, t('pp.tab_stamps')], ['maze', Castle, t('tw.tab')]] as const).map(([k, Icon, label]) => (
               <button key={k} role="tab" aria-selected={tab === k} onClick={() => setTab(k)} className={`px-4 py-1.5 rounded-lg text-sm font-semibold flex items-center gap-2 ${tab === k ? 'bg-brand-red text-white' : 'text-brand-text-secondary hover:text-white'}`}>
                 <Icon className="w-4 h-4" /> {label}
               </button>
@@ -147,7 +153,7 @@ export default function PassportPage() {
             </>
           ) : (
             <>
-              <MazeGame placed={placed} chambers={chambers} pocket={pocket} onPlace={onPlace} busy={placing} />
+              <TowerGame placed={placed} chambers={chambers} pocket={pocket} onPlace={onPlace} busy={placing} />
               {placeErr && <p className="text-sm text-red-400 mt-2">{placeErr}</p>}
             </>
           )}
