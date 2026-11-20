@@ -8,3 +8,10 @@
  * The company widget and the company portal keep working either way.
  */
 export const BOOKING_ENABLED = process.env.NEXT_PUBLIC_BOOKING_ENABLED === '1';
+
+/**
+ * FOLLOW_ENABLED: following players (follow button, followers / following
+ * counts, the "Following" feed and "players to follow"). Off for now; the code
+ * (convex/social.ts) stays. NEXT_PUBLIC_FOLLOW_ENABLED=1 brings it back.
+ */
+export const FOLLOW_ENABLED = process.env.NEXT_PUBLIC_FOLLOW_ENABLED === '1';

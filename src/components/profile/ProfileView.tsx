@@ -12,6 +12,7 @@ import { api } from '../../../convex/_generated/api';
 import { useAuth } from '@/lib/auth';
 import { useTranslation } from '@/lib/i18n';
 import { cleanError } from '@/lib/errors';
+import { FOLLOW_ENABLED } from '@/lib/features';
 
 type Tab = 'posts' | 'about' | 'rooms';
 
@@ -113,7 +114,7 @@ export function ProfileView({ userId }: { userId: string }) {
                   <PlusSquare className="w-4 h-4" /> {t('pf.new_post')}
                 </Link>
               </>
-            ) : profile.viewer.loggedIn ? (
+            ) : !FOLLOW_ENABLED ? null : profile.viewer.loggedIn ? (
               <button
                 onClick={toggleFollow}
                 disabled={busy}
@@ -133,8 +134,8 @@ export function ProfileView({ userId }: { userId: string }) {
         {/* Counters (Instagram) */}
         <div className="flex justify-around sm:justify-start sm:gap-8 mt-5 py-3 border-y border-brand-border/60">
           <Count n={profile.stats.posts} label={t('pf.posts')} />
-          <Count n={profile.stats.followers} label={t('pf.followers')} onClick={() => setList('followers')} />
-          <Count n={profile.stats.following} label={t('pf.following')} onClick={() => setList('following')} />
+          {FOLLOW_ENABLED && <Count n={profile.stats.followers} label={t('pf.followers')} onClick={() => setList('followers')} />}
+          {FOLLOW_ENABLED && <Count n={profile.stats.following} label={t('pf.following')} onClick={() => setList('following')} />}
           <Count n={profile.stats.played} label={t('pf.rooms')} />
         </div>
 

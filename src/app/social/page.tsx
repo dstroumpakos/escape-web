@@ -7,6 +7,7 @@ import { Users, Bell, ImagePlus, MessageCircle, UserPlus, Check } from 'lucide-r
 import { api } from '../../../convex/_generated/api';
 import { useAuth } from '@/lib/auth';
 import { useTranslation } from '@/lib/i18n';
+import { FOLLOW_ENABLED } from '@/lib/features';
 import { PostCard, Avatar, type FeedPost } from '@/components/community/PostCard';
 
 type Mode = 'all' | 'following';
@@ -32,7 +33,7 @@ export default function CommunityPage() {
   ];
 
   return (
-    <div className="max-w-7xl mx-auto px-3 sm:px-6 pt-24 pb-20 grid gap-6 lg:grid-cols-[230px_minmax(0,1fr)] xl:grid-cols-[260px_minmax(0,1fr)_300px]">
+    <div className={`max-w-7xl mx-auto px-3 sm:px-6 pt-24 pb-20 grid gap-6 lg:grid-cols-[230px_minmax(0,1fr)] ${FOLLOW_ENABLED ? 'xl:grid-cols-[260px_minmax(0,1fr)_300px]' : 'xl:grid-cols-[260px_minmax(0,1fr)_260px]'}`}>
       {/* Left: shortcuts */}
       <aside className="hidden lg:block">
         <nav className="sticky top-24 space-y-1">
@@ -79,7 +80,7 @@ export default function CommunityPage() {
           </div>
         )}
 
-        {isAuthenticated && (
+        {FOLLOW_ENABLED && isAuthenticated && (
           <div className="flex bg-brand-surface border border-brand-border rounded-xl p-1 w-fit" role="tablist">
             {(['all', 'following'] as const).map((m) => (
               <button
@@ -116,11 +117,13 @@ export default function CommunityPage() {
       </main>
 
       {/* Right: people to follow */}
+      {FOLLOW_ENABLED && (
       <aside className="hidden xl:block">
         <div className="sticky top-24">
           <Suggestions />
         </div>
       </aside>
+      )}
     </div>
   );
 }
