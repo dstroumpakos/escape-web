@@ -679,24 +679,104 @@
     opacity: 0;
   }
 }
+/* The passing ghost (HorrorFX Figure): drifts in out of the fog, stops near the
+   middle to look at you, then flickers, jumps ahead and fades out. */
 @keyframes ghost-walk {
   0% {
-    transform: translateX(-30vw) translateY(0);
+    transform: translateX(-30vw);
     opacity: 0;
   }
-  12% {
+  14% {
     opacity: 1;
   }
-  50% {
-    transform: translateX(45vw) translateY(-6px);
+  40% {
+    transform: translateX(34vw);
   }
-  88% {
+  58% {
+    transform: translateX(38vw);
     opacity: 1;
+  }
+  60% {
+    opacity: 0.15;
+  }
+  61% {
+    transform: translateX(46vw);
+    opacity: 1;
+  }
+  63% {
+    opacity: 0.1;
+  }
+  64% {
+    transform: translateX(55vw);
+    opacity: 0.95;
+  }
+  86% {
+    opacity: 0.9;
   }
   100% {
-    transform: translateX(120vw) translateY(0);
+    transform: translateX(120vw);
     opacity: 0;
   }
+}
+@keyframes ghost-float {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-1deg);
+  }
+  50% {
+    transform: translateY(-9px) rotate(1deg);
+  }
+}
+@keyframes ghost-head {
+  0%,
+  38% {
+    transform: rotate(-5deg);
+  }
+  46%,
+  56% {
+    transform: rotate(11deg);
+  }
+  59% {
+    transform: rotate(-14deg);
+  }
+  64%,
+  100% {
+    transform: rotate(-5deg);
+  }
+}
+@keyframes ghost-eyes {
+  0%,
+  41% {
+    opacity: 0;
+  }
+  45%,
+  57% {
+    opacity: 1;
+  }
+  58% {
+    opacity: 0.2;
+  }
+  59% {
+    opacity: 1;
+  }
+  61%,
+  100% {
+    opacity: 0;
+  }
+}
+.ghost-float {
+  transform-box: view-box;
+  transform-origin: 62px 400px;
+  animation: ghost-float 3.4s ease-in-out infinite;
+}
+.ghost-head {
+  transform-box: view-box;
+  transform-origin: 62px 64px;
+  animation: ghost-head 11s ease-in-out forwards;
+}
+.ghost-eyes {
+  opacity: 0;
+  animation: ghost-eyes 11s linear forwards;
 }
 @keyframes route-glitch {
   0% {
