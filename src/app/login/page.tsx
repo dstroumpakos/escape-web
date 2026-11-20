@@ -22,7 +22,14 @@ export default function LoginPage() {
   // Redirect to home once authenticated
   useEffect(() => {
     if (isAuthenticated) {
-      router.replace('/');
+      // Came from an end-of-game QR (src/app/stamp/[token]): go back there.
+      let next = '/';
+      try {
+        const saved = sessionStorage.getItem('unlocked_after_login') || '';
+        sessionStorage.removeItem('unlocked_after_login');
+        if (saved.startsWith('/stamp/') && !saved.startsWith('//')) next = saved;
+      } catch {}
+      router.replace(next);
     }
   }, [isAuthenticated, router]);
 

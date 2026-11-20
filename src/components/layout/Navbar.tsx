@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Vault, ScrollText, Menu, X, LogOut, User, Bell, Ticket } from 'lucide-react';
+import { Vault, ScrollText, BookOpen, Menu, X, LogOut, User, Bell, Ticket } from 'lucide-react';
 import { EyeKeyhole } from '@/components/brand/EyeKeyhole';
 import { useAuth } from '@/lib/auth';
 import { useTranslation } from '@/lib/i18n';
@@ -45,6 +45,7 @@ export function Navbar() {
     { href: '/map', label: t('nav.map') },
     { href: '/social', label: t('nav.social') },
     { href: '/leaderboard', label: t('nav.leaderboard') },
+    ...(isAuthenticated ? [{ href: '/passport', label: t('nav.passport'), Icon: BookOpen }] : []),
     { href: '/shop', label: t('nav.shop'), Icon: Vault },
     { href: '/contact', label: t('nav.contact'), Icon: ScrollText },
   ];
