@@ -11,6 +11,7 @@ import { BOOKING_ENABLED } from '@/lib/features';
 import { useTranslation } from '@/lib/i18n';
 import { themeLabel } from '@/lib/roomThemes';
 import { RoomMerchStrip } from '@/components/shop/RoomMerch';
+import { InstagramStrip } from '@/components/rooms/InstagramStrip';
 import { shownRating, formatRating, videoEmbedUrl } from '@/lib/roomMedia';
 import {
   Star,
@@ -358,6 +359,8 @@ export default function RoomDetailsPage() {
           </div>
 
           <RoomMerchStrip roomId={roomId} />
+
+          <InstagramStrip companyId={(room as any).companyId} />
 
           {/* ═══ Reviews Section ═══ */}
           <div className="panel p-6 md:p-10 mt-6">

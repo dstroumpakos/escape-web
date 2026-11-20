@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useCompanyMutation, useCompanyQuery, useCompanyAuth, useCompanyPath } from '@/lib/companyAuth';
 import { ChangePasswordForm } from '@/components/auth/PasswordForms';
+import { InstagramSettingsCard } from '@/components/company/InstagramSettingsCard';
 import { useSearchParams } from 'next/navigation';
 import { api } from '../../../../convex/_generated/api';
 import Link from 'next/link';
@@ -454,6 +455,9 @@ export default function CompanySettingsPage() {
               <ChangePasswordForm kind="company" sessionToken={company.sessionToken} />
             </div>
           )}
+
+          {/* Instagram posts on room pages (convex/instagram.ts) */}
+          {companyId && <InstagramSettingsCard companyId={companyId} />}
         </div>
       )}
 
