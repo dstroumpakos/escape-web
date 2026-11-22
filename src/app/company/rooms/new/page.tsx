@@ -34,6 +34,8 @@ import {
   Languages,
 } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
+import { FearPicker } from '@/components/company/FearPicker';
+import { fearOf, type Fear } from '@/lib/mode';
 import { ROOM_THEMES } from '@/lib/roomThemes';
 import { translateRoom } from '@/lib/translate';
 
@@ -111,6 +113,8 @@ export default function NewRoomPage() {
     price: 15,
     pricePerGroup: [] as { players: number; price: number }[],
     theme: 'Adventure',
+    // '' = not picked yet: follows the theme until the company chooses
+    fearLevel: '' as Fear | '',
     tags: [] as string[],
     description: '',
     story: '',
@@ -312,6 +316,7 @@ export default function NewRoomPage() {
         price: form.price,
         pricePerGroup: form.pricePerGroup.length > 0 ? form.pricePerGroup : undefined,
         theme: form.theme,
+        fearLevel: fearOf(form),
         tags: form.tags,
         description: form.description,
         story: form.story,
@@ -430,6 +435,7 @@ export default function NewRoomPage() {
                 ))}
               </select>
             </div>
+            <FearPicker value={fearOf(form)} onChange={(f) => updateField('fearLevel', f)} />
             <div>
               <Label>{t('company.rooms.new.duration_min')}</Label>
               <Input

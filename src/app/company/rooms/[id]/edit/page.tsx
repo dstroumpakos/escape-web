@@ -35,6 +35,8 @@ import {
   Languages,
 } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
+import { FearPicker } from '@/components/company/FearPicker';
+import { fearOf, type Fear } from '@/lib/mode';
 import { ROOM_THEMES } from '@/lib/roomThemes';
 import { friendlyError } from '@/lib/errors';
 import { useToast } from '@/components/company/Toast';
@@ -105,6 +107,7 @@ export default function EditRoomPage() {
     price: 15,
     pricePerGroup: [] as { players: number; price: number }[],
     theme: 'Adventure',
+    fearLevel: '' as Fear | '',
     tags: [] as string[],
     description: '',
     story: '',
@@ -212,6 +215,7 @@ export default function EditRoomPage() {
         price: room.price || 15,
         pricePerGroup: (room as any).pricePerGroup || [],
         theme: room.theme || 'Adventure',
+        fearLevel: ((room as any).fearLevel ?? '') as Fear | '',
         tags: room.tags || [],
         description: room.description || '',
         story: room.story || '',
@@ -293,6 +297,7 @@ export default function EditRoomPage() {
         price: form.price,
         pricePerGroup: form.pricePerGroup.length > 0 ? form.pricePerGroup : undefined,
         theme: form.theme,
+        fearLevel: fearOf(form),
         tags: form.tags,
         description: form.description,
         story: form.story,
@@ -394,6 +399,7 @@ export default function EditRoomPage() {
                 {ROOM_THEMES.map((th) => <option key={th.value} value={th.value}>{t(th.key)}</option>)}
               </select>
             </div>
+            <FearPicker value={fearOf(form)} onChange={(f) => updateField('fearLevel', f)} />
             <div>
               <FieldLabel>{t('company.rooms.edit.duration_min')}</FieldLabel>
               <FieldInput type="number" value={form.duration} onChange={(v) => updateField('duration', parseInt(v) || 0)} min={15} required />

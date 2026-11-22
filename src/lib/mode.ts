@@ -52,7 +52,18 @@ export function useMode(): Mode | null | undefined {
   return useSyncExternalStore<Mode | null | undefined>(subscribe, read, () => undefined);
 }
 
-/** Hides horror rooms from a puzzle player. */
-export function forMode<T extends { theme?: string }>(rooms: T[], mode: Mode | null | undefined): T[] {
-  return mode === 'puzzle' ? rooms.filter((r) => !HORROR_THEMES.has(r.theme ?? '')) : rooms;
+/** How scary a room is: "none" puzzle side only, "some" both sides, "high" horror side only. */
+export type Fear = 'none' | 'some' | 'high';
+export const FEAR_LEVELS: Fear[] = ['none', 'some', 'high'];
+
+/** The company's own choice (rooms.fearLevel), or a guess from the theme for rooms that have none yet. */
+export function fearOf(room: { theme?: string; fearLevel?: string }): Fear {
+  const f = room.fearLevel;
+  if (f === 'none' || f === 'some' || f === 'high') return f;
+  return HORROR_THEMES.has(room.theme ?? '') ? 'high' : 'none';
+}
+
+/** Hides the scary rooms from a puzzle player ("a little fear" stays, marked). */
+export function forMode<T extends { theme?: string; fearLevel?: string }>(rooms: T[], mode: Mode | null | undefined): T[] {
+  return mode === 'puzzle' ? rooms.filter((r) => fearOf(r) !== 'high') : rooms;
 }

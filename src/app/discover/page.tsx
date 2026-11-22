@@ -51,6 +51,9 @@ export default function DiscoverPage() {
 
   const allRooms = useQuery(api.rooms.list);
 
+  // On the puzzle side a theme chip shows only if it still has rooms there
+  const puzzleThemes = useMemo(() => new Set(forMode(allRooms ?? [], 'puzzle').map((r: any) => r.theme)), [allRooms]);
+
   const filteredRooms = useMemo(() => {
     if (!allRooms) return [];
     let rooms = [...allRooms];
@@ -152,7 +155,7 @@ export default function DiscoverPage() {
 
           {/* Theme filters */}
           <div className="flex items-center gap-2 flex-wrap justify-center mb-4">
-            {themes.filter((theme) => !puzzle || !HORROR_THEMES.has(theme) || theme === selectedTheme).map((theme) => (
+            {themes.filter((theme) => !puzzle || theme === 'All' || theme === selectedTheme || puzzleThemes.has(theme)).map((theme) => (
               <button
                 key={theme}
                 onClick={() => setSelectedTheme(theme)}

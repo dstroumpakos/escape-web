@@ -68,6 +68,14 @@ export function LayoutShell({ children }: { children: React.ReactNode }) {
 
   const hideMainLayout = isEmbed || isCompanyRoute || isPhotosApp || isComingSoon || (isSubdomain && !isPublicPage);
 
+  // The company portal and photo app keep their own look whatever side the player picked
+  useEffect(() => {
+    if (mode === undefined) return; // still hydrating: the head script already set it
+    const el = document.documentElement;
+    if (hideMainLayout || !mode) el.removeAttribute('data-mode');
+    else el.setAttribute('data-mode', mode);
+  }, [hideMainLayout, mode]);
+
   if (hideMainLayout) {
     // Company portal / Photos app have their own layout — no main Navbar/Footer
     return (

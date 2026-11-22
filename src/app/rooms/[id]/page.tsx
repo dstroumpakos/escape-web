@@ -9,6 +9,7 @@ import { useAuth } from '@/lib/auth';
 import { BookNowButton } from '@/components/rooms/BookNowButton';
 import { BOOKING_ENABLED } from '@/lib/features';
 import { visitorId } from '@/lib/visitorId';
+import { fearOf } from '@/lib/mode';
 import { useTranslation } from '@/lib/i18n';
 import { themeLabel } from '@/lib/roomThemes';
 import { RoomMerchStrip } from '@/components/shop/RoomMerch';
@@ -33,6 +34,8 @@ import {
   ChevronUp,
   CheckCircle,
   PlayCircle,
+  Ghost,
+  KeyRound,
 } from 'lucide-react';
 
 /** The server's own message for review errors (it explains what to do), else a generic one. */
@@ -198,6 +201,17 @@ export default function RoomDetailsPage() {
                 <span className="font-type text-[11px] tracking-[0.18em] uppercase px-2 py-0.5 rounded-sm border border-brand-red/50 text-brand-red-light">
                   {themeLabel(t, room.theme)}
                 </span>
+                {/* How scary it is (rooms.fearLevel, or guessed from the theme) */}
+                {(() => {
+                  const fear = fearOf(room as any);
+                  const tone = fear === 'high' ? 'border-red-600/70 text-red-400' : fear === 'some' ? 'border-amber-500/60 text-amber-300' : 'border-sky-500/50 text-sky-300';
+                  const Icon = fear === 'high' ? Skull : fear === 'some' ? Ghost : KeyRound;
+                  return (
+                    <span title={t(`fear.${fear}_desc`)} className={`text-xs font-bold px-2.5 py-1 rounded-sm border flex items-center gap-1 ${tone}`}>
+                      <Icon className="w-3 h-3" /> {t(`fear.${fear}`)}
+                    </span>
+                  );
+                })()}
                 {(room as any).isEarlyAccessPartner && (
                   <span className="bg-emerald-700/90 text-white text-xs font-bold px-2.5 py-1 rounded-sm flex items-center gap-1">
                     <BadgeCheck className="w-3 h-3" /> {t('badge.early_access')}

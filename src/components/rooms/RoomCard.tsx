@@ -2,10 +2,11 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
-import { Star, Clock, Users, Zap, DoorOpen, BadgeCheck, Skull, Flame, MapPin } from 'lucide-react';
+import { Star, Clock, Users, Zap, DoorOpen, BadgeCheck, Skull, Flame, MapPin, Ghost } from 'lucide-react';
 import { BOOKING_ENABLED } from '@/lib/features';
 import { useTranslation } from '@/lib/i18n';
 import { themeLabel } from '@/lib/roomThemes';
+import { fearOf, type Fear } from '@/lib/mode';
 import { shownRating, formatRating } from '@/lib/roomMedia';
 
 export interface RoomCardData {
@@ -27,6 +28,7 @@ export interface RoomCardData {
   isTrending?: boolean;
   isEarlyAccessPartner?: boolean;
   companyName?: string;
+  fear?: Fear;
 }
 
 /** Tag colour per stored theme value; anything else gets the neutral tag. */
@@ -54,6 +56,7 @@ export function toRoomCardData(r: any): RoomCardData {
     id: r._id,
     title: r.title || 'Untitled Room',
     theme: r.theme || 'Mystery',
+    fear: fearOf(r),
     rating: shown?.rating ?? 0,
     reviews: shown?.count ?? 0,
     ratingSource: shown?.source,
@@ -126,6 +129,16 @@ export function RoomCard({ room }: { room: RoomCardData }) {
           {room.isNew && (
             <span className="bg-brand-red text-brand-bone text-xs font-bold px-2.5 py-1 rounded-sm flex items-center gap-1 shadow-[0_0_14px_rgba(255,40,50,0.6)]">
               <Zap className="w-3 h-3" /> {t('featured.new')}
+            </span>
+          )}
+          {room.fear === 'some' && (
+            <span className="bg-black/80 border border-amber-500/60 text-amber-300 text-xs font-bold px-2.5 py-1 rounded-sm flex items-center gap-1">
+              <Ghost className="w-3 h-3" /> {t('fear.some')}
+            </span>
+          )}
+          {room.fear === 'high' && (
+            <span className="bg-black/80 border border-red-600/70 text-red-400 text-xs font-bold px-2.5 py-1 rounded-sm flex items-center gap-1">
+              <Skull className="w-3 h-3" /> {t('fear.high')}
             </span>
           )}
           {room.isTrending && (
