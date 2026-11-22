@@ -134,7 +134,7 @@ export function ProfileView({ userId }: { userId: string }) {
       <div className="px-4 sm:px-6 -mt-12 sm:-mt-16 relative">
         <div className="flex flex-col sm:flex-row sm:items-end gap-3 sm:gap-5">
           <div className="relative w-24 h-24 sm:w-32 sm:h-32 shrink-0">
-            <div className="w-full h-full rounded-full border-4 border-brand-bg bg-brand-surface overflow-hidden flex items-center justify-center shadow-[0_0_24px_rgba(200,16,27,0.35)]">
+            <div className="w-full h-full rounded-full border-4 border-brand-bg bg-brand-surface overflow-hidden flex items-center justify-center shadow-[0_0_24px_rgba(var(--glow),0.35)]">
               {profile.avatar ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={profile.avatar} alt={profile.name} className="w-full h-full object-cover" />

@@ -162,7 +162,7 @@ export default function DiscoverPage() {
                 aria-pressed={selectedTheme === theme}
                 className={`px-3.5 py-2 rounded-sm text-sm font-medium transition-all duration-200 ${
                   selectedTheme === theme
-                    ? 'bg-brand-red text-brand-bone border border-brand-red-light/50 shadow-[0_0_18px_rgba(200,16,27,0.55)]'
+                    ? 'bg-brand-red text-brand-bone border border-brand-red-light/50 shadow-[0_0_18px_rgba(var(--glow),0.55)]'
                     : 'bg-black/50 border border-brand-border text-brand-text-secondary hover:text-brand-bone hover:border-brand-red/60 hover:bg-brand-red/10'
                 }`}
               >

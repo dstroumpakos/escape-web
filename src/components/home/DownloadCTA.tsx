@@ -19,20 +19,20 @@ export function DownloadCTA() {
       <svg aria-hidden viewBox="0 0 1200 120" preserveAspectRatio="none" className="absolute inset-x-0 top-1/2 -translate-y-1/2 w-full h-32 opacity-40" fill="none">
         <motion.path
           d="M0 60 H300 L320 60 L335 20 L352 104 L368 38 L380 60 H560 L580 60 L592 30 L610 96 L622 60 H900 L918 60 L930 14 L948 108 L962 60 H1200"
-          stroke="#ff2a36"
+          className="stroke-brand-red-light"
           strokeWidth="2"
           strokeLinejoin="round"
           initial={{ pathLength: 0 }}
           whileInView={{ pathLength: 1 }}
           viewport={{ once: false }}
           transition={{ duration: 3, ease: 'linear', repeat: Infinity, repeatDelay: 0.6 }}
-          style={{ filter: 'drop-shadow(0 0 6px rgba(255,40,50,0.9))' }}
+          style={{ filter: 'drop-shadow(0 0 6px rgba(var(--glow-hi),0.9))' }}
         />
       </svg>
 
       <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
         <AnimateIn animation="scaleIn">
-          <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-black border border-brand-red/50 mb-6 shadow-[0_0_40px_rgba(200,16,27,0.55)] animate-heartbeat">
+          <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-black border border-brand-red/50 mb-6 shadow-[0_0_40px_rgba(var(--glow),0.55)] animate-heartbeat">
             <Hourglass className="w-9 h-9 text-brand-red-light animate-[spin_6s_steps(2)_infinite]" />
           </div>
           <div className="horror-label mb-6">{t('horror.clock')}</div>

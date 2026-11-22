@@ -81,7 +81,7 @@ function DifficultySkulls({ level, max }: { level: number; max: number }) {
         <Skull
           key={i}
           className={`w-3.5 h-3.5 ${
-            i < level ? 'text-brand-red-light drop-shadow-[0_0_4px_rgba(255,40,50,0.8)]' : 'text-brand-border'
+            i < level ? 'text-brand-red-light drop-shadow-[0_0_4px_rgba(var(--glow-hi),0.8)]' : 'text-brand-border'
           }`}
         />
       ))}
@@ -127,7 +127,7 @@ export function RoomCard({ room }: { room: RoomCardData }) {
             </span>
           )}
           {room.isNew && (
-            <span className="bg-brand-red text-brand-bone text-xs font-bold px-2.5 py-1 rounded-sm flex items-center gap-1 shadow-[0_0_14px_rgba(255,40,50,0.6)]">
+            <span className="bg-brand-red text-brand-bone text-xs font-bold px-2.5 py-1 rounded-sm flex items-center gap-1 shadow-[0_0_14px_rgba(var(--glow-hi),0.6)]">
               <Zap className="w-3 h-3" /> {t('featured.new')}
             </span>
           )}

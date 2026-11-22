@@ -104,7 +104,7 @@ export function Footer() {
                 <a
                   key={i}
                   href="#"
-                  className="w-10 h-10 rounded-md border border-brand-border bg-black flex items-center justify-center text-brand-text-muted hover:text-brand-red-light hover:border-brand-red hover:shadow-[0_0_16px_rgba(200,16,27,0.5)] hover:animate-shake transition-all"
+                  className="w-10 h-10 rounded-md border border-brand-border bg-black flex items-center justify-center text-brand-text-muted hover:text-brand-red-light hover:border-brand-red hover:shadow-[0_0_16px_rgba(var(--glow),0.5)] hover:animate-shake transition-all"
                 >
                   <Icon className="w-5 h-5" />
                 </a>

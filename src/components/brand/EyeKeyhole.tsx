@@ -29,7 +29,12 @@ export function EyeKeyhole({
         }
       >
         <path d="M17 19 Q24 12.5 31 19 Q24 25.5 17 19 Z" fill="#ece2d6" />
-        <circle cx="24" cy="19" r="2.8" fill={variant === 'onRed' ? '#ff2a36' : '#c8101b'} />
+        <circle
+          cx="24"
+          cy="19"
+          r="2.8"
+          style={{ fill: variant === 'onRed' ? 'var(--color-brand-red-light)' : 'var(--color-brand-red)' }}
+        />
         <ellipse cx="24" cy="19" rx="0.9" ry="2.3" fill="#0a0000" />
       </g>
     </svg>

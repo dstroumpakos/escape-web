@@ -40,7 +40,7 @@ export function OfferCard({ offer }: { offer: Offer }) {
           <img src={offer.image} alt="" className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
-        <span className="absolute top-3 left-3 flex items-center gap-1 rounded-md bg-brand-red px-2.5 py-1 text-sm font-black text-white shadow-[0_0_18px_rgba(200,16,27,0.6)]">
+        <span className="absolute top-3 left-3 flex items-center gap-1 rounded-md bg-brand-red px-2.5 py-1 text-sm font-black text-white shadow-[0_0_18px_rgba(var(--glow),0.6)]">
           <Flame className="w-4 h-4" /> -{offer.percent}%
         </span>
         <span className="absolute bottom-3 left-3 rounded-md bg-black/70 border border-brand-gold/40 px-2.5 py-1 text-sm font-semibold text-brand-gold tabular-nums">

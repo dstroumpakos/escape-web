@@ -57,19 +57,19 @@ export function StatsBar() {
     <section className="relative -mt-10 z-20">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <AnimateIn animation="scaleUp" duration={0.8}>
-          <div className="relative rounded-md border border-brand-red/30 bg-black/85 backdrop-blur-md p-8 md:p-10 shadow-[0_0_60px_-10px_rgba(200,16,27,0.45),inset_0_0_60px_rgba(0,0,0,0.9)] overflow-hidden">
+          <div className="relative rounded-md border border-brand-red/30 bg-black/85 backdrop-blur-md p-8 md:p-10 shadow-[0_0_60px_-10px_rgba(var(--glow),0.45),inset_0_0_60px_rgba(0,0,0,0.9)] overflow-hidden">
             {/* Tape across the corner */}
             <div className="absolute -left-6 top-3 rotate-[-28deg] w-28 h-6 bg-[#d8ccb4]/15 border-y border-[#d8ccb4]/10" />
             {/* Label */}
             <div className="absolute top-3 right-4 horror-label">{t('horror.body_count')}</div>
             {/* Light coming up from under the panel */}
-            <div aria-hidden className="absolute inset-0 bg-[radial-gradient(70%_120%_at_50%_120%,rgba(200,16,27,0.22),transparent_70%)]" />
+            <div aria-hidden className="absolute inset-0 bg-[radial-gradient(70%_120%_at_50%_120%,rgba(var(--glow),0.22),transparent_70%)]" />
 
             <StaggerContainer stagger={0.12} className="relative grid grid-cols-2 md:grid-cols-4 gap-y-8 pt-4 md:pt-2">
               {stats.map((stat, i) => (
                 <StaggerItem key={i} animation="fadeUp" className={i > 0 ? 'md:border-l md:border-brand-border/70' : ''}>
                   <div className="text-center group px-4">
-                    <div className="inline-flex items-center justify-center w-12 h-12 rounded-full border border-brand-red/40 bg-brand-red/10 mb-3 shadow-[0_0_20px_rgba(200,16,27,0.35)] group-hover:animate-shake">
+                    <div className="inline-flex items-center justify-center w-12 h-12 rounded-full border border-brand-red/40 bg-brand-red/10 mb-3 shadow-[0_0_20px_rgba(var(--glow),0.35)] group-hover:animate-shake">
                       <stat.icon className="w-6 h-6 text-brand-red-light" />
                     </div>
                     <div

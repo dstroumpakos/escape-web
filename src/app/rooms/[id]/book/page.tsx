@@ -262,7 +262,7 @@ export default function BookingPage() {
             <span className="h-px w-8 bg-brand-red/60" />
             {t('book.title')}
           </div>
-          <h1 className="text-3xl md:text-5xl font-display font-black leading-[1.05] text-brand-bone text-balance mb-3 [text-shadow:0_2px_0_rgba(0,0,0,0.8),0_0_30px_rgba(200,16,27,0.18)]">
+          <h1 className="text-3xl md:text-5xl font-display font-black leading-[1.05] text-brand-bone text-balance mb-3 [text-shadow:0_2px_0_rgba(0,0,0,0.8),0_0_30px_rgba(var(--glow),0.18)]">
             {room.title}
           </h1>
           <p className="text-brand-text-secondary mb-10">
@@ -327,7 +327,7 @@ export default function BookingPage() {
                           isPast
                             ? 'border-brand-border/30 text-brand-text-muted/50 line-through decoration-brand-border cursor-not-allowed'
                             : isSelected
-                            ? 'border-brand-red-light/60 bg-brand-red text-brand-bone shadow-[0_0_18px_rgba(200,16,27,0.6)]'
+                            ? 'border-brand-red-light/60 bg-brand-red text-brand-bone shadow-[0_0_18px_rgba(var(--glow),0.6)]'
                             : isToday
                             ? 'border-brand-red/60 bg-brand-red/10 text-brand-red-light hover:bg-brand-red/25 hover:text-brand-bone'
                             : 'border-brand-border/70 bg-black/30 text-brand-text hover:border-brand-red/60 hover:bg-brand-red/10 hover:text-brand-bone'
@@ -361,7 +361,7 @@ export default function BookingPage() {
                             slot.booked
                               ? 'border-brand-border/50 bg-black/20 text-brand-text-muted/60 cursor-not-allowed line-through'
                               : selectedTime === slot.time
-                              ? 'border-brand-red-light/60 bg-brand-red text-brand-bone shadow-[0_0_18px_rgba(200,16,27,0.6)]'
+                              ? 'border-brand-red-light/60 bg-brand-red text-brand-bone shadow-[0_0_18px_rgba(var(--glow),0.6)]'
                               : 'border-brand-border bg-black/30 text-brand-text hover:border-brand-red/60 hover:bg-brand-red/10 hover:text-brand-bone'
                           }`}
                         >

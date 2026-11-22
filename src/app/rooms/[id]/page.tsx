@@ -218,7 +218,7 @@ export default function RoomDetailsPage() {
                   </span>
                 )}
                 {room.isNew && (
-                  <span className="bg-brand-red text-brand-bone text-xs font-bold px-2.5 py-1 rounded-sm flex items-center gap-1 shadow-[0_0_14px_rgba(255,40,50,0.5)]">
+                  <span className="bg-brand-red text-brand-bone text-xs font-bold px-2.5 py-1 rounded-sm flex items-center gap-1 shadow-[0_0_14px_rgba(var(--glow-hi),0.5)]">
                     <Zap className="w-3 h-3" /> {t('featured.new')}
                   </span>
                 )}
@@ -228,7 +228,7 @@ export default function RoomDetailsPage() {
                   </span>
                 )}
               </div>
-              <h1 className="text-3xl md:text-5xl font-display font-black leading-[1.05] text-brand-bone text-balance mb-3 [text-shadow:0_2px_0_rgba(0,0,0,0.8),0_0_30px_rgba(200,16,27,0.18)]">
+              <h1 className="text-3xl md:text-5xl font-display font-black leading-[1.05] text-brand-bone text-balance mb-3 [text-shadow:0_2px_0_rgba(0,0,0,0.8),0_0_30px_rgba(var(--glow),0.18)]">
                 {room.title}
               </h1>
               {(room as any).companyName && (
@@ -278,7 +278,7 @@ export default function RoomDetailsPage() {
                     <Skull
                       key={i}
                       className={`w-4 h-4 ${
-                        i < room.difficulty ? 'text-brand-red-light drop-shadow-[0_0_4px_rgba(255,40,50,0.8)]' : 'text-brand-border'
+                        i < room.difficulty ? 'text-brand-red-light drop-shadow-[0_0_4px_rgba(var(--glow-hi),0.8)]' : 'text-brand-border'
                       }`}
                     />
                   ))}

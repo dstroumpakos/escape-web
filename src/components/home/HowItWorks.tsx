@@ -34,7 +34,7 @@ export function HowItWorks() {
           {/* A line of blood that runs between the steps as you scroll */}
           <div aria-hidden className="hidden lg:block absolute top-[52px] left-[12%] right-[12%] h-[3px] bg-brand-border/40 rounded-full">
             <motion.div
-              className="h-full origin-left rounded-full bg-linear-to-r from-brand-blood via-brand-red to-brand-red-light shadow-[0_0_12px_rgba(255,40,50,0.8)]"
+              className="h-full origin-left rounded-full bg-linear-to-r from-brand-blood via-brand-red to-brand-red-light shadow-[0_0_12px_rgba(var(--glow-hi),0.8)]"
               style={{ scaleX: lineScale }}
             />
           </div>
@@ -46,15 +46,15 @@ export function HowItWorks() {
                   {/* Candle-lit seal */}
                   <div className="relative mx-auto mb-6 w-[104px] h-[104px]">
                     <div
-                      className="absolute inset-0 rounded-full bg-[radial-gradient(circle,rgba(255,90,40,0.35),transparent_65%)] blur-md animate-flicker"
+                      className="absolute inset-0 rounded-full bg-[radial-gradient(circle,rgba(var(--candle),0.35),transparent_65%)] blur-md animate-flicker"
                       style={{ animationDelay: `${i * 0.9}s` }}
                     />
-                    <div className="absolute inset-[14px] rounded-full border border-brand-red/50 bg-black flex items-center justify-center shadow-[inset_0_0_20px_rgba(200,16,27,0.4),0_0_24px_rgba(200,16,27,0.35)] group-hover:animate-shake">
+                    <div className="absolute inset-[14px] rounded-full border border-brand-red/50 bg-black flex items-center justify-center shadow-[inset_0_0_20px_rgba(var(--glow),0.4),0_0_24px_rgba(var(--glow),0.35)] group-hover:animate-shake">
                       <step.icon className="w-8 h-8 text-brand-red-light" />
                     </div>
                     {/* Rotating ritual ring */}
                     <svg aria-hidden viewBox="0 0 104 104" className="absolute inset-0 w-full h-full animate-spin-slow [animation-duration:24s]">
-                      <circle cx="52" cy="52" r="49" fill="none" stroke="#c8101b" strokeOpacity="0.5" strokeWidth="1" strokeDasharray="2 7" />
+                      <circle cx="52" cy="52" r="49" fill="none" className="stroke-brand-red" strokeOpacity="0.5" strokeWidth="1" strokeDasharray="2 7" />
                     </svg>
                   </div>
 

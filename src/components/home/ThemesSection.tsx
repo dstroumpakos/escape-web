@@ -29,7 +29,7 @@ export function ThemesSection() {
             <StaggerItem key={i} animation="scaleUp">
               <Link
                 href={`/discover?theme=${encodeURIComponent(theme.value)}`}
-                className="group relative block w-full overflow-hidden rounded-md border border-brand-border bg-brand-card/80 px-4 py-7 md:py-9 transition-all duration-500 hover:-translate-y-1 hover:border-brand-red/60 hover:shadow-[0_20px_50px_-15px_rgba(200,16,27,0.6)]"
+                className="group relative block w-full overflow-hidden rounded-md border border-brand-border bg-brand-card/80 px-4 py-7 md:py-9 transition-all duration-500 hover:-translate-y-1 hover:border-brand-red/60 hover:shadow-[0_20px_50px_-15px_rgba(var(--glow),0.6)]"
               >
                 {/* Each theme's own light: a glimmer at rest, rising on hover */}
                 <span
@@ -55,7 +55,7 @@ export function ThemesSection() {
                 </span>
 
                 <div className="relative z-10 flex flex-col items-center gap-3">
-                  <theme.icon className="w-8 h-8 md:w-10 md:h-10 text-brand-text-secondary group-hover:text-brand-bone group-hover:animate-shake transition-colors duration-300 drop-shadow-[0_0_12px_rgba(200,16,27,0.0)] group-hover:drop-shadow-[0_0_14px_rgba(255,40,50,0.8)]" />
+                  <theme.icon className="w-8 h-8 md:w-10 md:h-10 text-brand-text-secondary group-hover:text-brand-bone group-hover:animate-shake transition-colors duration-300 drop-shadow-[0_0_12px_rgba(var(--glow),0.0)] group-hover:drop-shadow-[0_0_14px_rgba(var(--glow-hi),0.8)]" />
                   <span className="font-display text-base md:text-lg font-bold text-brand-text group-hover:text-brand-bone transition-colors">
                     {t(theme.key)}
                   </span>

@@ -206,7 +206,7 @@ export default function ForEscapeRoomsPage() {
                 className={`card p-6 flex flex-col relative ${plan.popular ? `border-brand-red/40 ring-1 ring-brand-red/20` : ''}`}
               >
                 {plan.popular && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-linear-to-r from-brand-red to-red-600 text-white text-xs font-bold px-4 py-1 rounded-full flex items-center gap-1">
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-linear-to-r from-brand-red to-brand-red-hover text-white text-xs font-bold px-4 py-1 rounded-full flex items-center gap-1">
                     <Star className="w-3 h-3" /> {t('fer.most_popular')}
                   </div>
                 )}

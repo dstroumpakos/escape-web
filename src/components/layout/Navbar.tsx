@@ -22,7 +22,7 @@ export function Logo({ size = 'md' }: { size?: 'md' | 'lg' }) {
   return (
     <span className="flex items-center gap-2.5 group">
       <span
-        className={`logo-box relative ${box} rounded-md flex items-center justify-center bg-linear-to-b from-[#e0141f] to-brand-red border border-brand-red-light/40 shadow-[0_0_18px_rgba(200,16,27,0.55)] group-hover:animate-shake`}
+        className={`logo-box relative ${box} rounded-md flex items-center justify-center bg-linear-to-b from-[#e0141f] to-brand-red border border-brand-red-light/40 shadow-[0_0_18px_rgba(var(--glow),0.55)] group-hover:animate-shake`}
       >
         <EyeKeyhole className={icon} blink />
       </span>
@@ -130,7 +130,7 @@ export function Navbar() {
                   aria-label={link.Icon ? link.label : undefined}
                 >
                   {link.Icon ? (
-                    <link.Icon className="w-5 h-5 transition-transform duration-300 group-hover/link:scale-110 group-hover/link:drop-shadow-[0_0_6px_rgba(255,59,59,0.8)]" />
+                    <link.Icon className="w-5 h-5 transition-transform duration-300 group-hover/link:scale-110 group-hover/link:drop-shadow-[0_0_6px_rgba(var(--glow-hi),0.8)]" />
                   ) : (
                     link.label
                   )}
