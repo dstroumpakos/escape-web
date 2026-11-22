@@ -16,6 +16,7 @@ import {
   PenLine,
   Heart,
   Camera,
+  Image as ImageIcon,
   Users,
   Info,
   ChevronDown,
@@ -54,7 +55,8 @@ const SCORE_RULES = [
   { pts: 3, key: 'lb.rule_long_review', Icon: PenLine },
   { pts: 5, key: 'lb.rule_badge', Icon: Award },
   { pts: 1, key: 'lb.rule_like', Icon: Heart },
-  { pts: 5, key: 'lb.rule_photo', Icon: Camera },
+  { pts: 5, key: 'lb.rule_avatar', Icon: Camera },
+  { pts: 5, key: 'lb.rule_cover', Icon: ImageIcon },
 ];
 
 const MEDAL = {
