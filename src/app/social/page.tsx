@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useState , useEffect } from 'react';
 import Link from 'next/link';
 import { useMutation, useQuery } from 'convex/react';
-import { Users, Bell, ImagePlus, MessageCircle, UserPlus, Check } from 'lucide-react';
+import { Users, Bell, ImagePlus, MessageCircle, Check, Footprints } from 'lucide-react';
 import { api } from '../../../convex/_generated/api';
 import { useAuth } from '@/lib/auth';
 import { useTranslation } from '@/lib/i18n';
@@ -163,7 +163,7 @@ function Suggestions() {
                 disabled={done.has(p._id)}
                 className="text-xs font-semibold px-3 py-1.5 rounded-md bg-brand-red/15 text-brand-red-light hover:bg-brand-red/25 disabled:bg-white/5 disabled:text-brand-text-muted flex items-center gap-1"
               >
-                {done.has(p._id) ? <Check className="w-3.5 h-3.5" /> : <UserPlus className="w-3.5 h-3.5" />}
+                {done.has(p._id) ? <Check className="w-3.5 h-3.5" /> : <Footprints className="w-3.5 h-3.5" />}
                 {done.has(p._id) ? t('pf.following_btn') : t('pf.follow')}
               </button>
             )}

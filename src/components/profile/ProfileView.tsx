@@ -4,10 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import { useMutation, useQuery } from 'convex/react';
-import {
-  Camera, Grid3x3, Info, DoorOpen, Heart, MessageCircle, MapPin, CalendarDays, Trophy,
-  UserPlus, UserCheck, Pencil, X, Loader2, Diamond, Star, PlusSquare, Settings,
-} from 'lucide-react';
+import { Camera, Grid3x3, Info, DoorOpen, Heart, MessageCircle, MapPin, CalendarDays, Trophy, UserCheck, Pencil, X, Loader2, Diamond, Star, PlusSquare, Settings, Footprints } from 'lucide-react';
 import { api } from '../../../convex/_generated/api';
 import { useAuth } from '@/lib/auth';
 import { useTranslation } from '@/lib/i18n';
@@ -200,7 +197,7 @@ export function ProfileView({ userId }: { userId: string }) {
                     className="btn-ghost text-sm flex items-center gap-2 py-2! px-4!"
                     aria-label={profile.viewer.isFollowing ? t('pf.following_btn') : t('pf.follow')}
                   >
-                    {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : profile.viewer.isFollowing ? <UserCheck className="w-4 h-4" /> : <UserPlus className="w-4 h-4" />}
+                    {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : profile.viewer.isFollowing ? <UserCheck className="w-4 h-4" /> : <Footprints className="w-4 h-4" />}
                   </button>
                 )}
               </>
@@ -210,12 +207,12 @@ export function ProfileView({ userId }: { userId: string }) {
                 disabled={busy}
                 className={`${profile.viewer.isFollowing ? 'btn-ghost' : 'btn-primary'} text-sm flex items-center gap-2 py-2! px-5!`}
               >
-                {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : profile.viewer.isFollowing ? <UserCheck className="w-4 h-4" /> : <UserPlus className="w-4 h-4" />}
+                {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : profile.viewer.isFollowing ? <UserCheck className="w-4 h-4" /> : <Footprints className="w-4 h-4" />}
                 {profile.viewer.isFollowing ? t('pf.following_btn') : t('pf.follow')}
               </button>
             ) : (
               <Link href="/login" className="btn-primary text-sm flex items-center gap-2 py-2! px-5!">
-                <UserPlus className="w-4 h-4" /> {t('pf.follow')}
+                <Footprints className="w-4 h-4" /> {t('pf.follow')}
               </Link>
             )}
           </div>
@@ -226,7 +223,7 @@ export function ProfileView({ userId }: { userId: string }) {
         {/* Counters (Instagram) */}
         <div className="flex justify-around sm:justify-start sm:gap-8 mt-5 py-3 border-y border-brand-border/60">
           <Count n={profile.stats.posts} label={t('pf.posts')} />
-          {FOLLOW_ENABLED && <Count n={profile.stats.followers} label={t('pf.followers')} onClick={() => setList('followers')} />}
+          {FOLLOW_ENABLED && <Count n={profile.stats.followers} label={profile.stats.followers === 1 ? t('pf.follower_one') : t('pf.followers')} onClick={() => setList('followers')} />}
           {FOLLOW_ENABLED && <Count n={profile.stats.following} label={t('pf.following')} onClick={() => setList('following')} />}
           <Count n={profile.stats.played} label={t('pf.rooms')} />
         </div>
