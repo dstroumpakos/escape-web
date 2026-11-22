@@ -84,7 +84,7 @@ export default function EditRoomPage() {
   const room = useQuery(api.rooms.getById, roomId ? { id: roomId as any } : 'skip');
   const updateRoom = useCompanyMutation(api.companies.updateRoom);
   const generateUploadUrl = useCompanyMutation(api.companies.generateUploadUrl);
-  const getUrlMutation = useMutation(api.companies.getUrlMutation);
+  const getUrlMutation = useCompanyMutation(api.companies.getUrlMutation);
   const savePreset = useCompanyMutation(api.bookingPhotos.savePreset);
   const photoPreset = useQuery(
     api.bookingPhotos.getPreset,

@@ -805,7 +805,7 @@ export default function PhotosTool({ roomId, roomTitle }: { roomId: string; room
 
   // ── Mutations ──
   const generateUploadUrl = useCompanyMutation(api.companies.generateUploadUrl);
-  const getUrlMutation = useMutation(api.companies.getUrlMutation);
+  const getUrlMutation = useCompanyMutation(api.companies.getUrlMutation);
   const createPhoto = useCompanyMutation(api.standalonePhotos.create);
   const saveProcessed = useCompanyMutation(api.standalonePhotos.saveProcessed);
   const updateMeta = useCompanyMutation(api.standalonePhotos.updateMeta);

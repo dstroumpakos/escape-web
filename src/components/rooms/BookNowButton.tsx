@@ -6,6 +6,7 @@ import { DoorOpen, ExternalLink, Phone } from 'lucide-react';
 import { api } from '../../../convex/_generated/api';
 import { useTranslation } from '@/lib/i18n';
 import { BOOKING_ENABLED } from '@/lib/features';
+import { visitorId } from '@/lib/visitorId';
 
 type Target = { kind: 'url'; url: string } | { kind: 'phone'; phone: string } | null | undefined;
 
@@ -35,7 +36,7 @@ export function BookNowButton({
   }
   if (!target) return null;
   const onClick = () => {
-    track({ roomId: roomId as any }).catch(() => {});
+    track({ roomId: roomId as any, visitorId: visitorId() }).catch(() => {});
   };
   if (target.kind === 'phone') {
     return (

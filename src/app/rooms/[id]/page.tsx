@@ -8,6 +8,7 @@ import { api } from '../../../../convex/_generated/api';
 import { useAuth } from '@/lib/auth';
 import { BookNowButton } from '@/components/rooms/BookNowButton';
 import { BOOKING_ENABLED } from '@/lib/features';
+import { visitorId } from '@/lib/visitorId';
 import { useTranslation } from '@/lib/i18n';
 import { themeLabel } from '@/lib/roomThemes';
 import { RoomMerchStrip } from '@/components/shop/RoomMerch';
@@ -34,6 +35,13 @@ import {
   PlayCircle,
 } from 'lucide-react';
 
+/** The server's own message for review errors (it explains what to do), else a generic one. */
+function friendlyReviewError(err: unknown): string {
+  const data = (err as any)?.data;
+  if (typeof data === 'string' && data.length < 200) return data;
+  return 'Something went wrong. Please try again.';
+}
+
 export default function RoomDetailsPage() {
   const params = useParams();
   const roomId = params.id as string;
@@ -59,7 +67,7 @@ export default function RoomDetailsPage() {
     if (!roomId) return;
     const key = 'unlocked_viewed_' + roomId;
     try { if (sessionStorage.getItem(key)) return; sessionStorage.setItem(key, '1'); } catch {}
-    trackView({ roomId: roomId as any }).catch(() => {});
+    trackView({ roomId: roomId as any, visitorId: visitorId() }).catch(() => {});
   }, [roomId, trackView]);
 
   const [reviewRating, setReviewRating] = useState(0);
@@ -67,6 +75,8 @@ export default function RoomDetailsPage() {
   const [reviewText, setReviewText] = useState('');
   const [reviewSubmitting, setReviewSubmitting] = useState(false);
   const [reviewSuccess, setReviewSuccess] = useState(false);
+  const [reviewPending, setReviewPending] = useState(false);
+  const [reviewError, setReviewError] = useState('');
   const [showAllReviews, setShowAllReviews] = useState(false);
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [imageFailed, setImageFailed] = useState(false);
@@ -445,18 +455,20 @@ export default function RoomDetailsPage() {
                   onClick={async () => {
                     if (!user || !canReviewData?.canReview || reviewRating === 0) return;
                     setReviewSubmitting(true);
+                    setReviewError('');
                     try {
-                      await submitReview({
+                      const res = await submitReview({
                         sessionToken: user.sessionToken,
                         roomId: roomId as any,
                         bookingId: (canReviewData.bookingId ?? undefined) as any,
                         rating: reviewRating,
                         text: reviewText.trim() || undefined,
                       });
+                      setReviewPending(!!res?.pending);
                       setReviewSuccess(true);
                       setShowReviewForm(false);
                     } catch (err) {
-                      console.error('Review failed:', err);
+                      setReviewError(friendlyReviewError(err));
                     } finally {
                       setReviewSubmitting(false);
                     }
@@ -470,6 +482,7 @@ export default function RoomDetailsPage() {
                   )}
                   {reviewSubmitting ? t('reviews.submitting') : t('reviews.submit')}
                 </button>
+                {reviewError && <p className="mt-3 text-sm text-brand-red-light">{reviewError}</p>}
               </div>
             )}
 
@@ -477,7 +490,7 @@ export default function RoomDetailsPage() {
             {reviewSuccess && (
               <div className="mb-6 p-4 bg-emerald-500/10 border border-emerald-500/25 rounded-md flex items-center gap-3">
                 <CheckCircle className="w-5 h-5 text-emerald-400 shrink-0" />
-                <span className="text-emerald-400 font-medium">{t('reviews.success')}</span>
+                <span className="text-emerald-400 font-medium">{reviewPending ? t('reviews.pending') : t('reviews.success')}</span>
               </div>
             )}
 
@@ -485,7 +498,10 @@ export default function RoomDetailsPage() {
             {!reviewSuccess && !canReviewData?.canReview && canReviewData?.reason !== 'reviewed' && (
               <p className="mb-6 text-sm text-brand-text-secondary flex items-start gap-2">
                 <BadgeCheck className="w-4 h-4 text-brand-red-light shrink-0 mt-0.5" />
-                {canReviewData?.reason === 'need_stamp' ? t('reviews.need_stamp') : t('reviews.only_players')}
+                {canReviewData?.reason === 'need_stamp' ? t('reviews.need_stamp')
+                  : canReviewData?.reason === 'need_email' ? t('reviews.need_email')
+                  : canReviewData?.reason === 'too_late' ? t('reviews.too_late')
+                  : t('reviews.only_players')}
               </p>
             )}
 

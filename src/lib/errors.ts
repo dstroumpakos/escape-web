@@ -57,6 +57,11 @@ export function friendlyError(
   const msg = cleanError(err);
   if (KNOWN[msg]) return t(KNOWN[msg]);
   if (/^Room limit reached/i.test(msg)) return t('cx.err.room_limit');
+  // QR limits per room (convex/passport.ts)
+  const soon = /^A QR for this room was made (\d+) minutes ago\. You can make the next one in (\d+) minutes\./.exec(msg);
+  if (soon) return t('st.qr_too_soon', { ago: soon[1], mins: soon[2] });
+  const day = /^This room already had (\d+) QRs/.exec(msg);
+  if (day) return t('st.qr_day_limit', { n: day[1] });
   if (
     !msg ||
     /Server Error|Called by client|Request ID|ArgumentValidationError|Validator|Failed to fetch|NetworkError|network/i.test(msg)

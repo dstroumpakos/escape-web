@@ -80,7 +80,7 @@ export default function NewRoomPage() {
   const p = useCompanyPath();
   const createRoom = useCompanyMutation(api.companies.createRoom);
   const generateUploadUrl = useCompanyMutation(api.companies.generateUploadUrl);
-  const getUrlMutation = useMutation(api.companies.getUrlMutation);
+  const getUrlMutation = useCompanyMutation(api.companies.getUrlMutation);
   const savePreset = useCompanyMutation(api.bookingPhotos.savePreset);
   const photoPreset = useQuery(
     api.bookingPhotos.getPreset,

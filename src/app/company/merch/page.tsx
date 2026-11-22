@@ -49,7 +49,7 @@ export default function CompanyMerchPage() {
   const updateOrder = useCompanyMutation(api.merch.companyUpdateOrder);
   const saveSettings = useCompanyMutation(api.merch.saveCompanyMerchSettings);
   const generateUploadUrl = useCompanyMutation(api.companies.generateUploadUrl);
-  const getUrl = useMutation(api.companies.getUrlMutation);
+  const getUrl = useCompanyMutation(api.companies.getUrlMutation);
 
   const [editing, setEditing] = useState<EditableProduct | null | 'new'>(null);
   const [discount, setDiscount] = useState('0');

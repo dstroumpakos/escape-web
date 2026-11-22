@@ -33,7 +33,7 @@ export function AdminShop({ sessionToken }: { sessionToken: string }) {
     const uploadUrl = await generateUploadUrl({ adminToken: sessionToken });
     const res = await fetch(uploadUrl, { method: 'POST', headers: { 'Content-Type': file.type }, body: file });
     const { storageId } = await res.json();
-    const url = await getUrl({ storageId });
+    const url = await getUrl({ storageId, adminToken: sessionToken });
     if (!url) throw new Error('Upload failed');
     return url;
   };
