@@ -12,6 +12,7 @@ import { useAuth } from '@/lib/auth';
 import { useTranslation } from '@/lib/i18n';
 import { BOOKING_ENABLED } from '@/lib/features';
 import { LanguageToggle } from '@/components/LanguageToggle';
+import { ModeToggle } from '@/components/ModeToggle';
 import { BloodDrips } from '@/components/horror/BloodDrips';
 
 export function Logo({ size = 'md' }: { size?: 'md' | 'lg' }) {
@@ -21,7 +22,7 @@ export function Logo({ size = 'md' }: { size?: 'md' | 'lg' }) {
   return (
     <span className="flex items-center gap-2.5 group">
       <span
-        className={`relative ${box} rounded-md flex items-center justify-center bg-linear-to-b from-[#e0141f] to-brand-red border border-brand-red-light/40 shadow-[0_0_18px_rgba(200,16,27,0.55)] group-hover:animate-shake`}
+        className={`logo-box relative ${box} rounded-md flex items-center justify-center bg-linear-to-b from-[#e0141f] to-brand-red border border-brand-red-light/40 shadow-[0_0_18px_rgba(200,16,27,0.55)] group-hover:animate-shake`}
       >
         <EyeKeyhole className={icon} blink />
       </span>
@@ -146,6 +147,7 @@ export function Navbar() {
 
           {/* Desktop Auth */}
           <div className="hidden md:flex items-center gap-2">
+            <ModeToggle />
             <LanguageToggle />
             {isAuthenticated ? (
               <>
@@ -236,7 +238,7 @@ export function Navbar() {
               </Link>
             ))}
             <div className="border-t border-brand-red/20 mt-2 pt-3 flex flex-col gap-1 px-4">
-              <div className="mb-2"><LanguageToggle /></div>
+              <div className="mb-2 flex items-center gap-2"><ModeToggle withLabels /><LanguageToggle /></div>
               {isAuthenticated ? (
                 <>
                   {BOOKING_ENABLED && (

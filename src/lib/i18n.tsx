@@ -12,6 +12,7 @@ import { chatTranslations } from './i18nChat';
 import { playsTranslations } from './i18nPlays';
 import { companiesTranslations } from './i18nCompanies';
 import { statsTranslations } from './i18nStats';
+import { modeTranslations } from './i18nMode';
 
 export type Language = 'en' | 'el' | 'nl';
 
@@ -1090,6 +1091,7 @@ const translations: Record<Language, Record<string, string>> = {
     'friends.decline': 'Decline',
     'friends.request_accepted': 'Friend request accepted!',
     'friends.request_declined': 'Friend request declined',
+    'friends.request_gone': 'This friend request was withdrawn.',
     'friends.invite_to_booking': 'Invite Friends',
     'friends.invite_desc': 'Let your friends know about this booking!',
     'friends.invite': 'Invite',
@@ -3403,6 +3405,7 @@ const translations: Record<Language, Record<string, string>> = {
     'friends.decline': 'Απόρριψη',
     'friends.request_accepted': 'Αίτημα φιλίας αποδέχθηκε!',
     'friends.request_declined': 'Αίτημα φιλίας απορρίφθηκε',
+    'friends.request_gone': 'Αυτό το αίτημα φιλίας ακυρώθηκε.',
     'friends.invite_to_booking': 'Πρόσκληση Φίλων',
     'friends.invite_desc': 'Ενημέρωσε τους φίλους σου για αυτή την κράτηση!',
     'friends.invite': 'Πρόσκληση',
@@ -5879,6 +5882,7 @@ const translations: Record<Language, Record<string, string>> = {
     'friends.decline': 'Afwijzen',
     'friends.request_accepted': 'Vriendschapsverzoek geaccepteerd!',
     'friends.request_declined': 'Vriendschapsverzoek afgewezen',
+    'friends.request_gone': 'Dit vriendschapsverzoek is ingetrokken.',
     'friends.invite_to_booking': 'Vrienden Uitnodigen',
     'friends.invite_desc': 'Laat je vrienden weten over deze boeking!',
     'friends.invite': 'Uitnodigen',
@@ -6911,6 +6915,9 @@ Object.assign(translations.nl, companiesTranslations.nl);
 Object.assign(translations.en, statsTranslations.en);
 Object.assign(translations.el, statsTranslations.el);
 Object.assign(translations.nl, statsTranslations.nl);
+Object.assign(translations.en, modeTranslations.en);
+Object.assign(translations.el, modeTranslations.el);
+Object.assign(translations.nl, modeTranslations.nl);
 
 interface I18nContextType {
   language: Language;

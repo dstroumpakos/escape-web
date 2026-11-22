@@ -6,6 +6,7 @@ import { AuthProvider } from '@/lib/auth';
 import { I18nProvider } from '@/lib/i18n';
 import { jsonLd as safeJsonLd } from '@/lib/jsonLd';
 import { SafeConvex } from '@/components/SafeConvex';
+import { MODE_SCRIPT } from '@/lib/modeScript';
 
 // Force all pages to be dynamically rendered (SSR on-demand)
 // This prevents Convex hooks from failing during build-time pre-rendering
@@ -98,8 +99,10 @@ export default function RootLayout({
   };
 
   return (
-    <html lang="en" className="dark">
+    <html lang="en" className="dark" suppressHydrationWarning>
       <head>
+        {/* Puzzle or horror side (lib/mode.ts), set before paint so the colours never flash */}
+        <script dangerouslySetInnerHTML={{ __html: MODE_SCRIPT }} />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link

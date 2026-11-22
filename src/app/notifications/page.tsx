@@ -7,6 +7,7 @@ import { useQuery, useMutation } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
 import { useAuth } from '@/lib/auth';
 import { useTranslation } from '@/lib/i18n';
+import { cleanError } from '@/lib/errors';
 import {
   Bell,
   Ticket,
@@ -70,6 +71,8 @@ export default function NotificationsPage() {
   const respondBookingInvite = useMutation(api.friends.respondToBookingInvite);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [actionDone, setActionDone] = useState<Record<string, string>>({});
+  // Why an Accept / Decline failed, shown under the buttons (it used to fail silently)
+  const [actionError, setActionError] = useState<Record<string, string>>({});
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
@@ -174,6 +177,7 @@ export default function NotificationsPage() {
                 const handleFriendAction = async (action: 'accept' | 'decline') => {
                   if (!user?.id || !n.data?.friendshipId) return;
                   setActionLoading(n._id + action);
+                  setActionError((prev) => ({ ...prev, [n._id]: '' }));
                   try {
                     if (action === 'accept') {
                       await acceptFriend({ friendshipId: n.data.friendshipId, sessionToken: user.sessionToken });
@@ -184,9 +188,13 @@ export default function NotificationsPage() {
                     if (!n.read) await markAsRead({ id: n._id, sessionToken: user.sessionToken });
                   } catch (err) {
                     console.error(err);
+                    setActionError((prev) => ({ ...prev, [n._id]: cleanError(err) }));
                   }
                   setActionLoading(null);
                 };
+                // Where the request stands now (convex/notifications.ts getByUser)
+                const friendStatus = (n as { friendStatus?: string }).friendStatus;
+                const friendOpen = !friendStatus || friendStatus === 'pending';
 
                 const handleBookingInviteAction = async (action: 'accepted' | 'declined') => {
                   if (!user?.id || !n.data?.bookingInviteId) return;
@@ -228,7 +236,7 @@ export default function NotificationsPage() {
                         {n.message}
                       </p>
                       {/* Friend Request Actions */}
-                      {isFriendRequest && !doneAction && (
+                      {isFriendRequest && !doneAction && friendOpen && (
                         <div className="flex gap-2 mt-3">
                           <button
                             onClick={() => handleFriendAction('accept')}
@@ -252,10 +260,16 @@ export default function NotificationsPage() {
                           </button>
                         </div>
                       )}
-                      {isFriendRequest && doneAction === 'accept' && (
+                      {isFriendRequest && actionError[n._id] && (
+                        <p className="text-xs text-red-400 mt-2">{actionError[n._id]}</p>
+                      )}
+                      {isFriendRequest && !doneAction && friendStatus === 'gone' && (
+                        <p className="text-xs text-brand-text-muted mt-2">{t('friends.request_gone')}</p>
+                      )}
+                      {isFriendRequest && (doneAction === 'accept' || (!doneAction && friendStatus === 'accepted')) && (
                         <p className="text-xs text-green-400 mt-2">{t('friends.request_accepted')}</p>
                       )}
-                      {isFriendRequest && doneAction === 'decline' && (
+                      {isFriendRequest && (doneAction === 'decline' || (!doneAction && friendStatus === 'declined')) && (
                         <p className="text-xs text-brand-text-muted mt-2">{t('friends.request_declined')}</p>
                       )}
                       {/* Booking Invite Actions */}

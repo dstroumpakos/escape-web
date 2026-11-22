@@ -96,7 +96,7 @@ export function RoomCard({ room }: { room: RoomCardData }) {
   const body = (
     <>
       {/* Image */}
-      <div className="relative aspect-[16/10] bg-[radial-gradient(80%_70%_at_50%_60%,#2a1010,#0a0505)] overflow-hidden">
+      <div className="relative aspect-[16/10] bg-[radial-gradient(80%_70%_at_50%_60%,var(--color-brand-surface),var(--color-brand-bg))] overflow-hidden">
         {room.image && !imageFailed ? (
           <img
             src={room.image}

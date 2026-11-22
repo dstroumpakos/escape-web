@@ -9,6 +9,7 @@ import { useQuery } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
 import Link from 'next/link';
 import { MapPin, Star, Clock } from 'lucide-react';
+import { useMode, forMode } from '@/lib/mode';
 import { shownRating, formatRating } from '@/lib/roomMedia';
 
 // Fix Leaflet default icon issue in Next.js
@@ -71,7 +72,10 @@ export default function MapView() {
     }
   }, []);
 
-  const allRooms = useQuery(api.rooms.list);
+  const mode = useMode();
+  const listed = useQuery(api.rooms.list);
+  // Puzzle side (lib/mode.ts): no horror rooms on the map
+  const allRooms = useMemo(() => (listed ? forMode(listed, mode) : listed), [listed, mode]);
 
   const nearbyRooms = useMemo(() => {
     if (!allRooms) return [];

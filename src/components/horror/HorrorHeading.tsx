@@ -47,7 +47,7 @@ export function HorrorHeading({ kicker, title, highlight, subtitle, className = 
               preserveAspectRatio="none"
               className="absolute left-0 -bottom-2 w-full h-3 overflow-visible"
               fill="none"
-              stroke="#c8101b"
+              stroke="var(--color-brand-red)"
               strokeWidth="2.2"
               strokeLinecap="round"
             >

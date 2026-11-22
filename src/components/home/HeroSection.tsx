@@ -8,6 +8,7 @@ import { useTranslation } from '@/lib/i18n';
 import { BloodDrips } from '@/components/horror/BloodDrips';
 import { WatchingEyes } from '@/components/horror/WatchingEyes';
 import { AriadneThread, MinotaurMark } from '@/components/horror/AriadneThread';
+import { setMode } from '@/lib/mode';
 
 /** Things written on the walls. Only the flashlight shows them. */
 const scrawls = [
@@ -268,6 +269,14 @@ export function HeroSection() {
             </div>
           </div>
         </form>
+
+        <button
+          type="button"
+          onClick={() => { setMode('puzzle'); window.scrollTo({ top: 0 }); }}
+          className="mt-6 text-sm text-brand-text-secondary hover:text-[#f2c75c] underline-offset-4 hover:underline transition-colors animate-fade-up animate-delay-700"
+        >
+          {t('mode.switch_to_puzzle')}
+        </button>
 
       </motion.div>
 

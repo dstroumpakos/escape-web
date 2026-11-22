@@ -47,6 +47,9 @@ export const ROOM_THEMES: RoomTheme[] = [
 
 export const ROOM_THEME_VALUES = ROOM_THEMES.map((th) => th.value);
 
+/** Themes that scare: hidden from players on the puzzle side (lib/mode.ts). */
+export const HORROR_THEME_VALUES = ['Horror', 'Thriller', 'Paranormal'];
+
 /** Translated label for a stored theme value; unknown values pass through. */
 export function themeLabel(t: (key: string) => string, value: string): string {
   const theme = ROOM_THEMES.find((th) => th.value === value);

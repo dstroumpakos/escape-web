@@ -10,6 +10,7 @@ import { BOOKING_ENABLED } from '@/lib/features';
 import { useTranslation } from '@/lib/i18n';
 import { ROOM_THEME_VALUES, themeLabel as roomThemeLabel } from '@/lib/roomThemes';
 import { useAuth } from '@/lib/auth';
+import { useMode, setMode, forMode, HORROR_THEMES } from '@/lib/mode';
 import { AnimateIn, StaggerContainer, StaggerItem } from '@/components/animations/AnimateIn';
 
 const themes = ['All', ...ROOM_THEME_VALUES];
@@ -21,6 +22,10 @@ export default function DiscoverPage() {
   const [sortBy, setSortBy] = useState<'rating' | 'price' | 'duration'>('rating');
   const [showFilters, setShowFilters] = useState(false);
   const { t } = useTranslation();
+  // Puzzle side (lib/mode.ts): horror rooms and their filters are hidden,
+  // unless someone opens a horror theme on purpose (/discover?theme=Horror).
+  const mode = useMode();
+  const puzzle = mode === 'puzzle';
 
   // Read theme from URL params (e.g. /discover?theme=Horror)
   useEffect(() => {
@@ -65,6 +70,8 @@ export default function DiscoverPage() {
       return now >= release;
     });
 
+    if (!HORROR_THEMES.has(selectedTheme)) rooms = forMode(rooms, mode);
+
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
       rooms = rooms.filter(
@@ -92,7 +99,7 @@ export default function DiscoverPage() {
     });
 
     return rooms;
-  }, [allRooms, searchQuery, selectedTheme, sortBy, isPremium]);
+  }, [allRooms, searchQuery, selectedTheme, sortBy, isPremium, mode]);
 
   return (
     <>
@@ -134,9 +141,18 @@ export default function DiscoverPage() {
             )}
           </div>
 
+          {puzzle && (
+            <p className="mb-4 text-center text-sm text-brand-text-secondary">
+              {t('mode.hidden_note')}{' '}
+              <button type="button" onClick={() => setMode(null)} className="text-brand-red-light hover:underline">
+                {t('mode.show_them')}
+              </button>
+            </p>
+          )}
+
           {/* Theme filters */}
           <div className="flex items-center gap-2 flex-wrap justify-center mb-4">
-            {themes.map((theme) => (
+            {themes.filter((theme) => !puzzle || !HORROR_THEMES.has(theme) || theme === selectedTheme).map((theme) => (
               <button
                 key={theme}
                 onClick={() => setSelectedTheme(theme)}

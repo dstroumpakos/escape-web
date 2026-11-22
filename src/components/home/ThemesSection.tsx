@@ -3,13 +3,16 @@
 import Link from 'next/link';
 import { useTranslation } from '@/lib/i18n';
 import { ROOM_THEMES } from '@/lib/roomThemes';
+import { useMode, HORROR_THEMES } from '@/lib/mode';
 import { StaggerContainer, StaggerItem } from '@/components/animations/AnimateIn';
 import { HorrorHeading } from '@/components/horror/HorrorHeading';
 
-const themes = ROOM_THEMES.filter((th) => th.home);
+const homeThemes = ROOM_THEMES.filter((th) => th.home);
 
 export function ThemesSection() {
   const { t } = useTranslation();
+  const mode = useMode();
+  const themes = mode === 'puzzle' ? homeThemes.filter((th) => !HORROR_THEMES.has(th.value)) : homeThemes;
   return (
     <section className="relative py-24 md:py-32 bg-brand-dark overflow-hidden">
       <div aria-hidden className="absolute inset-0 bg-[radial-gradient(60%_50%_at_50%_100%,rgba(92,0,8,0.35),transparent_70%)]" />

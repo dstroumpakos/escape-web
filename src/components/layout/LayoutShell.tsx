@@ -16,10 +16,13 @@ import { HorrorDefs } from '@/components/horror/HorrorDefs';
 import { HorrorFX } from '@/components/horror/HorrorFX';
 import { HorrorIntro } from '@/components/horror/HorrorIntro';
 import { BloodDrips } from '@/components/horror/BloodDrips';
+import { useMode } from '@/lib/mode';
 
 export function LayoutShell({ children }: { children: React.ReactNode }) {
   const { t } = useTranslation();
   const pathname = usePathname();
+  // Puzzle side: no fright effects at all; the cold open only for players who chose horror
+  const mode = useMode();
   // On business./photos. subdomains the proxy rewrites /x to /company/x or
   // /photos-app/x. usePathname() shows the visible URL, but the route segments
   // are the rewritten ones on both server and client, so use them to recognise
@@ -127,7 +130,7 @@ export function LayoutShell({ children }: { children: React.ReactNode }) {
     <>
       <HorrorDefs />
       {/* The cold open plays on the homepage only, never on a shared booking link */}
-      {pathname === '/' && <HorrorIntro />}
+      {pathname === '/' && mode === 'horror' && <HorrorIntro />}
       <Navbar />
       <main className="flex-1">
         <motion.div
@@ -140,7 +143,7 @@ export function LayoutShell({ children }: { children: React.ReactNode }) {
         </motion.div>
       </main>
       <Footer />
-      <HorrorFX />
+      {mode !== 'puzzle' && <HorrorFX />}
       <CookieConsent />
       {/* The phone is only needed to book on UNLOCKED */}
       {BOOKING_ENABLED && <PhonePrompt />}

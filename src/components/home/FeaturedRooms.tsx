@@ -7,17 +7,19 @@ import { useTranslation } from '@/lib/i18n';
 import Link from 'next/link';
 import { RoomCard, toRoomCardData, type RoomCardData } from '@/components/rooms/RoomCard';
 import { AnimateIn, StaggerContainer, StaggerItem } from '@/components/animations/AnimateIn';
+import { useMode, forMode } from '@/lib/mode';
 import { shownRating } from '@/lib/roomMedia';
 
 export function FeaturedRooms() {
   const { t } = useTranslation();
+  const mode = useMode();
   const convexRooms = useSafeQuery<any[]>(api.rooms.list);
 
   // Map Convex rooms to our card format. No placeholder fallback: until there
   // are real (active) rooms, the whole section stays hidden.
   // EA partner rooms get priority (Featured Spotlight benefit)
   const rooms: RoomCardData[] = convexRooms
-    ? [...convexRooms]
+    ? forMode([...convexRooms], mode)
           .sort((a: any, b: any) => {
             // EA partner rooms first
             const aEA = a.isEarlyAccessPartner ? 1 : 0;

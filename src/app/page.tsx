@@ -1,4 +1,4 @@
-import { HeroSection } from '@/components/home/HeroSection';
+import { HomeHero } from '@/components/home/HomeHero';
 import { FeaturedRooms } from '@/components/home/FeaturedRooms';
 import { HowItWorks } from '@/components/home/HowItWorks';
 import { LabyrinthSection } from '@/components/home/LabyrinthSection';
@@ -15,7 +15,7 @@ export const metadata: Metadata = { alternates: { canonical: 'https://unlocked.g
 export default function Home() {
   return (
     <>
-      <SafeConvex><HeroSection /></SafeConvex>
+      <SafeConvex><HomeHero /></SafeConvex>
       {BOOKING_ENABLED && <SafeConvex><LastMinuteOffers /></SafeConvex>}
       <SafeConvex><FeaturedRooms /></SafeConvex>
       <LabyrinthSection />
