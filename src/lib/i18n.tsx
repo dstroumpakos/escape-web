@@ -13,6 +13,7 @@ import { playsTranslations } from './i18nPlays';
 import { companiesTranslations } from './i18nCompanies';
 import { statsTranslations } from './i18nStats';
 import { modeTranslations } from './i18nMode';
+import { leaderboardTranslations } from './i18nLeaderboard';
 
 export type Language = 'en' | 'el' | 'nl';
 
@@ -6918,6 +6919,9 @@ Object.assign(translations.nl, statsTranslations.nl);
 Object.assign(translations.en, modeTranslations.en);
 Object.assign(translations.el, modeTranslations.el);
 Object.assign(translations.nl, modeTranslations.nl);
+Object.assign(translations.en, leaderboardTranslations.en);
+Object.assign(translations.el, leaderboardTranslations.el);
+Object.assign(translations.nl, leaderboardTranslations.nl);
 
 interface I18nContextType {
   language: Language;
