@@ -7,7 +7,10 @@ import { DownloadCTA } from '@/components/home/DownloadCTA';
 import { SEOContent } from '@/components/home/SEOContent';
 import { SafeConvex } from '@/components/SafeConvex';
 import { LastMinuteOffers } from '@/components/home/LastMinuteOffers';
+import type { Metadata } from 'next';
 import { BOOKING_ENABLED } from '@/lib/features';
+
+export const metadata: Metadata = { alternates: { canonical: 'https://unlocked.gr' } };
 
 export default function Home() {
   return (

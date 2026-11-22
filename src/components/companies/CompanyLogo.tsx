@@ -8,7 +8,7 @@ export function CompanyLogo({ name, logo, size }: { name: string; logo: string; 
     >
       {ok ? (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={logo} alt="" className="w-full h-full object-cover" />
+        <img src={logo} alt={name} className="w-full h-full object-cover" />
       ) : (
         <span className="font-display font-bold text-brand-red-light" style={{ fontSize: size * 0.42 }}>
           {(name || '?').charAt(0).toUpperCase()}

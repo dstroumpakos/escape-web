@@ -42,9 +42,6 @@ export const metadata: Metadata = {
       'max-snippet': -1,
     },
   },
-  alternates: {
-    canonical: 'https://unlocked.gr',
-  },
   openGraph: {
     title: 'Discover Escape Rooms & Collect Stamps | UNLOCKED',
     description:

@@ -64,15 +64,22 @@ export const RANKS: Record<string, string> = {
 };
 /** A rank title in the UI language (unknown titles are shown as they are). */
 export const rankLabel = (t: (k: string) => string, title: string) => (RANKS[title] ? t(RANKS[title]) : title);
-// memberSince is stored as "Member since Nov 2026": keep just the date.
-const since = (s: string) => s.replace('Member since', '').trim();
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+/** users.memberSince is stored as "Member since Nov 2026"; show the month in the UI language. */
+const since = (s: string, lang: string) => {
+  const text = s.replace('Member since', '').trim();
+  const m = /^([A-Z][a-z]{2}) (\d{4})$/.exec(text);
+  const month = m ? MONTHS.indexOf(m[1]) : -1;
+  if (month < 0) return text;
+  return new Date(Number(m![2]), month, 1).toLocaleDateString(lang === 'el' ? 'el-GR' : lang === 'nl' ? 'nl-NL' : 'en-GB', { month: 'short', year: 'numeric' });
+};
 
 /**
  * A player's profile, Instagram + Facebook style: cover and avatar, counters,
  * follow, and tabs for the posts grid, "about" and rooms (convex/social.ts).
  */
 export function ProfileView({ userId }: { userId: string }) {
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
   const { user } = useAuth();
   const token = user?.sessionToken;
   const profile = useQuery(api.social.profile, { userId: userId as any, sessionToken: token });
@@ -231,7 +238,7 @@ export function ProfileView({ userId }: { userId: string }) {
         {profile.bio && <p className="mt-3 text-sm text-brand-text whitespace-pre-line max-w-[60ch]">{profile.bio}</p>}
         <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-brand-text-muted">
           {profile.city && <span className="flex items-center gap-1"><MapPin className="w-3.5 h-3.5" />{profile.city}</span>}
-          {profile.memberSince && <span className="flex items-center gap-1"><CalendarDays className="w-3.5 h-3.5" />{t('profile.member_since')} {since(profile.memberSince)}</span>}
+          {profile.memberSince && <span className="flex items-center gap-1"><CalendarDays className="w-3.5 h-3.5" />{t('profile.member_since')} {since(profile.memberSince, language)}</span>}
           {profile.viewer.isFriend && <span className="text-brand-gold">{t('pf.friends_badge')}</span>}
         </div>
       </div>
@@ -308,14 +315,14 @@ function PostsGrid({ posts, isMe, onOpen }: { posts: any[] | undefined; isMe: bo
 }
 
 function About({ profile }: { profile: any }) {
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
   return (
     <div className="grid gap-4 sm:grid-cols-2">
       <div className="panel p-5 space-y-3 text-sm">
         <h3 className="font-display font-bold text-brand-bone">{t('pf.intro')}</h3>
         {profile.bio ? <p className="text-brand-text whitespace-pre-line">{profile.bio}</p> : <p className="text-brand-text-muted">{t('pf.no_bio')}</p>}
         {profile.city && <p className="flex items-center gap-2 text-brand-text-secondary"><MapPin className="w-4 h-4" />{profile.city}</p>}
-        {profile.memberSince && <p className="flex items-center gap-2 text-brand-text-secondary"><CalendarDays className="w-4 h-4" />{t('profile.member_since')} {since(profile.memberSince)}</p>}
+        {profile.memberSince && <p className="flex items-center gap-2 text-brand-text-secondary"><CalendarDays className="w-4 h-4" />{t('profile.member_since')} {since(profile.memberSince, language)}</p>}
       </div>
       <div className="panel p-5">
         <h3 className="font-display font-bold text-brand-bone mb-3">{t('pf.stats')}</h3>

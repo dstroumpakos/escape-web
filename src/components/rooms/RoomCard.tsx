@@ -100,7 +100,7 @@ export function RoomCard({ room }: { room: RoomCardData }) {
         {room.image && !imageFailed ? (
           <img
             src={room.image}
-            alt=""
+            alt={room.title}
             loading="lazy"
             onError={() => setImageFailed(true)}
             className="w-full h-full object-cover grayscale-[60%] contrast-110 brightness-[0.85] group-hover:grayscale-0 group-hover:brightness-95 group-hover:scale-105 transition-all duration-700"

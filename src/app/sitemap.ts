@@ -62,9 +62,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.9,
     },
     {
-      url: `${baseUrl}/offers`,
+      url: `${baseUrl}/companies`,
       lastModified: new Date(),
-      changeFrequency: 'daily',
+      changeFrequency: 'weekly',
       priority: 0.8,
     },
     {
@@ -102,12 +102,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: new Date(),
       changeFrequency: 'monthly',
       priority: 0.5,
-    },
-    {
-      url: `${baseUrl}/login`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.3,
     },
     {
       url: `${baseUrl}/signup`,

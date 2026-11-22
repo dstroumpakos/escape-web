@@ -84,7 +84,7 @@ export default function CompaniesPage() {
                     <div className="aspect-4/3 rounded-lg overflow-hidden bg-black/40 border border-brand-border">
                       {r.image ? (
                         // eslint-disable-next-line @next/next/no-img-element
-                        <img src={r.image} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+                        <img src={r.image} alt={r.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center"><DoorOpen className="w-8 h-8 text-brand-red/60" /></div>
                       )}
