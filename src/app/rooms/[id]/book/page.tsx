@@ -17,6 +17,7 @@ import {
   BellOff,
   Phone,
 } from 'lucide-react';
+import { localeFor } from '@/lib/languages';
 
 export default function BookingPage() {
   const params = useParams();
@@ -443,7 +444,7 @@ export default function BookingPage() {
                     <div className="flex justify-between gap-4">
                       <span className="text-brand-text-muted">{t('book.date')}</span>
                       <span className="font-medium text-brand-bone tabular-nums">
-                        {new Date(selectedDate + 'T00:00:00').toLocaleDateString(language === 'en' ? 'en-GB' : language, {
+                        {new Date(selectedDate + 'T00:00:00').toLocaleDateString(localeFor(language), {
                           weekday: 'short',
                           day: 'numeric',
                           month: 'short',

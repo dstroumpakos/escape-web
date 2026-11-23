@@ -11,6 +11,7 @@ import { useTranslation } from '@/lib/i18n';
 import { friendlyError } from '@/lib/errors';
 import { OrderStatusPill } from '@/components/shop/SellerOrders';
 import { countryName, euro } from '@/components/shop/shopUi';
+import { localeFor } from '@/lib/languages';
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
@@ -76,7 +77,7 @@ function OrderContent() {
   }
 
   const fmt = (ts: number) =>
-    new Date(ts).toLocaleString(language === 'el' ? 'el-GR' : language === 'nl' ? 'nl-NL' : 'en-GB', {
+    new Date(ts).toLocaleString(localeFor(language), {
       day: 'numeric',
       month: 'long',
       hour: '2-digit',

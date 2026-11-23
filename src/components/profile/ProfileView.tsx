@@ -11,6 +11,7 @@ import { useTranslation } from '@/lib/i18n';
 import { cleanError } from '@/lib/errors';
 import { FOLLOW_ENABLED } from '@/lib/features';
 import { squareAvatar } from '@/lib/imageUtils';
+import { localeFor } from '@/lib/languages';
 
 /** Uploads a profile photo (centre square, 512 px) and saves it on the account. */
 function useAvatarUpload(token: string | undefined) {
@@ -71,7 +72,7 @@ const since = (s: string, lang: string) => {
   const m = /^([A-Z][a-z]{2}) (\d{4})$/.exec(text);
   const month = m ? MONTHS.indexOf(m[1]) : -1;
   if (month < 0) return text;
-  return new Date(Number(m![2]), month, 1).toLocaleDateString(lang === 'el' ? 'el-GR' : lang === 'nl' ? 'nl-NL' : 'en-GB', { month: 'short', year: 'numeric' });
+  return new Date(Number(m![2]), month, 1).toLocaleDateString(localeFor(lang), { month: 'short', year: 'numeric' });
 };
 
 /**

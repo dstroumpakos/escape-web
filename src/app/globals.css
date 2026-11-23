@@ -1080,3 +1080,8 @@ html[data-mode='puzzle'] .animate-flicker,
 html[data-mode='puzzle'] .animate-flicker-fast {
   animation: none;
 }
+
+/* Arabic letters join up; letter-spacing (tracking-*) pulls them apart. */
+html[lang="ar"] * {
+  letter-spacing: normal !important;
+}

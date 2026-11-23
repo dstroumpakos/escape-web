@@ -6,6 +6,7 @@ import { Bell, Crown, Diamond, Gift, Headphones, Rocket, ShoppingBag, Store, Tag
 import { api } from '../../../convex/_generated/api';
 import { useAuth } from '@/lib/auth';
 import { useTranslation } from '@/lib/i18n';
+import { localeFor } from '@/lib/languages';
 
 const PERKS = [
   { icon: Rocket, key: 'early_rooms' },
@@ -36,7 +37,7 @@ export default function PremiumPage() {
           {status?.isPremium && status.premiumExpiresAt && (
             <p className="mt-5 inline-block rounded-md border border-brand-gold/40 bg-brand-gold/10 px-4 py-2 text-sm text-brand-gold">
               {t('premium.page.active_until', {
-                date: new Date(status.premiumExpiresAt).toLocaleDateString(language === 'el' ? 'el-GR' : 'en-GB'),
+                date: new Date(status.premiumExpiresAt).toLocaleDateString(localeFor(language)),
               })}
             </p>
           )}

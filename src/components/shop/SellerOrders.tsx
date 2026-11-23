@@ -6,6 +6,7 @@ import { useTranslation } from '@/lib/i18n';
 import { friendlyError } from '@/lib/errors';
 import type { SellerOrderView } from '../../../convex/merch';
 import { ORDER_STATUS_CLS, countryName, euro } from './shopUi';
+import { localeFor } from '@/lib/languages';
 
 type Status = SellerOrderView['status'];
 type Update = (
@@ -32,7 +33,7 @@ function OrderCard({ o, onUpdate }: { o: SellerOrderView; onUpdate: Update }) {
   const [trackingUrl, setTrackingUrl] = useState(o.trackingUrl ?? '');
   const [note, setNote] = useState(o.sellerNote ?? '');
   const dateFmt = (ts: number) =>
-    new Date(ts).toLocaleString(language === 'el' ? 'el-GR' : language === 'nl' ? 'nl-NL' : 'en-GB', {
+    new Date(ts).toLocaleString(localeFor(language), {
       day: 'numeric',
       month: 'short',
       hour: '2-digit',

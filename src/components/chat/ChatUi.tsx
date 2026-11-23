@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Users, X } from 'lucide-react';
+import { localeFor } from '@/lib/languages';
 
 /** Round avatar: photo, else the first letter (or a group icon). */
 export function Avatar({ src, name, size = 40, group = false }: { src?: string | null; name: string; size?: number; group?: boolean }) {
@@ -70,7 +71,7 @@ export function ChatModal({
 export function formatTime(ts: number, lang: string): string {
   const d = new Date(ts);
   const now = new Date();
-  const locale = lang === 'el' ? 'el-GR' : lang === 'nl' ? 'nl-NL' : 'en-GB';
+  const locale = localeFor(lang);
   if (d.toDateString() === now.toDateString()) return d.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' });
   const days = (now.getTime() - ts) / 86_400_000;
   if (days < 6) return d.toLocaleDateString(locale, { weekday: 'short' });
