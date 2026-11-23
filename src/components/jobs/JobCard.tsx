@@ -98,12 +98,13 @@ export function JobCard({ job, showCompany = true }: { job: PublicJob; showCompa
 }
 
 /**
- * Email or phone of an ad: hidden until you hover the box (tap on a phone),
- * with a copy button next to it. Nothing opens a mail or phone app.
+ * Email or phone of an ad, as a box with a yellow lid that says "Email" / "Phone".
+ * Hover (tap on a phone) and the lid opens upwards like a box: underneath is
+ * only the value and a copy icon. Nothing opens a mail or phone app.
  */
 function ContactBox({ icon: Icon, label, value }: { icon: typeof Mail; label: string; value: string }) {
   const { t } = useTranslation();
-  const [shown, setShown] = useState(false);
+  const [open, setOpen] = useState(false);
   const [copied, setCopied] = useState(false);
   const copy = async () => {
     try {
@@ -111,41 +112,43 @@ function ContactBox({ icon: Icon, label, value }: { icon: typeof Mail; label: st
       setCopied(true);
       setTimeout(() => setCopied(false), 1800);
     } catch {
-      setShown(true); // clipboard blocked: at least show it to select by hand
+      /* clipboard blocked: the value is on screen to select by hand */
     }
   };
   return (
-    <div className="flex items-stretch gap-2">
+    <div
+      className="relative h-12 [perspective:600px]"
+      onMouseEnter={() => setOpen(true)}
+      onMouseLeave={() => setOpen(false)}
+      onFocus={() => setOpen(true)}
+      onBlur={(e) => {
+        if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setOpen(false);
+      }}
+    >
+      {/* Bottom layer: the value and the copy icon */}
+      <div className="absolute inset-0 flex items-center gap-2 rounded-xl border border-brand-gold/50 bg-brand-surface pl-3 pr-1">
+        <span className="min-w-0 flex-1 truncate text-sm text-brand-bone select-all">{value}</span>
+        <button
+          type="button"
+          onClick={copy}
+          tabIndex={open ? 0 : -1}
+          className="shrink-0 rounded-lg p-2 text-brand-gold hover:bg-white/5"
+          aria-label={`${t('jobs.copy')} ${label}`}
+          title={copied ? t('jobs.copied') : t('jobs.copy')}
+        >
+          {copied ? <Check className="w-4 h-4 text-green-400" /> : <Copy className="w-4 h-4" />}
+        </button>
+      </div>
+      {/* The lid: yellow, says Email / Phone, swings up and away */}
       <button
         type="button"
-        onMouseEnter={() => setShown(true)}
-        onMouseLeave={() => setShown(false)}
-        onFocus={() => setShown(true)}
-        onBlur={() => setShown(false)}
-        onClick={() => setShown((v) => !v)}
-        aria-label={label}
-        className="group min-w-0 flex-1 flex items-center gap-2.5 rounded-xl border border-brand-border bg-brand-surface/60 px-3 py-2 text-left hover:border-brand-red/50 transition-colors"
+        onClick={() => setOpen((o) => !o)}
+        aria-expanded={open}
+        className={`absolute inset-0 flex items-center justify-center gap-2 rounded-xl bg-brand-gold text-black text-sm font-bold shadow-lg origin-top transition-[transform,opacity] duration-500 ease-out ${
+          open ? '[transform:rotateX(110deg)] opacity-0 pointer-events-none' : '[transform:rotateX(0deg)] opacity-100'
+        }`}
       >
-        <Icon className="w-4 h-4 shrink-0 text-brand-red-light" />
-        <span className="min-w-0">
-          <span className="block text-[11px] uppercase tracking-wide text-brand-text-muted">{label}</span>
-          <span
-            className={`block text-sm truncate transition-[filter,opacity] ${
-              shown ? 'text-brand-bone select-all' : 'text-brand-text-secondary blur-[5px] opacity-70 select-none'
-            }`}
-          >
-            {value}
-          </span>
-        </span>
-      </button>
-      <button
-        type="button"
-        onClick={copy}
-        className="shrink-0 inline-flex items-center gap-1.5 rounded-xl border border-brand-border px-3 text-xs font-medium text-brand-text-secondary hover:text-white hover:border-brand-red/50 transition-colors"
-        aria-label={`${t('jobs.copy')} ${label}`}
-      >
-        {copied ? <Check className="w-4 h-4 text-green-400" /> : <Copy className="w-4 h-4" />}
-        {copied ? t('jobs.copied') : t('jobs.copy')}
+        <Icon className="w-4 h-4" /> {label}
       </button>
     </div>
   );
