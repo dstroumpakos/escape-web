@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Briefcase, Mail, MapPin, Phone, User } from 'lucide-react';
+import { Briefcase, Mail, MapPin, Phone, User, Copy, Check } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
 import { CompanyLogo } from '@/components/companies/CompanyLogo';
 import type { PublicJob } from '@/lib/jobs';
@@ -15,6 +15,16 @@ const LONG = 280;
 export function JobCard({ job, showCompany = true }: { job: PublicJob; showCompany?: boolean }) {
   const { t, language } = useTranslation();
   const [open, setOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const copyEmail = async () => {
+    try {
+      await navigator.clipboard.writeText(job.contactEmail);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1800);
+    } catch {
+      /* clipboard blocked: the address is on screen to select by hand */
+    }
+  };
   const long = job.description.length > LONG;
   const text = long && !open ? job.description.slice(0, LONG).trimEnd() + '…' : job.description;
   const where = [job.city && cityLabel(job.city, job.country, language), job.country && countryName(job.country, localeFor(language))].filter(Boolean).join(', ');
@@ -90,12 +100,21 @@ export function JobCard({ job, showCompany = true }: { job: PublicJob; showCompa
       {(job.contactEmail || job.contactPhone) && (
         <div className="flex flex-wrap gap-2 pt-1">
           {job.contactEmail && (
-            <a
-              href={`mailto:${job.contactEmail}?subject=${encodeURIComponent(job.title)}`}
-              className="btn-primary inline-flex items-center gap-2 py-2! px-4! text-sm"
-            >
-              <Mail className="w-4 h-4" /> {t('jobs.email')}
-            </a>
+            // Only the address, to copy: no mailto, so no mail app pops up
+            <div className="inline-flex items-center gap-2 rounded-xl border border-brand-border bg-brand-surface/60 pl-3 pr-1 py-1 text-sm text-brand-bone max-w-full">
+              <Mail className="w-4 h-4 shrink-0 text-brand-red-light" />
+              <span className="select-all break-all">{job.contactEmail}</span>
+              <button
+                type="button"
+                onClick={copyEmail}
+                className="ml-1 inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs text-brand-text-secondary hover:text-white hover:bg-white/5"
+                aria-label={t('jobs.copy_email')}
+                title={t('jobs.copy_email')}
+              >
+                {copied ? <Check className="w-3.5 h-3.5 text-green-400" /> : <Copy className="w-3.5 h-3.5" />}
+                {copied ? t('jobs.copied') : t('jobs.copy')}
+              </button>
+            </div>
           )}
           {job.contactPhone && (
             <a href={`tel:${job.contactPhone.replace(/[^\d+]/g, '')}`} className="btn-outline inline-flex items-center gap-2 py-2! px-4! text-sm">

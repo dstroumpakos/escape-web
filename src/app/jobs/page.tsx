@@ -16,7 +16,9 @@ export default function JobsPage() {
   const { t, language } = useTranslation();
   const locale = localeFor(language);
   const jobs = useQuery(api.jobs.listOpen) as PublicJob[] | undefined;
-  const [role, setRole] = useState<string>('');
+  // Several roles can be picked: an ad shows when it has any of them
+  const [roles, setRoles] = useState<string[]>([]);
+  const toggleRole = (r: string) => setRoles((rs) => (rs.includes(r) ? rs.filter((x) => x !== r) : [...rs, r]));
   const [city, setCity] = useState<string>('');
   const [country, setCountry] = useState<string>('');
 
@@ -34,8 +36,8 @@ export default function JobsPage() {
     [jobs, country, locale]
   );
   const shown = useMemo(
-    () => (jobs ?? []).filter((j) => (!role || j.roles.includes(role)) && (!country || j.country === country) && (!city || j.city === city)),
-    [jobs, role, country, city]
+    () => (jobs ?? []).filter((j) => (roles.length === 0 || j.roles.some((r) => roles.includes(r))) && (!country || j.country === country) && (!city || j.city === city)),
+    [jobs, roles, country, city]
   );
   const usedRoles = useMemo(() => JOB_ROLES.filter((r) => (jobs ?? []).some((j) => j.roles.includes(r))), [jobs]);
 
@@ -56,12 +58,12 @@ export default function JobsPage() {
 
       {jobs && jobs.length > 0 && (
         <div className="mb-8 space-y-3">
-          <div className="flex flex-wrap gap-2" role="radiogroup" aria-label={t('cx.jobs.f_roles')}>
-            <button role="radio" aria-checked={!role} onClick={() => setRole('')} className={chip(!role)}>
+          <div className="flex flex-wrap gap-2" role="group" aria-label={t('cx.jobs.f_roles')}>
+            <button aria-pressed={roles.length === 0} onClick={() => setRoles([])} className={chip(roles.length === 0)}>
               {t('jobs.all_roles')}
             </button>
             {usedRoles.map((r) => (
-              <button key={r} role="radio" aria-checked={role === r} onClick={() => setRole(role === r ? '' : r)} className={chip(role === r)}>
+              <button key={r} aria-pressed={roles.includes(r)} onClick={() => toggleRole(r)} className={chip(roles.includes(r))}>
                 {t(`jobs.role.${r}`)}
               </button>
             ))}
