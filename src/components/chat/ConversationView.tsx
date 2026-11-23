@@ -13,6 +13,7 @@ import type { DeviceIdentity } from '@/lib/chatCrypto';
 import { useConversationKeys } from '@/lib/useChat';
 import { Avatar } from './ChatUi';
 import { ChatInfo } from './ChatInfo';
+import { localeFor } from '@/lib/languages';
 
 const MAX_TEXT = 2000;
 
@@ -140,7 +141,7 @@ export function ConversationView({
     return t(`msg.ev_${type}${m.senderId === user?.id ? '_me' : ''}`, { name, who });
   };
 
-  const locale = language === 'el' ? 'el-GR' : language === 'nl' ? 'nl-NL' : 'en-GB';
+  const locale = localeFor(language);
   const dayOf = (ts: number) => new Date(ts).toLocaleDateString(locale, { weekday: 'long', day: 'numeric', month: 'long' });
 
   if (conv === null) {

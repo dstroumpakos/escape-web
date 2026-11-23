@@ -1,13 +1,10 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { useTranslation, Language } from '@/lib/i18n';
+import { useTranslation } from '@/lib/i18n';
+import { LANGUAGES } from '@/lib/languages';
 
-const langs: { code: Language; emoji: string; label: string }[] = [
-  { code: 'en', emoji: '🇬🇧', label: 'English' },
-  { code: 'nl', emoji: '🇳🇱', label: 'Nederlands' },
-  { code: 'el', emoji: '🇬🇷', label: 'Ελληνικά' },
-];
+const langs = LANGUAGES.map((l) => ({ code: l.code, emoji: l.flag, label: l.label }));
 
 export function LanguageToggle() {
   const { language, setLanguage } = useTranslation();
@@ -38,10 +35,11 @@ export function LanguageToggle() {
       </button>
 
       {open && (
-        <div className="absolute right-0 mt-1 w-40 rounded-lg bg-brand-card border border-brand-border shadow-xl shadow-black/30 z-50 overflow-hidden">
+        <div className="absolute end-0 mt-1 w-44 max-h-[70vh] overflow-y-auto rounded-lg bg-brand-card border border-brand-border shadow-xl shadow-black/30 z-50">
           {langs.map((l) => (
             <button
               key={l.code}
+              lang={l.code}
               onClick={() => { setLanguage(l.code); setOpen(false); }}
               className={`w-full flex items-center gap-2.5 px-3 py-2.5 text-sm hover:bg-brand-surface/60 transition-colors ${
                 l.code === language ? 'bg-brand-primary/10 text-brand-primary' : 'text-brand-text-secondary'

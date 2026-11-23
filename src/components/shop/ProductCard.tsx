@@ -5,6 +5,7 @@ import { Crown, Lock, Package, Timer, Store, Truck, KeyRound } from 'lucide-reac
 import { useTranslation } from '@/lib/i18n';
 import type { ProductView } from '../../../convex/merch';
 import { euro } from './shopUi';
+import { localeFor } from '@/lib/languages';
 
 export function PriceTag({ p, large = false }: { p: ProductView; large?: boolean }) {
   const { t } = useTranslation();
@@ -37,7 +38,7 @@ export function LockNote({ p }: { p: ProductView }) {
   if (!p.locked) return null;
   const when = (ts: number | null) =>
     ts
-      ? new Date(ts).toLocaleString(language === 'el' ? 'el-GR' : language === 'nl' ? 'nl-NL' : 'en-GB', {
+      ? new Date(ts).toLocaleString(localeFor(language), {
           day: 'numeric',
           month: 'short',
           hour: '2-digit',

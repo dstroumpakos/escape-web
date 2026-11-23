@@ -310,7 +310,7 @@ export default function RoomDetailsPage() {
                   {t('room.the_story')}
                 </h3>
                 <p className="border-l-2 border-brand-red/60 pl-4 font-display text-lg text-brand-text leading-relaxed italic text-pretty">
-                  &ldquo;{(room as any).storyTranslations?.[language] || room.story}&rdquo;
+                  &ldquo;{(room as any).storyTranslations?.[language] || (room as any).storyTranslations?.en || room.story}&rdquo;
                 </p>
               </div>
             )}
@@ -341,7 +341,7 @@ export default function RoomDetailsPage() {
               <div className="mb-8">
                 <h3 className="text-xl font-display font-bold text-brand-bone mb-3">{t('room.about')}</h3>
                 <p className="text-brand-text-secondary leading-relaxed text-pretty max-w-[70ch]">
-                  {(room as any).descriptionTranslations?.[language] || room.description}
+                  {(room as any).descriptionTranslations?.[language] || (room as any).descriptionTranslations?.en || room.description}
                 </p>
               </div>
             )}

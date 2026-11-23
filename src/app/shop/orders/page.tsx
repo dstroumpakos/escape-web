@@ -8,6 +8,7 @@ import { useAuth } from '@/lib/auth';
 import { useTranslation } from '@/lib/i18n';
 import { OrderStatusPill } from '@/components/shop/SellerOrders';
 import { euro } from '@/components/shop/shopUi';
+import { localeFor } from '@/lib/languages';
 
 export default function MyOrdersPage() {
   const { t, language } = useTranslation();
@@ -27,7 +28,7 @@ export default function MyOrdersPage() {
 
   const visible = (orders ?? []).filter((o) => o.status !== 'pending_payment' || Date.now() - o.createdAt < 60 * 60 * 1000);
   const fmt = (ts: number) =>
-    new Date(ts).toLocaleDateString(language === 'el' ? 'el-GR' : language === 'nl' ? 'nl-NL' : 'en-GB', {
+    new Date(ts).toLocaleDateString(localeFor(language), {
       day: 'numeric',
       month: 'short',
       year: 'numeric',

@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import { localeFor } from '@/lib/languages';
 
 /** "€12" or "€12.50". */
 export function euro(cents: number): string {
@@ -24,7 +25,7 @@ export const ORDER_STATUS_CLS: Record<string, string> = {
 
 export function countryName(code: string, language: string): string {
   try {
-    const dn = new Intl.DisplayNames([language === 'el' ? 'el' : language === 'nl' ? 'nl' : 'en'], { type: 'region' });
+    const dn = new Intl.DisplayNames([localeFor(language)], { type: 'region' });
     return dn.of(code) || code;
   } catch {
     return code;

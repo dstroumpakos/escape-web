@@ -7,6 +7,7 @@ import { api } from '../../../convex/_generated/api';
 import { useTranslation } from '@/lib/i18n';
 import { friendlyError } from '@/lib/errors';
 import { PLAYER_REPLY_MAX_CHARS } from '../../../convex/reportRules';
+import { localeFor } from '@/lib/languages';
 
 /**
  * Reports businesses filed about this player. Shows nothing while the player
@@ -55,7 +56,7 @@ export function LateCancelsAboutMe({ sessionToken }: { sessionToken: string }) {
   const late = useQuery(api.cancellations.myLateCancels, { sessionToken });
   if (!late || late.count === 0) return null;
   const expires = late.oldestExpiresAt
-    ? new Date(late.oldestExpiresAt).toLocaleDateString(language, { day: 'numeric', month: 'long', year: 'numeric' })
+    ? new Date(late.oldestExpiresAt).toLocaleDateString(localeFor(language), { day: 'numeric', month: 'long', year: 'numeric' })
     : null;
 
   return (

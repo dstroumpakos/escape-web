@@ -15,6 +15,7 @@ import { getFunctionName } from 'convex/server';
 import type { FunctionArgs, FunctionReference, FunctionReturnType } from 'convex/server';
 import { api } from '../../convex/_generated/api';
 import { cleanError } from './errors';
+import { localeFor } from '@/lib/languages';
 
 export interface CompanyUser {
   id: string;
@@ -310,7 +311,7 @@ export function photosPortalUrl(): string {
 
 /** Locale for Intl date formatting in the chosen UI language. */
 export function uiLocale(language: string): string {
-  return language === 'el' ? 'el-GR' : language === 'nl' ? 'nl-NL' : 'en-GB';
+  return localeFor(language);
 }
 
 /** Today's date as YYYY-MM-DD in the browser's local time zone (not UTC). */

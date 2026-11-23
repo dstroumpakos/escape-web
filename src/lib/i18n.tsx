@@ -1,6 +1,8 @@
 /**
  * Internationalization for UNLOCKED web app.
- * EN/EL support with localStorage persistence and flag toggle.
+ * en / el / nl are bundled here; every other language in ./languages is a
+ * generated JSON dictionary (src/locales/<code>.json, see scripts/i18n)
+ * loaded on demand. Missing keys fall back to English.
  */
 
 'use client';
@@ -15,9 +17,14 @@ import { statsTranslations } from './i18nStats';
 import { modeTranslations } from './i18nMode';
 import { leaderboardTranslations } from './i18nLeaderboard';
 
-export type Language = 'en' | 'el' | 'nl';
+import { Language, isLanguage, detectBrowserLanguage, isRtl } from './languages';
 
-const translations: Record<Language, Record<string, string>> = {
+export type { Language } from './languages';
+
+type BundledLanguage = 'en' | 'el' | 'nl';
+const BUNDLED: readonly string[] = ['en', 'el', 'nl'];
+
+const translations: Record<BundledLanguage, Record<string, string>> = {
   en: {
     'tw.full': "Fullscreen",
     'tw.exit_full': "Exit",
@@ -6935,16 +6942,48 @@ const I18nContext = createContext<I18nContextType>({
   t: (key) => key,
 });
 
+// Generated dictionaries, fetched once per language and kept for the session.
+const loaded: Partial<Record<Language, Record<string, string>>> = {};
+
+async function loadDictionary(lang: Language): Promise<Record<string, string> | null> {
+  if (BUNDLED.includes(lang)) return translations[lang as BundledLanguage];
+  if (loaded[lang]) return loaded[lang]!;
+  try {
+    const mod = await import(`../locales/${lang}.json`);
+    loaded[lang] = (mod.default ?? mod) as Record<string, string>;
+    return loaded[lang]!;
+  } catch {
+    return null;
+  }
+}
+
 export function I18nProvider({ children }: { children: ReactNode }) {
   const [language, setLanguageState] = useState<Language>('el');
 
-  useEffect(() => {
-    const saved = typeof window !== 'undefined' ? localStorage.getItem('unlocked-lang') : null;
-    if (saved === 'en' || saved === 'el' || saved === 'nl') {
-      setLanguageState(saved);
+  const applyLanguage = useCallback((lang: Language) => {
+    if (typeof document !== 'undefined') {
+      document.documentElement.lang = lang;
+      document.documentElement.dir = isRtl(lang) ? 'rtl' : 'ltr';
     }
+    if (BUNDLED.includes(lang) || loaded[lang]) {
+      setLanguageState(lang);
+      return;
+    }
+    // Switch only once the texts are here, so the page never shows raw keys.
+    loadDictionary(lang).then((dict) => {
+      if (dict) setLanguageState(lang);
+    });
+  }, []);
+
+  useEffect(() => {
+    let saved: string | null = null;
+    try { saved = localStorage.getItem('unlocked-lang'); } catch { /* storage blocked */ }
+    // A saved choice wins; otherwise follow the browser, then English.
+    const lang: Language = isLanguage(saved)
+      ? saved
+      : detectBrowserLanguage(typeof navigator !== 'undefined' ? navigator.languages : undefined) ?? 'en';
+    applyLanguage(lang);
     // Sync initial language to DB on mount (if user is logged in)
-    const lang = saved === 'en' || saved === 'el' || saved === 'nl' ? saved : 'el';
     syncLanguageToDb(lang);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -6973,17 +7012,16 @@ export function I18nProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const setLanguage = useCallback((lang: Language) => {
-    setLanguageState(lang);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('unlocked-lang', lang);
-    }
+    applyLanguage(lang);
+    try { localStorage.setItem('unlocked-lang', lang); } catch { /* storage blocked */ }
     syncLanguageToDb(lang);
-  }, [syncLanguageToDb]);
+  }, [applyLanguage, syncLanguageToDb]);
 
   const t = useCallback(
     (key: string, params?: Record<string, string>): string => {
+      const dict = BUNDLED.includes(language) ? translations[language as BundledLanguage] : loaded[language];
       let text =
-        translations[language]?.[key] ??
+        dict?.[key] ??
         translations.en?.[key] ??
         key;
 

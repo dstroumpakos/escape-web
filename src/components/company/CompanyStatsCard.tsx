@@ -5,6 +5,7 @@ import { Eye, MousePointerClick, Users, Stamp, Star, Globe, TrendingUp, Trending
 import { useCompanyQuery, useCompanyPath } from '@/lib/companyAuth';
 import { api } from '../../../convex/_generated/api';
 import { useTranslation } from '@/lib/i18n';
+import { localeFor } from '@/lib/languages';
 
 /** What UNLOCKED did for the company in the last 30 days (convex/companyStats.ts). */
 export function CompanyStatsCard({ companyId }: { companyId: string }) {
@@ -15,7 +16,7 @@ export function CompanyStatsCard({ companyId }: { companyId: string }) {
 
   const max = Math.max(1, ...data.days.map((d) => d.views));
   const fmtDay = (d: string) =>
-    new Date(d + 'T12:00:00').toLocaleDateString(language === 'el' ? 'el-GR' : language === 'nl' ? 'nl-NL' : 'en-GB', { day: 'numeric', month: 'short' });
+    new Date(d + 'T12:00:00').toLocaleDateString(localeFor(language), { day: 'numeric', month: 'short' });
   const empty = data.views === 0 && data.clicks === 0;
 
   return (

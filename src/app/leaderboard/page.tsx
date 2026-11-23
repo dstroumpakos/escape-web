@@ -27,6 +27,7 @@ import { useTranslation } from '@/lib/i18n';
 import { useAuth } from '@/lib/auth';
 import { rankLabel } from '@/components/profile/ProfileView';
 import { AnimateIn, StaggerContainer, StaggerItem } from '@/components/animations/AnimateIn';
+import { localeFor } from '@/lib/languages';
 
 type Tab = 'players' | 'rooms' | 'teams';
 type Period = 'all' | 'month';
@@ -112,7 +113,7 @@ export default function LeaderboardPage() {
   const monthName = data?.month
     ? language === 'el'
       ? EL_MONTHS[Number(data.month.slice(5, 7)) - 1]
-      : new Date(`${data.month}-01T12:00:00`).toLocaleDateString(language === 'nl' ? 'nl-NL' : 'en-GB', { month: 'long' })
+      : new Date(`${data.month}-01T12:00:00`).toLocaleDateString(localeFor(language), { month: 'long' })
     : '';
 
   const topRooms = (data?.topRooms ?? []).map((r: any, i: number) => ({
