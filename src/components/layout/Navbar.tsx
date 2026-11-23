@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Vault, ScrollText, BookOpen, Menu, X, LogOut, User, Bell, Ticket, MessageCircle } from 'lucide-react';
+import { Vault, ScrollText, BookOpen, Briefcase, Menu, X, LogOut, User, Bell, Ticket, MessageCircle } from 'lucide-react';
 import { useQuery } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
 import { useBackgroundKeySharing } from '@/lib/useChat';
@@ -72,6 +72,7 @@ export function Navbar() {
     ...(isAuthenticated ? [{ href: '/social', label: t('nav.social') }] : []),
     { href: '/leaderboard', label: t('nav.leaderboard') },
     ...(isAuthenticated ? [{ href: '/passport', label: t('nav.passport'), Icon: BookOpen }] : []),
+    { href: '/jobs', label: t('nav.jobs'), Icon: Briefcase },
     { href: '/shop', label: t('nav.shop'), Icon: Vault },
     { href: '/contact', label: t('nav.contact'), Icon: ScrollText },
   ];

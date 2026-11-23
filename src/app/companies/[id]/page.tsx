@@ -11,6 +11,8 @@ import { useTranslation } from '@/lib/i18n';
 import { RoomCard, toRoomCardData } from '@/components/rooms/RoomCard';
 import { InstagramStrip } from '@/components/rooms/InstagramStrip';
 import { CompanyLogo } from '@/components/companies/CompanyLogo';
+import { JobCard } from '@/components/jobs/JobCard';
+import type { PublicJob } from '@/lib/jobs';
 
 /** A company's profile, for logged-in players: its rooms, and following it. */
 export default function CompanyProfilePage() {
@@ -20,6 +22,7 @@ export default function CompanyProfilePage() {
   const { user, isAuthenticated, isLoading } = useAuth();
   const token = user?.sessionToken;
   const data = useQuery(api.companyPages.profile, token ? { companyId: id as any, sessionToken: token } : 'skip');
+  const jobs = useQuery(api.jobs.byCompany, { companyId: id as any }) as PublicJob[] | undefined;
   const follow = useMutation(api.companyPages.follow);
   const unfollow = useMutation(api.companyPages.unfollow);
   const [busy, setBusy] = useState(false);
@@ -102,6 +105,16 @@ export default function CompanyProfilePage() {
 
       {/* Instagram (only when the company turned it on) */}
       {data.instagramUsername && <div className="mt-6"><InstagramStrip companyId={data._id} /></div>}
+
+      {/* Open job ads (convex/jobs.ts) */}
+      {jobs && jobs.length > 0 && (
+        <>
+          <h2 className="text-xl font-display font-bold text-brand-bone mt-10 mb-4">{t('jobs.on_profile')}</h2>
+          <div className="space-y-4">
+            {jobs.map((j) => <JobCard key={j._id} job={j} showCompany={false} />)}
+          </div>
+        </>
+      )}
 
       {/* Rooms */}
       <h2 className="text-xl font-display font-bold text-brand-bone mt-10 mb-4">{t('co.their_rooms')}</h2>

@@ -24,6 +24,7 @@ import {
   Flame,
   Stamp,
   ListChecks,
+  Briefcase,
 } from 'lucide-react';
 import { EyeKeyhole } from '@/components/brand/EyeKeyhole';
 import { ConvexClientProvider } from '@/components/providers/ConvexClientProvider';
@@ -63,6 +64,7 @@ function CompanyShell({ children }: { children: React.ReactNode }) {
   ];
   const secondaryLinks: NavLink[] = [
     { href: p('/company/plays'), label: t('cx.nav.plays'), icon: ListChecks },
+    { href: p('/company/jobs'), label: t('cx.nav.jobs'), icon: Briefcase },
     ...(BOOKING_ENABLED ? [{ href: p('/company/offers'), label: t('cx.nav.offers'), icon: Flame }] : []),
     { href: photosUrl, label: t('company.nav.photos'), icon: Camera, external: true },
     { href: p('/company/merch'), label: t('shop.portal.nav'), icon: ShoppingBag },
