@@ -60,6 +60,8 @@ export function Navbar() {
   const unread = useQuery(api.messages.unreadCount, token ? { sessionToken: token } : 'skip') ?? 0;
   const me = useQuery(api.users.getById, token ? { sessionToken: token } : 'skip');
   const myAvatar = (me as any)?.avatar || user?.avatar || '';
+  // Live name from the profile (the one saved at login can be empty); never the email
+  const myName: string = (me as any)?.name || user?.name || '';
 
   // Shop and contact show as small icons on the desktop bar (a vault, a scroll).
   const navLinks: { href: string; label: string; Icon?: React.ElementType }[] = [
@@ -184,10 +186,10 @@ export function Navbar() {
                       // eslint-disable-next-line @next/next/no-img-element
                       <img src={myAvatar} alt="" className="w-full h-full object-cover" />
                     ) : (
-                      user?.name?.charAt(0)?.toUpperCase() || <User className="w-4 h-4" />
+                      myName.charAt(0).toUpperCase() || <User className="w-4 h-4" />
                     )}
                   </div>
-                  <span className="text-sm font-medium max-w-[120px] truncate">{user?.name || user?.email}</span>
+                  {myName && <span className="text-sm font-medium max-w-[120px] truncate">{myName}</span>}
                 </Link>
                 <button onClick={handleLogout} className="btn-ghost text-sm flex items-center gap-1.5" aria-label={t('nav.logout')}>
                   <LogOut className="w-4 h-4" />
