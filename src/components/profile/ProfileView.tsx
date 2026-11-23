@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { useMutation, useQuery } from 'convex/react';
 import { VideoThumb } from '@/components/community/VideoThumb';
 import { ShareButton, ShareSheet } from '@/components/community/ShareSheet';
-import { Camera, Grid3x3, Info, DoorOpen, Heart, MessageCircle, MapPin, CalendarDays, Trophy, UserCheck, Pencil, X, Loader2, Diamond, Star, PlusSquare, Settings, Footprints } from 'lucide-react';
+import { Camera, Grid3x3, Info, DoorOpen, Heart, MessageCircle, MapPin, CalendarDays, Trophy, UserCheck, Pencil, X, Loader2, Diamond, Star, PlusSquare, Settings, Footprints, ImagePlus } from 'lucide-react';
 import { api } from '../../../convex/_generated/api';
 import { useAuth } from '@/lib/auth';
 import { useTranslation } from '@/lib/i18n';
@@ -96,6 +96,8 @@ export function ProfileView({ userId }: { userId: string }) {
   const [openPost, setOpenPost] = useState<any>(null);
   const photo = useAvatarUpload(token);
   const photoInput = useRef<HTMLInputElement>(null);
+  const cover = useCoverUpload(token);
+  const coverInput = useRef<HTMLInputElement>(null);
 
   if (profile === undefined) {
     return <div className="max-w-4xl mx-auto px-4 pt-28"><div className="h-80 panel animate-pulse" /></div>;
@@ -131,7 +133,37 @@ export function ProfileView({ userId }: { userId: string }) {
           <img src={profile.cover} alt="" className="absolute inset-0 w-full h-full object-cover" />
         )}
         <div className="absolute inset-0 bg-linear-to-t from-black/70 to-transparent" />
+        {cover.busy && (
+          <span className="absolute inset-0 bg-black/50 flex items-center justify-center">
+            <Loader2 className="w-7 h-7 animate-spin text-white" />
+          </span>
+        )}
+        {profile.viewer.isMe && (
+          <>
+            <button
+              type="button"
+              onClick={() => coverInput.current?.click()}
+              disabled={cover.busy}
+              className="absolute top-3 right-3 flex items-center gap-2 rounded-lg bg-black/60 backdrop-blur-sm border border-white/15 px-3 py-2 text-sm font-semibold text-white hover:bg-black/80 transition-colors disabled:opacity-60"
+              aria-label={profile.cover ? t('pf.change_cover') : t('pf.add_cover')}
+            >
+              <ImagePlus className="w-4 h-4" />
+              <span className="hidden min-[420px]:inline">{profile.cover ? t('pf.change_cover') : t('pf.add_cover')}</span>
+            </button>
+            <input
+              ref={coverInput}
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              className="hidden"
+              onChange={(e) => {
+                cover.upload(e.target.files?.[0]);
+                e.target.value = '';
+              }}
+            />
+          </>
+        )}
       </div>
+      {cover.err && <p className="px-4 sm:px-6 mt-2 text-sm text-red-400">{cover.err}</p>}
 
       {/* Avatar + name + actions */}
       <div className="px-4 sm:px-6 -mt-12 sm:-mt-16 relative">
@@ -525,12 +557,41 @@ export function PostModal({
   );
 }
 
+/** Upload / remove the player's cover (the banner above the profile photo). */
+function useCoverUpload(token: string | undefined) {
+  const update = useMutation(api.social.updateProfileInfo);
+  const uploadUrl = useMutation(api.posts.generateUploadUrl);
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState('');
+  const upload = async (file: File | undefined) => {
+    if (!file || !token) return;
+    setBusy(true);
+    setErr('');
+    try {
+      const url = await uploadUrl({ sessionToken: token });
+      const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': file.type }, body: file });
+      const { storageId } = await res.json();
+      await update({ sessionToken: token, coverStorageId: storageId });
+    } catch (e) {
+      setErr(cleanError(e));
+    } finally {
+      setBusy(false);
+    }
+  };
+  const remove = async () => {
+    if (!token) return;
+    setBusy(true);
+    try { await update({ sessionToken: token, coverStorageId: null }); } catch (e) { setErr(cleanError(e)); } finally { setBusy(false); }
+  };
+  return { busy, err, upload, remove };
+}
+
 function EditProfile({
   token, bio, hasCover, avatar, name, onClose,
 }: { token: string; bio: string; hasCover: boolean; avatar: string; name: string; onClose: () => void }) {
   const { t } = useTranslation();
   const update = useMutation(api.social.updateProfileInfo);
-  const uploadUrl = useMutation(api.posts.generateUploadUrl);
+  const cover = useCoverUpload(token);
   const [text, setText] = useState(bio);
   const [saving, setSaving] = useState(false);
   const [err, setErr] = useState('');
@@ -544,21 +605,6 @@ function EditProfile({
     try {
       await update({ sessionToken: token, bio: text });
       onClose();
-    } catch (e) {
-      setErr(cleanError(e));
-    } finally {
-      setSaving(false);
-    }
-  };
-  const pickCover = async (file: File | undefined) => {
-    if (!file) return;
-    setSaving(true);
-    setErr('');
-    try {
-      const url = await uploadUrl({ sessionToken: token });
-      const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': file.type }, body: file });
-      const { storageId } = await res.json();
-      await update({ sessionToken: token, coverStorageId: storageId });
     } catch (e) {
       setErr(cleanError(e));
     } finally {
@@ -610,16 +656,17 @@ function EditProfile({
         <div>
           <label className="block text-sm text-brand-text-muted mb-1.5">{t('pf.cover')}</label>
           <div className="flex gap-2">
-            <button type="button" onClick={() => fileRef.current?.click()} disabled={saving} className="btn-ghost text-sm flex items-center gap-2 py-2! px-4!">
-              <Camera className="w-4 h-4" /> {hasCover ? t('pf.change_cover') : t('pf.add_cover')}
+            <button type="button" onClick={() => fileRef.current?.click()} disabled={saving || cover.busy} className="btn-ghost text-sm flex items-center gap-2 py-2! px-4!">
+              {cover.busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Camera className="w-4 h-4" />} {hasCover ? t('pf.change_cover') : t('pf.add_cover')}
             </button>
             {hasCover && (
-              <button type="button" onClick={() => update({ sessionToken: token, coverStorageId: null })} disabled={saving} className="text-sm text-brand-text-muted hover:text-red-400">
+              <button type="button" onClick={cover.remove} disabled={saving || cover.busy} className="text-sm text-brand-text-muted hover:text-red-400">
                 {t('pf.remove_cover')}
               </button>
             )}
           </div>
-          <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={(e) => pickCover(e.target.files?.[0])} />
+          <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={(e) => { cover.upload(e.target.files?.[0]); e.target.value = ''; }} />
+          {cover.err && <p className="text-sm text-red-400 mt-1">{cover.err}</p>}
         </div>
         <div>
           <label className="block text-sm text-brand-text-muted mb-1.5">{t('pf.bio')}</label>

@@ -20,15 +20,16 @@ import type { PublicJob } from '@/lib/jobs';
 type Tab = 'posts' | 'team' | 'rooms' | 'jobs';
 
 /**
- * A company's profile for logged-in players, laid out like a player's profile:
- * cover, logo, counters, then tabs for its posts and photos, its team photos
- * (filterable by room), its rooms and its job ads.
+ * A company's profile, laid out like a player's profile: cover, logo,
+ * counters, then tabs for its posts and photos, its team photos (filterable by
+ * room), its rooms and its job ads. Open to everyone; without a login the
+ * server leaves out the team photos and the follower count.
  */
 export default function CompanyProfilePage() {
   const { t } = useTranslation();
   const router = useRouter();
   const { id } = useParams<{ id: string }>();
-  const { user, isAuthenticated, isLoading } = useAuth();
+  const { user, isLoading } = useAuth();
   const token = user?.sessionToken;
   // A company opening its own profile from the portal needs no player login
   const [ownerToken, setOwnerToken] = useState<string | undefined>(undefined);
@@ -40,20 +41,13 @@ export default function CompanyProfilePage() {
   }, [id]);
   const data = useQuery(
     api.companyPages.profile,
-    token || ownerToken ? { companyId: id as any, sessionToken: token, companySessionToken: ownerToken } : 'skip'
+    isLoading || !ownerChecked ? 'skip' : { companyId: id as any, sessionToken: token, companySessionToken: ownerToken }
   );
   const jobs = useQuery(api.jobs.byCompany, { companyId: id as any }) as PublicJob[] | undefined;
   const follow = useMutation(api.companyPages.follow);
   const unfollow = useMutation(api.companyPages.unfollow);
   const [busy, setBusy] = useState(false);
   const [tab, setTab] = useState<Tab>('posts');
-
-  useEffect(() => {
-    if (!isLoading && ownerChecked && !isAuthenticated && !ownerToken) {
-      try { sessionStorage.setItem('unlocked_after_login', `/companies/${id}`); } catch {}
-      router.replace('/login');
-    }
-  }, [isLoading, ownerChecked, isAuthenticated, ownerToken, router, id]);
 
   if (data === undefined) {
     return <div className="min-h-screen flex items-center justify-center"><Loader2 className="w-7 h-7 animate-spin text-brand-red" /></div>;
@@ -68,7 +62,13 @@ export default function CompanyProfilePage() {
   }
 
   const toggleFollow = async () => {
-    if (!token || busy) return;
+    if (!token) {
+      // Visitor: log in first, then come back here
+      try { sessionStorage.setItem('unlocked_after_login', `/companies/${id}`); } catch {}
+      router.push('/login');
+      return;
+    }
+    if (busy) return;
     setBusy(true);
     try {
       if (data.following) await unfollow({ sessionToken: token, companyId: data._id });
@@ -91,7 +91,8 @@ export default function CompanyProfilePage() {
 
   const tabs: [Tab, typeof Grid3x3, string][] = [
     ['posts', Grid3x3, t('pf.tab_posts')],
-    ['team', Users, t('co.tab_team')],
+    // Team photos show players: only for logged-in players (and the company)
+    ...(data.isVisitor ? [] : [['team', Users, t('co.tab_team')] as [Tab, typeof Grid3x3, string]]),
     ['rooms', DoorOpen, t('pf.tab_rooms')],
     ['jobs', Briefcase, t('co.tab_jobs')],
   ];
@@ -139,7 +140,7 @@ export default function CompanyProfilePage() {
             )}
           </div>
           <div className="flex gap-2 sm:pb-2">
-            {data.canFollow && !data.isOwner && (
+            {(data.canFollow || data.isVisitor) && !data.isOwner && (
               <button
                 onClick={toggleFollow}
                 disabled={busy}
@@ -160,9 +161,9 @@ export default function CompanyProfilePage() {
         {/* Counters */}
         <div className="flex justify-around sm:justify-start sm:gap-8 mt-5 py-3 border-y border-brand-border/60">
           <Count n={postCount} label={t('pf.posts')} onClick={() => setTab('posts')} />
-          <Count n={data.followers} label={t('co.followers')} />
+          {data.followers !== null && <Count n={data.followers} label={t('co.followers')} />}
           <Count n={data.rooms.length} label={t('co.rooms')} onClick={() => setTab('rooms')} />
-          <Count n={data.teamPhotos.length} label={t('co.team_count')} onClick={() => setTab('team')} />
+          {!data.isVisitor && <Count n={data.teamPhotos.length} label={t('co.team_count')} onClick={() => setTab('team')} />}
         </div>
 
         {data.description && <p className="mt-3 text-sm text-brand-text whitespace-pre-line max-w-[70ch]">{data.description}</p>}
@@ -190,7 +191,7 @@ export default function CompanyProfilePage() {
             {data.instagramUsername && <div className="mt-8 px-3 sm:px-0"><InstagramStrip companyId={data._id} /></div>}
           </>
         )}
-        {tab === 'team' && <TeamTab name={data.name} path={`/companies/${data._id}`} photos={data.teamPhotos} />}
+        {tab === 'team' && !data.isVisitor && <TeamTab name={data.name} path={`/companies/${data._id}`} photos={data.teamPhotos} />}
         {tab === 'rooms' && (
           data.rooms.length === 0 ? <Empty icon={DoorOpen} text={t('co.no_rooms')} /> : (
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 px-3 sm:px-0">

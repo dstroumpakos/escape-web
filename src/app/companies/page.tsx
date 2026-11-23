@@ -6,7 +6,6 @@ import { useRouter } from 'next/navigation';
 import { useQuery } from 'convex/react';
 import { Building2, MapPin, Search, Loader2, ChevronRight, DoorOpen } from 'lucide-react';
 import { api } from '../../../convex/_generated/api';
-import { useAuth } from '@/lib/auth';
 import { useTranslation } from '@/lib/i18n';
 import { themeLabel } from '@/lib/roomThemes';
 import { CompanyLogo } from '@/components/companies/CompanyLogo';
@@ -15,7 +14,6 @@ import { CompanyLogo } from '@/components/companies/CompanyLogo';
 export default function CompaniesPage() {
   const { t } = useTranslation();
   const router = useRouter();
-  const { isAuthenticated } = useAuth();
   const companies = useQuery(api.companyPages.list);
   const [q, setQ] = useState('');
 
@@ -26,12 +24,8 @@ export default function CompaniesPage() {
     return companies.filter((c) => c.name.toLowerCase().includes(s) || c.city.toLowerCase().includes(s));
   }, [companies, q]);
 
-  // The profile is for logged-in players: remember where to come back to.
-  const openProfile = (id: string) => {
-    if (isAuthenticated) return router.push(`/companies/${id}`);
-    try { sessionStorage.setItem('unlocked_after_login', `/companies/${id}`); } catch {}
-    router.push('/login');
-  };
+  // Open to everyone (visitors see a lighter profile, see companyPages.profile)
+  const openProfile = (id: string) => router.push(`/companies/${id}`);
 
   return (
     <section className="max-w-6xl mx-auto px-4 pt-24 pb-20">
@@ -73,7 +67,7 @@ export default function CompaniesPage() {
                   </p>
                 </div>
                 <button onClick={() => openProfile(c._id)} className="hidden sm:flex btn-ghost text-sm items-center gap-1 shrink-0">
-                  {isAuthenticated ? t('co.view_profile') : t('co.login_to_view')} <ChevronRight className="w-4 h-4" />
+                  {t('co.view_profile')} <ChevronRight className="w-4 h-4" />
                 </button>
               </div>
 
@@ -96,7 +90,7 @@ export default function CompaniesPage() {
               </div>
 
               <button onClick={() => openProfile(c._id)} className="sm:hidden mt-3 w-full btn-ghost text-sm flex items-center justify-center gap-1">
-                {isAuthenticated ? t('co.view_profile') : t('co.login_to_view')} <ChevronRight className="w-4 h-4" />
+                {t('co.view_profile')} <ChevronRight className="w-4 h-4" />
               </button>
             </div>
           ))}

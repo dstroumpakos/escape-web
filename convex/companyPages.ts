@@ -83,7 +83,11 @@ export const list = query({
   },
 });
 
-/** A company's profile, for logged-in players. Null when logged out or not public. */
+/**
+ * A company's profile. Anyone can open it; a visitor without a login sees the
+ * company's own posts, rooms and details, but not its team photos (those show
+ * players) or its follower count. Null when the company is not public.
+ */
 export const profile = query({
   args: {
     companyId: v.id("companies"),
@@ -99,14 +103,15 @@ export const profile = query({
       const session = await findSession(ctx, args.companySessionToken);
       isOwner = !!session && session.companyId === args.companyId;
     }
-    if (!me && !isOwner) return null;
+    // Logged-out visitor: only what the company itself published
+    const visitor = !me && !isOwner;
     const c = await ctx.db.get(args.companyId);
     if (!c) return null;
     // Players see approved, paying companies; the company always sees its own.
     if (!isOwner && (!companyIsPublic(c) || c.platformPlan === "free")) return null;
     const [rooms, followers, mine, photos] = await Promise.all([
       visibleRoomsOf(ctx, c._id),
-      ctx.db.query("companyFollows").withIndex("by_company", (q) => q.eq("companyId", c._id)).take(10000),
+      visitor ? [] : ctx.db.query("companyFollows").withIndex("by_company", (q) => q.eq("companyId", c._id)).take(10000),
       me
         ? ctx.db
             .query("companyFollows")
@@ -118,14 +123,16 @@ export const profile = query({
     return {
       ...publicCompany(c),
       ...photos,
+      teamPhotos: visitor ? [] : photos.teamPhotos,
       address: c.address || "",
       website: c.website || "",
       cover: c.cover || "",
       instagramUsername: c.instagramEnabled ? c.instagramUsername || "" : "",
       rooms,
-      followers: followers.length,
+      followers: visitor ? null : followers.length,
       following: !!mine,
       isOwner,
+      isVisitor: visitor,
       // Only a logged-in player can follow
       canFollow: !!me,
     };
