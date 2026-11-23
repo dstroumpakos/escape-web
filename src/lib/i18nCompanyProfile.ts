@@ -5,6 +5,7 @@
  * dictionary in i18n.tsx.
  */
 const en: Record<string, string> = {
+  'co.owner_preview': "This is your profile as players see it. Change it in the portal under Profile.",
   'sh.instagram': "Share to Instagram Story",
   'sh.more': "More",
   'sh.save': "Save",
@@ -81,6 +82,7 @@ const en: Record<string, string> = {
 };
 
 const el: Record<string, string> = {
+  'co.owner_preview': "Έτσι βλέπουν οι παίκτες το προφίλ σου. Το αλλάζεις από το portal, στο Προφίλ.",
   'sh.instagram': "Κοινοποίηση στο Instagram Story",
   'sh.more': "Περισσότερα",
   'sh.save': "Αποθήκευση",
@@ -157,6 +159,7 @@ const el: Record<string, string> = {
 };
 
 const nl: Record<string, string> = {
+  'co.owner_preview': "Zo zien spelers je profiel. Je wijzigt het in het portaal onder Profiel.",
   'sh.instagram': "Delen in Instagram Story",
   'sh.more': "Meer",
   'sh.save': "Opslaan",

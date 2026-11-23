@@ -7,6 +7,7 @@ import { useMutation, useQuery } from 'convex/react';
 import { ArrowLeft, Briefcase, Camera, DoorOpen, Globe, Grid3x3, Heart, Loader2, MapPin, MessageCircle, UserCheck, UserPlus, Users } from 'lucide-react';
 import { api } from '../../../../convex/_generated/api';
 import { useAuth } from '@/lib/auth';
+import { readStoredCompanySession } from '@/lib/companyAuth';
 import { useTranslation } from '@/lib/i18n';
 import { RoomCard, toRoomCardData } from '@/components/rooms/RoomCard';
 import { InstagramStrip } from '@/components/rooms/InstagramStrip';
@@ -29,7 +30,18 @@ export default function CompanyProfilePage() {
   const { id } = useParams<{ id: string }>();
   const { user, isAuthenticated, isLoading } = useAuth();
   const token = user?.sessionToken;
-  const data = useQuery(api.companyPages.profile, token ? { companyId: id as any, sessionToken: token } : 'skip');
+  // A company opening its own profile from the portal needs no player login
+  const [ownerToken, setOwnerToken] = useState<string | undefined>(undefined);
+  const [ownerChecked, setOwnerChecked] = useState(false);
+  useEffect(() => {
+    const c = readStoredCompanySession();
+    setOwnerToken(c && c.id === id ? c.sessionToken : undefined);
+    setOwnerChecked(true);
+  }, [id]);
+  const data = useQuery(
+    api.companyPages.profile,
+    token || ownerToken ? { companyId: id as any, sessionToken: token, companySessionToken: ownerToken } : 'skip'
+  );
   const jobs = useQuery(api.jobs.byCompany, { companyId: id as any }) as PublicJob[] | undefined;
   const follow = useMutation(api.companyPages.follow);
   const unfollow = useMutation(api.companyPages.unfollow);
@@ -37,11 +49,11 @@ export default function CompanyProfilePage() {
   const [tab, setTab] = useState<Tab>('posts');
 
   useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
+    if (!isLoading && ownerChecked && !isAuthenticated && !ownerToken) {
       try { sessionStorage.setItem('unlocked_after_login', `/companies/${id}`); } catch {}
       router.replace('/login');
     }
-  }, [isLoading, isAuthenticated, router, id]);
+  }, [isLoading, ownerChecked, isAuthenticated, ownerToken, router, id]);
 
   if (data === undefined) {
     return <div className="min-h-screen flex items-center justify-center"><Loader2 className="w-7 h-7 animate-spin text-brand-red" /></div>;
@@ -92,6 +104,12 @@ export default function CompanyProfilePage() {
         </Link>
       </div>
 
+      {data.isOwner && (
+        <p className="mx-4 sm:mx-0 mb-3 text-sm rounded-xl border border-brand-red/30 bg-brand-red/10 text-brand-bone px-4 py-2.5">
+          {t('co.owner_preview')}
+        </p>
+      )}
+
       {/* Cover */}
       <div className="relative h-40 sm:h-60 sm:rounded-2xl overflow-hidden bg-linear-to-br from-brand-red/40 via-black to-brand-dark">
         {data.cover && (
@@ -121,14 +139,16 @@ export default function CompanyProfilePage() {
             )}
           </div>
           <div className="flex gap-2 sm:pb-2">
-            <button
-              onClick={toggleFollow}
-              disabled={busy}
-              className={`${data.following ? 'btn-ghost' : 'btn-primary'} text-sm flex items-center gap-2 py-2! px-5! disabled:opacity-50`}
-            >
-              {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : data.following ? <UserCheck className="w-4 h-4" /> : <UserPlus className="w-4 h-4" />}
-              {data.following ? t('co.following') : t('co.follow')}
-            </button>
+            {data.canFollow && !data.isOwner && (
+              <button
+                onClick={toggleFollow}
+                disabled={busy}
+                className={`${data.following ? 'btn-ghost' : 'btn-primary'} text-sm flex items-center gap-2 py-2! px-5! disabled:opacity-50`}
+              >
+                {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : data.following ? <UserCheck className="w-4 h-4" /> : <UserPlus className="w-4 h-4" />}
+                {data.following ? t('co.following') : t('co.follow')}
+              </button>
+            )}
             {site && (
               <a href={site} target="_blank" rel="noopener noreferrer" className="btn-ghost text-sm flex items-center gap-2 py-2! px-4!">
                 <Globe className="w-4 h-4" /> {t('co.website')}

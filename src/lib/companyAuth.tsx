@@ -72,6 +72,22 @@ function readSharedSession(): string | null {
   }
 }
 
+/**
+ * The company logged in on this browser, read straight from storage, for pages
+ * outside the portal (no CompanyAuthProvider there), e.g. a company opening
+ * its own public profile. The server still checks the token.
+ */
+export function readStoredCompanySession(): { id: string; sessionToken: string } | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const raw = localStorage.getItem(SESSION_KEY) || readSharedSession();
+    const c = raw ? JSON.parse(raw) : null;
+    return c?.id && c?.sessionToken ? { id: String(c.id), sessionToken: String(c.sessionToken) } : null;
+  } catch {
+    return null;
+  }
+}
+
 function writeSharedSession(value: string | null) {
   const domain = sharedCookieDomain();
   if (!domain) return;
