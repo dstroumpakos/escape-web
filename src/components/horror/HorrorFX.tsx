@@ -256,7 +256,7 @@ export function HorrorFX() {
       )}
 
       {/* Ground fog */}
-      <div className="horror-motion fixed inset-x-0 bottom-0 h-[45vh] z-[42] overflow-hidden opacity-60 mix-blend-screen">
+      <div className="horror-motion horror-still fixed inset-x-0 bottom-0 h-[45vh] z-[42] overflow-hidden opacity-60 mix-blend-screen">
         <div
           className="absolute -inset-x-[20%] inset-y-0 blur-2xl"
           style={{ background: FOG_LAYER, animation: 'fog-drift 38s ease-in-out infinite alternate' }}

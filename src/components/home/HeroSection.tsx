@@ -208,7 +208,7 @@ export function HeroSection() {
       />
 
       {/* Fog rolling along the floor */}
-      <div aria-hidden className="horror-motion absolute inset-x-0 bottom-0 h-48 pointer-events-none overflow-hidden">
+      <div aria-hidden className="horror-motion horror-still absolute inset-x-0 bottom-0 h-48 pointer-events-none overflow-hidden">
         <div
           className="absolute -inset-x-1/4 inset-y-0 blur-2xl opacity-70"
           style={{

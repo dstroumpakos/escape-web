@@ -938,7 +938,8 @@
     transition-duration: 0.001ms !important;
     scroll-behavior: auto !important;
   }
-  .horror-motion,
+  /* Scenery (rings, thread, eyes, blood, fog) stays, standing still; scares and moving bits go */
+  .horror-motion:not(.horror-still),
   .horror-intro {
     display: none !important;
   }

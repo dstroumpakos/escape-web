@@ -16,7 +16,7 @@ export function LabyrinthSection() {
   return (
     <section className="relative overflow-hidden bg-brand-bg py-24">
       {/* Turning labyrinth rings behind the content */}
-      <div aria-hidden className="horror-motion absolute inset-0 pointer-events-none">
+      <div aria-hidden className="horror-motion horror-still absolute inset-0 pointer-events-none">
         <svg viewBox="0 0 1000 600" preserveAspectRatio="xMidYMid slice" className="absolute inset-0 w-full h-full" fill="none">
           <g className="ariadne-spin" style={{ stroke: 'rgba(var(--glow),0.16)' }} strokeWidth="1.5">
             <circle cx="500" cy="300" r="140" strokeDasharray="480 120" />
@@ -46,7 +46,7 @@ export function LabyrinthSection() {
             aria-hidden
             viewBox="0 0 900 40"
             preserveAspectRatio="none"
-            className="horror-motion hidden md:block absolute left-[8%] right-[8%] top-9 h-10 w-[84%] pointer-events-none"
+            className="horror-motion horror-still hidden md:block absolute left-[8%] right-[8%] top-9 h-10 w-[84%] pointer-events-none"
             fill="none"
           >
             <path

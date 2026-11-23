@@ -1,11 +1,11 @@
 /**
  * Ariadne's thread for the hero: two red threads wind down from the corners
  * toward the door, over slowly turning labyrinth rings. Purely decorative.
- * `horror-motion` hides it for people who ask for less motion.
+ * `horror-still`: people who ask for less motion see it standing still (globals.css).
  */
 export function AriadneThread() {
   return (
-    <div aria-hidden className="horror-motion absolute inset-0 pointer-events-none overflow-hidden">
+    <div aria-hidden className="horror-motion horror-still absolute inset-0 pointer-events-none overflow-hidden">
       <svg
         viewBox="0 0 1000 800"
         preserveAspectRatio="xMidYMid slice"

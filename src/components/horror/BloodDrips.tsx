@@ -53,7 +53,7 @@ export function BloodDrips({
   }, [count, seed, maxLength, speed]);
 
   return (
-    <div aria-hidden className={`horror-motion pointer-events-none absolute inset-x-0 top-0 ${className}`}>
+    <div aria-hidden className={`horror-motion horror-still pointer-events-none absolute inset-x-0 top-0 ${className}`}>
       {/* Pooling band along the top edge */}
       {band && (
         <div

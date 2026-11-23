@@ -67,7 +67,7 @@ export function WatchingEyes({ pairs, className = '' }: { pairs: EyePair[]; clas
   }, []);
 
   return (
-    <div ref={root} aria-hidden className={`horror-motion pointer-events-none absolute inset-0 ${className}`}>
+    <div ref={root} aria-hidden className={`horror-motion horror-still pointer-events-none absolute inset-0 ${className}`}>
       {pairs.map((p, i) => {
         const size = p.size ?? 22;
         const blinkDur = 4 + ((i * 37) % 50) / 10;
