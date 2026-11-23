@@ -8,21 +8,34 @@ import { api } from '../../../convex/_generated/api';
 import { useTranslation } from '@/lib/i18n';
 import { JobCard } from '@/components/jobs/JobCard';
 import { JOB_ROLES, type PublicJob } from '@/lib/jobs';
+import { COUNTRIES, cityLabel, countryName } from '@/lib/geo';
+import { localeFor } from '@/lib/languages';
 
 /** Job ads from escape room companies (convex/jobs.ts). Public: no login needed. */
 export default function JobsPage() {
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
+  const locale = localeFor(language);
   const jobs = useQuery(api.jobs.listOpen) as PublicJob[] | undefined;
   const [role, setRole] = useState<string>('');
   const [city, setCity] = useState<string>('');
+  const [country, setCountry] = useState<string>('');
+
+  // Countries that have ads, in the same order as the company form (site languages first)
+  const countries = useMemo(() => {
+    const used = new Set((jobs ?? []).map((j) => j.country).filter(Boolean));
+    return COUNTRIES.map((c) => c.code).filter((c) => used.has(c));
+  }, [jobs]);
 
   const cities = useMemo(
-    () => [...new Set((jobs ?? []).map((j) => j.city).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'el')),
-    [jobs]
+    () =>
+      [...new Set((jobs ?? []).filter((j) => !country || j.country === country).map((j) => j.city).filter(Boolean))].sort((a, b) =>
+        a.localeCompare(b, locale)
+      ),
+    [jobs, country, locale]
   );
   const shown = useMemo(
-    () => (jobs ?? []).filter((j) => (!role || j.roles.includes(role)) && (!city || j.city === city)),
-    [jobs, role, city]
+    () => (jobs ?? []).filter((j) => (!role || j.roles.includes(role)) && (!country || j.country === country) && (!city || j.city === city)),
+    [jobs, role, country, city]
   );
   const usedRoles = useMemo(() => JOB_ROLES.filter((r) => (jobs ?? []).some((j) => j.roles.includes(r))), [jobs]);
 
@@ -53,6 +66,22 @@ export default function JobsPage() {
               </button>
             ))}
           </div>
+          <div className="flex flex-wrap gap-3">
+          {countries.length > 1 && (
+            <label className="inline-flex items-center gap-2 text-sm text-brand-text-secondary">
+              <MapPin className="w-4 h-4" />
+              <select
+                value={country}
+                onChange={(e) => { setCountry(e.target.value); setCity(''); }}
+                className="bg-brand-card border border-brand-border rounded-lg px-3 py-1.5 text-brand-bone focus:border-brand-red focus:outline-hidden"
+              >
+                <option value="">{t('jobs.all_countries')}</option>
+                {countries.map((c) => (
+                  <option key={c} value={c}>{countryName(c, locale)}</option>
+                ))}
+              </select>
+            </label>
+          )}
           {cities.length > 1 && (
             <label className="inline-flex items-center gap-2 text-sm text-brand-text-secondary">
               <MapPin className="w-4 h-4" />
@@ -63,11 +92,12 @@ export default function JobsPage() {
               >
                 <option value="">{t('jobs.all_cities')}</option>
                 {cities.map((c) => (
-                  <option key={c} value={c}>{c}</option>
+                  <option key={c} value={c}>{cityLabel(c, (jobs ?? []).find((j) => j.city === c)?.country, language)}</option>
                 ))}
               </select>
             </label>
           )}
+          </div>
           <p className="text-xs text-brand-text-muted">{t('jobs.count', { count: String(shown.length) })}</p>
         </div>
       )}

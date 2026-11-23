@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Briefcase, Plus, Loader2, Pencil, Trash2, X, Lock, Unlock, ExternalLink, MapPin, Info } from 'lucide-react';
 import { useCompanyQuery, useCompanyMutation, useMainSiteUrl } from '@/lib/companyAuth';
 import { api } from '../../../../convex/_generated/api';
@@ -8,7 +8,11 @@ import type { Id } from '../../../../convex/_generated/dataModel';
 import { useTranslation } from '@/lib/i18n';
 import { friendlyError } from '@/lib/errors';
 import { useToast } from '@/components/company/Toast';
-import { JOB_ROLES, JOB_GENDERS, JOB_EMPLOYMENT } from '@/lib/jobs';
+import { JOB_ROLES, JOB_GENDERS } from '@/lib/jobs';
+import { COUNTRIES, FIRST_OTHER, findCountry, cityKey, cityLabel, countryName, countryOfCity } from '@/lib/geo';
+import { localeFor } from '@/lib/languages';
+
+const OTHER = '__other';
 
 type Form = {
   title: string;
@@ -16,7 +20,10 @@ type Form = {
   roles: string[];
   genders: string[];
   employment: string;
+  country: string;
   city: string;
+  /** The city is typed by hand (not in the list). */
+  otherCity: boolean;
   contactEmail: string;
   contactPhone: string;
 };
@@ -67,6 +74,22 @@ export default function CompanyJobsPage() {
   const [form, setForm] = useState<Form | null>(null);
   const [editing, setEditing] = useState<Id<'jobPosts'> | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
+  const locale = localeFor(language);
+  const otherCountries = useMemo(
+    () => COUNTRIES.slice(FIRST_OTHER).sort((a, b) => countryName(a.code, locale).localeCompare(countryName(b.code, locale), locale)),
+    [locale]
+  );
+
+  /** Country + city for the form: from the saved ad, or guessed from the company's city (Greece when unknown). */
+  const place = (country: string | undefined, city: string) => {
+    if (country && findCountry(country)) {
+      const listed = findCountry(country)!.cities.some((e) => cityKey(e) === city);
+      return { country, city, otherCity: !!city && !listed };
+    }
+    const hit = countryOfCity(city);
+    if (hit) return { country: hit.country, city: hit.city, otherCity: false };
+    return { country: 'GR', city, otherCity: !!city };
+  };
 
   const blank = (): Form => ({
     title: '',
@@ -74,7 +97,7 @@ export default function CompanyJobsPage() {
     roles: [],
     genders: [],
     employment: '',
-    city: data?.defaults.city ?? '',
+    ...place(undefined, data?.defaults.city ?? ''),
     contactEmail: data?.defaults.contactEmail ?? '',
     contactPhone: data?.defaults.contactPhone ?? '',
   });
@@ -94,7 +117,7 @@ export default function CompanyJobsPage() {
       roles: p.roles,
       genders: p.genders,
       employment: p.employment ?? '',
-      city: p.city,
+      ...place(p.country, p.city),
       contactEmail: p.contactEmail ?? '',
       contactPhone: p.contactPhone ?? '',
     });
@@ -104,7 +127,8 @@ export default function CompanyJobsPage() {
     e.preventDefault();
     if (!form) return;
     setBusy('save');
-    const args = { ...form, employment: form.employment || undefined };
+    const { otherCity: _o, ...rest } = form;
+    const args = { ...rest, employment: rest.employment || undefined };
     try {
       if (editing) {
         await update({ postId: editing, ...args });
@@ -196,17 +220,6 @@ export default function CompanyJobsPage() {
             <Chips options={JOB_GENDERS} value={form.genders} onChange={(v) => set('genders', v)} label={(o) => t(`jobs.gender.${o}`)} />
           </fieldset>
 
-          <fieldset>
-            <legend className="block text-sm font-medium text-brand-text-secondary mb-2">{t('cx.jobs.f_employment')}</legend>
-            <Chips
-              options={JOB_EMPLOYMENT}
-              value={form.employment ? [form.employment] : []}
-              onChange={(v) => set('employment', v[0] ?? '')}
-              label={(o) => t(`jobs.emp.${o}`)}
-              multi={false}
-            />
-          </fieldset>
-
           <label className="block">
             <span className="block text-sm font-medium text-brand-text-secondary mb-1.5">{t('cx.jobs.f_desc')}</span>
             <textarea
@@ -220,11 +233,53 @@ export default function CompanyJobsPage() {
             <span className="block text-right text-[11px] text-brand-text-muted mt-1">{form.description.length}/3000</span>
           </label>
 
-          <div className="grid gap-4 sm:grid-cols-3">
+          <div className="grid gap-4 sm:grid-cols-2">
+            <label className="block">
+              <span className="block text-sm font-medium text-brand-text-secondary mb-1.5">{t('cx.jobs.f_country')}</span>
+              <select
+                className={input}
+                value={form.country}
+                onChange={(e) => setForm((f) => (f ? { ...f, country: e.target.value, city: '', otherCity: false } : f))}
+              >
+                {COUNTRIES.slice(0, FIRST_OTHER).map((c) => (
+                  <option key={c.code} value={c.code}>{countryName(c.code, locale)}</option>
+                ))}
+                <option disabled>──────────</option>
+                {otherCountries.map((c) => (
+                  <option key={c.code} value={c.code}>{countryName(c.code, locale)}</option>
+                ))}
+              </select>
+            </label>
             <label className="block">
               <span className="block text-sm font-medium text-brand-text-secondary mb-1.5">{t('cx.jobs.f_city')}</span>
-              <input className={input} value={form.city} maxLength={60} onChange={(e) => set('city', e.target.value)} />
+              <select
+                className={input}
+                value={form.otherCity ? OTHER : form.city}
+                onChange={(e) => {
+                  const v = e.target.value;
+                  setForm((f) => (f ? (v === OTHER ? { ...f, otherCity: true, city: '' } : { ...f, otherCity: false, city: v }) : f));
+                }}
+              >
+                <option value="" disabled>{t('cx.jobs.f_city_pick')}</option>
+                {(findCountry(form.country)?.cities ?? []).map((e) => (
+                  <option key={e} value={cityKey(e)}>{cityLabel(cityKey(e), form.country, language)}</option>
+                ))}
+                <option value={OTHER}>{t('cx.jobs.f_city_other')}</option>
+              </select>
+              {form.otherCity && (
+                <input
+                  className={`${input} mt-2`}
+                  value={form.city}
+                  maxLength={60}
+                  autoFocus
+                  placeholder={t('cx.jobs.f_city_other_ph')}
+                  onChange={(e) => set('city', e.target.value)}
+                />
+              )}
             </label>
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2">
             <label className="block">
               <span className="block text-sm font-medium text-brand-text-secondary mb-1.5">{t('cx.jobs.f_email')}</span>
               <input className={input} type="email" value={form.contactEmail} maxLength={120} onChange={(e) => set('contactEmail', e.target.value)} />
@@ -284,8 +339,12 @@ export default function CompanyJobsPage() {
                     <p className="mt-1 text-xs text-brand-text-secondary flex flex-wrap gap-x-3 gap-y-1">
                       <span>{p.roles.map((r) => t(`jobs.role.${r}`)).join(' · ')}</span>
                       {p.genders.length > 0 && <span>{p.genders.map((g) => t(`jobs.gender.${g}`)).join(' / ')}</span>}
-                      {p.employment && <span>{t(`jobs.emp.${p.employment}`)}</span>}
-                      {p.city && <span className="inline-flex items-center gap-1"><MapPin className="w-3 h-3" /> {p.city}</span>}
+                      {p.city && (
+                        <span className="inline-flex items-center gap-1">
+                          <MapPin className="w-3 h-3" /> {cityLabel(p.city, p.country, language)}
+                          {p.country ? `, ${countryName(p.country, locale)}` : ''}
+                        </span>
+                      )}
                     </p>
                   </div>
                   <div className="flex gap-1.5">

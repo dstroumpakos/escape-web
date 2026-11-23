@@ -2,10 +2,12 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Briefcase, Mail, MapPin, Phone, Clock, User } from 'lucide-react';
+import { Briefcase, Mail, MapPin, Phone, User } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
 import { CompanyLogo } from '@/components/companies/CompanyLogo';
 import type { PublicJob } from '@/lib/jobs';
+import { cityLabel, countryName } from '@/lib/geo';
+import { localeFor } from '@/lib/languages';
 
 const LONG = 280;
 
@@ -15,7 +17,8 @@ export function JobCard({ job, showCompany = true }: { job: PublicJob; showCompa
   const [open, setOpen] = useState(false);
   const long = job.description.length > LONG;
   const text = long && !open ? job.description.slice(0, LONG).trimEnd() + '…' : job.description;
-  const date = new Date(job.createdAt).toLocaleDateString(language === 'el' ? 'el-GR' : language === 'nl' ? 'nl-NL' : 'en-GB', {
+  const where = [job.city && cityLabel(job.city, job.country, language), job.country && countryName(job.country, localeFor(language))].filter(Boolean).join(', ');
+  const date = new Date(job.createdAt).toLocaleDateString(localeFor(language), {
     day: 'numeric',
     month: 'short',
   });
@@ -36,14 +39,9 @@ export function JobCard({ job, showCompany = true }: { job: PublicJob; showCompa
           )}
           <h3 className="font-display text-xl font-bold text-brand-bone leading-snug text-balance">{job.title}</h3>
           <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-brand-text-muted">
-            {job.city && (
+            {where && (
               <span className="inline-flex items-center gap-1">
-                <MapPin className="w-3.5 h-3.5" /> {job.city}
-              </span>
-            )}
-            {job.employment && (
-              <span className="inline-flex items-center gap-1">
-                <Clock className="w-3.5 h-3.5" /> {t(`jobs.emp.${job.employment}`)}
+                <MapPin className="w-3.5 h-3.5" /> {where}
               </span>
             )}
             <span>{t('jobs.posted', { date })}</span>
