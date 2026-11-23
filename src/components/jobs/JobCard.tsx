@@ -15,16 +15,6 @@ const LONG = 280;
 export function JobCard({ job, showCompany = true }: { job: PublicJob; showCompany?: boolean }) {
   const { t, language } = useTranslation();
   const [open, setOpen] = useState(false);
-  const [copied, setCopied] = useState(false);
-  const copyEmail = async () => {
-    try {
-      await navigator.clipboard.writeText(job.contactEmail);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1800);
-    } catch {
-      /* clipboard blocked: the address is on screen to select by hand */
-    }
-  };
   const long = job.description.length > LONG;
   const text = long && !open ? job.description.slice(0, LONG).trimEnd() + '…' : job.description;
   const where = [job.city && cityLabel(job.city, job.country, language), job.country && countryName(job.country, localeFor(language))].filter(Boolean).join(', ');
@@ -98,31 +88,65 @@ export function JobCard({ job, showCompany = true }: { job: PublicJob; showCompa
       )}
 
       {(job.contactEmail || job.contactPhone) && (
-        <div className="flex flex-wrap gap-2 pt-1">
-          {job.contactEmail && (
-            // Only the address, to copy: no mailto, so no mail app pops up
-            <div className="inline-flex items-center gap-2 rounded-xl border border-brand-border bg-brand-surface/60 pl-3 pr-1 py-1 text-sm text-brand-bone max-w-full">
-              <Mail className="w-4 h-4 shrink-0 text-brand-red-light" />
-              <span className="select-all break-all">{job.contactEmail}</span>
-              <button
-                type="button"
-                onClick={copyEmail}
-                className="ml-1 inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs text-brand-text-secondary hover:text-white hover:bg-white/5"
-                aria-label={t('jobs.copy_email')}
-                title={t('jobs.copy_email')}
-              >
-                {copied ? <Check className="w-3.5 h-3.5 text-green-400" /> : <Copy className="w-3.5 h-3.5" />}
-                {copied ? t('jobs.copied') : t('jobs.copy')}
-              </button>
-            </div>
-          )}
-          {job.contactPhone && (
-            <a href={`tel:${job.contactPhone.replace(/[^\d+]/g, '')}`} className="btn-outline inline-flex items-center gap-2 py-2! px-4! text-sm">
-              <Phone className="w-4 h-4" /> {t('jobs.call')} · {job.contactPhone}
-            </a>
-          )}
+        <div className="grid gap-2 pt-1 sm:grid-cols-2">
+          {job.contactEmail && <ContactBox icon={Mail} label={t('jobs.email_label')} value={job.contactEmail} />}
+          {job.contactPhone && <ContactBox icon={Phone} label={t('jobs.phone_label')} value={job.contactPhone} />}
         </div>
       )}
     </article>
+  );
+}
+
+/**
+ * Email or phone of an ad: hidden until you hover the box (tap on a phone),
+ * with a copy button next to it. Nothing opens a mail or phone app.
+ */
+function ContactBox({ icon: Icon, label, value }: { icon: typeof Mail; label: string; value: string }) {
+  const { t } = useTranslation();
+  const [shown, setShown] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(value);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1800);
+    } catch {
+      setShown(true); // clipboard blocked: at least show it to select by hand
+    }
+  };
+  return (
+    <div className="flex items-stretch gap-2">
+      <button
+        type="button"
+        onMouseEnter={() => setShown(true)}
+        onMouseLeave={() => setShown(false)}
+        onFocus={() => setShown(true)}
+        onBlur={() => setShown(false)}
+        onClick={() => setShown((v) => !v)}
+        aria-label={label}
+        className="group min-w-0 flex-1 flex items-center gap-2.5 rounded-xl border border-brand-border bg-brand-surface/60 px-3 py-2 text-left hover:border-brand-red/50 transition-colors"
+      >
+        <Icon className="w-4 h-4 shrink-0 text-brand-red-light" />
+        <span className="min-w-0">
+          <span className="block text-[11px] uppercase tracking-wide text-brand-text-muted">{label}</span>
+          <span
+            className={`block text-sm truncate transition-[filter,opacity] ${
+              shown ? 'text-brand-bone select-all' : 'text-brand-text-secondary blur-[5px] opacity-70 select-none'
+            }`}
+          >
+            {value}
+          </span>
+        </span>
+      </button>
+      <button
+        type="button"
+        onClick={copy}
+        className="shrink-0 inline-flex items-center gap-1.5 rounded-xl border border-brand-border px-3 text-xs font-medium text-brand-text-secondary hover:text-white hover:border-brand-red/50 transition-colors"
+        aria-label={`${t('jobs.copy')} ${label}`}
+      >
+        {copied ? <Check className="w-4 h-4 text-green-400" /> : <Copy className="w-4 h-4" />}
+        {copied ? t('jobs.copied') : t('jobs.copy')}
+      </button>
+    </div>
   );
 }

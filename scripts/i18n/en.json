@@ -3222,6 +3222,8 @@
  "jobs.posted": "Posted {{date}}",
  "jobs.email": "Send email",
  "jobs.call": "Call",
+ "jobs.email_label": "Email",
+ "jobs.phone_label": "Phone",
  "jobs.copy": "Copy",
  "jobs.copied": "Copied",
  "jobs.copy_email": "Copy the email",
