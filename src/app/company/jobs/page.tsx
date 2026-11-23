@@ -225,12 +225,10 @@ export default function CompanyJobsPage() {
             <textarea
               className={`${input} min-h-40 resize-y`}
               value={form.description}
-              maxLength={3000}
               required
               placeholder={t('cx.jobs.f_desc_ph')}
               onChange={(e) => set('description', e.target.value)}
             />
-            <span className="block text-right text-[11px] text-brand-text-muted mt-1">{form.description.length}/3000</span>
           </label>
 
           <div className="grid gap-4 sm:grid-cols-2">
