@@ -623,12 +623,26 @@ export function TowerGame({ placed, chambers, pocket, onPlace, busy, embedded = 
         if (ch === 'D') doorCell = [x, z];
         if (ch === 'C') chestCell = [x, z];
       }));
-      for (const [x, z] of [[3, -1], [5, -1], [3, -2], [4, -2], [5, -2]]) { const m = new THREE.Mesh(boxG, wallMat); m.position.set(x, 1.1, z); level.add(m); }
-      for (let i = 0; i < 4; i++) { const st = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.12, 0.25), new THREE.MeshStandardMaterial({ color: 0x3a3036 })); st.position.set(4, 0.06 + i * 0.14, -0.6 - i * 0.2); level.add(st); }
+      // Up: behind the door a narrow stairwell; the flight climbs past the end of the ceiling into the dark (never into a wall)
+      for (let z = -1; z >= -4; z--) for (const x of [3, 5]) for (const y of [1.1, 3.3]) { const m = new THREE.Mesh(boxG, wallMat); m.position.set(x, y, z); level.add(m); }
+      for (const y of [1.1, 3.3, 5.5]) { const m = new THREE.Mesh(boxG, wallMat); m.position.set(4, y, -5); level.add(m); }
+      const stepUpMat = new THREE.MeshStandardMaterial({ color: 0x3a3036 });
+      for (let i = 0; i < 16; i++) {
+        const h = 0.16 + i * 0.16;
+        const st = new THREE.Mesh(new THREE.BoxGeometry(0.98, h, 0.25), stepUpMat);
+        st.position.set(4, h / 2, -0.62 - i * 0.24); level.add(st);
+      }
       // From floor 2 up: stairs down behind the start, back to the floor below
       if (f > 0) {
         for (const [x, z] of [[3, 9], [5, 9], [4, 10]]) { const m = new THREE.Mesh(boxG, wallMat); m.position.set(x, 1.1, z); level.add(m); }
-        for (let i = 0; i < 5; i++) { const st = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.12, 0.25), new THREE.MeshStandardMaterial({ color: 0x2a2228 })); st.position.set(4, -0.06 - i * 0.14, 8.15 + i * 0.25); level.add(st); }
+        // The well walls carry on below the floor, so the steps never run under a wall
+        for (const [x, z] of [[3, 9], [5, 9], [3, 10], [5, 10]]) { const m = new THREE.Mesh(boxG, wallMat); m.position.set(x, -1.1, z); level.add(m); }
+        const stepDownMat = new THREE.MeshStandardMaterial({ color: 0x2a2228 });
+        for (let i = 0; i < 5; i++) { const st = new THREE.Mesh(new THREE.BoxGeometry(0.98, 0.16, 0.2), stepDownMat); st.position.set(4, -0.08 - i * 0.16, 8.6 + i * 0.2); level.add(st); }
+        const hole = new THREE.Mesh(new THREE.PlaneGeometry(1, 2.2), new THREE.MeshBasicMaterial({ color: 0x000000 }));
+        hole.position.set(4, -1.1, 9.49); hole.rotation.y = Math.PI; level.add(hole);
+        const pit = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshBasicMaterial({ color: 0x000000 }));
+        pit.rotation.x = -Math.PI / 2; pit.position.set(4, -0.9, 9); level.add(pit);
         const cap = new THREE.Mesh(new THREE.PlaneGeometry(1, 2), new THREE.MeshStandardMaterial({ color: 0x0b080c })); cap.rotation.x = Math.PI / 2; cap.position.set(4, 2.2, 9); level.add(cap);
         const cv = document.createElement('canvas'); cv.width = 128; cv.height = 64;
         const c2 = cv.getContext('2d')!; c2.fillStyle = '#1a0f0b'; c2.fillRect(0, 0, 128, 64); c2.strokeStyle = '#8a6a3a'; c2.lineWidth = 4; c2.strokeRect(2, 2, 124, 60);
