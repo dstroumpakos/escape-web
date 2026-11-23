@@ -8,7 +8,7 @@ export function AriadneThread() {
     <div aria-hidden className="horror-motion horror-still absolute inset-0 pointer-events-none overflow-hidden">
       <svg
         viewBox="0 0 1000 800"
-        preserveAspectRatio="xMidYMid slice"
+        preserveAspectRatio="xMidYMax slice"
         className="absolute inset-0 w-full h-full"
         fill="none"
       >
