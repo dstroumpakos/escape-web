@@ -137,7 +137,7 @@ export default function CompanyJobsPage() {
     if (!form) return;
     setBusy('save');
     const { otherCity: _o, photos, ...rest } = form;
-    const args = { ...rest, employment: rest.employment || undefined, photoIds: photos.map((p) => p.id) };
+    const args = { ...rest, employment: rest.employment || undefined, photoIds: (photos ?? []).map((p) => p.id) };
     try {
       if (editing) {
         await update({ postId: editing, ...args });
@@ -157,7 +157,7 @@ export default function CompanyJobsPage() {
 
   const addPhotos = async (files: FileList | null) => {
     if (!files || !form) return;
-    const room = MAX_PHOTOS - form.photos.length;
+    const room = MAX_PHOTOS - (form.photos ?? []).length;
     const picked = [...files].filter((f) => f.type.startsWith('image/')).slice(0, room);
     if (picked.length === 0) return;
     setUploading(true);
@@ -169,7 +169,7 @@ export default function CompanyJobsPage() {
         if (!res.ok) throw new Error('Upload failed');
         const { storageId } = (await res.json()) as { storageId: Id<'_storage'> };
         const url = URL.createObjectURL(file);
-        setForm((f) => (f && f.photos.length < MAX_PHOTOS ? { ...f, photos: [...f.photos, { id: storageId, url }] } : f));
+        setForm((f) => (f && (f.photos ?? []).length < MAX_PHOTOS ? { ...f, photos: [...(f.photos ?? []), { id: storageId, url }] } : f));
       }
     } catch (err) {
       toast({ kind: 'error', message: friendlyError(err, t) });
@@ -268,13 +268,13 @@ export default function CompanyJobsPage() {
             <legend className="block text-sm font-medium text-brand-text-secondary mb-1">{t('cx.jobs.f_photos')}</legend>
             <p className="text-xs text-brand-text-muted mb-2">{t('cx.jobs.f_photos_hint')}</p>
             <div className="flex flex-wrap gap-3">
-              {form.photos.map((p, i) => (
+              {(form.photos ?? []).map((p, i) => (
                 <div key={p.id} className="relative w-28 h-28 rounded-xl overflow-hidden border border-white/10 bg-brand-bg">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={p.url} alt="" className="w-full h-full object-cover" />
                   <button
                     type="button"
-                    onClick={() => set('photos', form.photos.filter((_, j) => j !== i))}
+                    onClick={() => set('photos', (form.photos ?? []).filter((_, j) => j !== i))}
                     className="absolute top-1 right-1 p-1 rounded-full bg-black/70 hover:bg-black"
                     aria-label={t('cx.jobs.remove_photo')}
                     title={t('cx.jobs.remove_photo')}
@@ -283,7 +283,7 @@ export default function CompanyJobsPage() {
                   </button>
                 </div>
               ))}
-              {form.photos.length < MAX_PHOTOS && (
+              {(form.photos ?? []).length < MAX_PHOTOS && (
                 <button
                   type="button"
                   onClick={() => fileRef.current?.click()}

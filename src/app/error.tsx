@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect } from 'react';
 import { useTranslation } from '@/lib/i18n';
 
 export default function Error({
@@ -10,6 +11,10 @@ export default function Error({
   reset: () => void;
 }) {
   const { t } = useTranslation();
+  // Keep the real error in the console, so a crash can be traced
+  useEffect(() => {
+    console.error(error);
+  }, [error]);
 
   return (
     <div className="min-h-[60vh] flex flex-col items-center justify-center px-4">
