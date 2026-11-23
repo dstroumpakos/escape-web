@@ -1,6 +1,6 @@
 /** Job ads (convex/jobs.ts): the public /jobs page and the company portal. Merged into the main dictionary in i18n.tsx. */
 const en: Record<string, string> = {
-  'nav.jobs': 'Jobs',
+  'nav.jobs': 'Find a job',
   'jobs.kicker': 'Work in an escape room',
   'jobs.title': 'Jobs',
   'jobs.subtitle': 'Escape rooms looking for game masters, actors and more. Get in touch with the company directly.',
@@ -69,7 +69,7 @@ const en: Record<string, string> = {
   'cx.jobs.view_public': 'See it on UNLOCKED',
 };
 const el: Record<string, string> = {
-  'nav.jobs': 'Δουλειά',
+  'nav.jobs': 'Βρες δουλειά',
   'jobs.kicker': 'Δούλεψε σε escape room',
   'jobs.title': 'Αγγελίες εργασίας',
   'jobs.subtitle': 'Escape rooms που ψάχνουν game masters, ηθοποιούς και όχι μόνο. Επικοινώνησε απευθείας με την εταιρεία.',
@@ -138,7 +138,7 @@ const el: Record<string, string> = {
   'cx.jobs.view_public': 'Δες τη στο UNLOCKED',
 };
 const nl: Record<string, string> = {
-  'nav.jobs': 'Vacatures',
+  'nav.jobs': 'Vind een baan',
   'jobs.kicker': 'Werken in een escape room',
   'jobs.title': 'Vacatures',
   'jobs.subtitle': 'Escape rooms die gamemasters, acteurs en meer zoeken. Neem direct contact op met het bedrijf.',
