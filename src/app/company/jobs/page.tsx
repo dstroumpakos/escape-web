@@ -252,6 +252,7 @@ export default function CompanyJobsPage() {
               <span className="block text-sm font-medium text-brand-text-secondary mb-1.5">{t('cx.jobs.f_city')}</span>
               <select
                 className={input}
+                required
                 value={form.otherCity ? OTHER : form.city}
                 onChange={(e) => {
                   const v = e.target.value;
@@ -270,6 +271,7 @@ export default function CompanyJobsPage() {
                   value={form.city}
                   maxLength={60}
                   autoFocus
+                  required
                   placeholder={t('cx.jobs.f_city_other_ph')}
                   onChange={(e) => set('city', e.target.value)}
                 />
