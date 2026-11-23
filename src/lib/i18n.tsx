@@ -18,6 +18,7 @@ import { modeTranslations } from './i18nMode';
 import { leaderboardTranslations } from './i18nLeaderboard';
 import { jobsTranslations } from './i18nJobs';
 import { peopleTranslations } from './i18nPeople';
+import { companyProfileTranslations } from './i18nCompanyProfile';
 
 import { Language, isLanguage, detectBrowserLanguage, isRtl } from './languages';
 
@@ -6937,6 +6938,9 @@ Object.assign(translations.nl, jobsTranslations.nl);
 Object.assign(translations.en, peopleTranslations.en);
 Object.assign(translations.el, peopleTranslations.el);
 Object.assign(translations.nl, peopleTranslations.nl);
+Object.assign(translations.en, companyProfileTranslations.en);
+Object.assign(translations.el, companyProfileTranslations.el);
+Object.assign(translations.nl, companyProfileTranslations.nl);
 
 interface I18nContextType {
   language: Language;

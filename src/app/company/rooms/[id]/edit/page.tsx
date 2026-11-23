@@ -8,6 +8,7 @@ import dynamic from 'next/dynamic';
 import { api } from '../../../../../../convex/_generated/api';
 import { Id } from '../../../../../../convex/_generated/dataModel';
 import { RoomPaymentExtras } from '@/components/company/RoomPaymentExtras';
+import { BookingOptionsToggle } from '@/components/company/BookingOptionsToggle';
 import Link from 'next/link';
 import {
   ArrowLeft,
@@ -122,6 +123,7 @@ export default function EditRoomPage() {
     isActive: true,
     isFeatured: false,
     releaseDate: '',
+    bookingOptionsOn: false,
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -230,6 +232,7 @@ export default function EditRoomPage() {
         isActive: room.isActive !== false,
         isFeatured: (room as any).isFeatured || false,
         releaseDate: (room as any).releaseDate || '',
+        bookingOptionsOn: (room as any).bookingOptionsOn === true,
       });
       // Load existing translations
       if ((room as any).storyTranslations) setStoryTranslations((room as any).storyTranslations);
@@ -304,6 +307,7 @@ export default function EditRoomPage() {
         storyTranslations: Object.keys(storyTrans).length > 0 ? storyTrans as any : undefined,
         descriptionTranslations: Object.keys(descTrans).length > 0 ? descTrans as any : undefined,
         paymentTerms: form.paymentTerms,
+        bookingOptionsOn: form.bookingOptionsOn,
         // 0 clears the room's own % so the company default applies
         depositPercent: form.depositPercent ? Number(form.depositPercent) : 0,
         termsOfUse: form.termsOfUse || undefined,
@@ -646,6 +650,7 @@ export default function EditRoomPage() {
           </div>
         </SectionCard>
 
+        <BookingOptionsToggle on={form.bookingOptionsOn} onChange={(v) => setForm((prev) => ({ ...prev, bookingOptionsOn: v }))}>
         {/* Payment & Schedule */}
         <SectionCard title={t('company.rooms.edit.payment_terms')}>
           <div className="flex flex-wrap gap-3">
@@ -709,6 +714,7 @@ export default function EditRoomPage() {
             <Plus className="w-3 h-3" /> {t('company.rooms.edit.add_slot')}
           </button>
         </SectionCard>
+        </BookingOptionsToggle>
 
         {/* Release Date (Early Access) */}
         <SectionCard title={t('company.rooms.edit.release_date')}>

@@ -75,19 +75,7 @@ export default function CompanySettingsPage() {
 
   const updateProfile = useCompanyMutation(api.companies.updateProfile);
 
-  // Profile form
-  const [profile, setProfile] = useState({
-    name: '',
-    phone: '',
-    address: '',
-    city: '',
-    vatNumber: '',
-    description: '',
-    website: '',
-  });
   const [profileLoaded, setProfileLoaded] = useState(false);
-  const [profileSaving, setProfileSaving] = useState(false);
-  const [profileMsg, setProfileMsg] = useState('');
 
   // Early Access state (reuses subscriptionEnabled field)
   const [earlyAccessEnabled, setEarlyAccessEnabled] = useState(false);
@@ -118,47 +106,12 @@ export default function CompanySettingsPage() {
   // Populate forms
   useEffect(() => {
     if (companyData && !profileLoaded) {
-      setProfile({
-        name: companyData.name || '',
-        phone: (companyData as any).phone || '',
-        address: (companyData as any).address || '',
-        city: (companyData as any).city || '',
-        vatNumber: (companyData as any).vatNumber || '',
-        description: (companyData as any).description || '',
-        website: (companyData as any).website || '',
-      });
       setEarlyAccessEnabled((companyData as any).subscriptionEnabled || false);
       setAutoTranslateEnabled((companyData as any).autoTranslateEnabled || false);
       setProfileLoaded(true);
       setEaLoaded(true);
     }
   }, [companyData, profileLoaded]);
-
-  const handleSaveProfile = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setProfileSaving(true);
-    setProfileMsg('');
-    try {
-      await updateProfile({
-        id: companyId as any,
-        name: profile.name,
-        phone: profile.phone,
-        address: profile.address,
-        city: profile.city,
-        vatNumber: profile.vatNumber || undefined,
-        description: profile.description,
-        website: profile.website,
-      });
-      refreshCompany({ name: profile.name });
-      setProfileMsg(t('company.settings.profile_success'));
-      toast({ kind: 'success', message: t('company.settings.profile_success') });
-      setTimeout(() => setProfileMsg(''), 3000);
-    } catch (err: any) {
-      setProfileMsg(friendlyError(err, t, 'company.settings.profile_error'));
-    } finally {
-      setProfileSaving(false);
-    }
-  };
 
   const handleToggleEarlyAccess = async () => {
     const newValue = !earlyAccessEnabled;
@@ -317,138 +270,18 @@ export default function CompanySettingsPage() {
       {/* Profile Tab */}
       {activeTab === 'profile' && (
         <div className="bg-brand-surface rounded-2xl border border-white/5 p-6">
-          <h2 className="text-lg font-bold mb-4">{t('company.settings.company_profile')}</h2>
-
-          {profileMsg && (
-            <div
-              className={`rounded-xl p-3 mb-4 text-sm ${
-                profileMsg === t('company.settings.profile_success')
-                  ? 'bg-green-500/10 text-green-400'
-                  : 'bg-red-500/10 text-red-400'
-              }`}
-            >
-              {profileMsg}
+          {/* Company details, logo and photos live on the Profile page */}
+          <Link
+            href={p('/company/profile')}
+            className="flex items-center gap-4 rounded-xl border border-white/10 bg-brand-bg p-4 hover:border-brand-red/40 transition-colors"
+          >
+            <Building2 className="w-6 h-6 text-brand-red-light shrink-0" />
+            <div className="min-w-0 flex-1">
+              <p className="font-semibold">{t('company.settings.company_profile')}</p>
+              <p className="text-sm text-brand-text-secondary">{t('cp.info_moved')}</p>
             </div>
-          )}
-
-          <form onSubmit={handleSaveProfile} className="space-y-4">
-            <div>
-              <label className="block text-sm text-brand-text-secondary mb-1.5">
-                {t('company.settings.company_name')}
-              </label>
-              <div className="relative">
-                <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-brand-text-secondary" />
-                <input
-                  type="text"
-                  value={profile.name}
-                  onChange={(e) => setProfile({ ...profile, name: e.target.value })}
-                  className="w-full bg-brand-bg border border-white/10 rounded-xl pl-11 pr-4 py-3 text-white focus:border-brand-red focus:outline-hidden"
-                  required
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm text-brand-text-secondary mb-1.5">{t('company.settings.phone')}</label>
-              <div className="relative">
-                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-brand-text-secondary" />
-                <input
-                  type="tel"
-                  value={profile.phone}
-                  onChange={(e) => setProfile({ ...profile, phone: e.target.value })}
-                  className="w-full bg-brand-bg border border-white/10 rounded-xl pl-11 pr-4 py-3 text-white focus:border-brand-red focus:outline-hidden"
-                  required
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm text-brand-text-secondary mb-1.5">{t('cx.website.label')}</label>
-              <div className="relative">
-                <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-brand-text-secondary" />
-                <input
-                  type="url"
-                  inputMode="url"
-                  value={profile.website}
-                  onChange={(e) => setProfile({ ...profile, website: e.target.value })}
-                  placeholder="https://"
-                  className="w-full bg-brand-bg border border-white/10 rounded-xl pl-11 pr-4 py-3 text-white focus:border-brand-red focus:outline-hidden"
-                />
-              </div>
-              <p className="text-xs text-brand-text-secondary mt-1.5">{t('cx.website.hint')}</p>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label className="block text-sm text-brand-text-secondary mb-1.5">{t('company.settings.address')}</label>
-                <div className="relative">
-                  <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-brand-text-secondary" />
-                  <input
-                    type="text"
-                    value={profile.address}
-                    onChange={(e) => setProfile({ ...profile, address: e.target.value })}
-                    className="w-full bg-brand-bg border border-white/10 rounded-xl pl-11 pr-4 py-3 text-white focus:border-brand-red focus:outline-hidden"
-                    required
-                  />
-                </div>
-              </div>
-              <div>
-                <label className="block text-sm text-brand-text-secondary mb-1.5">{t('company.settings.city')}</label>
-                <input
-                  type="text"
-                  value={profile.city}
-                  onChange={(e) => setProfile({ ...profile, city: e.target.value })}
-                  className="w-full bg-brand-bg border border-white/10 rounded-xl px-4 py-3 text-white focus:border-brand-red focus:outline-hidden"
-                  required
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm text-brand-text-secondary mb-1.5">
-                {t('company.settings.vat')}
-              </label>
-              <div className="relative">
-                <FileText className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-brand-text-secondary" />
-                <input
-                  type="text"
-                  value={profile.vatNumber}
-                  onChange={(e) => setProfile({ ...profile, vatNumber: e.target.value })}
-                  className="w-full bg-brand-bg border border-white/10 rounded-xl pl-11 pr-4 py-3 text-white focus:border-brand-red focus:outline-hidden"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm text-brand-text-secondary mb-1.5">{t('company.settings.description')}</label>
-              <textarea
-                value={profile.description}
-                onChange={(e) => setProfile({ ...profile, description: e.target.value })}
-                rows={3}
-                className="w-full bg-brand-bg border border-white/10 rounded-xl px-4 py-3 text-white focus:border-brand-red focus:outline-hidden resize-none"
-                required
-              />
-            </div>
-
-            <div className="pt-2">
-              <p className="text-xs text-brand-text-secondary mb-3">
-                {t('company.settings.email_readonly', { email: company?.email || '' })}
-              </p>
-              <button
-                type="submit"
-                disabled={profileSaving}
-                className="btn-primary flex items-center gap-2"
-              >
-                {profileSaving ? (
-                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                ) : (
-                  <>
-                    <Save className="w-4 h-4" /> {t('company.settings.save_profile')}
-                  </>
-                )}
-              </button>
-            </div>
-          </form>
+            <ChevronRight className="w-5 h-5 text-brand-text-secondary shrink-0" />
+          </Link>
 
           {/* Change password (convex/passwordReset.ts) */}
           {company?.sessionToken && (

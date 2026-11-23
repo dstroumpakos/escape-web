@@ -8,6 +8,7 @@ import dynamic from 'next/dynamic';
 import { api } from '../../../../../convex/_generated/api';
 import { Id } from '../../../../../convex/_generated/dataModel';
 import { RoomPaymentExtras } from '@/components/company/RoomPaymentExtras';
+import { BookingOptionsToggle } from '@/components/company/BookingOptionsToggle';
 import Link from 'next/link';
 import {
   ArrowLeft,
@@ -129,6 +130,7 @@ export default function NewRoomPage() {
     defaultTimeSlots: [{ time: '10:00', price: 15 }] as { time: string; price: number }[],
     overflowSlot: null as null | { time: string; price: number; days: number[] },
     releaseDate: '',
+    bookingOptionsOn: false,
   });
 
   const [error, setError] = useState('');
@@ -285,7 +287,7 @@ export default function NewRoomPage() {
     e.preventDefault();
     setError('');
     if (!company?.id) return;
-    if (form.paymentTerms.length === 0) {
+    if (form.bookingOptionsOn && form.paymentTerms.length === 0) {
       setError(t('company.rooms.new.error_payment_terms'));
       return;
     }
@@ -323,6 +325,7 @@ export default function NewRoomPage() {
         storyTranslations: Object.keys(storyTrans).length > 0 ? storyTrans as any : undefined,
         descriptionTranslations: Object.keys(descTrans).length > 0 ? descTrans as any : undefined,
         paymentTerms: form.paymentTerms,
+        bookingOptionsOn: form.bookingOptionsOn,
         depositPercent: form.depositPercent ? Number(form.depositPercent) : undefined,
         termsOfUse: form.termsOfUse || undefined,
         bookingUrl: form.bookingUrl.trim() || undefined,
@@ -729,6 +732,7 @@ export default function NewRoomPage() {
           </div>
         </Section>
 
+        <BookingOptionsToggle on={form.bookingOptionsOn} onChange={(v) => setForm((prev) => ({ ...prev, bookingOptionsOn: v }))}>
         {/* Payment Terms */}
         <Section title={t('company.rooms.new.payment_terms')}>
           <div className="flex flex-wrap gap-3">
@@ -815,6 +819,7 @@ export default function NewRoomPage() {
             <Plus className="w-3 h-3" /> {t('company.rooms.new.add_time_slot')}
           </button>
         </Section>
+        </BookingOptionsToggle>
 
         {/* Release Date (Early Access) */}
         <Section title={t('company.rooms.new.release_date')}>

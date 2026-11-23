@@ -4,15 +4,31 @@ import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
+import { ShareButton, ShareSheet, type ShareItem } from './ShareSheet';
 
 /**
  * A post's photos full screen. Arrows / swipe move between photos; Esc, the X
  * or a tap on the dark background closes it.
  */
-export function PhotoViewer({ urls, start, onClose }: { urls: string[]; start: number; onClose: () => void }) {
+export function PhotoViewer({
+  urls,
+  types,
+  start,
+  onClose,
+  share,
+}: {
+  urls: string[];
+  /** 'video' plays the item instead of showing it as a photo (default: all photos) */
+  types?: ('image' | 'video')[];
+  start: number;
+  onClose: () => void;
+  /** Shows a share button; gives what to share for the item at that index */
+  share?: (index: number) => ShareItem;
+}) {
   const { t } = useTranslation();
   const [i, setI] = useState(start);
   const touchX = useRef<number | null>(null);
+  const [sharing, setSharing] = useState<ShareItem | null>(null);
   const many = urls.length > 1;
   const go = (d: number) => setI((n) => (n + d + urls.length) % urls.length);
 
@@ -49,14 +65,35 @@ export function PhotoViewer({ urls, start, onClose }: { urls: string[]; start: n
         if (Math.abs(dx) > 50) go(dx < 0 ? 1 : -1);
       }}
     >
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src={urls[i]}
-        alt=""
-        className="max-w-full max-h-full object-contain select-none"
-        onClick={(e) => e.stopPropagation()}
-        draggable={false}
-      />
+      {types?.[i] === 'video' ? (
+        <video
+          key={urls[i]}
+          src={urls[i]}
+          controls
+          autoPlay
+          playsInline
+          className="max-w-full max-h-full"
+          onClick={(e) => e.stopPropagation()}
+          onTouchStart={(e) => e.stopPropagation()}
+          onTouchEnd={(e) => e.stopPropagation()}
+        />
+      ) : (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={urls[i]}
+          alt=""
+          className="max-w-full max-h-full object-contain select-none"
+          onClick={(e) => e.stopPropagation()}
+          draggable={false}
+        />
+      )}
+      {share && (
+        <ShareButton
+          onClick={() => setSharing(share(i))}
+          className="absolute top-4 right-[4.5rem] w-11 h-11 rounded-full bg-black/60 hover:bg-black/80 text-white"
+        />
+      )}
+      {sharing && <ShareSheet item={sharing} onClose={() => setSharing(null)} />}
       <button
         onClick={onClose}
         className="absolute top-4 right-4 w-11 h-11 rounded-full bg-black/60 hover:bg-black/80 text-white flex items-center justify-center"

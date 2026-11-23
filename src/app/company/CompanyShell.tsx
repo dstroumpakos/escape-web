@@ -8,11 +8,11 @@ import {
   CalendarDays,
   DoorOpen,
   Settings,
+  Store,
   LogOut,
   Building2,
   ChevronRight,
   CreditCard,
-  Camera,
   BookOpen,
   Globe,
   Clock,
@@ -28,7 +28,7 @@ import {
 } from 'lucide-react';
 import { EyeKeyhole } from '@/components/brand/EyeKeyhole';
 import { ConvexClientProvider } from '@/components/providers/ConvexClientProvider';
-import { CompanyAuthProvider, useCompanyAuth, useCompanyPath, photosPortalUrl, useMainSiteUrl } from '@/lib/companyAuth';
+import { CompanyAuthProvider, useCompanyAuth, useCompanyPath, useMainSiteUrl } from '@/lib/companyAuth';
 import { ToastProvider } from '@/components/company/Toast';
 import { LanguageToggle } from '@/components/LanguageToggle';
 import { PlanBadge } from './PlanBadge';
@@ -50,9 +50,6 @@ function CompanyShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const p = useCompanyPath();
   const [moreOpen, setMoreOpen] = useState(false);
-  const [photosUrl, setPhotosUrl] = useState('https://photos.unlocked.gr');
-
-  useEffect(() => setPhotosUrl(photosPortalUrl()), []);
 
   // Main links (also the phone bottom bar) and the rest (sidebar + "More" sheet).
   const primaryLinks: NavLink[] = [
@@ -63,10 +60,10 @@ function CompanyShell({ children }: { children: React.ReactNode }) {
     { href: p('/company/rooms'), label: t('company.nav.rooms'), icon: DoorOpen },
   ];
   const secondaryLinks: NavLink[] = [
+    { href: p('/company/profile'), label: t('company.nav.profile'), icon: Store },
     { href: p('/company/plays'), label: t('cx.nav.plays'), icon: ListChecks },
     { href: p('/company/jobs'), label: t('cx.nav.jobs'), icon: Briefcase },
     ...(BOOKING_ENABLED ? [{ href: p('/company/offers'), label: t('cx.nav.offers'), icon: Flame }] : []),
-    { href: photosUrl, label: t('company.nav.photos'), icon: Camera, external: true },
     { href: p('/company/merch'), label: t('shop.portal.nav'), icon: ShoppingBag },
     { href: p('/company/payments'), label: t('company.nav.payments'), icon: Wallet },
     ...(BOOKING_ENABLED ? [{ href: p('/company/billing'), label: t('company.nav.billing'), icon: CreditCard }] : []),

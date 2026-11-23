@@ -21,14 +21,14 @@ import {
 
 export default function CreatePostPage() {
   const router = useRouter();
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, isLoading } = useAuth();
   const { t } = useTranslation();
   const [text, setText] = useState('');
   const [rating, setRating] = useState(0);
   const [selectedRoomId, setSelectedRoomId] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
-  const [mediaFiles, setMediaFiles] = useState<{ preview: string; storageId: string }[]>([]);
+  const [mediaFiles, setMediaFiles] = useState<{ preview: string; storageId: string; type: 'image' | 'video' }[]>([]);
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -37,9 +37,10 @@ export default function CreatePostPage() {
   const generateUploadUrl = useMutation(api.posts.generateUploadUrl);
 
 
+  // Wait for the session to load before sending a logged-out visitor to login
   useEffect(() => {
-    if (!isAuthenticated) router.replace('/login');
-  }, [isAuthenticated, router]);
+    if (!isLoading && !isAuthenticated) router.replace('/login');
+  }, [isLoading, isAuthenticated, router]);
 
   const handleFileUpload = async (files: FileList | null) => {
     if (!files || files.length === 0) return;
@@ -47,8 +48,14 @@ export default function CreatePostPage() {
     setUploading(true);
     try {
       for (const file of Array.from(files)) {
-        // Convert to JPEG for web compatibility (handles HEIC, etc.)
-        const webFile = await convertToWebFormat(file);
+        const isVideo = file.type.startsWith('video/');
+        // Videos: up to 100 MB (convex/uploads.ts MAX_VIDEO_BYTES)
+        if (isVideo && file.size > 100 * 1024 * 1024) {
+          setError(t('social.video_too_big'));
+          continue;
+        }
+        // Photos are converted to JPEG for web compatibility (handles HEIC, etc.)
+        const webFile = isVideo ? file : await convertToWebFormat(file);
         // Local preview
         const preview = URL.createObjectURL(webFile);
         // Upload to Convex
@@ -59,7 +66,7 @@ export default function CreatePostPage() {
           body: webFile,
         });
         const { storageId } = await result.json();
-        setMediaFiles((prev) => [...prev, { preview, storageId }]);
+        setMediaFiles((prev) => [...prev, { preview, storageId, type: isVideo ? 'video' : 'image' }]);
       }
     } catch (err) {
       console.error('Upload failed:', err);
@@ -85,7 +92,7 @@ export default function CreatePostPage() {
       await createPost({
         sessionToken: user.sessionToken,
         text: text.trim(),
-        mediaStorageIds: mediaFiles.map((m) => ({ type: 'image' as const, storageId: m.storageId as any })),
+        mediaStorageIds: mediaFiles.map((m) => ({ type: m.type, storageId: m.storageId as any })),
         roomId: selectedRoomId ? (selectedRoomId as any) : undefined,
         rating: rating > 0 ? rating : undefined,
       });
@@ -182,7 +189,7 @@ export default function CreatePostPage() {
             <input
               ref={fileInputRef}
               type="file"
-              accept="image/*"
+              accept="image/*,video/mp4,video/webm,video/quicktime"
               multiple
               className="hidden"
               onChange={(e) => handleFileUpload(e.target.files)}
@@ -190,7 +197,11 @@ export default function CreatePostPage() {
             <div className="flex flex-wrap gap-3">
               {mediaFiles.map((m, i) => (
                 <div key={i} className="relative w-24 h-24 rounded-xl overflow-hidden bg-brand-surface group">
-                  <img src={m.preview} alt="" className="w-full h-full object-cover" />
+                  {m.type === 'video' ? (
+                    <video src={m.preview} muted playsInline className="w-full h-full object-cover" />
+                  ) : (
+                    <img src={m.preview} alt="" className="w-full h-full object-cover" />
+                  )}
                   <button
                     type="button"
                     onClick={() => removeMedia(i)}

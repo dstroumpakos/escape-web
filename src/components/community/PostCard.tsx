@@ -2,6 +2,7 @@
 
 import { useCallback, useState } from 'react';
 import { PhotoViewer } from './PhotoViewer';
+import { VideoThumb } from './VideoThumb';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useMutation, useQuery } from 'convex/react';
@@ -72,8 +73,8 @@ export function PostCard({ post, onRemoved }: { post: FeedPost; onRemoved?: () =
   const [notice, setNotice] = useState('');
 
   const authorHref = post.author.kind === 'user' && post.author.id ? `/u/${post.author.id}` : null;
-  const images = post.media.filter((m) => m.type === 'image');
-  // Tapping a photo opens it full screen
+  // Photos and videos; tapping one opens it full screen (a lone video plays in place)
+  const images = post.media.filter((m) => m.type === 'image' || m.type === 'video');
   const [viewing, setViewing] = useState<number | null>(null);
   const closeViewer = useCallback(() => setViewing(null), []);
 
@@ -173,26 +174,34 @@ export function PostCard({ post, onRemoved }: { post: FeedPost; onRemoved?: () =
       {/* Text */}
       {post.text && <p className={`px-4 pb-3 whitespace-pre-line text-brand-text ${!images.length && post.text.length < 90 ? 'text-xl' : 'text-[15px]'}`}>{post.text}</p>}
 
-      {/* Photos */}
+      {/* Photos and videos */}
       {images.length > 0 && (
         <div className={`grid gap-0.5 bg-black ${images.length === 1 ? 'grid-cols-1' : 'grid-cols-2'}`}>
           {images.slice(0, 4).map((m, i) => (
+            m.type === 'video' && images.length === 1 ? (
+              <video key={i} src={m.url} controls playsInline preload="metadata" className="w-full max-h-[560px] bg-black" />
+            ) : (
             <button
               type="button"
               key={i}
               onClick={() => setViewing(i)}
               className={`relative block cursor-zoom-in ${images.length === 1 ? '' : 'aspect-square'} ${images.length === 3 && i === 0 ? 'row-span-2 aspect-auto' : ''}`}
             >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={m.url} alt="" className={`w-full ${images.length === 1 ? 'max-h-[560px] object-contain mx-auto' : 'h-full object-cover'}`} />
+              {m.type === 'video' ? (
+                <span className="absolute inset-0"><VideoThumb url={m.url} /></span>
+              ) : (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={m.url} alt="" className={`w-full ${images.length === 1 ? 'max-h-[560px] object-contain mx-auto' : 'h-full object-cover'}`} />
+              )}
               {i === 3 && images.length > 4 && (
                 <div className="absolute inset-0 bg-black/60 flex items-center justify-center text-2xl font-bold">+{images.length - 4}</div>
               )}
             </button>
+            )
           ))}
         </div>
       )}
-      {viewing !== null && <PhotoViewer urls={images.map((m) => m.url)} start={viewing} onClose={closeViewer} />}
+      {viewing !== null && <PhotoViewer urls={images.map((m) => m.url)} types={images.map((m) => m.type)} start={viewing} onClose={closeViewer} />}
 
       {/* Counts */}
       {(likes > 0 || post.commentCount > 0) && (

@@ -4,6 +4,8 @@ import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import { useMutation, useQuery } from 'convex/react';
+import { VideoThumb } from '@/components/community/VideoThumb';
+import { ShareButton, ShareSheet } from '@/components/community/ShareSheet';
 import { Camera, Grid3x3, Info, DoorOpen, Heart, MessageCircle, MapPin, CalendarDays, Trophy, UserCheck, Pencil, X, Loader2, Diamond, Star, PlusSquare, Settings, Footprints } from 'lucide-react';
 import { api } from '../../../convex/_generated/api';
 import { useAuth } from '@/lib/auth';
@@ -266,7 +268,15 @@ export function ProfileView({ userId }: { userId: string }) {
         <EditProfile token={token} bio={profile.bio} hasCover={!!profile.cover} avatar={profile.avatar} name={profile.name} onClose={() => setEditing(false)} />
       )}
       {list && <FollowList userId={profile._id} which={list} onClose={() => setList(null)} />}
-      {openPost && <PostModal post={openPost} author={profile} onClose={() => setOpenPost(null)} />}
+      {openPost && (
+        <PostModal
+          post={openPost}
+          author={profile}
+          onClose={() => setOpenPost(null)}
+          // Players share photos from their own profile only, not from other players'
+          shareAs={profile.viewer.isMe ? { title: openPost.roomTitle || profile.name, subtitle: openPost.roomTitle ? profile.name : undefined, path: `/u/${profile._id}` } : undefined}
+        />
+      )}
     </div>
   );
 }
@@ -287,11 +297,14 @@ function PostsGrid({ posts, isMe, onOpen }: { posts: any[] | undefined; isMe: bo
     <div className="grid grid-cols-3 gap-1 sm:gap-2">
       {posts.map((p) => {
         const img = p.media.find((m: any) => m.type === 'image')?.url;
+        const vid = !img ? p.media.find((m: any) => m.type === 'video')?.url : undefined;
         return (
           <button key={p._id} onClick={() => onOpen(p)} className="group relative aspect-square overflow-hidden bg-brand-surface sm:rounded-md">
             {img ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={img} alt="" className="absolute inset-0 w-full h-full object-cover" />
+            ) : vid ? (
+              <span className="absolute inset-0"><VideoThumb url={vid} /></span>
             ) : (
               <div className="absolute inset-0 p-3 flex items-center justify-center bg-linear-to-br from-brand-red/25 to-black">
                 <p className="text-xs sm:text-sm text-brand-bone line-clamp-5 text-center">{p.text}</p>
@@ -423,7 +436,18 @@ function FollowList({ userId, which, onClose }: { userId: string; which: 'follow
   );
 }
 
-function PostModal({ post, author, onClose }: { post: any; author: any; onClose: () => void }) {
+export function PostModal({
+  post,
+  author,
+  onClose,
+  shareAs,
+}: {
+  post: any;
+  author: any;
+  onClose: () => void;
+  /** Shows a share button for the post's photo/video (own profile and company profiles only) */
+  shareAs?: { title: string; subtitle?: string; path: string };
+}) {
   const { t } = useTranslation();
   const { user } = useAuth();
   const comments = useQuery(api.posts.getComments, { postId: post._id });
@@ -434,7 +458,9 @@ function PostModal({ post, author, onClose }: { post: any; author: any; onClose:
   const [err, setErr] = useState('');
   const liked = (likes ?? []).includes(post._id);
   const img = post.media.find((m: any) => m.type === 'image')?.url;
+  const vid = !img ? post.media.find((m: any) => m.type === 'video')?.url : undefined;
   const [likeCount, setLikeCount] = useState<number>(post.likes);
+  const [sharing, setSharing] = useState(false);
 
   const like = async () => {
     if (!user?.sessionToken) return;
@@ -453,8 +479,9 @@ function PostModal({ post, author, onClose }: { post: any; author: any; onClose:
   };
 
   return (
-    <Modal onClose={onClose} wide={!!img}>
-      <div className={img ? 'sm:grid sm:grid-cols-[1.3fr_1fr]' : ''}>
+    <Modal onClose={onClose} wide={!!(img || vid)}>
+      <div className={img || vid ? 'sm:grid sm:grid-cols-[1.3fr_1fr]' : ''}>
+        {vid && <video src={vid} controls autoPlay playsInline className="w-full max-h-[60vh] sm:max-h-[80vh] bg-black" />}
         {img && (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={img} alt="" className="w-full max-h-[60vh] sm:max-h-[80vh] object-contain bg-black" />
@@ -462,7 +489,10 @@ function PostModal({ post, author, onClose }: { post: any; author: any; onClose:
         <div className="flex flex-col min-h-[300px]">
           <div className="flex items-center justify-between p-4 border-b border-brand-border">
             <span className="font-bold">{author.name}</span>
-            <button onClick={onClose} aria-label={t('cx.common.close')}><X className="w-5 h-5" /></button>
+            <div className="flex items-center gap-3">
+              {shareAs && (img || vid) && <ShareButton onClick={() => setSharing(true)} className="text-brand-text-secondary hover:text-white" />}
+              <button onClick={onClose} aria-label={t('cx.common.close')}><X className="w-5 h-5" /></button>
+            </div>
           </div>
           <div className="p-4 flex-1 overflow-y-auto space-y-3 text-sm">
             {post.roomTitle && <Link href={`/rooms/${post.roomId}`} className="text-xs text-brand-red-light hover:underline">📍 {post.roomTitle}</Link>}
@@ -488,6 +518,9 @@ function PostModal({ post, author, onClose }: { post: any; author: any; onClose:
           </div>
         </div>
       </div>
+      {sharing && shareAs && (img || vid) && (
+        <ShareSheet item={{ url: (img || vid)!, type: img ? 'image' : 'video', ...shareAs }} onClose={() => setSharing(false)} />
+      )}
     </Modal>
   );
 }
