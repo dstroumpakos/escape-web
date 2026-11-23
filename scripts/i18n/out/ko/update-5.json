@@ -1,0 +1,6 @@
+{
+ "cx.jobs.f_photos": "사진",
+ "cx.jobs.f_photos_hint": "사진 최대 4장 (선택), 예: 방, 팀 또는 공간.",
+ "cx.jobs.add_photo": "사진 추가",
+ "cx.jobs.remove_photo": "사진 삭제"
+}

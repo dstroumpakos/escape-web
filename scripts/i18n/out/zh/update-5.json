@@ -1,0 +1,6 @@
+{
+ "cx.jobs.f_photos": "照片",
+ "cx.jobs.f_photos_hint": "最多 4 张照片（可选），例如房间、团队或场地。",
+ "cx.jobs.add_photo": "添加照片",
+ "cx.jobs.remove_photo": "移除照片"
+}

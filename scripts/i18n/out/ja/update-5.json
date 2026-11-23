@@ -1,0 +1,6 @@
+{
+ "cx.jobs.f_photos": "写真",
+ "cx.jobs.f_photos_hint": "写真は4枚まで（任意）。例：ルーム、チーム、店内など。",
+ "cx.jobs.add_photo": "写真を追加",
+ "cx.jobs.remove_photo": "写真を削除"
+}

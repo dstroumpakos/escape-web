@@ -71,6 +71,22 @@ export function JobCard({ job, showCompany = true }: { job: PublicJob; showCompa
         )}
       </div>
 
+      {job.photos.length > 0 && (
+        <div className={`grid gap-2 ${job.photos.length === 1 ? 'grid-cols-1' : job.photos.length === 2 ? 'grid-cols-2' : job.photos.length === 3 ? 'grid-cols-2 sm:grid-cols-3' : 'grid-cols-2 sm:grid-cols-4'}`}>
+          {job.photos.map((src, i) => (
+            <a key={src} href={src} target="_blank" rel="noreferrer" className="block overflow-hidden rounded-xl border border-brand-border bg-brand-surface">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={src}
+                alt={`${job.title} ${i + 1}`}
+                loading="lazy"
+                className={`w-full object-cover hover:scale-[1.03] transition-transform ${job.photos.length === 1 ? 'max-h-80' : 'aspect-square'}`}
+              />
+            </a>
+          ))}
+        </div>
+      )}
+
       {(job.contactEmail || job.contactPhone) && (
         <div className="flex flex-wrap gap-2 pt-1">
           {job.contactEmail && (

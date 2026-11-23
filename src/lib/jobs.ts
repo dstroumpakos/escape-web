@@ -17,6 +17,7 @@ export type PublicJob = {
   city: string;
   contactEmail: string;
   contactPhone: string;
+  photos: string[];
   createdAt: number;
   company: { _id: string; name: string; logo: string; city: string };
 };

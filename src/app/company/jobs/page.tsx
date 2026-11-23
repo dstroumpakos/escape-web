@@ -1,7 +1,7 @@
 'use client';
 
-import { useMemo, useState } from 'react';
-import { Briefcase, Plus, Loader2, Pencil, Trash2, X, Lock, Unlock, ExternalLink, MapPin, Info } from 'lucide-react';
+import { useMemo, useRef, useState } from 'react';
+import { Briefcase, Plus, Loader2, Pencil, Trash2, X, Lock, Unlock, ExternalLink, MapPin, Info, ImagePlus } from 'lucide-react';
 import { useCompanyQuery, useCompanyMutation, useMainSiteUrl } from '@/lib/companyAuth';
 import { api } from '../../../../convex/_generated/api';
 import type { Id } from '../../../../convex/_generated/dataModel';
@@ -11,8 +11,10 @@ import { useToast } from '@/components/company/Toast';
 import { JOB_ROLES, JOB_GENDERS } from '@/lib/jobs';
 import { COUNTRIES, FIRST_OTHER, findCountry, cityKey, cityLabel, countryName, countryOfCity } from '@/lib/geo';
 import { localeFor } from '@/lib/languages';
+import { convertToWebFormat } from '@/lib/imageUtils';
 
 const OTHER = '__other';
+const MAX_PHOTOS = 4; // convex/jobs.ts MAX_JOB_PHOTOS
 
 type Form = {
   title: string;
@@ -26,6 +28,8 @@ type Form = {
   otherCity: boolean;
   contactEmail: string;
   contactPhone: string;
+  /** Uploaded photos: the stored file and a URL to show it. */
+  photos: { id: Id<'_storage'>; url: string }[];
 };
 
 const input =
@@ -74,6 +78,9 @@ export default function CompanyJobsPage() {
   const [form, setForm] = useState<Form | null>(null);
   const [editing, setEditing] = useState<Id<'jobPosts'> | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
+  const generateUploadUrl = useCompanyMutation(api.companies.generateUploadUrl);
   const locale = localeFor(language);
   const otherCountries = useMemo(
     () => COUNTRIES.slice(FIRST_OTHER).sort((a, b) => countryName(a.code, locale).localeCompare(countryName(b.code, locale), locale)),
@@ -100,6 +107,7 @@ export default function CompanyJobsPage() {
     ...place(undefined, data?.defaults.city ?? ''),
     contactEmail: data?.defaults.contactEmail ?? '',
     contactPhone: data?.defaults.contactPhone ?? '',
+    photos: [],
   });
 
   const set = <K extends keyof Form>(k: K, v: Form[K]) => setForm((f) => (f ? { ...f, [k]: v } : f));
@@ -120,6 +128,7 @@ export default function CompanyJobsPage() {
       ...place(p.country, p.city),
       contactEmail: p.contactEmail ?? '',
       contactPhone: p.contactPhone ?? '',
+      photos: (p.photoIds ?? []).map((id, i) => ({ id, url: p.photos?.[i] ?? '' })),
     });
   };
 
@@ -127,8 +136,8 @@ export default function CompanyJobsPage() {
     e.preventDefault();
     if (!form) return;
     setBusy('save');
-    const { otherCity: _o, ...rest } = form;
-    const args = { ...rest, employment: rest.employment || undefined };
+    const { otherCity: _o, photos, ...rest } = form;
+    const args = { ...rest, employment: rest.employment || undefined, photoIds: photos.map((p) => p.id) };
     try {
       if (editing) {
         await update({ postId: editing, ...args });
@@ -143,6 +152,30 @@ export default function CompanyJobsPage() {
       toast({ kind: 'error', message: friendlyError(err, t) });
     } finally {
       setBusy(null);
+    }
+  };
+
+  const addPhotos = async (files: FileList | null) => {
+    if (!files || !form) return;
+    const room = MAX_PHOTOS - form.photos.length;
+    const picked = [...files].filter((f) => f.type.startsWith('image/')).slice(0, room);
+    if (picked.length === 0) return;
+    setUploading(true);
+    try {
+      for (const raw of picked) {
+        const file = await convertToWebFormat(raw);
+        const uploadUrl = await generateUploadUrl({});
+        const res = await fetch(uploadUrl, { method: 'POST', headers: { 'Content-Type': file.type }, body: file });
+        if (!res.ok) throw new Error('Upload failed');
+        const { storageId } = (await res.json()) as { storageId: Id<'_storage'> };
+        const url = URL.createObjectURL(file);
+        setForm((f) => (f && f.photos.length < MAX_PHOTOS ? { ...f, photos: [...f.photos, { id: storageId, url }] } : f));
+      }
+    } catch (err) {
+      toast({ kind: 'error', message: friendlyError(err, t) });
+    } finally {
+      setUploading(false);
+      if (fileRef.current) fileRef.current.value = '';
     }
   };
 
@@ -231,6 +264,40 @@ export default function CompanyJobsPage() {
             />
           </label>
 
+          <fieldset>
+            <legend className="block text-sm font-medium text-brand-text-secondary mb-1">{t('cx.jobs.f_photos')}</legend>
+            <p className="text-xs text-brand-text-muted mb-2">{t('cx.jobs.f_photos_hint')}</p>
+            <div className="flex flex-wrap gap-3">
+              {form.photos.map((p, i) => (
+                <div key={p.id} className="relative w-28 h-28 rounded-xl overflow-hidden border border-white/10 bg-brand-bg">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={p.url} alt="" className="w-full h-full object-cover" />
+                  <button
+                    type="button"
+                    onClick={() => set('photos', form.photos.filter((_, j) => j !== i))}
+                    className="absolute top-1 right-1 p-1 rounded-full bg-black/70 hover:bg-black"
+                    aria-label={t('cx.jobs.remove_photo')}
+                    title={t('cx.jobs.remove_photo')}
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              ))}
+              {form.photos.length < MAX_PHOTOS && (
+                <button
+                  type="button"
+                  onClick={() => fileRef.current?.click()}
+                  disabled={uploading}
+                  className="w-28 h-28 rounded-xl border border-dashed border-white/20 hover:border-brand-red/60 text-brand-text-secondary hover:text-white flex flex-col items-center justify-center gap-1.5 text-xs disabled:opacity-50"
+                >
+                  {uploading ? <Loader2 className="w-6 h-6 animate-spin" /> : <ImagePlus className="w-6 h-6" />}
+                  {t('cx.jobs.add_photo')}
+                </button>
+              )}
+            </div>
+            <input ref={fileRef} type="file" accept="image/*" multiple className="hidden" onChange={(e) => addPhotos(e.target.files)} />
+          </fieldset>
+
           <div className="grid gap-4 sm:grid-cols-2">
             <label className="block">
               <span className="block text-sm font-medium text-brand-text-secondary mb-1.5">{t('cx.jobs.f_country')}</span>
@@ -297,7 +364,7 @@ export default function CompanyJobsPage() {
             <button type="button" onClick={() => { setForm(null); setEditing(null); }} className="btn-ghost text-sm py-2.5!">
               {t('cx.jobs.cancel')}
             </button>
-            <button type="submit" disabled={busy === 'save' || form.roles.length === 0} className="btn-primary text-sm py-2.5! inline-flex items-center gap-2 disabled:opacity-50">
+            <button type="submit" disabled={busy === 'save' || uploading || form.roles.length === 0} className="btn-primary text-sm py-2.5! inline-flex items-center gap-2 disabled:opacity-50">
               {busy === 'save' && <Loader2 className="w-4 h-4 animate-spin" />}
               {editing ? t('cx.jobs.save') : t('cx.jobs.publish')}
             </button>
