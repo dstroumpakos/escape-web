@@ -206,7 +206,7 @@ export function ProfileOrSettings({ mode }: { mode: 'profile' | 'settings' }) {
               className="flex items-center gap-4 w-full p-4 hover:bg-brand-surface/30 transition-colors"
             >
               <Users className="w-5 h-5 text-brand-text-muted" />
-              <span className="flex-1">{t('profile.friends')}</span>
+              <span className="flex-1">{t('people.title')}</span>
               <ChevronRight className="w-4 h-4 text-brand-text-muted" />
             </Link>
 

@@ -263,9 +263,7 @@ export default function NotificationsPage() {
                       {isFriendRequest && actionError[n._id] && (
                         <p className="text-xs text-red-400 mt-2">{actionError[n._id]}</p>
                       )}
-                      {isFriendRequest && !doneAction && friendStatus === 'gone' && (
-                        <p className="text-xs text-brand-text-muted mt-2">{t('friends.request_gone')}</p>
-                      )}
+                      {/* Old friend requests: after the switch to follows they are gone, so nothing to show */}
                       {isFriendRequest && (doneAction === 'accept' || (!doneAction && friendStatus === 'accepted')) && (
                         <p className="text-xs text-green-400 mt-2">{t('friends.request_accepted')}</p>
                       )}

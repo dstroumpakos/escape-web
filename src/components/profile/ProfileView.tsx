@@ -193,31 +193,24 @@ export function ProfileView({ userId }: { userId: string }) {
                   <PlusSquare className="w-4 h-4" /> {t('pf.new_post')}
                 </Link>
               </>
-            ) : profile.viewer.isFriend ? (
+            ) : profile.viewer.loggedIn ? (
               <>
-                <Link href={`/messages?to=${profile._id}`} className="btn-primary text-sm flex items-center gap-2 py-2! px-5!">
-                  <MessageCircle className="w-4 h-4" /> {t('pf.message')}
-                </Link>
+                {/* The same two buttons on every profile: follow, and message (if they
+                    don't follow you, the message arrives as a message request) */}
                 {FOLLOW_ENABLED && (
                   <button
                     onClick={toggleFollow}
                     disabled={busy}
-                    className="btn-ghost text-sm flex items-center gap-2 py-2! px-4!"
-                    aria-label={profile.viewer.isFollowing ? t('pf.following_btn') : t('pf.follow')}
+                    className={`${profile.viewer.isFollowing ? 'btn-ghost' : 'btn-primary'} text-sm flex items-center gap-2 py-2! px-5!`}
                   >
                     {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : profile.viewer.isFollowing ? <UserCheck className="w-4 h-4" /> : <Footprints className="w-4 h-4" />}
+                    {profile.viewer.isFollowing ? t('pf.following_btn') : t('pf.follow')}
                   </button>
                 )}
+                <Link href={`/messages?to=${profile._id}`} className="btn-ghost text-sm flex items-center gap-2 py-2! px-4!">
+                  <MessageCircle className="w-4 h-4" /> {t('pf.message')}
+                </Link>
               </>
-            ) : !FOLLOW_ENABLED ? null : profile.viewer.loggedIn ? (
-              <button
-                onClick={toggleFollow}
-                disabled={busy}
-                className={`${profile.viewer.isFollowing ? 'btn-ghost' : 'btn-primary'} text-sm flex items-center gap-2 py-2! px-5!`}
-              >
-                {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : profile.viewer.isFollowing ? <UserCheck className="w-4 h-4" /> : <Footprints className="w-4 h-4" />}
-                {profile.viewer.isFollowing ? t('pf.following_btn') : t('pf.follow')}
-              </button>
             ) : (
               <Link href="/login" className="btn-primary text-sm flex items-center gap-2 py-2! px-5!">
                 <Footprints className="w-4 h-4" /> {t('pf.follow')}
@@ -240,7 +233,7 @@ export function ProfileView({ userId }: { userId: string }) {
         <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-brand-text-muted">
           {profile.city && <span className="flex items-center gap-1"><MapPin className="w-3.5 h-3.5" />{profile.city}</span>}
           {profile.memberSince && <span className="flex items-center gap-1"><CalendarDays className="w-3.5 h-3.5" />{t('profile.member_since')} {since(profile.memberSince, language)}</span>}
-          {profile.viewer.isFriend && <span className="text-brand-gold">{t('pf.friends_badge')}</span>}
+          {profile.viewer.isFriend && <span className="text-brand-gold">{t('people.mutual_badge')}</span>}
         </div>
       </div>
 

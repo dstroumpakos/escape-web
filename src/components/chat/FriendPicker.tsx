@@ -12,7 +12,9 @@ import { Avatar } from './ChatUi';
 type Friend = { _id: string; name: string; avatar: string };
 
 /**
- * The player's friends with a search box. One tap picks a friend
+ * Players you follow each other with, with a search box. With `anyone`
+ * (a new 1:1 chat) the search also finds every player: a message to someone
+ * who doesn't follow you lands in their message requests. One tap picks a friend
  * (`onPick`), or with `selected` it becomes a multi-select.
  */
 export function FriendPicker({
@@ -20,7 +22,9 @@ export function FriendPicker({
   selected,
   onToggle,
   onPick,
+  anyone = false,
 }: {
+  anyone?: boolean;
   exclude?: string[];
   selected?: Set<string>;
   onToggle?: (id: string) => void;
@@ -30,21 +34,29 @@ export function FriendPicker({
   const { user } = useAuth();
   const friends = useQuery(api.friends.listFriends, user?.sessionToken ? { sessionToken: user.sessionToken } : 'skip');
   const [q, setQ] = useState('');
+  const term = q.trim();
+  const found = useQuery(
+    api.friends.searchUsers,
+    anyone && user?.sessionToken && term.length >= 3 ? { sessionToken: user.sessionToken, searchTerm: term } : 'skip'
+  ) as Friend[] | undefined;
 
   const list = useMemo(() => {
     const ex = new Set(exclude);
     const all = ((friends ?? []).filter(Boolean) as Friend[]).filter((f) => !ex.has(f._id));
     const needle = q.trim().toLowerCase();
-    return (needle ? all.filter((f) => f.name.toLowerCase().includes(needle)) : all).sort((a, b) => a.name.localeCompare(b.name));
-  }, [friends, exclude, q]);
+    const mine = (needle ? all.filter((f) => f.name.toLowerCase().includes(needle)) : all).sort((a, b) => a.name.localeCompare(b.name));
+    const seen = new Set(mine.map((f) => f._id));
+    const others = (found ?? []).filter((f) => !seen.has(f._id) && !ex.has(f._id)).map((f) => ({ _id: f._id, name: f.name, avatar: f.avatar ?? '' }));
+    return [...mine, ...others];
+  }, [friends, exclude, q, found]);
 
   if (friends === undefined) return <div className="p-4 space-y-2">{[0, 1, 2].map((i) => <div key={i} className="h-12 rounded-lg bg-brand-bg animate-pulse" />)}</div>;
 
-  if ((friends ?? []).length === 0) {
+  if ((friends ?? []).length === 0 && !anyone) {
     return (
       <div className="p-6 text-center text-sm text-brand-text-secondary">
-        <p>{t('msg.no_friends')}</p>
-        <Link href="/friends" className="btn-primary inline-block mt-4 text-sm">{t('msg.find_friends')}</Link>
+        <p>{t('msg.no_mutual')}</p>
+        <Link href="/friends" className="btn-primary inline-block mt-4 text-sm">{t('people.find')}</Link>
       </div>
     );
   }
@@ -56,13 +68,13 @@ export function FriendPicker({
         <input
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          placeholder={t('msg.search_friends')}
-          aria-label={t('msg.search_friends')}
+          placeholder={anyone ? t('msg.search_players') : t('msg.search_friends')}
+          aria-label={anyone ? t('msg.search_players') : t('msg.search_friends')}
           className="w-full bg-brand-bg border border-white/10 rounded-lg pl-9 pr-3 py-2 text-sm focus:border-brand-red focus:outline-hidden"
         />
       </div>
       {list.length === 0 ? (
-        <p className="text-center text-sm text-brand-text-muted py-6">{exclude.length ? t('msg.everyone_added') : '—'}</p>
+        <p className="text-center text-sm text-brand-text-muted py-6">{exclude.length ? t('msg.everyone_added') : anyone && term.length < 3 ? t('msg.search_players_hint') : '—'}</p>
       ) : (
         <ul className="space-y-0.5">
           {list.map((f) => {

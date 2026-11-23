@@ -36,7 +36,7 @@ export default function CommunityPage() {
   const shortcuts = [
     ...(user ? [{ href: `/u/${user.id}`, label: myName, avatar: true }] : []),
     // Discover, map and leaderboard are already in the top bar.
-    { href: '/friends', label: t('cm.friends'), Icon: Users },
+    { href: '/friends', label: t('people.title'), Icon: Users },
     ...(user ? [{ href: '/notifications', label: t('cm.notifications'), Icon: Bell }] : []),
   ];
 

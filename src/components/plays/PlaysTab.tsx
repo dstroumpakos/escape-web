@@ -198,7 +198,7 @@ function AskVouch({ logId, onDone }: { logId: string; onDone: () => void }) {
   const [msg, setMsg] = useState('');
 
   if (!friends) return <Loader2 className="w-4 h-4 animate-spin mt-3" />;
-  if (friends.length === 0) return <p className="text-xs text-brand-text-secondary mt-3">{t('pl.no_friends')} <Link href="/friends" className="text-brand-red-light hover:underline">{t('pl.find_friends')}</Link></p>;
+  if (friends.length === 0) return <p className="text-xs text-brand-text-secondary mt-3">{t('pl.no_mutual')} <Link href="/friends" className="text-brand-red-light hover:underline">{t('people.find')}</Link></p>;
 
   return (
     <div className="mt-3 space-y-2">

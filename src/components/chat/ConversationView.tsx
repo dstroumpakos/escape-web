@@ -50,6 +50,9 @@ export function ConversationView({
   );
   const keys = useConversationKeys(conversationId, identity);
   const markRead = useMutation(api.messages.markRead);
+  const acceptRequest = useMutation(api.messages.acceptMessageRequest);
+  const declineRequest = useMutation(api.messages.declineMessageRequest);
+  const [answering, setAnswering] = useState(false);
 
   const [plain, setPlain] = useState<Record<string, string | null>>({});
   const [text, setText] = useState('');
@@ -150,6 +153,24 @@ export function ConversationView({
 
   const isGroup = conv?.kind === 'group';
   const blocked = !!conv?.blocked;
+  // A message request: someone I don't follow wrote first. Accept to reply, or delete.
+  const isRequest = (conv as any)?.request === 'pending';
+  const awaiting = !!(conv as any)?.awaiting;
+  const answer = async (accept: boolean) => {
+    if (!token) return;
+    setAnswering(true);
+    setErr('');
+    try {
+      if (accept) await acceptRequest({ sessionToken: token, conversationId });
+      else {
+        await declineRequest({ sessionToken: token, conversationId });
+        onLeft();
+      }
+    } catch (e) {
+      setErr(cleanError(e));
+    }
+    setAnswering(false);
+  };
 
   return (
     <div className="flex flex-col h-full min-h-0">
@@ -244,8 +265,19 @@ export function ConversationView({
       <div className="border-t border-brand-border/60 p-3 shrink-0">
         {blocked ? (
           <p className="text-center text-sm text-brand-text-muted py-2">{t('msg.blocked')}</p>
+        ) : isRequest ? (
+          <div className="text-center py-1">
+            <p className="text-sm text-brand-bone font-medium">{t('msg.request_title', { name: conv?.name || '' })}</p>
+            <p className="text-xs text-brand-text-muted mt-1 mb-3">{t('msg.request_desc')}</p>
+            {err && <p className="text-xs text-red-400 mb-2">{err}</p>}
+            <div className="flex gap-2 justify-center">
+              <button onClick={() => answer(false)} disabled={answering} className="btn-ghost text-sm px-5 disabled:opacity-50">{t('msg.request_delete')}</button>
+              <button onClick={() => answer(true)} disabled={answering} className="btn-primary text-sm px-5 disabled:opacity-50">{t('msg.request_accept')}</button>
+            </div>
+          </div>
         ) : (
           <>
+            {awaiting && <p className="text-[11px] text-brand-text-muted mb-2 text-center">{t('msg.awaiting_desc')}</p>}
             {err && <p className="text-xs text-red-400 mb-2">{err}</p>}
             <div className="flex items-end gap-2">
               <textarea

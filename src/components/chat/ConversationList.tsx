@@ -29,6 +29,12 @@ export function ConversationList({
     user?.sessionToken ? { sessionToken: user.sessionToken, deviceId: identity.deviceId } : 'skip'
   );
   const [previews, setPreviews] = useState<Record<string, string>>({});
+  // Message requests: chats from players I don't follow, waiting for me to accept
+  const [tab, setTab] = useState<'chats' | 'requests'>('chats');
+  const requests = (list ?? []).filter((c) => c.request === 'pending');
+  const chats = (list ?? []).filter((c) => c.request !== 'pending');
+  const shown = tab === 'requests' ? requests : chats;
+  const requestsUnread = requests.filter((c) => c.unread > 0).length;
 
   useEffect(() => {
     if (!list || !user?.id) return;
@@ -66,10 +72,32 @@ export function ConversationList({
         </button>
       </div>
 
+      {(requests.length > 0 || tab === 'requests') && (
+        <div className="flex gap-1 px-3 pt-2 shrink-0" role="tablist">
+          {(['chats', 'requests'] as const).map((k) => (
+            <button
+              key={k}
+              role="tab"
+              aria-selected={tab === k}
+              onClick={() => setTab(k)}
+              className={`flex-1 rounded-lg py-1.5 text-sm font-medium transition-colors ${tab === k ? 'bg-brand-red/15 text-brand-red-light' : 'text-brand-text-secondary hover:bg-white/5'}`}
+            >
+              {k === 'chats' ? t('msg.tab_chats') : t('msg.tab_requests')}
+              {k === 'requests' && requests.length > 0 && (
+                <span className={`ml-1.5 inline-flex min-w-[18px] h-[18px] px-1 rounded-full text-[10px] font-bold items-center justify-center ${requestsUnread ? 'bg-brand-red text-white' : 'bg-white/10'}`}>{requests.length}</span>
+              )}
+            </button>
+          ))}
+        </div>
+      )}
+
       <div className="flex-1 min-h-0 overflow-y-auto">
+        {tab === 'requests' && list !== undefined && (
+          <p className="px-4 pt-3 pb-1 text-xs text-brand-text-muted">{requests.length ? t('msg.requests_hint') : t('msg.no_requests')}</p>
+        )}
         {list === undefined ? (
           <div className="p-3 space-y-2">{[0, 1, 2, 3].map((i) => <div key={i} className="h-14 rounded-lg bg-brand-bg animate-pulse" />)}</div>
-        ) : list.length === 0 ? (
+        ) : list.length === 0 && tab === 'chats' ? (
           <div className="p-6 text-center text-sm text-brand-text-secondary">
             <p>{t('msg.empty_list')}</p>
             <div className="mt-4 flex flex-col gap-2 items-center">
@@ -79,7 +107,7 @@ export function ConversationList({
           </div>
         ) : (
           <ul>
-            {list.map((c) => {
+            {shown.map((c) => {
               const active = c._id === activeId;
               const preview = previews[c._id] ?? (c.lastMessage?.kind === 'text' ? t('msg.preview_encrypted') : '');
               return (
@@ -96,7 +124,7 @@ export function ConversationList({
                         <span className="text-[11px] text-brand-text-muted shrink-0">{formatTime(c.lastMessageAt, language)}</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className={`flex-1 truncate text-xs ${c.unread ? 'text-brand-text' : 'text-brand-text-muted'}`}>{preview}</span>
+                        <span className={`flex-1 truncate text-xs ${c.unread ? 'text-brand-text' : 'text-brand-text-muted'}`}>{c.awaiting && !preview ? t('msg.awaiting') : preview}</span>
                         {c.unread > 0 && (
                           <span className="min-w-[20px] h-5 px-1.5 rounded-full bg-brand-red text-white text-[11px] font-bold flex items-center justify-center">
                             {c.unread > 99 ? '99+' : c.unread}

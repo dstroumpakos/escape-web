@@ -78,6 +78,7 @@ export function NewChatDialog({
         </div>
       )}
       <FriendPicker
+        anyone={mode === 'direct'}
         selected={mode === 'group' ? selected : undefined}
         onToggle={mode === 'group' ? toggle : undefined}
         onPick={mode === 'direct' ? (f) => !busy && pickDirect(f._id) : undefined}
