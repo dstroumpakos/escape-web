@@ -57,10 +57,8 @@ export default function TowerEmbedPage() {
         busy={s.busy}
         onPlace={async () => send({ type: 'place' })}
         onClose={() => send({ type: 'close' })}
+        notice={s.error}
       />
-      {s.error && (
-        <p className="fixed left-3 right-3 bottom-24 z-[300] text-center text-sm text-red-300 bg-black/70 rounded-md px-3 py-2">{s.error}</p>
-      )}
     </div>
   );
 }

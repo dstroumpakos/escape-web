@@ -9,7 +9,7 @@ import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
 import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
-import { ArrowUp, ArrowDown, RotateCcw, RotateCw, Stamp, Gift, Lock, Loader2, Volume2, VolumeX, Ghost, Maximize2, Minimize2, X } from 'lucide-react';
+import { ArrowUp, ArrowDown, RotateCcw, RotateCw, ChevronLeft, Stamp, Gift, Lock, Loader2, Volume2, VolumeX, Ghost, Maximize2, Minimize2 } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
 
 /**
@@ -96,7 +96,102 @@ type Props = {
   placed: number; chambers: number[]; pocket: number; onPlace: () => Promise<unknown>; busy: boolean;
   /** Inside the phone app: always full screen, and the corner button closes the game. */
   embedded?: boolean; onClose?: () => void;
+  /** A short message shown over the game (e.g. a stamp could not be placed). */
+  notice?: string;
 };
+
+type Vec = { x: number; y: number };
+type Flag = React.MutableRefObject<boolean>;
+const STICK_R = 46; // how far the knob can travel, in px
+
+/**
+ * Thumb stick. Touch anywhere in its area and the stick jumps under the thumb;
+ * how far you push sets the speed (up/down = walk, left/right = turn).
+ * `rot` = the game is drawn turned sideways (phone held flat while the page is
+ * upright), so screen positions are turned back into the game's own axes.
+ * Positions are then measured from the game's top-left corner, so in that
+ * case the stick's area must start there.
+ */
+function TouchStick({ stick, rot, className, idle, label }: { stick: React.MutableRefObject<Vec>; rot: Flag; className: string; idle: string; label: string }) {
+  const base = useRef<HTMLDivElement>(null);
+  const knob = useRef<HTMLDivElement>(null);
+  const active = useRef<{ id: number; x: number; y: number } | null>(null);
+  const at = (e: React.PointerEvent<HTMLDivElement>): Vec => {
+    if (rot.current) return { x: e.clientY, y: window.innerWidth - e.clientX };
+    const r = e.currentTarget.getBoundingClientRect();
+    return { x: e.clientX - r.left, y: e.clientY - r.top };
+  };
+  // Small pushes do nothing, so resting a thumb on it does not drift.
+  const axis = (v: number) => { const a = Math.abs(v) / STICK_R; return a < 0.15 ? 0 : Math.sign(v) * Math.min(1, (a - 0.15) / 0.85); };
+  const end = (e: React.PointerEvent) => {
+    if (active.current?.id !== e.pointerId) return;
+    active.current = null;
+    stick.current = { x: 0, y: 0 };
+    const b = base.current, k = knob.current;
+    if (b) { b.style.left = b.style.top = b.style.right = b.style.bottom = b.style.transform = b.style.opacity = ''; }
+    if (k) k.style.transform = '';
+  };
+  return (
+    <div
+      className={`${className} touch-none select-none`}
+      aria-label={label}
+      onPointerDown={(e) => {
+        if (active.current) return;
+        e.preventDefault();
+        try { e.currentTarget.setPointerCapture(e.pointerId); } catch {}
+        const p = at(e);
+        active.current = { id: e.pointerId, ...p };
+        const b = base.current;
+        if (b) {
+          b.style.left = `${p.x - b.offsetWidth / 2}px`; b.style.top = `${p.y - b.offsetHeight / 2}px`;
+          b.style.right = b.style.bottom = 'auto'; b.style.transform = 'none'; b.style.opacity = '1';
+        }
+      }}
+      onPointerMove={(e) => {
+        const a = active.current;
+        if (!a || a.id !== e.pointerId) return;
+        const p = at(e);
+        let dx = p.x - a.x, dy = p.y - a.y;
+        const d = Math.hypot(dx, dy);
+        if (d > STICK_R) { dx *= STICK_R / d; dy *= STICK_R / d; }
+        if (knob.current) knob.current.style.transform = `translate(${dx}px, ${dy}px)`;
+        stick.current = { x: axis(dx), y: axis(dy) };
+      }}
+      onPointerUp={end}
+      onPointerCancel={end}
+      onLostPointerCapture={end}
+    >
+      <div ref={base} className={`absolute w-[104px] h-[104px] rounded-full border-2 border-white/25 bg-white/10 backdrop-blur-sm pointer-events-none opacity-60 transition-opacity ${idle}`}>
+        <div ref={knob} className="absolute left-1/2 top-1/2 -ml-[23px] -mt-[23px] w-[46px] h-[46px] rounded-full bg-white/70 shadow-lg" />
+      </div>
+    </div>
+  );
+}
+
+/** Drag anywhere on it to look left and right (sideways moves only). */
+function LookPad({ look, rot, className }: { look: React.MutableRefObject<number>; rot: Flag; className: string }) {
+  const last = useRef<{ id: number; x: number; y: number } | null>(null);
+  const end = (e: React.PointerEvent) => { if (last.current?.id === e.pointerId) last.current = null; };
+  return (
+    <div
+      className={`${className} touch-none select-none`}
+      onPointerDown={(e) => {
+        if (last.current) return;
+        try { e.currentTarget.setPointerCapture(e.pointerId); } catch {}
+        last.current = { id: e.pointerId, x: e.clientX, y: e.clientY };
+      }}
+      onPointerMove={(e) => {
+        const l = last.current;
+        if (!l || l.id !== e.pointerId) return;
+        look.current += rot.current ? e.clientY - l.y : e.clientX - l.x;
+        l.x = e.clientX; l.y = e.clientY;
+      }}
+      onPointerUp={end}
+      onPointerCancel={end}
+      onLostPointerCapture={end}
+    />
+  );
+}
 
 function readJSON<T>(key: string, fallback: T): T {
   try {
@@ -107,12 +202,15 @@ function readJSON<T>(key: string, fallback: T): T {
   }
 }
 
-export function TowerGame({ placed, chambers, pocket, onPlace, busy, embedded = false, onClose }: Props) {
+export function TowerGame({ placed, chambers, pocket, onPlace, busy, embedded = false, onClose, notice }: Props) {
   const { t } = useTranslation();
   const wrap = useRef<HTMLDivElement>(null);
   const fxRef = useRef<HTMLDivElement>(null);
   const fadeRef = useRef<HTMLDivElement>(null);
   const keys = useRef<Record<string, boolean>>({});
+  // Touch controls: the thumb stick (-1..1 per axis) and the px dragged on the look pad since the last frame.
+  const stick = useRef<Vec>({ x: 0, y: 0 });
+  const lookD = useRef(0);
   const live = useRef({ placed, sound: true, scares: true });
   live.current.placed = placed;
   const doorsOpen = chambers.filter((c) => placed >= c).length - 1;
@@ -128,6 +226,20 @@ export function TowerGame({ placed, chambers, pocket, onPlace, busy, embedded = 
   const floorRef = useRef(0);
   const stage = useRef<HTMLDivElement>(null);
   const [full, setFull] = useState(embedded);
+  // In the phone app the game is played sideways. The app is locked to
+  // portrait, so while the page is upright the game is drawn turned a
+  // quarter: hold the phone flat with its top to the left. (Website: unchanged.)
+  const [view, setView] = useState({ w: 0, h: 0, touch: false });
+  useEffect(() => {
+    const upd = () => setView({ w: window.innerWidth, h: window.innerHeight, touch: window.matchMedia('(pointer: coarse)').matches });
+    upd();
+    window.addEventListener('resize', upd);
+    window.addEventListener('orientationchange', upd);
+    return () => { window.removeEventListener('resize', upd); window.removeEventListener('orientationchange', upd); };
+  }, []);
+  const rot = embedded && view.touch && view.h > view.w;
+  const rotRef = useRef(rot);
+  rotRef.current = rot;
   // Real fullscreen where the browser allows it (not on iPhone): otherwise
   // the game simply covers the whole window.
   const toggleFull = async () => {
@@ -199,6 +311,8 @@ export function TowerGame({ placed, chambers, pocket, onPlace, busy, embedded = 
       renderer.setSize(w, h);
       composer.setSize(w, h);
       cam.aspect = w / h;
+      // A phone held sideways is very wide: narrow the view a little so the edges do not stretch.
+      cam.fov = embedded && cam.aspect > 1.9 ? 62 : 70;
       cam.updateProjectionMatrix();
     };
     size();
@@ -750,9 +864,15 @@ export function TowerGame({ placed, chambers, pocket, onPlace, busy, embedded = 
       const tt = (now - t0) / 1000, dt = 1 / 60, k = keys.current, f = floorRef.current;
       if (live.current.placed !== lastPlaced) { lastPlaced = live.current.placed; paintDoor(f); }
       const doorOpen = f < FLOORS - 1 && live.current.placed >= chambers[f + 1];
-      const turn = climbing ? 0 : (k.ArrowLeft || k.a ? 1 : 0) - (k.ArrowRight || k.d ? 1 : 0);
+      // Keys and the thumb stick add up (the stick is analog: a small push walks slowly).
+      const clamp1 = (v: number) => Math.max(-1, Math.min(1, v));
+      const sx = stick.current.x, sy = stick.current.y;
+      const turn = climbing ? 0 : clamp1((k.ArrowLeft || k.a ? 1 : 0) - (k.ArrowRight || k.d ? 1 : 0) - sx);
       turnV += (turn * 0.028 - turnV) * 0.18; ang += turnV;
-      const mv = climbing ? 0 : (k.ArrowUp || k.w ? 1 : 0) - (k.ArrowDown || k.s ? 1 : 0);
+      // Dragging on the look pad turns the head directly.
+      if (!climbing) ang -= lookD.current * 0.0055;
+      lookD.current = 0;
+      const mv = climbing ? 0 : clamp1((k.ArrowUp || k.w ? 1 : 0) - (k.ArrowDown || k.s ? 1 : 0) - sy);
       vel += ((scare ? 0 : mv) * (mv < 0 ? 0.016 : 0.024) - vel) * 0.1;
       if (Math.abs(vel) > 0.0004) {
         const sp = vel, nx = px - Math.sin(ang) * sp, nz = pz - Math.cos(ang) * sp, rr = 0.22;
@@ -888,13 +1008,13 @@ export function TowerGame({ placed, chambers, pocket, onPlace, busy, embedded = 
     return () => window.removeEventListener('keydown', onKey);
   });
 
+  // Website: the arrow pad (the app uses the thumb stick instead).
   const hold = (k: string) => ({
     onPointerDown: (e: React.PointerEvent) => { e.preventDefault(); keys.current[k] = true; },
     onPointerUp: () => { keys.current[k] = false; },
     onPointerLeave: () => { keys.current[k] = false; },
     onPointerCancel: () => { keys.current[k] = false; },
   });
-
   const pad = (
     <div className="grid grid-cols-3 gap-2 w-[156px] select-none">
       <span />
@@ -913,11 +1033,8 @@ export function TowerGame({ placed, chambers, pocket, onPlace, busy, embedded = 
       <button onClick={() => setScares((v) => !v)} className={`px-2.5 py-1.5 rounded-md flex items-center gap-1.5 text-xs ${scares ? 'bg-brand-red/40 text-white' : 'bg-black/50'}`}>
         <Ghost className="w-3.5 h-3.5" /> <span className="hidden sm:inline">{scares ? t('tw.scares_on') : t('tw.scares_off')}</span>
       </button>
-      {embedded ? (
-        <button onClick={onClose} className="px-2.5 py-1.5 rounded-md bg-black/50 hover:bg-black/70 flex items-center gap-1.5 text-xs" aria-label={t('tw.exit_full')}>
-          <X className="w-3.5 h-3.5" />
-        </button>
-      ) : started && (
+      {/* In the app the Back button (top left) leaves the game instead. */}
+      {!embedded && started && (
         <button onClick={toggleFull} className="px-2.5 py-1.5 rounded-md bg-black/50 hover:bg-black/70 flex items-center gap-1.5 text-xs" aria-label={full ? t('tw.exit_full') : t('tw.full')}>
           {full ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />} <span className="hidden sm:inline">{full ? t('tw.exit_full') : t('tw.full')}</span>
         </button>
@@ -925,6 +1042,17 @@ export function TowerGame({ placed, chambers, pocket, onPlace, busy, embedded = 
     </div>
   );
   const isLast = floor >= FLOORS - 1;
+  // Turned sideways: the game box gets the screen's height as its width and is
+  // turned a quarter clockwise. The notch / home bar insets move with it
+  // (--st/--sr/--sb/--sl = the safe space at the game's top/right/bottom/left).
+  const inset = (side: string) => `env(safe-area-inset-${side}, 0px)`;
+  const wrapStyle = (full ? {
+    ...(rot ? { position: 'absolute', top: 0, left: 0, width: view.h, height: view.w, transform: `translateX(${view.w}px) rotate(90deg)`, transformOrigin: 'top left' } : {}),
+    '--st': inset(rot ? 'right' : 'top'),
+    '--sr': inset(rot ? 'bottom' : 'right'),
+    '--sb': inset(rot ? 'left' : 'bottom'),
+    '--sl': inset(rot ? 'top' : 'left'),
+  } : undefined) as React.CSSProperties | undefined;
   const panel = chestMsg !== null ? (
     <div className="flex items-start gap-3">
       <Gift className="w-5 h-5 text-brand-gold shrink-0 mt-0.5" />
@@ -947,9 +1075,12 @@ export function TowerGame({ placed, chambers, pocket, onPlace, busy, embedded = 
         ))}
       </div>
       <div className="flex items-center gap-3 flex-wrap">
-        <button onClick={place} disabled={busy || pocket <= 0} className="btn-primary text-sm py-2! px-4! flex items-center gap-2 disabled:opacity-50">
-          {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Stamp className="w-4 h-4" />} {t('mz.place')}
-        </button>
+        {/* The app has the big round stamp button under the right thumb instead. */}
+        {!embedded && (
+          <button onClick={place} disabled={busy || pocket <= 0} className="btn-primary text-sm py-2! px-4! flex items-center gap-2 disabled:opacity-50">
+            {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Stamp className="w-4 h-4" />} {t('mz.place')}
+          </button>
+        )}
         <span className="text-xs text-brand-text-secondary">{pocket > 0 ? t('mz.in_pocket', { n: String(pocket) }) : t('mz.no_stamps')}</span>
       </div>
       {hint && <p className="text-xs text-brand-gold mt-1">{hint}</p>}
@@ -967,8 +1098,8 @@ export function TowerGame({ placed, chambers, pocket, onPlace, busy, embedded = 
         </div>
       )}
 
-      <div ref={stage} className={full ? 'fixed inset-0 z-[200] bg-black' : ''}>
-        <div ref={wrap} className={`relative overflow-hidden bg-black select-none ${full ? 'w-full h-full' : 'w-full aspect-[4/5] sm:aspect-video rounded-xl'}`}>
+      <div ref={stage} className={full ? 'fixed inset-0 z-[200] bg-black overflow-hidden' : ''}>
+        <div ref={wrap} style={wrapStyle} className={`relative overflow-hidden bg-black select-none ${embedded ? 'touch-none [-webkit-touch-callout:none]' : ''} ${full ? 'w-full h-full' : 'w-full aspect-[4/5] sm:aspect-video rounded-xl'}`}>
           <div ref={fxRef} className="absolute inset-0 pointer-events-none opacity-0 transition-opacity duration-150" style={{ background: 'radial-gradient(circle at center, rgba(0,0,0,0) 30%, rgba(160,0,0,.75) 100%)' }} />
           <div ref={fadeRef} className="absolute inset-0 pointer-events-none opacity-0 transition-opacity duration-500 bg-black flex items-center justify-center font-display text-2xl tracking-[0.2em] text-brand-bone" />
           {!started && (
@@ -978,7 +1109,7 @@ export function TowerGame({ placed, chambers, pocket, onPlace, busy, embedded = 
               <button onClick={() => setStarted(true)} className="btn-primary">{t('tw.enter')}</button>
             </div>
           )}
-          {full && (
+          {full && !embedded && (
             <>
               <div className="absolute left-3 right-3 flex items-center justify-between gap-2 z-10" style={{ top: 'max(0.75rem, env(safe-area-inset-top))' }}>
                 <span className="min-w-0 truncate px-2.5 py-1.5 rounded-md bg-black/50 text-xs sm:text-sm text-brand-bone">{t('tw.floor', { n: String(floor + 1) })} · {t('mz.in_pocket', { n: String(pocket) })}</span>
@@ -989,6 +1120,46 @@ export function TowerGame({ placed, chambers, pocket, onPlace, busy, embedded = 
                 <div className="max-w-md w-full rounded-md bg-black/65 backdrop-blur-sm px-4 py-3 text-sm">{panel}</div>
               </div>
             </>
+          )}
+          {embedded && (
+            // Back to the app, on the start screen and while playing.
+            <div className="absolute z-20 flex items-center gap-2 max-w-[60%] left-[max(0.75rem,var(--sl))] top-[max(0.75rem,var(--st))]">
+              <button onClick={onClose} className="shrink-0 pl-1.5 pr-3 py-1.5 rounded-md bg-black/60 hover:bg-black/80 active:bg-black/90 flex items-center gap-1 text-sm text-brand-bone">
+                <ChevronLeft className="w-4 h-4" /> {t('tw.back')}
+              </button>
+              {started && (
+                <span className="min-w-0 truncate px-2.5 py-1.5 rounded-md bg-black/50 text-xs sm:text-sm text-brand-bone">{t('tw.floor', { n: String(floor + 1) })} · {t('mz.in_pocket', { n: String(pocket) })}</span>
+              )}
+            </div>
+          )}
+          {embedded && started && (
+            <>
+              {/* Right side: drag to look around. Left side: the thumb stick. */}
+              <LookPad look={lookD} rot={rotRef} className="absolute inset-0 z-[1]" />
+              <TouchStick
+                stick={stick}
+                rot={rotRef}
+                label={t('tw.forward')}
+                className="absolute left-0 top-0 bottom-0 w-[45%] z-[2]"
+                idle="left-[max(1.25rem,calc(var(--sl)+0.5rem))] bottom-[max(1.25rem,calc(var(--sb)+0.5rem))]"
+              />
+              <div className="absolute z-10 right-[max(0.75rem,var(--sr))] top-[max(0.75rem,var(--st))]">{switches}</div>
+              <div className="absolute z-10 left-1/2 -translate-x-1/2 w-[min(24rem,calc(100%-2rem))] top-[calc(max(0.75rem,var(--st))+2.75rem)] rounded-md bg-black/65 backdrop-blur-sm px-3 py-2 text-xs sm:text-sm">{panel}</div>
+              {nearDoor && chestMsg === null && (
+                <button
+                  onClick={place}
+                  disabled={busy || pocket <= 0}
+                  aria-label={t('mz.place')}
+                  className="absolute z-10 right-[max(1.5rem,calc(var(--sr)+0.75rem))] bottom-[max(1.5rem,calc(var(--sb)+0.75rem))] w-[84px] h-[84px] rounded-full bg-brand-red text-white shadow-lg shadow-brand-red/40 ring-2 ring-white/20 flex flex-col items-center justify-center gap-0.5 active:scale-95 transition-transform disabled:opacity-50 touch-none"
+                >
+                  {busy ? <Loader2 className="w-7 h-7 animate-spin" /> : <Stamp className="w-7 h-7" />}
+                  <span className="max-w-[4.6rem] text-[10px] leading-tight font-semibold text-center">{t('mz.place')}</span>
+                </button>
+              )}
+            </>
+          )}
+          {notice && (
+            <p className="absolute z-20 left-1/2 -translate-x-1/2 w-[min(24rem,calc(100%-2rem))] bottom-[max(1.5rem,calc(var(--sb,0px)+0.75rem))] text-center text-sm text-red-300 bg-black/75 rounded-md px-3 py-2 pointer-events-none">{notice}</p>
           )}
         </div>
       </div>
