@@ -13,7 +13,7 @@ import { useTranslation } from '@/lib/i18n';
 import { cleanError } from '@/lib/errors';
 import { FOLLOW_ENABLED } from '@/lib/features';
 import { squareAvatar } from '@/lib/imageUtils';
-import { localeFor } from '@/lib/languages';
+import { since } from '@/lib/memberSince';
 
 /** Uploads a profile photo (centre square, 512 px) and saves it on the account. */
 function useAvatarUpload(token: string | undefined) {
@@ -67,15 +67,6 @@ export const RANKS: Record<string, string> = {
 };
 /** A rank title in the UI language (unknown titles are shown as they are). */
 export const rankLabel = (t: (k: string) => string, title: string) => (RANKS[title] ? t(RANKS[title]) : title);
-const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-/** users.memberSince is stored as "Member since Nov 2026"; show the month in the UI language. */
-const since = (s: string, lang: string) => {
-  const text = s.replace('Member since', '').trim();
-  const m = /^([A-Z][a-z]{2}) (\d{4})$/.exec(text);
-  const month = m ? MONTHS.indexOf(m[1]) : -1;
-  if (month < 0) return text;
-  return new Date(Number(m![2]), month, 1).toLocaleDateString(localeFor(lang), { month: 'short', year: 'numeric' });
-};
 
 /**
  * A player's profile, Instagram + Facebook style: cover and avatar, counters,

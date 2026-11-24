@@ -68,7 +68,7 @@ export default function StampPage() {
               <>
                 <p className="text-brand-bone font-semibold">{done.already ? t('pp.already') : t('pp.got_it', { n: String(done.total) })}</p>
                 {done.opened && <p className="text-brand-gold text-sm mt-1">{t('pp.chamber_opened')}</p>}
-                <Link href="/passport" className="btn-primary mt-5 inline-flex items-center gap-2"><BookOpen className="w-4 h-4" /> {t('pp.open_passport')}</Link>
+                <Link href={done.already ? "/passport" : "/passport?new=1"} className="btn-primary mt-5 inline-flex items-center gap-2"><BookOpen className="w-4 h-4" /> {t('pp.open_passport')}</Link>
               </>
             ) : info.alreadyHave ? (
               <>
