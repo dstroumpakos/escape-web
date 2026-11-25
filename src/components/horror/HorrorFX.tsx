@@ -196,6 +196,8 @@ export function HorrorFX() {
   const prevPath = useRef(pathname);
   // Calm pages and reduced-motion users get no scares
   const quiet = reduced || isCalmRoute(pathname);
+  // The ghost only walks across the home page
+  const ghostHere = !quiet && pathname === '/';
 
   // Random power cuts
   useEffect(() => {
@@ -227,7 +229,7 @@ export function HorrorFX() {
 
   // The figure
   useEffect(() => {
-    if (quiet) return;
+    if (!ghostHere) return;
     let to: ReturnType<typeof setTimeout>;
     const schedule = (first = false) => {
       to = setTimeout(() => {
@@ -237,7 +239,7 @@ export function HorrorFX() {
     };
     schedule(true);
     return () => clearTimeout(to);
-  }, [quiet]);
+  }, [ghostHere]);
 
   // Glitch cut between pages
   useEffect(() => {
@@ -268,7 +270,7 @@ export function HorrorFX() {
       </div>
 
       {/* The figure */}
-      {ghostKey > 0 && !quiet && (
+      {ghostKey > 0 && ghostHere && (
         <div
           key={`g${ghostKey}`}
           className="horror-motion fixed bottom-0 left-0 z-[43] h-[58vh] opacity-0"
