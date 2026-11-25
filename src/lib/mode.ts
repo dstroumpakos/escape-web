@@ -1,7 +1,7 @@
 'use client';
 
 import { useSyncExternalStore } from 'react';
-import { HORROR_THEME_VALUES } from './roomThemes';
+import { sideOf } from '../../convex/roomCategories';
 
 /**
  * The player's side of the site: "puzzle" (riddles and mystery, no fear) or
@@ -13,9 +13,6 @@ export type Mode = 'puzzle' | 'horror';
 
 import { MODE_KEY as KEY } from './modeScript';
 const EVENT = 'unlocked-mode';
-
-/** Room themes a puzzle player never sees. */
-export const HORROR_THEMES = new Set(HORROR_THEME_VALUES);
 
 function read(): Mode | null {
   try {
@@ -52,18 +49,14 @@ export function useMode(): Mode | null | undefined {
   return useSyncExternalStore<Mode | null | undefined>(subscribe, read, () => undefined);
 }
 
-/** How scary a room is: "none" puzzle side only, "some" both sides, "high" horror side only. */
-export type Fear = 'none' | 'some' | 'high';
-export const FEAR_LEVELS: Fear[] = ['none', 'some', 'high'];
-
-/** The company's own choice (rooms.fearLevel), or a guess from the theme for rooms that have none yet. */
-export function fearOf(room: { theme?: string; fearLevel?: string }): Fear {
-  const f = room.fearLevel;
-  if (f === 'none' || f === 'some' || f === 'high') return f;
-  return HORROR_THEMES.has(room.theme ?? '') ? 'high' : 'none';
+/**
+ * Rooms for the side: each room belongs to exactly one side, from its category
+ * (convex/roomCategories.ts): puzzles and puzzles with an actor on the puzzle
+ * side, horror on the horror side. No side picked = every room.
+ */
+export function forMode<T extends RoomKind>(rooms: T[], mode: Mode | null | undefined): T[] {
+  return mode ? rooms.filter((r) => sideOf(r) === mode) : rooms;
 }
 
-/** Hides the scary rooms from a puzzle player ("a little fear" stays, marked). */
-export function forMode<T extends { theme?: string; fearLevel?: string }>(rooms: T[], mode: Mode | null | undefined): T[] {
-  return mode === 'puzzle' ? rooms.filter((r) => fearOf(r) !== 'high') : rooms;
-}
+type RoomKind = { category?: string | null; subthemes?: string[] | null; theme?: string | null; fearLevel?: string | null };
+export { categoryOf, sideOf, subthemesOf, SUBTHEMES, CATEGORIES, type Category } from '../../convex/roomCategories';

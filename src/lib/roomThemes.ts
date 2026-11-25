@@ -12,6 +12,11 @@ import {
   Swords,
   Sparkles,
   Laugh,
+  Zap,
+  Baby,
+  Brain,
+  Biohazard,
+  Droplets,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -43,12 +48,15 @@ export const ROOM_THEMES: RoomTheme[] = [
   { value: 'Medieval', key: 'theme.medieval', icon: Swords, tint: 'rgba(160,60,20,0.5)', home: true, hero: true },
   { value: 'Fantasy', key: 'theme.fantasy', icon: Sparkles, tint: 'rgba(130,60,170,0.5)', home: true },
   { value: 'Comedy', key: 'theme.comedy', icon: Laugh, tint: 'rgba(190,150,20,0.5)' },
+  // Subcategories added with room categories (convex/roomCategories.ts)
+  { value: 'Action', key: 'theme.action', icon: Zap, tint: 'rgba(200,110,20,0.5)' },
+  { value: 'Kids', key: 'theme.kids', icon: Baby, tint: 'rgba(60,150,200,0.5)' },
+  { value: 'Psychological', key: 'theme.psychological', icon: Brain, tint: 'rgba(120,40,90,0.5)' },
+  { value: 'Zombie', key: 'theme.zombie', icon: Biohazard, tint: 'rgba(80,120,30,0.5)' },
+  { value: 'Splatter', key: 'theme.splatter', icon: Droplets, tint: 'rgba(180,10,20,0.6)' },
 ];
 
 export const ROOM_THEME_VALUES = ROOM_THEMES.map((th) => th.value);
-
-/** Themes that scare: hidden from players on the puzzle side (lib/mode.ts). */
-export const HORROR_THEME_VALUES = ['Horror', 'Thriller', 'Paranormal'];
 
 /** Translated label for a stored theme value; unknown values pass through. */
 export function themeLabel(t: (key: string) => string, value: string): string {

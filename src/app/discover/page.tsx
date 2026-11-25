@@ -8,12 +8,15 @@ import { api } from '../../../convex/_generated/api';
 import { Search, SlidersHorizontal, DoorOpen, X } from 'lucide-react';
 import { BOOKING_ENABLED } from '@/lib/features';
 import { useTranslation } from '@/lib/i18n';
-import { ROOM_THEME_VALUES, themeLabel as roomThemeLabel } from '@/lib/roomThemes';
+import { themeLabel as roomThemeLabel } from '@/lib/roomThemes';
 import { useAuth } from '@/lib/auth';
-import { useMode, setMode, forMode, HORROR_THEMES } from '@/lib/mode';
+import { useMode, setMode, forMode, subthemesOf, categoryOf, SUBTHEMES } from '@/lib/mode';
 import { AnimateIn, StaggerContainer, StaggerItem } from '@/components/animations/AnimateIn';
 
-const themes = ['All', ...ROOM_THEME_VALUES];
+/** The "with an actor" chip: puzzle rooms whose category is puzzles with an actor. */
+const ACTOR = '__actor';
+const ALL_SUBTHEMES = Array.from(new Set([...SUBTHEMES.puzzle, ...SUBTHEMES.horror]));
+const themes = ['All', ACTOR, ...ALL_SUBTHEMES];
 
 export default function DiscoverPage() {
   const searchParams = useSearchParams();
@@ -22,8 +25,7 @@ export default function DiscoverPage() {
   const [sortBy, setSortBy] = useState<'rating' | 'price' | 'duration'>('rating');
   const [showFilters, setShowFilters] = useState(false);
   const { t } = useTranslation();
-  // Puzzle side (lib/mode.ts): horror rooms and their filters are hidden,
-  // unless someone opens a horror theme on purpose (/discover?theme=Horror).
+  // A side picked (lib/mode.ts): only that side's rooms and subcategories.
   const mode = useMode();
   const puzzle = mode === 'puzzle';
 
@@ -47,12 +49,15 @@ export default function DiscoverPage() {
   const isPremium = !!(convexUser as any)?.isPremium;
 
   const themeLabel = (theme: string): string =>
-    theme === 'All' ? t('discover.filter_all') : roomThemeLabel(t, theme);
+    theme === 'All' ? t('discover.filter_all') : theme === ACTOR ? t('discover.with_actor') : roomThemeLabel(t, theme);
 
   const allRooms = useQuery(api.rooms.list);
 
-  // On the puzzle side a theme chip shows only if it still has rooms there
-  const puzzleThemes = useMemo(() => new Set(forMode(allRooms ?? [], 'puzzle').map((r: any) => r.theme)), [allRooms]);
+  // A subcategory chip shows only if it has rooms on this side
+  const available = useMemo(() => new Set(forMode(allRooms ?? [], mode).flatMap((r: any) => subthemesOf(r))), [allRooms, mode]);
+  const chips = ['All', ...(mode !== 'horror' ? [ACTOR] : []), ...(mode ? SUBTHEMES[mode] : ALL_SUBTHEMES)].filter(
+    (th) => th === 'All' || th === ACTOR || th === selectedTheme || available.has(th)
+  );
 
   const filteredRooms = useMemo(() => {
     if (!allRooms) return [];
@@ -73,7 +78,7 @@ export default function DiscoverPage() {
       return now >= release;
     });
 
-    if (!HORROR_THEMES.has(selectedTheme)) rooms = forMode(rooms, mode);
+    rooms = forMode(rooms, mode);
 
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
@@ -85,8 +90,10 @@ export default function DiscoverPage() {
       );
     }
 
-    if (selectedTheme !== 'All') {
-      rooms = rooms.filter((r: any) => r.theme === selectedTheme);
+    if (selectedTheme === ACTOR) {
+      rooms = rooms.filter((r: any) => categoryOf(r) === 'puzzle_actor');
+    } else if (selectedTheme !== 'All') {
+      rooms = rooms.filter((r: any) => subthemesOf(r).includes(selectedTheme));
     }
 
     // Priority Placement: EA partner rooms always sort first, then normal sort
@@ -144,9 +151,9 @@ export default function DiscoverPage() {
             )}
           </div>
 
-          {puzzle && (
+          {mode && (
             <p className="mb-4 text-center text-sm text-brand-text-secondary">
-              {t('mode.hidden_note')}{' '}
+              {t(puzzle ? 'mode.hidden_note' : 'mode.hidden_note_horror')}{' '}
               <button type="button" onClick={() => setMode(null)} className="text-brand-red-light hover:underline">
                 {t('mode.show_them')}
               </button>
@@ -155,7 +162,7 @@ export default function DiscoverPage() {
 
           {/* Theme filters */}
           <div className="flex items-center gap-2 flex-wrap justify-center mb-4">
-            {themes.filter((theme) => !puzzle || theme === 'All' || theme === selectedTheme || puzzleThemes.has(theme)).map((theme) => (
+            {chips.map((theme) => (
               <button
                 key={theme}
                 onClick={() => setSelectedTheme(theme)}

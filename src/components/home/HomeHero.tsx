@@ -5,13 +5,16 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowRight, KeyRound, Search, Skull } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
-import { ROOM_THEMES, HORROR_THEME_VALUES } from '@/lib/roomThemes';
+import { ROOM_THEMES } from '@/lib/roomThemes';
+import { SUBTHEMES } from '../../../convex/roomCategories';
 import { setMode, useMode, type Mode } from '@/lib/mode';
 import { HeroSection } from './HeroSection';
 import { BloodDrips } from '@/components/horror/BloodDrips';
 import { WatchingEyes } from '@/components/horror/WatchingEyes';
 
-const PUZZLE_CHIPS = ['Mystery', 'Detective', 'Puzzle', 'Adventure', 'Historical', 'Fantasy'];
+/** The chips under each side: its first subcategories (convex/roomCategories.ts). */
+const PUZZLE_CHIPS = SUBTHEMES.puzzle.slice(0, 6);
+const HORROR_CHIPS = SUBTHEMES.horror;
 const themesOf = (values: string[]) => ROOM_THEMES.filter((th) => values.includes(th.value));
 
 /**
@@ -90,7 +93,7 @@ function SplitHero() {
   const { t } = useTranslation();
   const pick = usePick();
   const puzzleThemes = themesOf(PUZZLE_CHIPS);
-  const horrorThemes = themesOf(HORROR_THEME_VALUES);
+  const horrorThemes = themesOf(HORROR_CHIPS);
 
   return (
     <section className="split-hero relative md:min-h-[100svh] overflow-hidden bg-[#050202] md:flex md:flex-col">

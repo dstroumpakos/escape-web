@@ -36,9 +36,8 @@ import {
   Languages,
 } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
-import { FearPicker } from '@/components/company/FearPicker';
-import { fearOf, type Fear } from '@/lib/mode';
-import { ROOM_THEMES } from '@/lib/roomThemes';
+import { CategoryPicker } from '@/components/company/CategoryPicker';
+import { categoryOf, subthemesOf, legacyTheme, type Category } from '../../../../../../convex/roomCategories';
 import { friendlyError } from '@/lib/errors';
 import { useToast } from '@/components/company/Toast';
 import { translateRoom } from '@/lib/translate';
@@ -107,8 +106,8 @@ export default function EditRoomPage() {
     playersMax: 6,
     price: 15,
     pricePerGroup: [] as { players: number; price: number }[],
-    theme: 'Adventure',
-    fearLevel: '' as Fear | '',
+    category: 'puzzle' as Category,
+    subthemes: [] as string[],
     tags: [] as string[],
     description: '',
     story: '',
@@ -216,8 +215,8 @@ export default function EditRoomPage() {
         playersMax: room.playersMax || 6,
         price: room.price || 15,
         pricePerGroup: (room as any).pricePerGroup || [],
-        theme: room.theme || 'Adventure',
-        fearLevel: ((room as any).fearLevel ?? '') as Fear | '',
+        category: categoryOf(room as any),
+        subthemes: subthemesOf(room as any),
         tags: room.tags || [],
         description: room.description || '',
         story: room.story || '',
@@ -273,6 +272,10 @@ export default function EditRoomPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    if (form.subthemes.length === 0) {
+      setError(t('cat.subs_required'));
+      return;
+    }
     setLoading(true);
     try {
       // Build manual translations object (filter empty strings)
@@ -299,8 +302,9 @@ export default function EditRoomPage() {
         playersMax: form.playersMax,
         price: form.price,
         pricePerGroup: form.pricePerGroup.length > 0 ? form.pricePerGroup : undefined,
-        theme: form.theme,
-        fearLevel: fearOf(form),
+        category: form.category,
+        subthemes: form.subthemes,
+        theme: legacyTheme(form.category, form.subthemes),
         tags: form.tags,
         description: form.description,
         story: form.story,
@@ -393,17 +397,11 @@ export default function EditRoomPage() {
                 pinHint={t('company.rooms.new.location_pin_hint')}
               />
             </div>
-            <div>
-              <FieldLabel>{t('company.rooms.edit.theme')}</FieldLabel>
-              <select
-                value={form.theme}
-                onChange={(e) => updateField('theme', e.target.value)}
-                className="w-full bg-brand-bg border border-white/10 rounded-xl px-4 py-3 text-white focus:border-brand-red focus:outline-hidden"
-              >
-                {ROOM_THEMES.map((th) => <option key={th.value} value={th.value}>{t(th.key)}</option>)}
-              </select>
-            </div>
-            <FearPicker value={fearOf(form)} onChange={(f) => updateField('fearLevel', f)} />
+            <CategoryPicker
+              category={form.category}
+              subthemes={form.subthemes}
+              onChange={(category, subthemes) => setForm((prev) => ({ ...prev, category, subthemes }))}
+            />
             <div>
               <FieldLabel>{t('company.rooms.edit.duration_min')}</FieldLabel>
               <FieldInput type="number" value={form.duration} onChange={(v) => updateField('duration', parseInt(v) || 0)} min={15} required />

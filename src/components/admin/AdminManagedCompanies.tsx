@@ -8,7 +8,9 @@ import { api } from '../../../convex/_generated/api';
 import type { Id } from '../../../convex/_generated/dataModel';
 import { useTranslation } from '@/lib/i18n';
 import { friendlyError } from '@/lib/errors';
-import { ROOM_THEMES, themeLabel } from '@/lib/roomThemes';
+import { themeLabel } from '@/lib/roomThemes';
+import { CategoryPicker } from '@/components/company/CategoryPicker';
+import type { Category } from '../../../convex/roomCategories';
 
 const LocationPicker = dynamic(() => import('@/components/map/LocationPicker'), { ssr: false });
 
@@ -242,7 +244,7 @@ function CompanyCard({ c, accounts, sessionToken, onEdit }: { c: Managed; accoun
                   <p className="text-sm font-semibold truncate flex items-center gap-2">
                     {r.title} {!r.isActive && <EyeOff className="w-3.5 h-3.5 text-brand-text-muted" aria-label={t('mc.hidden')} />}
                   </p>
-                  <p className="text-xs text-brand-text-secondary truncate">{[themeLabel(t, r.theme), r.location].filter(Boolean).join(' · ')}</p>
+                  <p className="text-xs text-brand-text-secondary truncate">{[t(`cat.${r.category}`), ...r.subthemes.map((s) => themeLabel(t, s)), r.location].filter(Boolean).join(' · ')}</p>
                 </div>
                 <button onClick={() => setRoom(r)} className="p-2 text-brand-text-secondary hover:text-white" aria-label={t('mc.edit')}><Pencil className="w-4 h-4" /></button>
                 <button
@@ -316,14 +318,14 @@ function RoomForm({ sessionToken, companyId, room, onDone }: { sessionToken: str
     latitude: room?.latitude ?? undefined,
     longitude: room?.longitude ?? undefined,
     image: room?.image ?? '',
-    theme: room?.theme ?? ROOM_THEMES[0].value,
+    category: (room?.category ?? 'puzzle') as Category,
+    subthemes: room?.subthemes ?? ([] as string[]),
     description: room?.description ?? '',
     duration: room?.duration ?? 60,
     difficulty: room?.difficulty ?? 3,
     playersMin: room?.playersMin ?? 2,
     playersMax: room?.playersMax ?? 6,
     bookingUrl: room?.bookingUrl ?? '',
-    fearLevel: (room?.fearLevel ?? '') as '' | 'none' | 'some' | 'high',
     isActive: room?.isActive ?? true,
   });
   const [busy, setBusy] = useState(false);
@@ -335,7 +337,12 @@ function RoomForm({ sessionToken, companyId, room, onDone }: { sessionToken: str
     setBusy(true);
     setErr('');
     try {
-      const { fearLevel, latitude, longitude, ...rest } = f;
+      if (f.subthemes.length === 0) {
+        setErr(t('cat.subs_required'));
+        setBusy(false);
+        return;
+      }
+      const { latitude, longitude, ...rest } = f;
       await save({
         sessionToken,
         companyId,
@@ -343,7 +350,6 @@ function RoomForm({ sessionToken, companyId, room, onDone }: { sessionToken: str
         ...rest,
         latitude: latitude ?? undefined,
         longitude: longitude ?? undefined,
-        fearLevel: fearLevel || undefined,
       });
       onDone();
     } catch (x) {
@@ -358,20 +364,7 @@ function RoomForm({ sessionToken, companyId, room, onDone }: { sessionToken: str
       <h4 className="font-semibold text-sm">{room ? t('mc.edit_room') : t('mc.new_room')}</h4>
       <div className="grid sm:grid-cols-2 gap-4">
         <Field label={t('mc.room_title')}><input className={input} value={f.title} onChange={(e) => setF({ ...f, title: e.target.value })} required maxLength={120} /></Field>
-        <Field label={t('mc.theme')}>
-          <select className={input} value={f.theme} onChange={(e) => setF({ ...f, theme: e.target.value })}>
-            {ROOM_THEMES.map((th) => <option key={th.value} value={th.value}>{t(th.key)}</option>)}
-          </select>
-        </Field>
         <ImageField label={t('mc.photo')} value={f.image} onChange={(image) => setF({ ...f, image })} sessionToken={sessionToken} />
-        <Field label={t('mc.fear')}>
-          <select className={input} value={f.fearLevel} onChange={(e) => setF({ ...f, fearLevel: e.target.value as typeof f.fearLevel })}>
-            <option value="">{t('mc.fear_auto')}</option>
-            <option value="none">{t('mc.fear_none')}</option>
-            <option value="some">{t('mc.fear_some')}</option>
-            <option value="high">{t('mc.fear_high')}</option>
-          </select>
-        </Field>
         <Field label={t('mc.duration')}><input type="number" className={input} value={f.duration} onChange={num('duration')} min={10} max={600} /></Field>
         <Field label={t('mc.difficulty')}><input type="number" className={input} value={f.difficulty} onChange={num('difficulty')} min={1} max={5} /></Field>
         <Field label={t('mc.players_min')}><input type="number" className={input} value={f.playersMin} onChange={num('playersMin')} min={1} max={50} /></Field>
@@ -381,6 +374,7 @@ function RoomForm({ sessionToken, companyId, room, onDone }: { sessionToken: str
           <input type="checkbox" checked={f.isActive} onChange={(e) => setF({ ...f, isActive: e.target.checked })} /> {t('mc.active')}
         </label>
       </div>
+      <CategoryPicker category={f.category} subthemes={f.subthemes} onChange={(category, subthemes) => setF((p) => ({ ...p, category, subthemes }))} />
       <div>
         <span className="block text-xs text-brand-text-secondary mb-1">{t('mc.location')}</span>
         <LocationPicker

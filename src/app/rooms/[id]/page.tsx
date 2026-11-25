@@ -9,34 +9,13 @@ import { useAuth } from '@/lib/auth';
 import { BookNowButton } from '@/components/rooms/BookNowButton';
 import { BOOKING_ENABLED } from '@/lib/features';
 import { visitorId } from '@/lib/visitorId';
-import { fearOf } from '@/lib/mode';
+import { categoryOf, subthemesOf } from '@/lib/mode';
 import { useTranslation } from '@/lib/i18n';
 import { themeLabel } from '@/lib/roomThemes';
 import { RoomMerchStrip } from '@/components/shop/RoomMerch';
 import { InstagramStrip } from '@/components/rooms/InstagramStrip';
 import { shownRating, formatRating, videoEmbedUrl } from '@/lib/roomMedia';
-import {
-  Star,
-  Skull,
-  Clock,
-  Users,
-  MapPin,
-  Heart,
-  ArrowLeft,
-  DoorOpen,
-  Zap,
-  BookOpen,
-  Diamond,
-  CalendarClock,
-  BadgeCheck,
-  MessageSquare,
-  ChevronDown,
-  ChevronUp,
-  CheckCircle,
-  PlayCircle,
-  Ghost,
-  KeyRound,
-} from 'lucide-react';
+import { Star, Skull, Clock, Users, MapPin, Heart, ArrowLeft, DoorOpen, Zap, BookOpen, Diamond, CalendarClock, BadgeCheck, MessageSquare, ChevronDown, ChevronUp, CheckCircle, PlayCircle, Ghost, KeyRound, VenetianMask } from 'lucide-react';
 
 /** The server's own message for review errors (it explains what to do), else a generic one. */
 function friendlyReviewError(err: unknown): string {
@@ -198,20 +177,23 @@ export default function RoomDetailsPage() {
             {/* Title & location */}
             <div className="mb-6">
               <div className="flex flex-wrap items-center gap-2 mb-4">
-                <span className="font-type text-[11px] tracking-[0.18em] uppercase px-2 py-0.5 rounded-sm border border-brand-red/50 text-brand-red-light">
-                  {themeLabel(t, room.theme)}
-                </span>
-                {/* How scary it is (rooms.fearLevel, or guessed from the theme) */}
+                {/* Category: puzzles / with an actor / horror (convex/roomCategories.ts) */}
                 {(() => {
-                  const fear = fearOf(room as any);
-                  const tone = fear === 'high' ? 'border-red-600/70 text-red-400' : fear === 'some' ? 'border-amber-500/60 text-amber-300' : 'border-sky-500/50 text-sky-300';
-                  const Icon = fear === 'high' ? Skull : fear === 'some' ? Ghost : KeyRound;
+                  const cat = categoryOf(room as any);
+                  const tone = cat === 'horror' ? 'border-red-600/70 text-red-400' : cat === 'puzzle_actor' ? 'border-amber-500/60 text-amber-300' : 'border-sky-500/50 text-sky-300';
+                  const Icon = cat === 'horror' ? Skull : cat === 'puzzle_actor' ? VenetianMask : KeyRound;
                   return (
-                    <span title={t(`fear.${fear}_desc`)} className={`text-xs font-bold px-2.5 py-1 rounded-sm border flex items-center gap-1 ${tone}`}>
-                      <Icon className="w-3 h-3" /> {t(`fear.${fear}`)}
+                    <span className={`text-xs font-bold px-2.5 py-1 rounded-sm border flex items-center gap-1 ${tone}`}>
+                      <Icon className="w-3 h-3" /> {t(`cat.${cat}`)}
                     </span>
                   );
                 })()}
+                {/* Its subcategories */}
+                {subthemesOf(room as any).map((th) => (
+                  <span key={th} className="font-type text-[11px] tracking-[0.18em] uppercase px-2 py-0.5 rounded-sm border border-brand-red/50 text-brand-red-light">
+                    {themeLabel(t, th)}
+                  </span>
+                ))}
                 {(room as any).isEarlyAccessPartner && (
                   <span className="bg-emerald-700/90 text-white text-xs font-bold px-2.5 py-1 rounded-sm flex items-center gap-1">
                     <BadgeCheck className="w-3 h-3" /> {t('badge.early_access')}

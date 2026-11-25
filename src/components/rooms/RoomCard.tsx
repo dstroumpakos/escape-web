@@ -2,11 +2,11 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
-import { Star, Clock, Users, Zap, DoorOpen, BadgeCheck, Skull, Flame, MapPin, Ghost } from 'lucide-react';
+import { Star, Clock, Users, Zap, DoorOpen, BadgeCheck, Skull, Flame, MapPin, VenetianMask } from 'lucide-react';
 import { BOOKING_ENABLED } from '@/lib/features';
 import { useTranslation } from '@/lib/i18n';
 import { themeLabel } from '@/lib/roomThemes';
-import { fearOf, type Fear } from '@/lib/mode';
+import { categoryOf, subthemesOf, type Category } from '@/lib/mode';
 import { shownRating, formatRating } from '@/lib/roomMedia';
 
 export interface RoomCardData {
@@ -28,7 +28,10 @@ export interface RoomCardData {
   isTrending?: boolean;
   isEarlyAccessPartner?: boolean;
   companyName?: string;
-  fear?: Fear;
+  /** Puzzles / with an actor / horror (convex/roomCategories.ts) */
+  category?: Category;
+  /** Its subcategories; theme is the first, for older callers */
+  subthemes?: string[];
 }
 
 /** Tag colour per stored theme value; anything else gets the neutral tag. */
@@ -55,8 +58,9 @@ export function toRoomCardData(r: any): RoomCardData {
   return {
     id: r._id,
     title: r.title || 'Untitled Room',
-    theme: r.theme || 'Mystery',
-    fear: fearOf(r),
+    theme: subthemesOf(r)[0] || r.theme || 'Mystery',
+    category: categoryOf(r),
+    subthemes: subthemesOf(r),
     rating: shown?.rating ?? 0,
     reviews: shown?.count ?? 0,
     ratingSource: shown?.source,
@@ -131,14 +135,14 @@ export function RoomCard({ room }: { room: RoomCardData }) {
               <Zap className="w-3 h-3" /> {t('featured.new')}
             </span>
           )}
-          {room.fear === 'some' && (
-            <span className="bg-black/80 border border-amber-500/60 text-amber-300 text-xs font-bold px-2.5 py-1 rounded-sm flex items-center gap-1">
-              <Ghost className="w-3 h-3" /> {t('fear.some')}
+          {room.category === 'puzzle_actor' && (
+            <span className="bg-black/80 border border-brand-gold/60 text-brand-gold text-xs font-bold px-2.5 py-1 rounded-sm flex items-center gap-1">
+              <VenetianMask className="w-3 h-3" /> {t('discover.with_actor')}
             </span>
           )}
-          {room.fear === 'high' && (
+          {room.category === 'horror' && (
             <span className="bg-black/80 border border-red-600/70 text-red-400 text-xs font-bold px-2.5 py-1 rounded-sm flex items-center gap-1">
-              <Skull className="w-3 h-3" /> {t('fear.high')}
+              <Skull className="w-3 h-3" /> {t('cat.horror')}
             </span>
           )}
           {room.isTrending && (
@@ -161,13 +165,18 @@ export function RoomCard({ room }: { room: RoomCardData }) {
 
       {/* Content */}
       <div className="flex flex-1 flex-col p-5">
-        <span
-          className={`self-start font-type text-[11px] tracking-[0.18em] uppercase px-2 py-0.5 rounded-sm border mb-3 ${
-            themeColors[room.theme] || 'border-brand-border text-brand-text-secondary'
-          }`}
-        >
-          {themeLabel(t, room.theme)}
-        </span>
+        <div className="flex flex-wrap gap-1.5 mb-3">
+          {(room.subthemes?.length ? room.subthemes.slice(0, 3) : [room.theme]).map((th) => (
+            <span
+              key={th}
+              className={`font-type text-[11px] tracking-[0.18em] uppercase px-2 py-0.5 rounded-sm border ${
+                themeColors[th] || 'border-brand-border text-brand-text-secondary'
+              }`}
+            >
+              {themeLabel(t, th)}
+            </span>
+          ))}
+        </div>
 
         <h3 className="text-xl font-display font-bold mb-2 text-brand-bone group-hover:text-brand-red-light group-hover:text-blood-glow transition-colors">
           {room.title}

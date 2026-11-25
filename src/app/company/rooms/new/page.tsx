@@ -35,9 +35,8 @@ import {
   Languages,
 } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
-import { FearPicker } from '@/components/company/FearPicker';
-import { fearOf, type Fear } from '@/lib/mode';
-import { ROOM_THEMES } from '@/lib/roomThemes';
+import { CategoryPicker } from '@/components/company/CategoryPicker';
+import { legacyTheme, type Category } from '../../../../../convex/roomCategories';
 import { translateRoom } from '@/lib/translate';
 
 const LocationPicker = dynamic(
@@ -113,9 +112,9 @@ export default function NewRoomPage() {
     playersMax: 6,
     price: 15,
     pricePerGroup: [] as { players: number; price: number }[],
-    theme: 'Adventure',
-    // '' = not picked yet: follows the theme until the company chooses
-    fearLevel: '' as Fear | '',
+    // Puzzles / with an actor / horror and its subcategories (convex/roomCategories.ts)
+    category: 'puzzle' as Category,
+    subthemes: [] as string[],
     tags: [] as string[],
     description: '',
     story: '',
@@ -287,6 +286,10 @@ export default function NewRoomPage() {
     e.preventDefault();
     setError('');
     if (!company?.id) return;
+    if (form.subthemes.length === 0) {
+      setError(t('cat.subs_required'));
+      return;
+    }
     if (form.bookingOptionsOn && form.paymentTerms.length === 0) {
       setError(t('company.rooms.new.error_payment_terms'));
       return;
@@ -317,8 +320,9 @@ export default function NewRoomPage() {
         playersMax: form.playersMax,
         price: form.price,
         pricePerGroup: form.pricePerGroup.length > 0 ? form.pricePerGroup : undefined,
-        theme: form.theme,
-        fearLevel: fearOf(form),
+        category: form.category,
+        subthemes: form.subthemes,
+        theme: legacyTheme(form.category, form.subthemes),
         tags: form.tags,
         description: form.description,
         story: form.story,
@@ -426,19 +430,11 @@ export default function NewRoomPage() {
                 pinHint={t('company.rooms.new.location_pin_hint')}
               />
             </div>
-            <div>
-              <Label>{t('company.rooms.new.theme')}</Label>
-              <select
-                value={form.theme}
-                onChange={(e) => updateField('theme', e.target.value)}
-                className="w-full bg-brand-bg border border-white/10 rounded-xl px-4 py-3 text-white focus:border-brand-red focus:outline-hidden"
-              >
-                {ROOM_THEMES.map((th) => (
-                  <option key={th.value} value={th.value}>{t(th.key)}</option>
-                ))}
-              </select>
-            </div>
-            <FearPicker value={fearOf(form)} onChange={(f) => updateField('fearLevel', f)} />
+            <CategoryPicker
+              category={form.category}
+              subthemes={form.subthemes}
+              onChange={(category, subthemes) => setForm((prev) => ({ ...prev, category, subthemes }))}
+            />
             <div>
               <Label>{t('company.rooms.new.duration_min')}</Label>
               <Input
