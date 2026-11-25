@@ -39,10 +39,12 @@ import {
   Flag,
   ShoppingBag,
   ListChecks,
+  Megaphone,
 } from 'lucide-react';
 import { AdminReports } from '@/components/admin/AdminReports';
 import { AdminShop } from '@/components/admin/AdminShop';
 import { AdminPlays } from '@/components/admin/AdminPlays';
+import { AdminManagedCompanies } from '@/components/admin/AdminManagedCompanies';
 import { AdminReviews } from '@/components/admin/AdminReviews';
 
 export default function AdminPage() {
@@ -51,7 +53,7 @@ export default function AdminPage() {
   const [adminEmail, setAdminEmail] = useState<string | null>(null);
   const [adminToken, setAdminToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'overview' | 'companies' | 'bookings' | 'users' | 'reports' | 'reviews' | 'plays' | 'shop'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'companies' | 'managed' | 'bookings' | 'users' | 'reports' | 'reviews' | 'plays' | 'shop'>('overview');
   const [companySearch, setCompanySearch] = useState('');
   const [expandedCompany, setExpandedCompany] = useState<string | null>(null);
 
@@ -135,6 +137,7 @@ export default function AdminPage() {
   const tabs = [
     { id: 'overview' as const, label: t('admin.tab_overview'), icon: TrendingUp },
     { id: 'companies' as const, label: t('admin.tab_companies'), icon: Building2 },
+    { id: 'managed' as const, label: t('mc.tab'), icon: Megaphone },
     { id: 'bookings' as const, label: t('admin.tab_bookings'), icon: CalendarCheck },
     { id: 'users' as const, label: t('admin.tab_users'), icon: Users },
     { id: 'reports' as const, label: t('admin.tab_reports'), icon: Flag },
@@ -514,6 +517,7 @@ export default function AdminPage() {
 
         {activeTab === 'reviews' && adminToken && <AdminReviews sessionToken={adminToken} />}
         {activeTab === 'plays' && adminToken && <AdminPlays sessionToken={adminToken} />}
+        {activeTab === 'managed' && adminToken && <AdminManagedCompanies sessionToken={adminToken} />}
 
         {activeTab === 'shop' && adminToken && <AdminShop sessionToken={adminToken} />}
 

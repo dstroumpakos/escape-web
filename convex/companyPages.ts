@@ -65,6 +65,8 @@ export const list = query({
         if (rooms.length === 0) return null;
         return {
           ...publicCompany(c),
+          // No profile yet (managedCompanies.ts): show it, but don't link to it
+          hasProfile: !c.managedByAdmin,
           roomCount: rooms.length,
           rooms: rooms.slice(0, 6).map((r: any) => ({
             _id: r._id,
@@ -109,6 +111,8 @@ export const profile = query({
     if (!c) return null;
     // Players see approved, paying companies; the company always sees its own.
     if (!isOwner && (!companyIsPublic(c) || c.platformPlan === "free")) return null;
+    // Added by the UNLOCKED team, no account yet (managedCompanies.ts): rooms only, no profile
+    if (c.managedByAdmin) return null;
     const [rooms, followers, mine, photos] = await Promise.all([
       visibleRoomsOf(ctx, c._id),
       visitor ? [] : ctx.db.query("companyFollows").withIndex("by_company", (q) => q.eq("companyId", c._id)).take(10000),
@@ -144,7 +148,7 @@ export const follow = mutation({
   handler: async (ctx, args) => {
     const me = await requireUser(ctx, args.sessionToken);
     const c = await ctx.db.get(args.companyId);
-    if (!c || !companyIsPublic(c)) throw new ConvexError("Company not found");
+    if (!c || !companyIsPublic(c) || c.managedByAdmin) throw new ConvexError("Company not found");
     const existing = await ctx.db
       .query("companyFollows")
       .withIndex("by_user_company", (q) => q.eq("userId", me._id).eq("companyId", c._id))

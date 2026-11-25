@@ -54,21 +54,30 @@ export default function CompaniesPage() {
           {shown.map((c) => (
             <div key={c._id} className="rounded-2xl border border-brand-border bg-brand-surface/60 p-4 sm:p-5">
               <div className="flex items-center gap-4">
-                <button onClick={() => openProfile(c._id)} className="shrink-0" aria-label={c.name}>
-                  <CompanyLogo name={c.name} logo={c.logo} size={56} />
-                </button>
-                <div className="min-w-0 flex-1">
-                  <button onClick={() => openProfile(c._id)} className="text-left">
-                    <h2 className="text-lg font-display font-bold text-brand-bone hover:text-brand-red-light truncate">{c.name}</h2>
+                {/* A company the UNLOCKED team added has no profile yet: name and rooms only */}
+                {c.hasProfile ? (
+                  <button onClick={() => openProfile(c._id)} className="shrink-0" aria-label={c.name}>
+                    <CompanyLogo name={c.name} logo={c.logo} size={56} />
                   </button>
+                ) : (
+                  <div className="shrink-0"><CompanyLogo name={c.name} logo={c.logo} size={56} /></div>
+                )}
+                <div className="min-w-0 flex-1">
+                  {c.hasProfile ? (
+                    <button onClick={() => openProfile(c._id)} className="text-left">
+                      <h2 className="text-lg font-display font-bold text-brand-bone hover:text-brand-red-light truncate">{c.name}</h2>
+                    </button>
+                  ) : (
+                    <h2 className="text-lg font-display font-bold text-brand-bone truncate">{c.name}</h2>
+                  )}
                   <p className="text-xs text-brand-text-secondary flex items-center gap-3 mt-0.5">
                     {c.city && <span className="flex items-center gap-1"><MapPin className="w-3.5 h-3.5" />{c.city}</span>}
                     <span className="flex items-center gap-1"><DoorOpen className="w-3.5 h-3.5" />{c.roomCount === 1 ? t('co.rooms_one') : t('co.rooms_many', { n: String(c.roomCount) })}</span>
                   </p>
                 </div>
-                <button onClick={() => openProfile(c._id)} className="hidden sm:flex btn-ghost text-sm items-center gap-1 shrink-0">
+                {c.hasProfile && <button onClick={() => openProfile(c._id)} className="hidden sm:flex btn-ghost text-sm items-center gap-1 shrink-0">
                   {t('co.view_profile')} <ChevronRight className="w-4 h-4" />
-                </button>
+                </button>}
               </div>
 
               {/* Their rooms */}
@@ -89,9 +98,9 @@ export default function CompaniesPage() {
                 ))}
               </div>
 
-              <button onClick={() => openProfile(c._id)} className="sm:hidden mt-3 w-full btn-ghost text-sm flex items-center justify-center gap-1">
+              {c.hasProfile && <button onClick={() => openProfile(c._id)} className="sm:hidden mt-3 w-full btn-ghost text-sm flex items-center justify-center gap-1">
                 {t('co.view_profile')} <ChevronRight className="w-4 h-4" />
-              </button>
+              </button>}
             </div>
           ))}
         </div>

@@ -44,6 +44,7 @@ import type * as instagram from "../instagram.js";
 import type * as jobs from "../jobs.js";
 import type * as languages from "../languages.js";
 import type * as leaderboardScore from "../leaderboardScore.js";
+import type * as managedCompanies from "../managedCompanies.js";
 import type * as merch from "../merch.js";
 import type * as merchPayments from "../merchPayments.js";
 import type * as merchRules from "../merchRules.js";
@@ -129,6 +130,7 @@ declare const fullApi: ApiFromModules<{
   jobs: typeof jobs;
   languages: typeof languages;
   leaderboardScore: typeof leaderboardScore;
+  managedCompanies: typeof managedCompanies;
   merch: typeof merch;
   merchPayments: typeof merchPayments;
   merchRules: typeof merchRules;
