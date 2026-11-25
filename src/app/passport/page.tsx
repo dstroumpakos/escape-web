@@ -223,7 +223,7 @@ export default function PassportPage() {
             {tab === 'map' ? (
               <PlaysMap pins={plays?.pins ?? []} />
             ) : tab === 'played' ? (
-              <PlaysTab data={plays ?? undefined} stampCount={data.stamps.length} />
+              <PlaysTab data={plays ?? undefined} stamps={data.stamps} />
             ) : (
               <>
                 <TowerGame placed={placed} chambers={chambers} pocket={pocket} onPlace={onPlace} busy={placing} />

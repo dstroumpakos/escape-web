@@ -18,8 +18,24 @@ export function useMyPlays() {
   return useQuery(api.plays.mine, user?.sessionToken ? { sessionToken: user.sessionToken } : 'skip');
 }
 
-/** Passport tab "Rooms played": rooms added by hand, their trust level, vouch requests. */
-export function PlaysTab({ data, stampCount }: { data: PlaysData | undefined; stampCount: number }) {
+/** A QR stamp from passport.mine: a room played for sure (the escape room scanned it). */
+export type StampPlay = {
+  _id: string;
+  roomId: string;
+  roomTitle: string;
+  companyName: string;
+  escaped: boolean;
+  escapeSeconds?: number | null;
+  playedAt?: number | null;
+  createdAt: number;
+};
+
+/**
+ * Passport tab "Rooms played": every room played. The QR stamps (confirmed) and
+ * the rooms added by hand with their trust level, newest first; vouch requests.
+ */
+export function PlaysTab({ data, stamps }: { data: PlaysData | undefined; stamps: StampPlay[] }) {
+  const stampCount = stamps.length;
   const { t, language } = useTranslation();
   const [adding, setAdding] = useState(false);
 
@@ -56,17 +72,25 @@ export function PlaysTab({ data, stampCount }: { data: PlaysData | undefined; st
         ))}
       </div>
 
-      {data.plays.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-brand-border p-6 text-center text-sm text-brand-text-secondary">
-          {t('pl.empty')}
-        </div>
-      ) : (
+      {stamps.length + data.plays.length > 0 && (
         <ul className="space-y-2">
-          {data.plays.map((p) => (
-            <PlayRow key={p._id} p={p} locale={language} />
-          ))}
+          {[
+            ...stamps.map((s) => ({ key: s._id, at: dayOf(s.playedAt ?? s.createdAt), stamp: s, play: null })),
+            ...data.plays.map((p) => ({ key: p._id, at: p.playedOn, stamp: null, play: p })),
+          ]
+            .sort((a, b) => (a.at < b.at ? 1 : a.at > b.at ? -1 : 0))
+            .map((r) => (r.stamp ? <StampRow key={r.key} s={r.stamp} locale={language} /> : <PlayRow key={r.key} p={r.play!} locale={language} />))}
         </ul>
       )}
+
+      {/* Played a room without a QR? Add it (same as the button at the top) */}
+      <button
+        type="button"
+        onClick={() => setAdding(true)}
+        className="w-full rounded-xl border border-dashed border-brand-border hover:border-brand-red/60 hover:bg-white/[0.03] p-6 text-center text-sm text-brand-text-secondary hover:text-brand-bone transition-colors flex items-center justify-center gap-2"
+      >
+        <Plus className="w-4 h-4" /> {t('pl.empty')}
+      </button>
 
       {data.inboundEmail && (
         <p className="text-xs text-brand-text-secondary flex gap-2">
@@ -77,6 +101,29 @@ export function PlaysTab({ data, stampCount }: { data: PlaysData | undefined; st
 
       {adding && <AddPlayDialog onClose={() => setAdding(false)} />}
     </div>
+  );
+}
+
+/** "2026-11-20" (local day) from a timestamp, to sort stamps among the plays. */
+function dayOf(ms: number): string {
+  const d = new Date(ms);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+function StampRow({ s, locale }: { s: StampPlay; locale: string }) {
+  const { t } = useTranslation();
+  return (
+    <li className="rounded-xl bg-black/40 border border-white/5 p-3">
+      <div className="flex flex-wrap items-center gap-2">
+        <Link href={`/rooms/${s.roomId}`} className="font-semibold text-brand-bone hover:underline">{s.roomTitle}</Link>
+        <LevelChip level="confirmed" small />
+      </div>
+      <p className="text-xs text-brand-text-secondary mt-0.5">
+        {[s.companyName, formatDay(dayOf(s.playedAt ?? s.createdAt), locale)].filter(Boolean).join(' · ')}
+        {' · '}
+        {s.escaped ? t('pl.escaped_in', { time: formatEscape(s.escapeSeconds) }) : t('pl.trapped')}
+      </p>
+    </li>
   );
 }
 
