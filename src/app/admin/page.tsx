@@ -171,12 +171,12 @@ export default function AdminPage() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Tabs */}
-        <div className="flex gap-1 mb-8 bg-brand-surface rounded-xl p-1 border border-white/5 max-w-3xl">
+        <div className="flex flex-wrap gap-1 mb-8 bg-brand-surface rounded-xl p-1 border border-white/5 w-fit max-w-full">
           {tabs.map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex-1 py-2.5 rounded-lg text-sm font-medium transition-all flex items-center justify-center gap-2 ${
+              className={`px-3 py-2.5 rounded-lg text-sm font-medium whitespace-nowrap transition-all flex items-center justify-center gap-2 ${
                 activeTab === tab.id
                   ? 'bg-brand-red text-white'
                   : 'text-brand-text-secondary hover:text-white'
