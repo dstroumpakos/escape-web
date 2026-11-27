@@ -22,6 +22,16 @@ function useManaged(sessionToken: string) {
   return useQuery(api.managedCompanies.adminList, { sessionToken });
 }
 
+/** "https://www.example.com/book" -> "example.com/book", for the room list. */
+function hostOf(url: string) {
+  try {
+    const u = new URL(url);
+    return (u.hostname.replace(/^www\./, '') + u.pathname).replace(/\/$/, '');
+  } catch {
+    return url;
+  }
+}
+
 const input = 'w-full bg-brand-bg border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-brand-text-secondary/50 focus:border-brand-red focus:outline-hidden';
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
@@ -245,6 +255,9 @@ function CompanyCard({ c, accounts, sessionToken, onEdit }: { c: Managed; accoun
                     {r.title} {!r.isActive && <EyeOff className="w-3.5 h-3.5 text-brand-text-muted" aria-label={t('mc.hidden')} />}
                   </p>
                   <p className="text-xs text-brand-text-secondary truncate">{[t(`cat.${r.category}`), ...r.subthemes.map((s) => themeLabel(t, s)), r.location].filter(Boolean).join(' · ')}</p>
+                  <p className={`text-xs truncate ${r.bookingUrl ? 'text-brand-text-muted' : 'text-amber-300/80'}`}>
+                    {t('mc.book_goes')} {r.bookingUrl ? hostOf(r.bookingUrl) : c.website ? t('mc.book_company_site') : t('mc.book_nowhere')}
+                  </p>
                 </div>
                 <button onClick={() => setRoom(r)} className="p-2 text-brand-text-secondary hover:text-white" aria-label={t('mc.edit')}><Pencil className="w-4 h-4" /></button>
                 <button
