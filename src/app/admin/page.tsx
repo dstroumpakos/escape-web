@@ -46,6 +46,7 @@ import { AdminShop } from '@/components/admin/AdminShop';
 import { AdminPlays } from '@/components/admin/AdminPlays';
 import { AdminManagedCompanies } from '@/components/admin/AdminManagedCompanies';
 import { AdminReviews } from '@/components/admin/AdminReviews';
+import { AdminUsers } from '@/components/admin/AdminUsers';
 
 export default function AdminPage() {
   const { t } = useTranslation();
@@ -550,6 +551,7 @@ export default function AdminPage() {
                 bg="bg-purple-500/10"
               />
             </div>
+            {adminToken && <AdminUsers sessionToken={adminToken} />}
           </div>
         )}
       </div>

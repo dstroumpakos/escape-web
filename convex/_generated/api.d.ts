@@ -9,6 +9,7 @@
  */
 
 import type * as adminSession from "../adminSession.js";
+import type * as adminUsers from "../adminUsers.js";
 import type * as appStore from "../appStore.js";
 import type * as appleAuth from "../appleAuth.js";
 import type * as avatars from "../avatars.js";
@@ -97,6 +98,7 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   adminSession: typeof adminSession;
+  adminUsers: typeof adminUsers;
   appStore: typeof appStore;
   appleAuth: typeof appleAuth;
   avatars: typeof avatars;
