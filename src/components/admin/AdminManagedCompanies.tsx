@@ -266,6 +266,9 @@ function CompanyCard({ c, accounts, sessionToken, onEdit }: { c: Managed; accoun
                   <p className={`text-xs truncate ${r.bookingUrl ? 'text-brand-text-muted' : 'text-amber-300/80'}`}>
                     {t('mc.book_goes')} {r.bookingUrl ? hostOf(r.bookingUrl) : c.website ? t('mc.book_company_site') : t('mc.book_nowhere')}
                   </p>
+                  <p className={`text-xs ${r.escapeAll ? 'text-brand-text-muted' : 'text-amber-300/80'}`}>
+                    {r.escapeAll ? t('mc.ea_rating', { rating: r.escapeAll.rating.toFixed(1), n: String(r.escapeAll.count), date: new Date(r.escapeAll.updatedAt).toLocaleDateString('el-GR') }) : t('mc.ea_none')}
+                  </p>
                 </div>
                 <button onClick={() => setRoom(r)} className="p-2 text-brand-text-secondary hover:text-white" aria-label={t('mc.edit')}><Pencil className="w-4 h-4" /></button>
                 <button
@@ -333,6 +336,18 @@ function AssignBox({ c, accounts, sessionToken, onDone }: { c: Managed; accounts
 function RoomForm({ sessionToken, companyId, room, onDone }: { sessionToken: string; companyId: Id<'companies'>; room?: Room; onDone: () => void }) {
   const { t } = useTranslation();
   const save = useMutation(api.managedCompanies.adminSaveRoom);
+  const setEscapeAll = useMutation(api.escapeAll.adminSetRoomRating);
+  // After the first save of a new room, a retry (e.g. a wrong EscapeAll number) edits it instead of adding another
+  const [savedId, setSavedId] = useState<Id<'rooms'> | undefined>(room?._id);
+  const [ea, setEa] = useState({
+    url: room?.escapeAll?.url ?? '',
+    rating: room?.escapeAll ? String(room.escapeAll.rating) : '',
+    count: room?.escapeAll ? String(room.escapeAll.count) : '',
+  });
+  const eaChanged =
+    ea.url.trim() !== (room?.escapeAll?.url ?? '') ||
+    ea.rating !== (room?.escapeAll ? String(room.escapeAll.rating) : '') ||
+    ea.count !== (room?.escapeAll ? String(room.escapeAll.count) : '');
   const [f, setF] = useState({
     title: room?.title ?? '',
     location: room?.location ?? '',
@@ -364,14 +379,24 @@ function RoomForm({ sessionToken, companyId, room, onDone }: { sessionToken: str
         return;
       }
       const { latitude, longitude, ...rest } = f;
-      await save({
+      const id = await save({
         sessionToken,
         companyId,
-        roomId: room?._id,
+        roomId: savedId,
         ...rest,
         latitude: latitude ?? undefined,
         longitude: longitude ?? undefined,
       });
+      setSavedId(id);
+      if (eaChanged) {
+        try {
+          const n = (s: string) => (s.trim() === '' ? undefined : Number(s.replace(',', '.')));
+          await setEscapeAll({ sessionToken, roomId: id, url: ea.url.trim(), rating: n(ea.rating), count: n(ea.count) });
+        } catch (x) {
+          setErr(`${t('mc.ea_failed')} ${friendlyError(x, t)}`);
+          return;
+        }
+      }
       onDone();
     } catch (x) {
       setErr(friendlyError(x, t));
@@ -394,6 +419,11 @@ function RoomForm({ sessionToken, companyId, room, onDone }: { sessionToken: str
         <label className="flex items-center gap-2 text-sm self-end pb-2">
           <input type="checkbox" checked={f.isActive} onChange={(e) => setF({ ...f, isActive: e.target.checked })} /> {t('mc.active')}
         </label>
+      </div>
+      <div className="grid sm:grid-cols-[1fr_120px_140px] gap-4">
+        <Field label={t('mc.escapeall')}><input className={input} value={ea.url} onChange={(e) => setEa({ ...ea, url: e.target.value })} placeholder="https://www.escapeall.gr/el/EscapeRoom/Details/..." maxLength={500} /></Field>
+        <Field label={t('mc.ea_score')}><input type="number" step="0.1" min={0} max={5} className={input} value={ea.rating} onChange={(e) => setEa({ ...ea, rating: e.target.value })} placeholder="4.8" /></Field>
+        <Field label={t('mc.ea_count')}><input type="number" step="1" min={0} className={input} value={ea.count} onChange={(e) => setEa({ ...ea, count: e.target.value })} placeholder="350" /></Field>
       </div>
       <CategoryPicker category={f.category} subthemes={f.subthemes} onChange={(category, subthemes) => setF((p) => ({ ...p, category, subthemes }))} />
       <div>

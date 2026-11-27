@@ -34,6 +34,7 @@ import type * as connections from "../connections.js";
 import type * as crons from "../crons.js";
 import type * as demoSeed from "../demoSeed.js";
 import type * as email from "../email.js";
+import type * as escapeAll from "../escapeAll.js";
 import type * as emailVerify from "../emailVerify.js";
 import type * as exif from "../exif.js";
 import type * as externalLinks from "../externalLinks.js";
@@ -123,6 +124,7 @@ declare const fullApi: ApiFromModules<{
   crons: typeof crons;
   demoSeed: typeof demoSeed;
   email: typeof email;
+  escapeAll: typeof escapeAll;
   emailVerify: typeof emailVerify;
   exif: typeof exif;
   externalLinks: typeof externalLinks;
