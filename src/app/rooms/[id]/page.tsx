@@ -232,8 +232,8 @@ export default function RoomDetailsPage() {
                 <div className="text-xl font-display font-bold text-brand-bone tabular-nums">{shown ? formatRating(shown.rating) : '—'}</div>
                 <div className="text-xs text-brand-text-muted mt-0.5">
                   {shown?.source ? (
-                    // Named, never linked: no links out to other booking sites
-                    t('room.reviews_on', { count: shown.count.toLocaleString(), source: shown.source })
+                    // Reviews from another site: shown as online reviews, the site is not named
+                    t('room.reviews_online', { count: shown.count.toLocaleString() })
                   ) : (
                     <>{shown?.count ?? 0} {t('featured.reviews')}</>
                   )}

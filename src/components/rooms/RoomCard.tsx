@@ -203,7 +203,7 @@ export function RoomCard({ room }: { room: RoomCardData }) {
           <span className="text-sm text-brand-text-muted truncate">
             (
             {room.ratingSource
-              ? t('room.reviews_on', { count: room.reviews.toLocaleString(), source: room.ratingSource })
+              ? t('room.reviews_online', { count: room.reviews.toLocaleString() })
               : `${room.reviews} ${t('featured.reviews')}`}
             )
           </span>
