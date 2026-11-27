@@ -340,12 +340,10 @@ function RoomForm({ sessionToken, companyId, room, onDone }: { sessionToken: str
   // After the first save of a new room, a retry (e.g. a wrong EscapeAll number) edits it instead of adding another
   const [savedId, setSavedId] = useState<Id<'rooms'> | undefined>(room?._id);
   const [ea, setEa] = useState({
-    url: room?.escapeAll?.url ?? '',
     rating: room?.escapeAll ? String(room.escapeAll.rating) : '',
     count: room?.escapeAll ? String(room.escapeAll.count) : '',
   });
   const eaChanged =
-    ea.url.trim() !== (room?.escapeAll?.url ?? '') ||
     ea.rating !== (room?.escapeAll ? String(room.escapeAll.rating) : '') ||
     ea.count !== (room?.escapeAll ? String(room.escapeAll.count) : '');
   const [f, setF] = useState({
@@ -391,7 +389,7 @@ function RoomForm({ sessionToken, companyId, room, onDone }: { sessionToken: str
       if (eaChanged) {
         try {
           const n = (s: string) => (s.trim() === '' ? undefined : Number(s.replace(',', '.')));
-          await setEscapeAll({ sessionToken, roomId: id, url: ea.url.trim(), rating: n(ea.rating), count: n(ea.count) });
+          await setEscapeAll({ sessionToken, roomId: id, rating: n(ea.rating), count: n(ea.count) });
         } catch (x) {
           setErr(`${t('mc.ea_failed')} ${friendlyError(x, t)}`);
           return;
@@ -420,8 +418,7 @@ function RoomForm({ sessionToken, companyId, room, onDone }: { sessionToken: str
           <input type="checkbox" checked={f.isActive} onChange={(e) => setF({ ...f, isActive: e.target.checked })} /> {t('mc.active')}
         </label>
       </div>
-      <div className="grid sm:grid-cols-[1fr_120px_140px] gap-4">
-        <Field label={t('mc.escapeall')}><input className={input} value={ea.url} onChange={(e) => setEa({ ...ea, url: e.target.value })} placeholder="https://www.escapeall.gr/el/EscapeRoom/Details/..." maxLength={500} /></Field>
+      <div className="grid grid-cols-2 sm:w-1/2 gap-4">
         <Field label={t('mc.ea_score')}><input type="number" step="0.1" min={0} max={5} className={input} value={ea.rating} onChange={(e) => setEa({ ...ea, rating: e.target.value })} placeholder="4.8" /></Field>
         <Field label={t('mc.ea_count')}><input type="number" step="1" min={0} className={input} value={ea.count} onChange={(e) => setEa({ ...ea, count: e.target.value })} placeholder="350" /></Field>
       </div>

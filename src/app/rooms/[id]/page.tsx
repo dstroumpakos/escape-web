@@ -232,13 +232,8 @@ export default function RoomDetailsPage() {
                 <div className="text-xl font-display font-bold text-brand-bone tabular-nums">{shown ? formatRating(shown.rating) : '—'}</div>
                 <div className="text-xs text-brand-text-muted mt-0.5">
                   {shown?.source ? (
-                    shown.url ? (
-                      <a href={shown.url} target="_blank" rel="noopener noreferrer nofollow" className="underline decoration-dotted underline-offset-2 hover:text-brand-text">
-                        {t('room.reviews_on', { count: shown.count.toLocaleString(), source: shown.source })}
-                      </a>
-                    ) : (
-                      t('room.reviews_on', { count: shown.count.toLocaleString(), source: shown.source })
-                    )
+                    // Named, never linked: no links out to other booking sites
+                    t('room.reviews_on', { count: shown.count.toLocaleString(), source: shown.source })
                   ) : (
                     <>{shown?.count ?? 0} {t('featured.reviews')}</>
                   )}
