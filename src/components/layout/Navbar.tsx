@@ -26,8 +26,20 @@ export function Logo({ size = 'md' }: { size?: 'md' | 'lg' }) {
       >
         <EyeKeyhole className={icon} blink />
       </span>
-      <span className={`font-blood ${text} tracking-wider text-brand-bone`}>
-        UN<span className="text-brand-red-light text-blood-glow animate-flicker">LOCKED</span>
+      <span className="flex flex-col items-center leading-none">
+        <span className={`font-blood ${text} tracking-wider text-brand-bone`}>
+          UN<span className="text-brand-red-light text-blood-glow animate-flicker">LOCKED</span>
+        </span>
+        {/* Category descriptor, so a first-time visitor reads "UNLOCKED Escape Rooms".
+            English in every language on purpose: it is the term players search for.
+            The negative right margin cancels the trailing letter-space so it centres. */}
+        <span
+          className={`mt-1 font-sans font-semibold uppercase whitespace-nowrap text-brand-red-light/90 ${
+            size === 'lg' ? 'text-[11px] tracking-[0.42em] -mr-[0.42em]' : 'text-[8px] sm:text-[9px] tracking-[0.38em] -mr-[0.38em]'
+          }`}
+        >
+          Escape Rooms
+        </span>
       </span>
     </span>
   );

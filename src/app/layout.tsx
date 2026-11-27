@@ -17,9 +17,11 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: 'Discover Escape Rooms & Collect Stamps | UNLOCKED',
+  // Makes the share image (src/app/opengraph-image.tsx) an absolute unlocked.gr URL in production
+  metadataBase: new URL('https://unlocked.gr'),
+  title: 'UNLOCKED Escape Rooms · Discover Escape Rooms & Collect Stamps',
   description:
-    'Discover the best escape rooms near you, join the community of players and collect a stamp with every escape. Browse by theme, difficulty & location on UNLOCKED.',
+    'Every escape room. One app. Discover the best escape rooms near you, join the community of players and collect a stamp with every escape. Browse by theme, difficulty & location.',
   keywords: [
     'escape room',
     'book escape room',
@@ -44,19 +46,19 @@ export const metadata: Metadata = {
     },
   },
   openGraph: {
-    title: 'Discover Escape Rooms & Collect Stamps | UNLOCKED',
+    title: 'UNLOCKED Escape Rooms · Discover Escape Rooms & Collect Stamps',
     description:
-      'Discover the best escape rooms near you, join the community and collect a stamp with every escape.',
+      'Every escape room. One app. Discover the best escape rooms near you, join the community and collect a stamp with every escape.',
     type: 'website',
     url: 'https://unlocked.gr',
-    siteName: 'UNLOCKED',
+    siteName: 'UNLOCKED Escape Rooms',
     locale: 'en_US',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Discover Escape Rooms & Collect Stamps | UNLOCKED',
+    title: 'UNLOCKED Escape Rooms · Discover Escape Rooms & Collect Stamps',
     description:
-      'Discover the best escape rooms near you and collect a stamp with every escape on UNLOCKED.',
+      'Every escape room. One app. Discover the best escape rooms near you and collect a stamp with every escape.',
   },
 };
 
@@ -68,7 +70,8 @@ export default function RootLayout({
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'WebApplication',
-    name: 'UNLOCKED',
+    name: 'UNLOCKED Escape Rooms',
+    alternateName: 'UNLOCKED',
     url: 'https://unlocked.gr',
     description:
       'Discover escape rooms around the world, join the community of players and collect a stamp with every escape.',
@@ -82,7 +85,8 @@ export default function RootLayout({
     },
     creator: {
       '@type': 'Organization',
-      name: 'UNLOCKED',
+      name: 'UNLOCKED Escape Rooms',
+      alternateName: 'UNLOCKED',
       url: 'https://unlocked.gr',
       logo: 'https://unlocked.gr/icon-512',
       contactPoint: {
