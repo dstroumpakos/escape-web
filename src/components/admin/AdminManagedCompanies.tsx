@@ -177,7 +177,7 @@ function CompanyForm({ sessionToken, company, onDone }: { sessionToken: string; 
         <Field label={t('mc.phone')}><input className={input} value={f.phone} onChange={set('phone')} maxLength={40} /></Field>
         <Field label={t('mc.website')}><input className={input} value={f.website} onChange={set('website')} placeholder="https://" maxLength={300} /></Field>
         <Field label={t('mc.instagram')}><input className={input} value={f.instagram} onChange={set('instagram')} placeholder="@escaperoom" maxLength={100} /></Field>
-        <ImageField label={t('mc.logo')} value={f.logo} onChange={(logo) => setF({ ...f, logo })} sessionToken={sessionToken} />
+        <ImageField label={t('mc.logo')} value={f.logo} onChange={(logo) => setF((p) => ({ ...p, logo }))} sessionToken={sessionToken} />
       </div>
       <Field label={t('mc.description')}><textarea className={input} rows={3} value={f.description} onChange={set('description')} maxLength={3000} /></Field>
       {err && <p className="text-sm text-red-300">{err}</p>}
@@ -385,7 +385,7 @@ function RoomForm({ sessionToken, companyId, room, onDone }: { sessionToken: str
       <h4 className="font-semibold text-sm">{room ? t('mc.edit_room') : t('mc.new_room')}</h4>
       <div className="grid sm:grid-cols-2 gap-4">
         <Field label={t('mc.room_title')}><input className={input} value={f.title} onChange={(e) => setF({ ...f, title: e.target.value })} required maxLength={120} /></Field>
-        <ImageField label={t('mc.photo')} value={f.image} onChange={(image) => setF({ ...f, image })} sessionToken={sessionToken} />
+        <ImageField label={t('mc.photo')} value={f.image} onChange={(image) => setF((p) => ({ ...p, image }))} sessionToken={sessionToken} />
         <Field label={t('mc.duration')}><input type="number" className={input} value={f.duration} onChange={num('duration')} min={10} max={600} /></Field>
         <Field label={t('mc.difficulty')}><input type="number" className={input} value={f.difficulty} onChange={num('difficulty')} min={1} max={5} /></Field>
         <Field label={t('mc.players_min')}><input type="number" className={input} value={f.playersMin} onChange={num('playersMin')} min={1} max={50} /></Field>
