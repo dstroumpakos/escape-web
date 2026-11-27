@@ -145,6 +145,7 @@ function CompanyForm({ sessionToken, company, onDone }: { sessionToken: string; 
     address: company?.address ?? '',
     phone: company?.phone ?? '',
     website: company?.website ?? '',
+    instagram: company?.instagram ? `@${company.instagram}` : '',
     description: company?.description ?? '',
     logo: company?.logo ?? '',
   });
@@ -175,6 +176,7 @@ function CompanyForm({ sessionToken, company, onDone }: { sessionToken: string; 
         <Field label={t('mc.address')}><input className={input} value={f.address} onChange={set('address')} maxLength={200} /></Field>
         <Field label={t('mc.phone')}><input className={input} value={f.phone} onChange={set('phone')} maxLength={40} /></Field>
         <Field label={t('mc.website')}><input className={input} value={f.website} onChange={set('website')} placeholder="https://" maxLength={300} /></Field>
+        <Field label={t('mc.instagram')}><input className={input} value={f.instagram} onChange={set('instagram')} placeholder="@escaperoom" maxLength={100} /></Field>
         <ImageField label={t('mc.logo')} value={f.logo} onChange={(logo) => setF({ ...f, logo })} sessionToken={sessionToken} />
       </div>
       <Field label={t('mc.description')}><textarea className={input} rows={3} value={f.description} onChange={set('description')} maxLength={3000} /></Field>
@@ -209,6 +211,12 @@ function CompanyCard({ c, accounts, sessionToken, onEdit }: { c: Managed; accoun
         <div className="min-w-0 flex-1">
           <p className="font-bold">{c.name}</p>
           <p className="text-xs text-brand-text-secondary">{[c.city, c.website].filter(Boolean).join(' · ')}</p>
+          {c.instagram && (
+            <p className={`text-xs ${c.instagramError ? 'text-amber-300/80' : 'text-brand-text-muted'}`}>
+              Instagram @{c.instagram} ·{' '}
+              {c.instagramError ? t(c.instagramError === 'not_found' ? 'mc.ig_err_not_found' : 'mc.ig_err_fetch_failed') :c.instagramSyncedAt ? t('mc.ig_synced') : t('mc.ig_syncing')}
+            </p>
+          )}
         </div>
         <div className="flex flex-wrap gap-2">
           <button onClick={() => setAssigning(!assigning)} className="btn-primary py-1.5! px-3! text-xs flex items-center gap-1.5">
