@@ -14,7 +14,7 @@ const FOG_LAYER =
 /**
  * Pages where people book, pay, sign in or manage their account. They keep the
  * calm atmosphere (grain, vignette, scanlines, fog) but get no embers, power cuts,
- * lightning or passing figure: nobody should get a fright while paying.
+ * lightning: nobody should get a fright while paying.
  */
 const CALM_ROUTES = [
   /^\/rooms\/[^/]+\/book(\/|$)/,
@@ -128,62 +128,8 @@ function Embers() {
 }
 
 /**
- * The ghost that drifts across the bottom of the screen now and then: a thin
- * woman with long hair over her face, her dress thinning into the fog. Her
- * edges smoke, a cold glow hangs round her, and she floats rather than walks.
- * Halfway across she stops, tilts her head at you and her eyes light up
- * (ghost-head / ghost-eyes run in step with ghost-walk, all 11s).
- */
-function Figure() {
-  return (
-    <svg viewBox="0 0 124 400" className="h-full w-auto overflow-visible">
-      <defs>
-        <linearGradient id="gh-body" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="400">
-          <stop offset="0" stopColor="#040306" />
-          <stop offset="0.6" stopColor="#07060b" stopOpacity="0.95" />
-          <stop offset="0.85" stopColor="#0b0a12" stopOpacity="0.55" />
-          <stop offset="1" stopColor="#0b0a12" stopOpacity="0" />
-        </linearGradient>
-        <radialGradient id="gh-eye">
-          <stop offset="0" stopColor="#eaf2ff" stopOpacity="0.9" />
-          <stop offset="0.35" stopColor="#9db8ff" stopOpacity="0.45" />
-          <stop offset="1" stopColor="#9db8ff" stopOpacity="0" />
-        </radialGradient>
-        {/* Smoky, shifting edges */}
-        <filter id="gh-smoke" x="-30%" y="-10%" width="160%" height="120%">
-          <feTurbulence type="fractalNoise" baseFrequency="0.018 0.05" numOctaves="2" seed="7">
-            <animate attributeName="baseFrequency" dur="7s" values="0.018 0.05;0.024 0.07;0.018 0.05" repeatCount="indefinite" />
-          </feTurbulence>
-          <feDisplacementMap in="SourceGraphic" scale="8" />
-        </filter>
-      </defs>
-      <g className="ghost-float" filter="url(#gh-smoke)" fill="url(#gh-body)">
-        {/* Dress, narrow at the waist, torn at the hem */}
-        <path d="M54 62 C 50 70, 42 74, 36 82 C 30 120, 30 170, 32 220 C 30 270, 24 330, 12 392 L 22 378 L 27 398 L 36 382 L 43 400 L 51 384 L 59 400 L 67 384 L 75 400 L 83 382 L 92 398 L 99 378 L 110 392 C 98 330, 92 270, 90 220 C 92 170, 92 120, 88 82 C 82 74, 74 70, 70 62 Z" />
-        {/* Long thin arms, hanging, fingers spread */}
-        <path d="M38 84 C 30 120, 26 170, 24 232 L 19 262 L 22 263 L 26 242 L 26 266 L 29 266 L 30 242 L 32 262 L 35 260 L 33 232 C 36 180, 40 130, 45 96 Z" />
-        <path d="M86 84 C 94 120, 98 170, 100 232 L 105 262 L 102 263 L 98 242 L 98 266 L 95 266 L 94 242 L 92 262 L 89 260 L 91 232 C 88 180, 84 130, 79 96 Z" />
-        {/* Head and hair; the head tilts towards you when she stops */}
-        <g className="ghost-head">
-          <ellipse cx="62" cy="46" rx="13" ry="17" />
-          <path d="M47 38 C 44 62, 40 102, 35 150 L 32 194 L 39 178 L 43 198 L 47 172 L 50 132 C 52 100, 52 72, 54 50 Z" />
-          <path d="M77 38 C 80 62, 86 102, 90 150 L 93 192 L 86 176 L 82 196 L 78 170 L 75 130 C 73 100, 72 72, 70 50 Z" />
-          <path d="M49 34 C 52 26, 72 26, 75 34 C 74 60, 72 84, 70 104 L 66 90 L 63 112 L 60 92 L 56 106 C 53 84, 50 60, 49 34 Z" />
-          <g className="ghost-eyes">
-            <circle cx="57" cy="49" r="7" fill="url(#gh-eye)" />
-            <circle cx="68" cy="49" r="7" fill="url(#gh-eye)" />
-            <circle cx="57" cy="49" r="1.6" fill="#f2f6ff" />
-            <circle cx="68" cy="49" r="1.6" fill="#f2f6ff" />
-          </g>
-        </g>
-      </g>
-    </svg>
-  );
-}
-
-/**
  * Site-wide atmosphere: grain, vignette, scanlines, fog, embers,
- * random power cuts and lightning, a passing figure, and a glitch between pages.
+ * random power cuts and lightning, and a glitch between pages.
  * Everything is pointer-events-none and sits under the navbar.
  */
 export function HorrorFX() {
@@ -191,13 +137,10 @@ export function HorrorFX() {
   const pathname = usePathname();
   const [flickerKey, setFlickerKey] = useState(0);
   const [lightningKey, setLightningKey] = useState(0);
-  const [ghostKey, setGhostKey] = useState(0);
   const [routeKey, setRouteKey] = useState(0);
   const prevPath = useRef(pathname);
   // Calm pages and reduced-motion users get no scares
   const quiet = reduced || isCalmRoute(pathname);
-  // The ghost only walks across the home page
-  const ghostHere = !quiet && pathname === '/';
 
   // Random power cuts
   useEffect(() => {
@@ -227,20 +170,6 @@ export function HorrorFX() {
     return () => clearTimeout(to);
   }, [quiet]);
 
-  // The figure
-  useEffect(() => {
-    if (!ghostHere) return;
-    let to: ReturnType<typeof setTimeout>;
-    const schedule = (first = false) => {
-      to = setTimeout(() => {
-        setGhostKey((k) => k + 1);
-        schedule();
-      }, first ? 7000 + Math.random() * 5000 : 38000 + Math.random() * 35000);
-    };
-    schedule(true);
-    return () => clearTimeout(to);
-  }, [ghostHere]);
-
   // Glitch cut between pages
   useEffect(() => {
     if (prevPath.current === pathname) return;
@@ -268,23 +197,6 @@ export function HorrorFX() {
           style={{ background: FOG_LAYER, animation: 'fog-drift-rev 52s ease-in-out infinite alternate' }}
         />
       </div>
-
-      {/* The figure */}
-      {ghostKey > 0 && ghostHere && (
-        <div
-          key={`g${ghostKey}`}
-          className="horror-motion fixed bottom-0 left-0 z-[43] h-[58vh] opacity-0"
-          style={{ animation: 'ghost-walk 11s linear forwards' }}
-        >
-          {/* A cold glow round her, so she stands out from the dark page */}
-          <div
-            className="h-full opacity-80"
-            style={{ filter: 'blur(0.6px) drop-shadow(0 0 6px rgba(140,165,215,0.45)) drop-shadow(0 0 22px rgba(110,140,210,0.28))' }}
-          >
-            <Figure />
-          </div>
-        </div>
-      )}
 
       {/* Vignette */}
       <div
