@@ -9,6 +9,13 @@ import { useTranslation } from '@/lib/i18n';
 type Filter = 'all' | 'premium' | 'unverified' | 'booked';
 const PAGE = 50;
 
+/** Admin runs on business.unlocked.gr, which only serves company pages: player pages live on the main host. */
+function playerSiteUrl(path: string) {
+  if (typeof window === 'undefined') return path;
+  const { protocol, host } = window.location;
+  return host.startsWith('business.') ? `${protocol}//${host.slice('business.'.length)}${path}` : path;
+}
+
 /** Admin Users tab: every player account, searchable, newest first. */
 export function AdminUsers({ sessionToken }: { sessionToken: string }) {
   const { t, language } = useTranslation();
@@ -93,7 +100,7 @@ export function AdminUsers({ sessionToken }: { sessionToken: string }) {
             <div className="flex items-center gap-4 text-xs text-brand-text-secondary">
               <span>{t('au.played')} <b className="text-white">{u.played}</b></span>
               <span>{t('au.bookings')} <b className="text-white">{u.bookings}</b></span>
-              <a href={`/u/${u._id}`} target="_blank" rel="noreferrer" className="p-1.5 hover:text-white" aria-label={t('au.profile')} title={t('au.profile')}>
+              <a href={playerSiteUrl(`/u/${u._id}`)} target="_blank" rel="noreferrer" className="p-1.5 hover:text-white" aria-label={t('au.profile')} title={t('au.profile')}>
                 <ExternalLink className="w-4 h-4" />
               </a>
             </div>
