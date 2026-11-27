@@ -62,6 +62,11 @@ export default function RoomDetailsPage() {
   const [showAllReviews, setShowAllReviews] = useState(false);
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [imageFailed, setImageFailed] = useState(false);
+  // Tall photos (posters) would be cut to a thin slice by the wide hero: shown whole instead
+  const [poster, setPoster] = useState(false);
+  const checkPoster = (img: HTMLImageElement | null) => {
+    if (img && img.complete && img.naturalWidth > 0 && img.naturalHeight > img.naturalWidth * 1.15) setPoster(true);
+  };
 
   const isWishlisted = false; // Would need to query user's wishlist
 
@@ -104,20 +109,37 @@ export default function RoomDetailsPage() {
   return (
     <>
       {/* Hero Image */}
-      <section className="relative h-[44vh] md:h-[56vh] overflow-hidden bg-black">
+      <section className={`relative overflow-hidden bg-black ${poster ? 'h-[72vh] md:h-[80vh]' : 'h-[44vh] md:h-[56vh]'}`}>
         {room.image && !imageFailed ? (
-          <img
-            src={room.image}
-            alt={room.title}
-            onError={() => setImageFailed(true)}
-            className="w-full h-full object-cover contrast-110 brightness-90"
-          />
+          poster ? (
+            // Tall poster: show all of it, over a blurred copy that fills the width
+            <>
+              <img src={room.image} alt="" aria-hidden className="absolute inset-0 w-full h-full object-cover blur-2xl scale-110 opacity-50 brightness-75" />
+              <div className="absolute inset-x-0 top-20 bottom-28 md:bottom-36 flex justify-center px-4">
+                <img
+                  src={room.image}
+                  alt={room.title}
+                  onError={() => setImageFailed(true)}
+                  className="h-full w-auto max-w-full object-contain rounded-md shadow-[0_20px_60px_rgba(0,0,0,0.8)]"
+                />
+              </div>
+            </>
+          ) : (
+            <img
+              ref={checkPoster}
+              src={room.image}
+              alt={room.title}
+              onLoad={(e) => checkPoster(e.currentTarget)}
+              onError={() => setImageFailed(true)}
+              className="w-full h-full object-cover contrast-110 brightness-90"
+            />
+          )
         ) : (
           <div className="w-full h-full bg-[radial-gradient(70%_70%_at_50%_55%,#2a1010,#0a0505)] flex items-center justify-center">
             <DoorOpen className="w-24 h-24 text-brand-border/60" />
           </div>
         )}
-        <div className="absolute inset-0 bg-linear-to-t from-brand-bg via-brand-bg/45 to-black/50" />
+        <div className={`absolute inset-0 bg-linear-to-t ${poster ? 'from-brand-bg via-transparent to-black/40' : 'from-brand-bg via-brand-bg/45 to-black/50'}`} />
         {/* Vignette so the photo sinks into the page */}
         <div aria-hidden className="absolute inset-0 shadow-[inset_0_0_160px_rgba(0,0,0,0.85)]" />
 
