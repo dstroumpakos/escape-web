@@ -20,6 +20,7 @@ import {
   XCircle,
   AlertCircle,
   Rocket,
+  Gift,
   Diamond,
   Crown,
   ArrowLeft,
@@ -309,7 +310,8 @@ export default function AdminPage() {
             {/* Plan breakdown */}
             <div className="bg-brand-surface rounded-2xl border border-white/5 p-6">
               <h3 className="text-sm font-bold text-brand-text-secondary mb-4">{t('admin.company_plans')}</h3>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                <PlanCard icon={Gift} label={t('admin.plan_listing')} count={companies.plans.listing ?? 0} color="text-sky-400" bg="bg-sky-500/10" />
                 <PlanCard icon={Crown} label={t('company.plan.unlimited')} count={companies.plans.unlimited} color="text-purple-400" bg="bg-purple-500/10" />
                 <PlanCard icon={Rocket} label={t('company.plan.payg')} count={companies.plans.payg} color="text-emerald-400" bg="bg-emerald-500/10" />
                 <PlanCard icon={Diamond} label={t('admin.legacy_plan')} count={companies.plans.legacy} color="text-amber-400" bg="bg-amber-500/10" />
@@ -616,6 +618,7 @@ function PlanBadgeMini({ plan }: { plan: string }) {
   const config: Record<string, { bg: string; text: string; Icon: any }> = {
     unlimited: { bg: 'bg-purple-500/10', text: 'text-purple-400', Icon: Crown },
     payg: { bg: 'bg-emerald-500/10', text: 'text-emerald-400', Icon: Rocket },
+    listing: { bg: 'bg-sky-500/10', text: 'text-sky-400', Icon: Gift },
     // legacy values, until billingStripe:migrateLegacyPlans has run
     free: { bg: 'bg-amber-500/10', text: 'text-amber-400', Icon: Diamond },
     starter: { bg: 'bg-amber-500/10', text: 'text-amber-400', Icon: Diamond },

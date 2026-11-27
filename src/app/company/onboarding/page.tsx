@@ -61,6 +61,7 @@ export default function CompanyOnboardingPage() {
 
   const acceptTerms = useCompanyMutation(api.companies.acceptTerms);
   const selectPlan = useCompanyMutation(api.companies.selectPlan);
+  const submitApplication = useCompanyMutation(api.companies.submitApplication);
   const createCheckout = useCompanyAction(api.stripe.createCheckoutSession);
   const resubmit = useCompanyMutation(api.companies.resubmitForReview);
 
@@ -339,10 +340,21 @@ export default function CompanyOnboardingPage() {
       }
     };
 
-    // No per-booking plans while UNLOCKED's own booking is off (src/lib/features.ts):
-    // no prices here, the company just confirms and goes to review. Packages are
-    // agreed with the team directly.
+    // No plans while UNLOCKED's own booking is off (src/lib/features.ts): listing
+    // is free, the company just confirms and goes to review (free listing plan).
     if (!BOOKING_ENABLED) {
+      const handleSubmit = async () => {
+        setLoading(true);
+        setActionError('');
+        try {
+          await submitApplication({ companyId: companyId as any });
+          refreshCompany({ onboardingStatus: 'pending_review', platformPlan: 'listing' });
+        } catch (err: any) {
+          setActionError(friendlyError(err, t));
+        } finally {
+          setLoading(false);
+        }
+      };
       return (
         <div className="min-h-screen bg-brand-bg">
           <div className="max-w-2xl mx-auto">
@@ -352,7 +364,7 @@ export default function CompanyOnboardingPage() {
               <p className="text-brand-text-secondary mb-8">{t('cx.onboarding.confirm_text')}</p>
               {actionError && <p className="text-sm text-red-400 mb-4">{actionError}</p>}
               <button
-                onClick={() => handleSelectPlan('payg')}
+                onClick={handleSubmit}
                 disabled={loading}
                 className="btn-primary px-10 py-3 inline-flex items-center gap-2 disabled:opacity-50"
               >
