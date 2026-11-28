@@ -49,14 +49,20 @@ export function RoomHero({ image, title, children }: { image?: string; title: st
               </div>
             </>
           ) : (
-            <img
-              ref={checkPoster}
-              src={image}
-              alt={title}
-              onLoad={(e) => checkPoster(e.currentTarget)}
-              onError={() => setFailed(true)}
-              className="w-full h-full object-cover contrast-110 brightness-90"
-            />
+            <>
+              {/* Phones: a full-screen cover crop keeps only a slice of a wide
+                  photo, so it is shown whole across the screen over a blurred
+                  copy of itself. From md up it fills the screen as before. */}
+              <img src={image} alt="" aria-hidden className="md:hidden absolute inset-0 w-full h-full object-cover blur-2xl scale-125 opacity-80" />
+              <img
+                ref={checkPoster}
+                src={image}
+                alt={title}
+                onLoad={(e) => checkPoster(e.currentTarget)}
+                onError={() => setFailed(true)}
+                className="relative w-full h-full object-contain md:object-cover md:contrast-110 md:brightness-90 drop-shadow-[0_20px_40px_rgba(0,0,0,0.8)] md:drop-shadow-none"
+              />
+            </>
           )
         ) : (
           <div className="w-full h-full bg-[radial-gradient(70%_70%_at_50%_55%,#2a1010,#0a0505)] flex items-center justify-center">
@@ -67,7 +73,7 @@ export function RoomHero({ image, title, children }: { image?: string; title: st
 
       {/* Fades into the page at the bottom, a little shade at the top for the navbar */}
       <div className="absolute inset-0 bg-linear-to-t from-brand-bg via-transparent to-black/40 pointer-events-none" />
-      <div aria-hidden className="absolute inset-0 shadow-[inset_0_0_160px_rgba(0,0,0,0.85)] pointer-events-none" />
+      <div aria-hidden className="absolute inset-0 shadow-[inset_0_0_60px_rgba(0,0,0,0.85)] md:shadow-[inset_0_0_160px_rgba(0,0,0,0.85)] pointer-events-none" />
 
       {children}
 
