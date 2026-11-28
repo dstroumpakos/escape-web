@@ -15,13 +15,14 @@ import { HorrorFX } from '@/components/horror/HorrorFX';
 import { AmbientMusic } from '@/components/horror/AmbientMusic';
 import { HorrorIntro } from '@/components/horror/HorrorIntro';
 import { BloodDrips } from '@/components/horror/BloodDrips';
-import { useMode } from '@/lib/mode';
+import { ChristmasDecor } from '@/components/seasonal/ChristmasDecor';
+import { usePageMode } from '@/lib/mode';
 
 export function LayoutShell({ children }: { children: React.ReactNode }) {
   const { t } = useTranslation();
   const pathname = usePathname();
-  // Puzzle side: no fright effects at all; the cold open only for players who chose horror
-  const mode = useMode();
+  // Puzzle side: no fright effects at all. The home is always both sides (usePageMode).
+  const mode = usePageMode();
   // On business./photos. subdomains the proxy rewrites /x to /company/x or
   // /photos-app/x. usePathname() shows the visible URL, but the route segments
   // are the rewritten ones on both server and client, so use them to recognise
@@ -121,6 +122,8 @@ export function LayoutShell({ children }: { children: React.ReactNode }) {
         </main>
         <Footer />
         <HorrorFX />
+        {/* Lights and snow in the Christmas season only (lib/seasonal.ts) */}
+        <ChristmasDecor />
         <CookieConsent />
       </>
     );
@@ -137,6 +140,8 @@ export function LayoutShell({ children }: { children: React.ReactNode }) {
       </main>
       <Footer />
       {mode !== 'puzzle' && <HorrorFX />}
+      {/* Lights and snow in the Christmas season only (lib/seasonal.ts) */}
+      <ChristmasDecor />
       {/* Quiet background music, both sides; the speaker in the navbar turns it off */}
       <AmbientMusic />
       <CookieConsent />

@@ -15,8 +15,9 @@ import { BOOKING_ENABLED, PASSPORT_ENABLED } from '@/lib/features';
 import { LanguageToggle } from '@/components/LanguageToggle';
 import { ModeToggle } from '@/components/ModeToggle';
 import { BloodDrips } from '@/components/horror/BloodDrips';
+import { SantaHat } from '@/components/seasonal/ChristmasDecor';
 
-export function Logo({ size = 'md' }: { size?: 'md' | 'lg' }) {
+export function Logo({ size = 'md', hat = false }: { size?: 'md' | 'lg'; hat?: boolean }) {
   const box = size === 'lg' ? 'w-11 h-11' : 'w-9 h-9';
   const icon = size === 'lg' ? 'w-8 h-8' : 'w-7 h-7';
   const text = size === 'lg' ? 'text-2xl' : 'text-base sm:text-lg';
@@ -26,6 +27,7 @@ export function Logo({ size = 'md' }: { size?: 'md' | 'lg' }) {
         className={`logo-box relative ${box} rounded-md flex items-center justify-center bg-linear-to-b from-[#e0141f] to-brand-red border border-brand-red-light/40 shadow-[0_0_18px_rgba(var(--glow),0.55)] group-hover:animate-shake`}
       >
         <EyeKeyhole className={icon} blink />
+        {hat && <SantaHat />}
       </span>
       <span className="flex flex-col items-center leading-none">
         <span className={`font-blood ${text} tracking-wider text-brand-bone`}>
@@ -130,7 +132,8 @@ export function Navbar() {
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 md:h-20">
           <Link href="/" aria-label="UNLOCKED">
-            <Logo />
+            {/* hat: a Santa hat on the square in the Christmas season only (lib/seasonal.ts) */}
+            <Logo hat />
           </Link>
 
           {/* Desktop Nav */}

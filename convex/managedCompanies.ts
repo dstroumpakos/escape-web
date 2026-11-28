@@ -8,6 +8,7 @@ import { checkRoomInput } from "./companyRules";
 import { cleanExternalUrl } from "./externalLinks";
 import { cleanInstagramUsername, removePosts } from "./instagram";
 import { categoryFields, categoryOf, subthemesOf } from "./roomCategories";
+import { posterArgs, posterFields } from "./roomPoster";
 
 /**
  * Companies the UNLOCKED team adds itself, to promote an escape room that
@@ -64,6 +65,7 @@ export const adminList = query({
               _id: r._id,
               title: r.title,
               image: r.image,
+              posterImage: r.posterImage ?? "",
               category: categoryOf(r),
               subthemes: subthemesOf(r),
               location: r.location,
@@ -181,6 +183,7 @@ export const adminSaveRoom = mutation({
     latitude: v.optional(v.number()),
     longitude: v.optional(v.number()),
     image: v.string(),
+    ...posterArgs,
     category: v.union(v.literal("puzzle"), v.literal("puzzle_actor"), v.literal("horror")),
     subthemes: v.array(v.string()),
     description: v.string(),
@@ -210,6 +213,8 @@ export const adminSaveRoom = mutation({
       bookingUrl: cleanExternalUrl(f.bookingUrl) || undefined,
       isActive: f.isActive ?? true,
       ...categoryFields({ category: f.category, subthemes: f.subthemes })!,
+      // Card in the Companies section; kept when the company is assigned to its account
+      ...posterFields({ posterImage: f.posterImage }),
     };
     checkRoomInput(fields);
     if (!fields.image) throw new ConvexError("Add a photo of the room");

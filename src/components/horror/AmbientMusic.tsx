@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 import { useMusicEnabled } from '@/lib/ambient';
-import { useMode } from '@/lib/mode';
+import { usePageMode } from '@/lib/mode';
 
 /**
  * Quiet spooky background music, made live in the browser (Web Audio): a slow
@@ -176,7 +176,7 @@ function startEngine(side: 'horror' | 'puzzle'): Engine | null {
 
 export function AmbientMusic() {
   const on = useMusicEnabled();
-  const mode = useMode();
+  const mode = usePageMode();
   const side: 'horror' | 'puzzle' = mode === 'puzzle' ? 'puzzle' : 'horror';
   const engine = useRef<Engine | null>(null);
   const sideRef = useRef(side);

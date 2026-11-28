@@ -23,6 +23,7 @@ import { leaderboardTranslations } from './i18nLeaderboard';
 import { jobsTranslations } from './i18nJobs';
 import { peopleTranslations } from './i18nPeople';
 import { companyProfileTranslations } from './i18nCompanyProfile';
+import { roomPosterTranslations } from './i18nRoomPoster';
 
 import { Language, isLanguage, detectBrowserLanguage, isRtl } from './languages';
 
@@ -747,6 +748,8 @@ const translations: Record<BundledLanguage, Record<string, string>> = {
     'room.instagram_follow': 'Follow',
     'room.instagram_open': 'Open the post on Instagram',
     'room.trailer': 'Trailer',
+    'room.where': 'Where to find it',
+    'room.directions': 'Directions',
     'room.reviews_on': '{{count}} reviews on {{source}}',
     'room.reviews_online': '{{count}} online reviews',
     'room.about': 'About This Room',
@@ -3067,6 +3070,8 @@ const translations: Record<BundledLanguage, Record<string, string>> = {
     'room.instagram_follow': 'Ακολουθήστε',
     'room.instagram_open': 'Άνοιγμα της ανάρτησης στο Instagram',
     'room.trailer': 'Τρέιλερ',
+    'room.where': 'Πού θα το βρεις',
+    'room.directions': 'Οδηγίες',
     'room.reviews_on': '{{count}} κριτικές στο {{source}}',
     'room.reviews_online': '{{count}} κριτικές online',
     'room.about': 'Σχετικά με το Δωμάτιο',
@@ -5554,6 +5559,8 @@ const translations: Record<BundledLanguage, Record<string, string>> = {
     'room.instagram_follow': 'Volgen',
     'room.instagram_open': 'Bericht openen op Instagram',
     'room.trailer': 'Trailer',
+    'room.where': 'Waar je het vindt',
+    'room.directions': 'Route',
     'room.reviews_on': '{{count}} beoordelingen op {{source}}',
     'room.reviews_online': '{{count}} online beoordelingen',
     'room.about': 'Over Deze Kamer',
@@ -6975,6 +6982,9 @@ Object.assign(translations.nl, peopleTranslations.nl);
 Object.assign(translations.en, companyProfileTranslations.en);
 Object.assign(translations.el, companyProfileTranslations.el);
 Object.assign(translations.nl, companyProfileTranslations.nl);
+Object.assign(translations.en, roomPosterTranslations.en);
+Object.assign(translations.el, roomPosterTranslations.el);
+Object.assign(translations.nl, roomPosterTranslations.nl);
 
 interface I18nContextType {
   language: Language;

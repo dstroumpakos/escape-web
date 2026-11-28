@@ -995,8 +995,11 @@ html[data-intro-seen] .horror-intro {
    Puzzle side (lib/mode.ts): <html data-mode="puzzle">
    Same tokens, night-sky navy and detective gold instead of blood.
    Every utility reads the tokens, so this one block re-colours the site.
+   .side-puzzle does the same for one part of a page: the home shows both
+   sides at once (components/home/DualSides.tsx).
    ────────────────────────────────────────────────────────────── */
-html[data-mode='puzzle'] {
+html[data-mode='puzzle'],
+.side-puzzle {
   --color-brand-bg: #0a1122;
   --color-brand-dark: #050a17;
   --color-brand-card: #0f1830;
@@ -1029,95 +1032,122 @@ html[data-mode='puzzle'] body {
 }
 /* No fright on this side: no blood, eyes, fog, power cuts or cold open */
 html[data-mode='puzzle'] .horror-motion,
-html[data-mode='puzzle'] .horror-intro {
+html[data-mode='puzzle'] .horror-intro,
+.side-puzzle .horror-motion,
+.side-puzzle .horror-intro {
   display: none !important;
 }
 html[data-mode='puzzle'] .glitch::before,
-html[data-mode='puzzle'] .glitch::after {
+html[data-mode='puzzle'] .glitch::after,
+.side-puzzle .glitch::before,
+.side-puzzle .glitch::after {
   display: none;
 }
-html[data-mode='puzzle'] .horror-rough {
+html[data-mode='puzzle'] .horror-rough,
+.side-puzzle .horror-rough {
   filter: drop-shadow(0 0 14px rgba(242, 199, 92, 0.3));
 }
-html[data-mode='puzzle'] .btn-primary {
+html[data-mode='puzzle'] .btn-primary,
+.side-puzzle .btn-primary {
   background-image: linear-gradient(180deg, #f6d27a, #d9a53a 55%, #a97a1c);
   color: #1a1305;
   border-color: rgba(246, 210, 122, 0.5);
   text-shadow: none;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35), 0 8px 24px -8px rgba(217, 165, 58, 0.7);
 }
-html[data-mode='puzzle'] .btn-primary:hover:not(:disabled) {
+html[data-mode='puzzle'] .btn-primary:hover:not(:disabled),
+.side-puzzle .btn-primary:hover:not(:disabled) {
   color: #000;
   animation: none;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 0 28px rgba(242, 199, 92, 0.5);
 }
-html[data-mode='puzzle'] .btn-outline:hover {
+html[data-mode='puzzle'] .btn-outline:hover,
+.side-puzzle .btn-outline:hover {
   color: #1a1305;
   background-color: var(--color-brand-red-light);
   box-shadow: 0 0 24px rgba(242, 199, 92, 0.35);
 }
 /* White text on the old red is unreadable on gold */
 html[data-mode='puzzle'] .bg-brand-red.text-white,
-html[data-mode='puzzle'] .bg-brand-red .text-white {
+html[data-mode='puzzle'] .bg-brand-red .text-white,
+.side-puzzle .bg-brand-red.text-white,
+.side-puzzle .bg-brand-red .text-white {
   color: #1a1305;
 }
 html[data-mode='puzzle'] .card,
 html[data-mode='puzzle'] .panel,
-html[data-mode='puzzle'] .card-hover {
+html[data-mode='puzzle'] .card-hover,
+.side-puzzle .card,
+.side-puzzle .panel,
+.side-puzzle .card-hover {
   background-image:
     radial-gradient(120% 80% at 50% 0%, rgba(60, 90, 170, 0.16), transparent 60%),
     linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(0, 0, 0, 0.3));
 }
 html[data-mode='puzzle'] .card:hover,
-html[data-mode='puzzle'] .card-hover:hover {
+html[data-mode='puzzle'] .card-hover:hover,
+.side-puzzle .card:hover,
+.side-puzzle .card-hover:hover {
   box-shadow: 0 0 0 1px rgba(242, 199, 92, 0.25), 0 20px 50px -20px rgba(242, 199, 92, 0.35);
 }
-html[data-mode='puzzle'] .glass {
+html[data-mode='puzzle'] .glass,
+.side-puzzle .glass {
   background-color: rgba(8, 14, 30, 0.82);
 }
-html[data-mode='puzzle'] .section-heading {
+html[data-mode='puzzle'] .section-heading,
+.side-puzzle .section-heading {
   text-shadow: 0 2px 0 rgba(0, 0, 0, 0.6), 0 0 30px rgba(242, 199, 92, 0.15);
 }
-html[data-mode='puzzle'] .text-gradient {
+html[data-mode='puzzle'] .text-gradient,
+.side-puzzle .text-gradient {
   background-image: linear-gradient(180deg, #fbe3a0 0%, #f2c75c 45%, #d9a53a 80%, #a97a1c 100%);
   filter: drop-shadow(0 0 14px rgba(242, 199, 92, 0.3));
   animation: none;
 }
-html[data-mode='puzzle'] .text-gradient-animated {
+html[data-mode='puzzle'] .text-gradient-animated,
+.side-puzzle .text-gradient-animated {
   background-image: linear-gradient(90deg, #a97a1c, #f2c75c, #fbe3a0, #f2c75c, #a97a1c);
 }
-html[data-mode='puzzle'] .text-blood-glow {
+html[data-mode='puzzle'] .text-blood-glow,
+.side-puzzle .text-blood-glow {
   text-shadow: 0 0 6px rgba(242, 199, 92, 0.5), 0 0 24px rgba(217, 165, 58, 0.3);
 }
-html[data-mode='puzzle'] .input-field:focus {
+html[data-mode='puzzle'] .input-field:focus,
+.side-puzzle .input-field:focus {
   box-shadow: 0 0 0 1px rgba(242, 199, 92, 0.5), 0 0 22px rgba(242, 199, 92, 0.2);
 }
 html[data-mode='puzzle'] ::-webkit-scrollbar-thumb {
   background: linear-gradient(180deg, #26375a, #d9a53a 50%, #26375a);
 }
 
-/* Home hero (components/home/HomeHero.tsx): the split "pick your side" hero
-   shows until a side is chosen; after that the side's own hero takes over. */
-.mode-hero-placeholder {
-  display: none;
-}
-html[data-mode] .split-hero {
-  display: none;
-}
-html[data-mode] .mode-hero-placeholder {
-  display: block;
-}
 html[data-mode='puzzle'] .logo-box {
   background-image: linear-gradient(180deg, #f6d27a, #b8862a);
   border-color: rgba(246, 210, 122, 0.5);
   box-shadow: 0 0 18px rgba(242, 199, 92, 0.45);
 }
 html[data-mode='puzzle'] .animate-flicker,
-html[data-mode='puzzle'] .animate-flicker-fast {
+html[data-mode='puzzle'] .animate-flicker-fast,
+.side-puzzle .animate-flicker,
+.side-puzzle .animate-flicker-fast {
   animation: none;
 }
 
 /* Arabic letters join up; letter-spacing (tracking-*) pulls them apart. */
 html[lang="ar"] * {
   letter-spacing: normal !important;
+}
+
+/* Christmas lights under the navbar (components/seasonal/ChristmasDecor.tsx).
+   Each bulb glows in its own colour (set inline as `color`) and twinkles. */
+.xmas-bulb {
+  filter: drop-shadow(0 0 3px currentColor) drop-shadow(0 0 7px currentColor);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .xmas-bulb {
+    animation: xmas-twinkle 2.4s ease-in-out infinite;
+  }
+}
+@keyframes xmas-twinkle {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
 }

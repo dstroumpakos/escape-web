@@ -6,27 +6,44 @@ import { ArrowRight, Hourglass } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
 import { AnimateIn } from '@/components/animations/AnimateIn';
 import { BloodDrips } from '@/components/horror/BloodDrips';
+import { DualBackdrop } from './DualSides';
 
+/**
+ * "Get UNLOCKED everywhere", last on the home page. Both sides at once like the
+ * rest of the home (DualSides.tsx): stars and gold on the left, blood on the
+ * right, the heart monitor running from one into the other.
+ */
 export function DownloadCTA() {
   const { t } = useTranslation();
   return (
-    <section id="download" className="relative py-28 md:py-40 overflow-hidden bg-black">
-      <BloodDrips count={22} seed={11} maxLength={90} speed={6} />
-      {/* Pulse of red light behind everything */}
-      <div aria-hidden className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[500px] rounded-full bg-brand-red/20 blur-[140px] animate-pulse-soft" />
+    <section id="download" className="relative py-28 md:py-40 overflow-hidden">
+      <DualBackdrop />
+      {/* Blood only on the horror half */}
+      <div aria-hidden className="absolute inset-y-0 right-0 w-1/2 pointer-events-none">
+        <BloodDrips count={11} seed={11} maxLength={90} speed={6} />
+      </div>
+      {/* Pulse of light behind everything: gold on the left, red on the right */}
+      <div aria-hidden className="absolute top-1/2 left-[30%] -translate-x-1/2 -translate-y-1/2 w-[600px] h-[420px] rounded-full bg-[#d9a53a]/15 blur-[140px] animate-pulse-soft" />
+      <div aria-hidden className="absolute top-1/2 left-[70%] -translate-x-1/2 -translate-y-1/2 w-[600px] h-[420px] rounded-full bg-[#c8101b]/20 blur-[140px] animate-pulse-soft" />
 
       {/* Heart monitor running across the section */}
       <svg aria-hidden viewBox="0 0 1200 120" preserveAspectRatio="none" className="absolute inset-x-0 top-1/2 -translate-y-1/2 w-full h-32 opacity-40" fill="none">
+        <defs>
+          <linearGradient id="dl-pulse" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="1200" y2="0">
+            <stop offset="0.15" stopColor="#f2c75c" />
+            <stop offset="0.85" stopColor="#ff2a36" />
+          </linearGradient>
+        </defs>
         <motion.path
           d="M0 60 H300 L320 60 L335 20 L352 104 L368 38 L380 60 H560 L580 60 L592 30 L610 96 L622 60 H900 L918 60 L930 14 L948 108 L962 60 H1200"
-          className="stroke-brand-red-light"
+          stroke="url(#dl-pulse)"
           strokeWidth="2"
           strokeLinejoin="round"
           initial={{ pathLength: 0 }}
           whileInView={{ pathLength: 1 }}
           viewport={{ once: false }}
           transition={{ duration: 3, ease: 'linear', repeat: Infinity, repeatDelay: 0.6 }}
-          style={{ filter: 'drop-shadow(0 0 6px rgba(var(--glow-hi),0.9))' }}
+          style={{ filter: 'drop-shadow(0 0 6px rgba(242,120,60,0.8))' }}
         />
       </svg>
 

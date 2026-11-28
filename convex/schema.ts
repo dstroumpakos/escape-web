@@ -217,6 +217,10 @@ export default defineSchema({
     location: v.string(),
     image: v.string(),
     images: v.optional(v.array(v.string())), // multiple photos
+    // The room's card in the Companies section (companies/page.tsx): the room photo
+    // cropped to the card's frame by the company in the portal, or by the admin for a
+    // company it manages (RoomCardCrop.tsx, roomPoster.ts). Unset = the photo, centred.
+    posterImage: v.optional(v.string()),
     rating: v.number(),
     reviews: v.number(),
     duration: v.number(),

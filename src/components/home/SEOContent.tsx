@@ -1,14 +1,17 @@
 'use client';
 
 import Link from 'next/link';
+import { DualBackdrop } from './DualSides';
 import { useTranslation } from '@/lib/i18n';
 
 export function SEOContent() {
   const { t } = useTranslation();
 
   return (
-    <section className="border-t border-brand-border/60 bg-brand-dark py-14">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 md:columns-2 md:gap-12 [&>*]:break-inside-avoid">
+    <section className="relative border-t border-white/10 py-14 overflow-hidden">
+      {/* Both sides like the rest of the home (DualSides.tsx), just quieter */}
+      <div aria-hidden className="absolute inset-0 opacity-60"><DualBackdrop /></div>
+      <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 md:columns-2 md:gap-12 [&>*]:break-inside-avoid">
         {/* H2: What is UNLOCKED */}
         <h2 className="text-lg font-display font-bold text-brand-text mb-3">
           {t('seo.what_title')}{' '}

@@ -18,6 +18,8 @@ import { PostModal } from '@/components/profile/ProfileView';
 import type { PublicJob } from '@/lib/jobs';
 
 type Tab = 'posts' | 'team' | 'rooms' | 'jobs';
+// Team photos are hidden for now (tab, counter and panel). Set to true to bring them back.
+const SHOW_TEAM_PHOTOS = false;
 
 /**
  * A company's profile, laid out like a player's profile: cover, logo,
@@ -92,7 +94,7 @@ export default function CompanyProfilePage() {
   const tabs: [Tab, typeof Grid3x3, string][] = [
     ['posts', Grid3x3, t('pf.tab_posts')],
     // Team photos show players: only for logged-in players (and the company)
-    ...(data.isVisitor ? [] : [['team', Users, t('co.tab_team')] as [Tab, typeof Grid3x3, string]]),
+    ...(data.isVisitor || !SHOW_TEAM_PHOTOS ? [] : [['team', Users, t('co.tab_team')] as [Tab, typeof Grid3x3, string]]),
     ['rooms', DoorOpen, t('pf.tab_rooms')],
     ['jobs', Briefcase, t('co.tab_jobs')],
   ];
@@ -163,7 +165,7 @@ export default function CompanyProfilePage() {
           <Count n={postCount} label={t('pf.posts')} onClick={() => setTab('posts')} />
           {data.followers !== null && <Count n={data.followers} label={t('co.followers')} />}
           <Count n={data.rooms.length} label={t('co.rooms')} onClick={() => setTab('rooms')} />
-          {!data.isVisitor && <Count n={data.teamPhotos.length} label={t('co.team_count')} onClick={() => setTab('team')} />}
+          {SHOW_TEAM_PHOTOS && !data.isVisitor && <Count n={data.teamPhotos.length} label={t('co.team_count')} onClick={() => setTab('team')} />}
         </div>
 
         {data.description && <p className="mt-3 text-sm text-brand-text whitespace-pre-line max-w-[70ch]">{data.description}</p>}
@@ -191,7 +193,7 @@ export default function CompanyProfilePage() {
             {data.instagramUsername && <div className="mt-8 px-3 sm:px-0"><InstagramStrip companyId={data._id} /></div>}
           </>
         )}
-        {tab === 'team' && !data.isVisitor && <TeamTab name={data.name} path={`/companies/${data._id}`} photos={data.teamPhotos} />}
+        {SHOW_TEAM_PHOTOS && tab === 'team' && !data.isVisitor && <TeamTab name={data.name} path={`/companies/${data._id}`} photos={data.teamPhotos} />}
         {tab === 'rooms' && (
           data.rooms.length === 0 ? <Empty icon={DoorOpen} text={t('co.no_rooms')} /> : (
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 px-3 sm:px-0">

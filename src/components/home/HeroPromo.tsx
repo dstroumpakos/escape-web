@@ -115,3 +115,60 @@ export function HeroPromo({ variant = 'horror' }: { variant?: 'horror' | 'puzzle
     </div>
   );
 }
+
+/**
+ * The split home (before the player picks a side): each half shows only its
+ * own promoted rooms, puzzles on the left, horror on the right
+ * (HomeHero → SplitHero). All of them at once in a grid, never hidden behind
+ * a scroll: 2 a row on phones, 3 on tablets, 4 on desktop (5 when there are many).
+ */
+export function SidePromo({ side }: { side: 'horror' | 'puzzle' }) {
+  const { t } = useTranslation();
+  const rooms = usePromoRooms().filter((r) => sideOf(r) === side);
+  if (rooms.length === 0) return null;
+
+  const puzzle = side === 'puzzle';
+  const frame = puzzle
+    ? 'from-[#f6d27a] via-[#8fb3ff]/40 to-[#f6d27a]'
+    : 'from-brand-gold via-brand-red/60 to-brand-gold';
+  const glow = puzzle
+    ? 'shadow-[0_0_18px_rgba(242,199,92,0.16)] hover:shadow-[0_8px_28px_rgba(242,199,92,0.36)]'
+    : 'shadow-[0_0_18px_rgba(201,154,46,0.14)] hover:shadow-[0_8px_28px_rgba(220,30,40,0.45)]';
+  const ink = puzzle ? 'text-[#f6d27a]' : 'text-brand-gold';
+
+  return (
+    <div className="mt-8 [@media(max-height:800px)]:mt-5 text-left">
+      <div className={`mb-2.5 flex items-center gap-2 ${ink}`}>
+        <Sparkles className="w-3.5 h-3.5" />
+        <span className="font-type text-[11px] tracking-[0.3em] uppercase">{t('promo.heading')}</span>
+        <span className="h-px flex-1 max-w-24 bg-linear-to-r from-current to-transparent opacity-60" />
+      </div>
+      <div className={`grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 ${rooms.length > 8 ? 'xl:grid-cols-5' : ''} gap-2.5 lg:gap-3 pt-1 pb-2`}>
+        {rooms.map((r) => (
+          <Link
+            key={r._id}
+            href={`/rooms/${r._id}`}
+            className={`group min-w-0 rounded-xl p-px bg-linear-to-br ${frame} ${glow} transition-all duration-300 hover:-translate-y-1`}
+          >
+            <div className="relative aspect-[16/11] rounded-[11px] overflow-hidden bg-black">
+              {r.image && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={r.image} alt="" loading="lazy" className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+              )}
+              <div className="absolute inset-0 bg-linear-to-t from-black via-black/40 to-transparent" />
+              <div className="absolute inset-x-0 bottom-0 p-2.5">
+                <p className={`font-display font-bold text-sm leading-tight truncate ${puzzle ? 'text-[#f4ecd9]' : 'text-brand-bone'} [text-shadow:0_2px_10px_#000]`}>
+                  {r.title}
+                </p>
+                <p className="mt-0.5 text-[11px] text-white/70 truncate flex items-center gap-1">
+                  {r.location && <MapPin className={`w-3 h-3 shrink-0 ${ink}`} />}
+                  {[r.companyName, r.location].filter(Boolean).join(' · ')}
+                </p>
+              </div>
+            </div>
+          </Link>
+        ))}
+      </div>
+    </div>
+  );
+}

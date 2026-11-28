@@ -37,6 +37,7 @@ import {
 import { useTranslation } from '@/lib/i18n';
 import { PREMIUM_ENABLED } from '@/lib/features';
 import { CategoryPicker } from '@/components/company/CategoryPicker';
+import { RoomCardCrop } from '@/components/company/RoomCardCrop';
 import { legacyTheme, type Category } from '../../../../../convex/roomCategories';
 import { translateRoom } from '@/lib/translate';
 
@@ -106,6 +107,8 @@ export default function NewRoomPage() {
     longitude: undefined as number | undefined,
     image: '',
     images: [] as string[],
+    // Card in the Companies section: the photo cropped to it (RoomCardCrop)
+    posterImage: '',
     duration: 60,
     difficulty: 3,
     maxDifficulty: 5,
@@ -137,6 +140,7 @@ export default function NewRoomPage() {
   const [loading, setLoading] = useState(false);
   const [imageUploading, setImageUploading] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [cropRequest, setCropRequest] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { t, language } = useTranslation();
 
@@ -313,6 +317,7 @@ export default function NewRoomPage() {
         location: form.location,
         image: form.image || '/placeholder-room.jpg',
         images: form.images.length > 0 ? form.images : undefined,
+        posterImage: form.posterImage || undefined,
         duration: form.duration,
         difficulty: form.difficulty,
         maxDifficulty: form.maxDifficulty,
@@ -484,7 +489,9 @@ export default function NewRoomPage() {
                   const { storageId } = await result.json();
                   const url = await getUrlMutation({ storageId });
                   if (url) {
-                    updateField('image', url);
+                    // A new photo: the old crop no longer fits, crop the new one for the card
+                    setForm((prev) => ({ ...prev, image: url, posterImage: '' }));
+                    setCropRequest((n) => n + 1);
                   }
                 } catch (err) {
                   setError(t('company.rooms.new.image_upload_error'));
@@ -526,6 +533,20 @@ export default function NewRoomPage() {
               )}
             </div>
           </div>
+          <RoomCardCrop
+            image={form.image}
+            posterImage={form.posterImage}
+            onChange={(posterImage) => setForm((prev) => ({ ...prev, posterImage }))}
+            requestCrop={cropRequest}
+            upload={async (file) => {
+              const uploadUrl = await generateUploadUrl({});
+              const res = await fetch(uploadUrl, { method: 'POST', headers: { 'Content-Type': file.type }, body: file });
+              const { storageId } = await res.json();
+              const url = await getUrlMutation({ storageId });
+              if (!url) throw new Error('Upload failed');
+              return url;
+            }}
+          />
         </Section>
 
         {/* Difficulty & Players */}

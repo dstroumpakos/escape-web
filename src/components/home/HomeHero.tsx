@@ -1,15 +1,13 @@
 'use client';
 
-import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowRight, KeyRound, Search, Skull } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
 import { ROOM_THEMES } from '@/lib/roomThemes';
 import { SUBTHEMES } from '../../../convex/roomCategories';
-import { setMode, useMode, type Mode } from '@/lib/mode';
-import { HeroSection } from './HeroSection';
-import { HeroPromo, usePromoRooms } from './HeroPromo';
+import { setMode, type Mode } from '@/lib/mode';
+import { SidePromo } from './HeroPromo';
 import { BloodDrips } from '@/components/horror/BloodDrips';
 import { WatchingEyes } from '@/components/horror/WatchingEyes';
 
@@ -19,30 +17,20 @@ const HORROR_CHIPS = SUBTHEMES.horror;
 const themesOf = (values: string[]) => ROOM_THEMES.filter((th) => values.includes(th.value));
 
 /**
- * The home hero. Until the player picks a side it is the split
- * "puzzles or horror" hero; then the whole site switches (lib/mode.ts) and the
- * side's own hero shows. The split hero is server rendered (it is what search
- * engines see); globals.css hides it before paint for players who already chose.
+ * The home hero: always the split "puzzles or horror" hero, both sides, whatever
+ * the player picked. The home never changes with the side (lib/mode.ts →
+ * usePageMode); only the other tabs do.
  */
 export function HomeHero() {
-  const mode = useMode();
-  return (
-    <>
-      <SplitHero />
-      {mode === undefined && <div aria-hidden className="mode-hero-placeholder min-h-[100svh]" />}
-      {mode === 'horror' && <HeroSection />}
-      {mode === 'puzzle' && <PuzzleHero />}
-    </>
-  );
+  return <SplitHero />;
 }
 
-/** Pick a side; when it comes from a theme chip, go straight to those rooms. */
+/** Pick a side and go to its rooms (a theme chip goes straight to that theme). */
 function usePick() {
   const router = useRouter();
   return (side: Mode, theme?: string) => {
     setMode(side);
-    if (theme) router.push(`/discover?theme=${encodeURIComponent(theme)}`);
-    else window.scrollTo({ top: 0, behavior: 'smooth' });
+    router.push(theme ? `/discover?theme=${encodeURIComponent(theme)}` : '/discover');
   };
 }
 
@@ -142,6 +130,8 @@ function SplitHero() {
             >
               <KeyRound className="w-4 h-4" /> {t('mode.puzzle_cta')} <ArrowRight className="w-4 h-4" />
             </button>
+            {/* This side's promoted rooms only */}
+            <SidePromo side="puzzle" />
           </div>
         </div>
 
@@ -197,6 +187,8 @@ function SplitHero() {
             <button type="button" onClick={() => pick('horror')} className="btn-primary mt-7 inline-flex items-center gap-2">
               <Skull className="w-4 h-4" /> {t('mode.horror_cta')} <ArrowRight className="w-4 h-4" />
             </button>
+            {/* This side's promoted rooms only */}
+            <SidePromo side="horror" />
           </div>
         </div>
 
@@ -219,91 +211,6 @@ function SplitHero() {
         <Link href="/discover" className="mt-2 inline-flex items-center gap-1 text-sm text-[#f6d27a] hover:underline">
           {t('mode.see_all')} <ArrowRight className="w-3.5 h-3.5" />
         </Link>
-      </div>
-    </section>
-  );
-}
-
-function SearchBox() {
-  const { t } = useTranslation();
-  const router = useRouter();
-  const [query, setQuery] = useState('');
-  return (
-    <form
-      role="search"
-      onSubmit={(e) => {
-        e.preventDefault();
-        const q = query.trim();
-        router.push(q ? `/discover?q=${encodeURIComponent(q)}` : '/discover');
-      }}
-      className="max-w-xl mx-auto"
-    >
-      <div className="relative flex items-center bg-[#08112a]/90 border border-[#f2c75c]/40 rounded-md overflow-hidden focus-within:shadow-[0_0_24px_rgba(242,199,92,0.3)] transition-shadow">
-        <Search className="w-5 h-5 text-[#f2c75c] ml-5 shrink-0" />
-        <input
-          type="search"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder={t('hero.search_placeholder')}
-          aria-label={t('hero.search')}
-          className="w-full min-w-0 bg-transparent px-4 py-4 text-[#f4ecd9] placeholder-[#a7b2c9]/80 focus:outline-hidden [&::-webkit-search-cancel-button]:hidden"
-        />
-        <button type="submit" className="btn-primary rounded-none! shrink-0 py-4! px-6!">
-          {t('hero.search')}
-        </button>
-      </div>
-    </form>
-  );
-}
-
-/** The home hero on the puzzle side: a night sky, gold, no fear. */
-function PuzzleHero() {
-  const { t } = useTranslation();
-  const pick = usePick();
-  // Paid rooms at the bottom of the first screen (HeroPromo)
-  const hasPromo = usePromoRooms().length > 0;
-  return (
-    <section className="relative min-h-[100svh] flex items-center justify-center overflow-hidden">
-      <div
-        aria-hidden
-        className="absolute inset-0"
-        style={{ background: 'radial-gradient(70% 60% at 50% 35%, #1d3060 0%, #0c1532 55%, #050a17 100%)' }}
-      />
-      <Stars count={70} seed={11} />
-      <Constellations className="opacity-70" />
-      <div className={`relative z-10 w-full mx-auto px-4 sm:px-6 text-center ${hasPromo ? 'max-w-7xl pt-20 pb-8' : 'max-w-4xl pt-28 pb-24'}`}>
-        <span className="inline-flex items-center gap-2 rounded-full border border-[#f2c75c]/40 bg-[#f2c75c]/10 px-3 py-1 font-type text-[11px] tracking-[0.25em] uppercase text-[#f6d27a] animate-fade-up">
-          <KeyRound className="w-3.5 h-3.5" /> {t('mode.no_fear')}
-        </span>
-        <h1 className={`${hasPromo ? 'mt-4' : 'mt-6'} font-display font-bold leading-[1.05] text-[#f4ecd9] text-4xl sm:text-5xl md:text-6xl ${hasPromo ? 'xl:text-[4rem]' : 'xl:text-7xl'} text-balance animate-fade-up animate-delay-100`}>
-          {t('mode.puzzle_title1')}
-          <span className="block mt-2 italic text-[#f2c75c] [text-shadow:0_0_40px_rgba(242,199,92,0.35)]">{t('mode.puzzle_title2')}</span>
-        </h1>
-        <p className={`${hasPromo ? 'mt-4' : 'mt-6'} text-lg md:text-xl text-[#c4cde0] max-w-2xl mx-auto text-pretty animate-fade-up animate-delay-300`}>
-          {t('mode.puzzle_desc')}
-        </p>
-        <div className={`${hasPromo ? 'mt-6' : 'mt-9'} animate-fade-up animate-delay-500`}>
-          <SearchBox />
-        </div>
-        <div className={`${hasPromo ? 'mt-4' : 'mt-6'} flex flex-wrap justify-center gap-2 animate-fade-up animate-delay-600`}>
-          {themesOf(PUZZLE_CHIPS).map((th) => (
-            <Link
-              key={th.value}
-              href={`/discover?theme=${encodeURIComponent(th.value)}`}
-              className="inline-flex items-center gap-1.5 rounded-full border border-[#8fb3ff]/25 bg-[#0d1a3a]/70 px-3 py-1.5 text-sm text-[#dfe6f5] hover:border-[#f2c75c]/70 hover:text-[#f6d27a] transition-colors"
-            >
-              <th.icon className="w-3.5 h-3.5" /> {t(th.key)}
-            </Link>
-          ))}
-        </div>
-        <button
-          type="button"
-          onClick={() => pick('horror')}
-          className={`${hasPromo ? 'mt-4' : 'mt-10'} inline-flex items-center gap-2 text-sm text-[#a7b2c9] hover:text-[#ff6a72] transition-colors`}
-        >
-          <Skull className="w-4 h-4" /> {t('mode.switch_to_horror')}
-        </button>
-        <HeroPromo variant="puzzle" />
       </div>
     </section>
   );

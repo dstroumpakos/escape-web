@@ -72,6 +72,7 @@ export const list = query({
             _id: r._id,
             title: r.title,
             image: r.image,
+            posterImage: r.posterImage ?? "",
             theme: r.theme,
             difficulty: r.difficulty,
             maxDifficulty: r.maxDifficulty,

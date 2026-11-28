@@ -1,6 +1,7 @@
 'use client';
 
 import { useSyncExternalStore } from 'react';
+import { usePathname } from 'next/navigation';
 import { sideOf } from '../../convex/roomCategories';
 
 /**
@@ -8,6 +9,7 @@ import { sideOf } from '../../convex/roomCategories';
  * "horror" (the full dark experience). Picked on the home page; saved in this
  * browser and set as <html data-mode> before the first paint (MODE_SCRIPT), so
  * globals.css re-colours the whole site at once. No choice yet = everything.
+ * The home page (/) always stays both sides: the choice only changes the other tabs.
  */
 export type Mode = 'puzzle' | 'horror';
 
@@ -30,7 +32,8 @@ export function setMode(mode: Mode | null) {
   } catch {
     /* private window: the choice lasts for this page only */
   }
-  if (mode) document.documentElement.setAttribute('data-mode', mode);
+  // The home stays both sides; LayoutShell sets it again on the other tabs
+  if (mode && location.pathname !== '/') document.documentElement.setAttribute('data-mode', mode);
   else document.documentElement.removeAttribute('data-mode');
   window.dispatchEvent(new Event(EVENT));
 }
@@ -47,6 +50,16 @@ function subscribe(cb: () => void) {
 /** The current mode; undefined on the server and during hydration. */
 export function useMode(): Mode | null | undefined {
   return useSyncExternalStore<Mode | null | undefined>(subscribe, read, () => undefined);
+}
+
+/**
+ * The side this page shows: the player's choice, except on the home page,
+ * which is always both sides (null). Use this for looks and room lists;
+ * useMode() for the choice itself (e.g. the navbar toggle).
+ */
+export function usePageMode(): Mode | null | undefined {
+  const mode = useMode();
+  return usePathname() === '/' ? null : mode;
 }
 
 /**

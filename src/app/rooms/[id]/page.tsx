@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
+import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { useQuery, useMutation } from 'convex/react';
 import { api } from '../../../../convex/_generated/api';
@@ -16,7 +17,9 @@ import { RoomMerchStrip } from '@/components/shop/RoomMerch';
 import { InstagramStrip } from '@/components/rooms/InstagramStrip';
 import { RoomHero, RoomDetailsIn } from '@/components/rooms/RoomHero';
 import { shownRating, formatRating, videoEmbedUrl } from '@/lib/roomMedia';
-import { Star, Skull, Clock, Users, MapPin, Heart, ArrowLeft, Zap, BookOpen, Diamond, CalendarClock, BadgeCheck, MessageSquare, ChevronDown, ChevronUp, CheckCircle, PlayCircle, Ghost } from 'lucide-react';
+import { Star, Skull, Clock, Users, MapPin, Heart, ArrowLeft, Zap, BookOpen, Diamond, CalendarClock, BadgeCheck, MessageSquare, ChevronDown, ChevronUp, CheckCircle, PlayCircle, Ghost, Navigation } from 'lucide-react';
+
+const RoomLocationMap = dynamic(() => import('@/components/map/RoomLocationMap'), { ssr: false });
 
 /** The server's own message for review errors (it explains what to do), else a generic one. */
 function friendlyReviewError(err: unknown): string {
@@ -91,6 +94,14 @@ export default function RoomDetailsPage() {
   // Our own reviews, or the room's rating on another site if that has more
   const shown = shownRating(room);
   const trailer = videoEmbedUrl((room as any).videoUrl);
+  // The pin the company / admin placed on the room (portal room page, admin)
+  const lat = (room as any).latitude as number | undefined;
+  const lng = (room as any).longitude as number | undefined;
+  const hasPin = typeof lat === 'number' && typeof lng === 'number' && Number.isFinite(lat) && Number.isFinite(lng);
+  // Each room has its own address (set with its pin in the portal / admin), even rooms of the same company
+  const address: string = room.location || '';
+  // Opens directions in Google Maps (or the phone's maps app): to the pin, else to the address
+  const directionsUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(hasPin ? `${lat},${lng}` : address)}`;
 
   const handleWishlist = async () => {
     if (!isAuthenticated || !user) return;
@@ -283,6 +294,30 @@ export default function RoomDetailsPage() {
                 <p className="text-brand-text-secondary leading-relaxed text-pretty max-w-[70ch] whitespace-pre-line">
                   {(room as any).descriptionTranslations?.[language] || (room as any).descriptionTranslations?.en || room.description}
                 </p>
+              </div>
+            )}
+
+            {/* Where it is: the address and, when the room has a pin, a map */}
+            {(address || hasPin) && (
+              <div className="mb-8">
+                <h3 className="flex items-center gap-2 text-xl font-display font-bold text-brand-bone mb-3">
+                  <MapPin className="w-5 h-5 text-brand-red-light" />
+                  {t('room.where')}
+                </h3>
+                {hasPin && (
+                  <div className="relative z-0 h-56 sm:h-72 w-full overflow-hidden rounded-md border border-brand-border bg-black mb-3">
+                    <RoomLocationMap lat={lat as number} lng={lng as number} />
+                  </div>
+                )}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="text-brand-text-secondary">
+                    {(room as any).companyName && <div className="text-sm font-semibold text-brand-bone">{(room as any).companyName}</div>}
+                    {address && <div className="text-sm">{address}</div>}
+                  </div>
+                  <a href={directionsUrl} target="_blank" rel="noopener noreferrer" className="btn-ghost text-sm flex items-center justify-center gap-2 py-2! px-4! shrink-0">
+                    <Navigation className="w-4 h-4" /> {t('room.directions')}
+                  </a>
+                </div>
               </div>
             )}
 

@@ -72,7 +72,8 @@ export default function CompanyProfilePage() {
       ) : (
         <>
           <PromoPhotos photos={data.promo} />
-          <TeamPhotos groups={data.team} />
+          {/* Team photos hidden for now: */}
+          {/* <TeamPhotos groups={data.team} /> */}
         </>
       )}
     </div>

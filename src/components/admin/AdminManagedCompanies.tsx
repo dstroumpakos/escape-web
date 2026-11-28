@@ -10,6 +10,7 @@ import { useTranslation } from '@/lib/i18n';
 import { friendlyError } from '@/lib/errors';
 import { themeLabel } from '@/lib/roomThemes';
 import { CategoryPicker } from '@/components/company/CategoryPicker';
+import { RoomCardCrop } from '@/components/company/RoomCardCrop';
 import type { Category } from '../../../convex/roomCategories';
 
 const LocationPicker = dynamic(() => import('@/components/map/LocationPicker'), { ssr: false });
@@ -352,6 +353,8 @@ function RoomForm({ sessionToken, companyId, room, onDone }: { sessionToken: str
     latitude: room?.latitude ?? undefined,
     longitude: room?.longitude ?? undefined,
     image: room?.image ?? '',
+    // Card in the Companies section: the photo cropped to it (RoomCardCrop); it goes with the room when the company is assigned
+    posterImage: room?.posterImage ?? '',
     category: (room?.category ?? 'puzzle') as Category,
     subthemes: room?.subthemes ?? ([] as string[]),
     description: room?.description ?? '',
@@ -362,9 +365,11 @@ function RoomForm({ sessionToken, companyId, room, onDone }: { sessionToken: str
     bookingUrl: room?.bookingUrl ?? '',
     isActive: room?.isActive ?? true,
   });
+  const upload = useUpload(sessionToken);
+  const [cropRequest, setCropRequest] = useState(0);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState('');
-  const num = (k: 'duration' | 'difficulty' | 'playersMin' | 'playersMax') => (e: React.ChangeEvent<HTMLInputElement>) => setF({ ...f, [k]: Number(e.target.value) });
+  const num =(k: 'duration' | 'difficulty' | 'playersMin' | 'playersMax') => (e: React.ChangeEvent<HTMLInputElement>) => setF({ ...f, [k]: Number(e.target.value) });
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -408,7 +413,16 @@ function RoomForm({ sessionToken, companyId, room, onDone }: { sessionToken: str
       <h4 className="font-semibold text-sm">{room ? t('mc.edit_room') : t('mc.new_room')}</h4>
       <div className="grid sm:grid-cols-2 gap-4">
         <Field label={t('mc.room_title')}><input className={input} value={f.title} onChange={(e) => setF({ ...f, title: e.target.value })} required maxLength={120} /></Field>
-        <ImageField label={t('mc.photo')} value={f.image} onChange={(image) => setF((p) => ({ ...p, image }))} sessionToken={sessionToken} />
+        <ImageField
+          label={t('mc.photo')}
+          value={f.image}
+          // A new photo: the old crop no longer fits, crop the new one for the card
+          onChange={(image) => {
+            setF((p) => ({ ...p, image, posterImage: '' }));
+            setCropRequest((n) => n + 1);
+          }}
+          sessionToken={sessionToken}
+        />
         <Field label={t('mc.duration')}><input type="number" className={input} value={f.duration} onChange={num('duration')} min={10} max={600} /></Field>
         <Field label={t('mc.difficulty')}><input type="number" className={input} value={f.difficulty} onChange={num('difficulty')} min={1} max={5} /></Field>
         <Field label={t('mc.players_min')}><input type="number" className={input} value={f.playersMin} onChange={num('playersMin')} min={1} max={50} /></Field>
@@ -422,6 +436,13 @@ function RoomForm({ sessionToken, companyId, room, onDone }: { sessionToken: str
         <Field label={t('mc.ea_score')}><input type="number" step="0.1" min={0} max={5} className={input} value={ea.rating} onChange={(e) => setEa({ ...ea, rating: e.target.value })} placeholder="4.8" /></Field>
         <Field label={t('mc.ea_count')}><input type="number" step="1" min={0} className={input} value={ea.count} onChange={(e) => setEa({ ...ea, count: e.target.value })} placeholder="350" /></Field>
       </div>
+      <RoomCardCrop
+        image={f.image}
+        posterImage={f.posterImage}
+        onChange={(posterImage) => setF((p) => ({ ...p, posterImage }))}
+        upload={upload}
+        requestCrop={cropRequest}
+      />
       <CategoryPicker category={f.category} subthemes={f.subthemes} onChange={(category, subthemes) => setF((p) => ({ ...p, category, subthemes }))} />
       <div>
         <span className="block text-xs text-brand-text-secondary mb-1">{t('mc.location')}</span>

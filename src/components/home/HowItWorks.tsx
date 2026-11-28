@@ -6,7 +6,9 @@ import { Search, Users, KeyRound, DoorOpen } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
 import { StaggerContainer, StaggerItem } from '@/components/animations/AnimateIn';
 import { HorrorHeading } from '@/components/horror/HorrorHeading';
+import { DualBackdrop, blendStyle } from './DualSides';
 
+/** Four steps, walking from puzzle gold into horror red (both sides at once, DualSides.tsx). */
 export function HowItWorks() {
   const { t } = useTranslation();
   const ref = useRef<HTMLDivElement>(null);
@@ -22,7 +24,8 @@ export function HowItWorks() {
 
   return (
     <section id="how-it-works" className="relative py-24 md:py-32 overflow-hidden">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <DualBackdrop />
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <HorrorHeading
           kicker={t('horror.no_escape')}
           title={t('how.title')}
@@ -34,7 +37,7 @@ export function HowItWorks() {
           {/* A line of blood that runs between the steps as you scroll */}
           <div aria-hidden className="hidden lg:block absolute top-[52px] left-[12%] right-[12%] h-[3px] bg-brand-border/40 rounded-full">
             <motion.div
-              className="h-full origin-left rounded-full bg-linear-to-r from-brand-blood via-brand-red to-brand-red-light shadow-[0_0_12px_rgba(var(--glow-hi),0.8)]"
+              className="h-full origin-left rounded-full bg-linear-to-r from-[#d9a53a] via-[#f08a3c] to-[#ff2a36] shadow-[0_0_12px_rgba(242,120,60,0.7)]"
               style={{ scaleX: lineScale }}
             />
           </div>
@@ -42,7 +45,7 @@ export function HowItWorks() {
           <StaggerContainer stagger={0.18} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
             {steps.map((step, i) => (
               <StaggerItem key={i} animation="fadeUp">
-                <div className="relative group text-center">
+                <div style={blendStyle(i / (steps.length - 1))} className="relative group text-center">
                   {/* Candle-lit seal */}
                   <div className="relative mx-auto mb-6 w-[104px] h-[104px]">
                     <div

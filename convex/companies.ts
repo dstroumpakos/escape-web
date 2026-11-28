@@ -36,6 +36,7 @@ import { UPLOADS_PER_HOUR_COMPANY, isOwnStorageUrl } from "./uploads";
 // One message for wrong email and wrong password (don't reveal which emails exist).
 const INVALID_LOGIN = "Incorrect email or password";
 import { companyIsPublic, checkRoomInput } from "./companyRules";
+import { posterArgs, posterFields } from "./roomPoster";
 import { categoryFields } from "./roomCategories";
 import {
   sessionTokenV,
@@ -486,6 +487,7 @@ export const createRoom = mutation({
     location: v.string(),
     image: v.string(),
     images: v.optional(v.array(v.string())),
+    ...posterArgs,
     duration: v.number(),
     difficulty: v.number(),
     maxDifficulty: v.number(),
@@ -518,7 +520,7 @@ export const createRoom = mutation({
     category: v.optional(v.union(v.literal("puzzle"), v.literal("puzzle_actor"), v.literal("horror"))),
     subthemes: v.optional(v.array(v.string())),
   },
-  handler: async (ctx, { sessionToken, ...args }) => {
+  handler: async (ctx, { sessionToken, posterImage, ...args }) => {
     const company = await requireCompany(ctx, { companyId: args.companyId, sessionToken }, "companies:createRoom");
     checkRoomInput(args);
     args.bookingUrl = cleanExternalUrl(args.bookingUrl) || undefined;
@@ -535,8 +537,10 @@ export const createRoom = mutation({
       );
     }
 
+    const poster = posterFields({ posterImage });
     const id = await ctx.db.insert("rooms", {
       ...args,
+      ...(poster.posterImage ? { posterImage: poster.posterImage } : {}),
       // Category + subcategories (older builds send theme + fear level instead)
       ...categoryFields(args),
       depositPercent: clampDepositPercent(args.depositPercent),
@@ -606,6 +610,7 @@ export const updateRoom = mutation({
     location: v.optional(v.string()),
     image: v.optional(v.string()),
     images: v.optional(v.array(v.string())),
+    ...posterArgs,
     duration: v.optional(v.number()),
     difficulty: v.optional(v.number()),
     players: v.optional(v.string()),
@@ -640,7 +645,7 @@ export const updateRoom = mutation({
     subthemes: v.optional(v.array(v.string())),
   },
   handler: async (ctx, args) => {
-    const { roomId, sessionToken, ...fields } = args;
+    const { roomId, sessionToken, posterImage, ...fields } = args;
     const caller = await optionalCompany(ctx, sessionToken, "companies:updateRoom");
     const room = await requireRoomOf(ctx, caller, roomId);
     // Image links the room already has (e.g. demo covers) aren't re-checked;
@@ -677,6 +682,8 @@ export const updateRoom = mutation({
     if (fields.bookingUrl !== undefined) updates.bookingUrl = cleanExternalUrl(fields.bookingUrl) || undefined;
     // "" clears the trailer
     if (fields.videoUrl !== undefined) updates.videoUrl = cleanVideoUrl(fields.videoUrl) || undefined;
+    // Card in the Companies section ("" clears the crop, roomPoster.ts)
+    Object.assign(updates, posterFields({ posterImage }));
     await ctx.db.patch(roomId, updates);
   },
 });

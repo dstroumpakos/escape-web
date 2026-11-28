@@ -73,6 +73,7 @@ import type * as returnUrls from "../returnUrls.js";
 import type * as reviews from "../reviews.js";
 import type * as roomCategories from "../roomCategories.js";
 import type * as roomCategoryMigration from "../roomCategoryMigration.js";
+import type * as roomPoster from "../roomPoster.js";
 import type * as rooms from "../rooms.js";
 import type * as seed from "../seed.js";
 import type * as signupCodes from "../signupCodes.js";
@@ -165,6 +166,7 @@ declare const fullApi: ApiFromModules<{
   reviews: typeof reviews;
   roomCategories: typeof roomCategories;
   roomCategoryMigration: typeof roomCategoryMigration;
+  roomPoster: typeof roomPoster;
   rooms: typeof rooms;
   seed: typeof seed;
   signupCodes: typeof signupCodes;

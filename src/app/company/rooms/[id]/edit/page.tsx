@@ -38,6 +38,7 @@ import {
 import { useTranslation } from '@/lib/i18n';
 import { PREMIUM_ENABLED } from '@/lib/features';
 import { CategoryPicker } from '@/components/company/CategoryPicker';
+import { RoomCardCrop } from '@/components/company/RoomCardCrop';
 import { categoryOf, subthemesOf, legacyTheme, type Category } from '../../../../../../convex/roomCategories';
 import { friendlyError } from '@/lib/errors';
 import { useToast } from '@/components/company/Toast';
@@ -101,6 +102,8 @@ export default function EditRoomPage() {
     latitude: undefined as number | undefined,
     longitude: undefined as number | undefined,
     image: '',
+    // Card in the Companies section: the photo cropped to it (RoomCardCrop)
+    posterImage: '',
     duration: 60,
     difficulty: 3,
     playersMin: 2,
@@ -129,6 +132,7 @@ export default function EditRoomPage() {
   const [loading, setLoading] = useState(false);
   const [imageUploading, setImageUploading] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [cropRequest, setCropRequest] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { t, language } = useTranslation();
   const toast = useToast();
@@ -210,6 +214,7 @@ export default function EditRoomPage() {
         latitude: (room as any).latitude || undefined,
         longitude: (room as any).longitude || undefined,
         image: room.image || '',
+        posterImage: (room as any).posterImage || '',
         duration: room.duration || 60,
         difficulty: room.difficulty || 3,
         playersMin: room.playersMin || 2,
@@ -240,6 +245,15 @@ export default function EditRoomPage() {
       setLoaded(true);
     }
   }, [room, loaded]);
+
+  const uploadFile = async (file: File) => {
+    const uploadUrl = await generateUploadUrl({});
+    const res = await fetch(uploadUrl, { method: 'POST', headers: { 'Content-Type': file.type }, body: file });
+    const { storageId } = await res.json();
+    const url = await getUrlMutation({ storageId });
+    if (!url) throw new Error('Upload failed');
+    return url;
+  };
 
   const updateField = (field: string, value: any) => {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -294,6 +308,7 @@ export default function EditRoomPage() {
         title: form.title,
         location: form.location,
         image: form.image,
+        posterImage: form.posterImage,
         latitude: form.latitude,
         longitude: form.longitude,
         duration: form.duration,
@@ -436,7 +451,11 @@ export default function EditRoomPage() {
                 });
                 const { storageId } = await result.json();
                 const url = await getUrlMutation({ storageId });
-                if (url) updateField('image', url);
+                // A new photo: the old crop no longer fits, crop the new one for the card
+                if (url) {
+                  setForm((prev) => ({ ...prev, image: url, posterImage: '' }));
+                  setCropRequest((n) => n + 1);
+                }
               } catch {
                 setError(t('company.rooms.new.image_upload_error'));
               } finally {
@@ -465,6 +484,15 @@ export default function EditRoomPage() {
                 <p className="text-xs text-brand-text-secondary/60">PNG, JPG, WebP — max 5MB</p>
               </div>
             )}
+          </div>
+          <div className="mt-5">
+            <RoomCardCrop
+              image={form.image}
+              posterImage={form.posterImage}
+              onChange={(posterImage) => setForm((prev) => ({ ...prev, posterImage }))}
+              upload={uploadFile}
+              requestCrop={cropRequest}
+            />
           </div>
         </SectionCard>
 

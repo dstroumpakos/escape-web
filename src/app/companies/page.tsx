@@ -84,22 +84,7 @@ export default function CompaniesPage() {
 
               {/* Their rooms */}
               <div className="mt-4">
-              <ScrollRow>
-                {c.rooms.map((r) => (
-                  // Poster cards: portrait like most room art; the photo is always shown whole (PosterImage)
-                  <Link key={r._id} href={`/rooms/${r._id}`} className="group w-32 sm:w-40 shrink-0 snap-start">
-                    <div className="relative aspect-[5/7] rounded-xl overflow-hidden bg-black/40 border border-brand-border shadow-lg shadow-black/40 transition-all duration-200 group-hover:-translate-y-1 group-hover:border-brand-red/70 group-hover:shadow-brand-red/20">
-                      {r.image ? (
-                        <PosterImage src={r.image} alt={r.title} />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center"><DoorOpen className="w-8 h-8 text-brand-red/60" /></div>
-                      )}
-                    </div>
-                    <p className="text-sm font-semibold leading-tight text-brand-bone mt-2 line-clamp-2 group-hover:text-brand-red-light">{r.title}</p>
-                    <p className="text-[11px] text-brand-text-muted truncate mt-0.5">{themeLabel(t, r.theme)}</p>
-                  </Link>
-                ))}
-              </ScrollRow>
+                <CompanyRooms rooms={c.rooms} />
               </div>
 
               {c.hasProfile && <button onClick={() => openProfile(c._id)} className="sm:hidden mt-3 w-full btn-ghost text-sm flex items-center justify-center gap-1">
@@ -110,5 +95,36 @@ export default function CompaniesPage() {
         </div>
       )}
     </section>
+  );
+}
+
+type RoomPreview = { _id: string; title: string; image: string; posterImage: string; theme: string };
+
+/**
+ * A company's rooms as square cards, the same shape for every company.
+ * Each card shows the photo as the company / admin cropped it for the card
+ * (portal room page, admin, RoomCardCrop.tsx); an uncropped photo is centred.
+ */
+function CompanyRooms({ rooms }: { rooms: RoomPreview[] }) {
+  const { t } = useTranslation();
+  return (
+    <ScrollRow>
+      {rooms.map((r) => {
+        const src = r.posterImage || r.image;
+        return (
+          <Link key={r._id} href={`/rooms/${r._id}`} className="group w-36 sm:w-44 shrink-0 snap-start">
+            <div className="relative aspect-square rounded-xl overflow-hidden bg-black/40 border border-brand-border shadow-lg shadow-black/40 transition-all duration-200 group-hover:-translate-y-1 group-hover:border-brand-red/70 group-hover:shadow-brand-red/20">
+              {src ? (
+                <PosterImage src={src} alt={r.title} />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center"><DoorOpen className="w-8 h-8 text-brand-red/60" /></div>
+              )}
+            </div>
+            <p className="text-sm font-semibold leading-tight text-brand-bone mt-2 line-clamp-2 group-hover:text-brand-red-light">{r.title}</p>
+            <p className="text-[11px] text-brand-text-muted truncate mt-0.5">{themeLabel(t, r.theme)}</p>
+          </Link>
+        );
+      })}
+    </ScrollRow>
   );
 }
