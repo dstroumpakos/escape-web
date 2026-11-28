@@ -2,9 +2,11 @@
 
 import { useEffect, useState } from 'react';
 import { useTranslation } from '@/lib/i18n';
+import { INTRO_KEY } from '@/lib/modeScript';
 
 /**
- * Cold open that plays on every full load of the homepage, refreshes included.
+ * Cold open that plays once ever, on the first visit to the homepage: after
+ * that <html data-intro-seen> (modeScript.ts) hides it before paint.
  * It is rendered on the server and fades itself out with a CSS animation, so it
  * never gets stuck if JS is slow. Click to skip.
  */
@@ -18,6 +20,11 @@ export function HorrorIntro() {
 
   useEffect(() => {
     startedThisPageLoad = true;
+    // Seen: never again on this browser
+    try {
+      if (document.documentElement.hasAttribute('data-intro-seen')) setGone(true);
+      else localStorage.setItem(INTRO_KEY, '1');
+    } catch {}
   }, []);
 
   const finish = () => setGone(true);

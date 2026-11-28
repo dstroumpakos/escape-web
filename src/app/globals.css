@@ -910,6 +910,27 @@ html[data-android] .glitch::after {
   display: none;
 }
 
+/* Lite mode (<html data-lite>, modeScript.ts): phones, tablets, weak devices.
+   The atmosphere stays but stands still: no embers, no drifting fog or grain,
+   the flashlight rests in the middle. Computers keep everything. */
+html[data-lite] .fx-lite-off {
+  display: none !important;
+}
+html[data-lite] .fx-lite-still,
+html[data-lite] .fx-lite-still * {
+  animation: none !important;
+}
+html[data-lite] .flashlight-wander {
+  animation: none !important;
+  --fx: 50%;
+  --fy: 38%;
+}
+
+/* The cold open plays once ever (HorrorIntro.tsx, data-intro-seen) */
+html[data-intro-seen] .horror-intro {
+  display: none !important;
+}
+
 /* ── Ariadne's thread: red thread, labyrinth rings, minotaur horns ── */
 @keyframes ariadne-draw {
   from { stroke-dashoffset: 2000; }

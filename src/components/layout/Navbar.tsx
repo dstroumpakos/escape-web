@@ -140,12 +140,15 @@ export function Navbar() {
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={link.Icon ? `${linkClass(active)} px-2.5!` : linkClass(active)}
-                  title={link.Icon ? link.label : undefined}
+                  className={link.Icon ? `${linkClass(active)} px-2.5! group/tip` : linkClass(active)}
                   aria-label={link.Icon ? link.label : undefined}
                 >
                   {link.Icon ? (
-                    <link.Icon className="w-5 h-5 transition-transform duration-300 group-hover/link:scale-110 group-hover/link:drop-shadow-[0_0_6px_rgba(var(--glow-hi),0.8)]" />
+                    <>
+                      <link.Icon className="w-5 h-5 transition-transform duration-300 group-hover/link:scale-110 group-hover/link:drop-shadow-[0_0_6px_rgba(var(--glow-hi),0.8)]" />
+                      {/* Shows at once on hover (a title tooltip waits a second or two) */}
+                      <span role="tooltip" className="pointer-events-none absolute left-1/2 top-full mt-2 -translate-x-1/2 whitespace-nowrap rounded-md border border-brand-border bg-black/95 px-2.5 py-1 text-xs font-medium text-brand-bone shadow-lg opacity-0 translate-y-1 transition-[opacity,transform] duration-75 group-hover/tip:opacity-100 group-hover/tip:translate-y-0 group-focus-visible/tip:opacity-100 z-50">{link.label}</span>
+                    </>
                   ) : (
                     link.label
                   )}
@@ -168,18 +171,20 @@ export function Navbar() {
               <>
                 <Link
                   href="/messages"
-                  className="p-2 rounded-md text-brand-text-secondary hover:text-brand-red-light hover:bg-brand-red/10 transition-colors relative"
+                  className="group/tip p-2 rounded-md text-brand-text-secondary hover:text-brand-red-light hover:bg-brand-red/10 transition-colors relative"
                   aria-label={t('nav.messages')}
-                  title={t('nav.messages')}
                 >
                   <MessageCircle className="w-5 h-5" />
+                  <span role="tooltip" className="pointer-events-none absolute left-1/2 top-full mt-2 -translate-x-1/2 whitespace-nowrap rounded-md border border-brand-border bg-black/95 px-2.5 py-1 text-xs font-medium text-brand-bone shadow-lg opacity-0 translate-y-1 transition-[opacity,transform] duration-75 group-hover/tip:opacity-100 group-hover/tip:translate-y-0 group-focus-visible/tip:opacity-100 z-50">{t('nav.messages')}</span>
                   <UnreadBadge n={unread} className="absolute -top-0.5 -right-0.5" />
                 </Link>
                 <Link
                   href="/notifications"
-                  className="p-2 rounded-md text-brand-text-secondary hover:text-brand-red-light hover:bg-brand-red/10 transition-colors relative"
+                  className="group/tip p-2 rounded-md text-brand-text-secondary hover:text-brand-red-light hover:bg-brand-red/10 transition-colors relative"
+                  aria-label={t('nav.notifications')}
                 >
                   <Bell className="w-5 h-5" />
+                  <span role="tooltip" className="pointer-events-none absolute left-1/2 top-full mt-2 -translate-x-1/2 whitespace-nowrap rounded-md border border-brand-border bg-black/95 px-2.5 py-1 text-xs font-medium text-brand-bone shadow-lg opacity-0 translate-y-1 transition-[opacity,transform] duration-75 group-hover/tip:opacity-100 group-hover/tip:translate-y-0 group-focus-visible/tip:opacity-100 z-50">{t('nav.notifications')}</span>
                 </Link>
                 {BOOKING_ENABLED && (
                 <Link
@@ -203,8 +208,9 @@ export function Navbar() {
                   </div>
                   {myName && <span className="text-sm font-medium max-w-[120px] truncate">{myName}</span>}
                 </Link>
-                <button onClick={handleLogout} className="btn-ghost text-sm flex items-center gap-1.5" aria-label={t('nav.logout')}>
+                <button onClick={handleLogout} className="group/tip relative btn-ghost text-sm flex items-center gap-1.5" aria-label={t('nav.logout')}>
                   <LogOut className="w-4 h-4" />
+                  <span role="tooltip" className="pointer-events-none absolute left-1/2 top-full mt-2 -translate-x-1/2 whitespace-nowrap rounded-md border border-brand-border bg-black/95 px-2.5 py-1 text-xs font-medium text-brand-bone shadow-lg opacity-0 translate-y-1 transition-[opacity,transform] duration-75 group-hover/tip:opacity-100 group-hover/tip:translate-y-0 group-focus-visible/tip:opacity-100 z-50">{t('nav.logout')}</span>
                 </button>
               </>
             ) : (
