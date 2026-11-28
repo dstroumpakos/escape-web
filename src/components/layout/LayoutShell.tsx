@@ -12,6 +12,7 @@ import { LanguageToggle } from '@/components/LanguageToggle';
 import { useTranslation } from '@/lib/i18n';
 import { HorrorDefs } from '@/components/horror/HorrorDefs';
 import { HorrorFX } from '@/components/horror/HorrorFX';
+import { AmbientMusic } from '@/components/horror/AmbientMusic';
 import { HorrorIntro } from '@/components/horror/HorrorIntro';
 import { BloodDrips } from '@/components/horror/BloodDrips';
 import { useMode } from '@/lib/mode';
@@ -136,6 +137,8 @@ export function LayoutShell({ children }: { children: React.ReactNode }) {
       </main>
       <Footer />
       {mode !== 'puzzle' && <HorrorFX />}
+      {/* Quiet background music, both sides; the speaker in the navbar turns it off */}
+      <AmbientMusic />
       <CookieConsent />
       {/* No phone popup: booking works without a phone, and players can add one in Settings */}
     </>

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { SoundToggle } from './SoundToggle';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { Vault, ScrollText, BookOpen, Briefcase, Menu, X, LogOut, User, Bell, Ticket, MessageCircle } from 'lucide-react';
@@ -165,6 +166,7 @@ export function Navbar() {
 
           {/* Desktop Auth */}
           <div className="hidden md:flex items-center gap-2">
+            <SoundToggle />
             <ModeToggle />
             <LanguageToggle />
             {isAuthenticated ? (
@@ -224,6 +226,9 @@ export function Navbar() {
               </>
             )}
           </div>
+
+          {/* Mobile: music on/off next to the menu */}
+          <div className="md:hidden ml-auto mr-1"><SoundToggle /></div>
 
           {/* Mobile Menu Toggle */}
           <button
