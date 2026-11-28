@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import { useMutation, useQuery } from 'convex/react';
-import { Sparkles, Search, CalendarClock, X, Skull, Puzzle } from 'lucide-react';
+import { Sparkles, Search, CalendarClock, X, Skull, Puzzle, EyeOff } from 'lucide-react';
 import { api } from '../../../convex/_generated/api';
 import { useTranslation } from '@/lib/i18n';
 import { cleanError } from '@/lib/errors';
@@ -30,6 +30,8 @@ type Row = {
   companyName: string;
   isActive: boolean;
   side: 'horror' | 'puzzle';
+  /** Why the room is not on the public site (then its promotion shows nowhere) */
+  hidden: 'inactive' | 'company' | null;
   promoUntil: number | null;
   promoSince: number | null;
   promoNote: string;
@@ -76,7 +78,7 @@ export function AdminPromo({ sessionToken }: { sessionToken: string }) {
               const list = running.filter((r) => r.side === sd);
               return (
                 <div key={sd}>
-                  <SideTitle side={sd} count={list.length} />
+                  <SideTitle side={sd} count={list.length} shown={list.filter((r) => !r.hidden).length} />
                   {list.length === 0 && <p className="text-sm text-brand-text-muted">{t('promo.admin.none_running')}</p>}
                   <div className="space-y-3">
                     {list.map((r) => (
@@ -126,13 +128,16 @@ export function AdminPromo({ sessionToken }: { sessionToken: string }) {
   );
 }
 
-function SideTitle({ side, count }: { side: 'horror' | 'puzzle'; count: number }) {
+function SideTitle({ side, count, shown }: { side: 'horror' | 'puzzle'; count: number; shown: number }) {
   const { t } = useTranslation();
   const horror = side === 'horror';
   return (
     <p className={`mb-2 text-sm font-semibold flex items-center gap-1.5 ${horror ? 'text-red-300' : 'text-[#f6d27a]'}`}>
       {horror ? <Skull className="w-4 h-4" /> : <Puzzle className="w-4 h-4" />}
       {t(`promo.admin.${side}`)} <span className="text-brand-text-muted font-normal">({count})</span>
+      {shown !== count && (
+        <span className="text-xs text-amber-300 font-normal">· {t('promo.admin.on_home', { n: String(shown) })}</span>
+      )}
     </p>
   );
 }
@@ -186,7 +191,7 @@ function PromoRow({
   };
 
   return (
-    <div className={`bg-brand-surface rounded-2xl border p-4 ${row.active ? 'border-brand-red/40' : 'border-white/5'}`}>
+    <div className={`bg-brand-surface rounded-2xl border p-4 ${row.hidden ? 'opacity-70 ' : ''}${row.active ? (row.hidden ? 'border-amber-400/40' : 'border-brand-red/40') : 'border-white/5'}`}>
       <div className="flex flex-wrap items-center gap-3">
         {row.image ? (
           // eslint-disable-next-line @next/next/no-img-element
@@ -208,6 +213,11 @@ function PromoRow({
               <CalendarClock className="w-3 h-3" />
               {t('promo.admin.until')} {fmt(row.promoUntil)} · {daysLeft <= 1 ? t('promo.admin.last_day') : t('promo.admin.days_left', { n: String(daysLeft) })}
               {row.promoSince && <span className="text-brand-text-muted"> · {t('promo.admin.since')} {fmt(row.promoSince)}</span>}
+            </p>
+          )}
+          {row.hidden && (
+            <p className="text-xs text-amber-300 mt-0.5 flex items-center gap-1">
+              <EyeOff className="w-3 h-3 shrink-0" /> {t(`promo.admin.hidden_${row.hidden}`)}
             </p>
           )}
           {row.active && row.promoNote && <p className="text-xs text-brand-text-muted mt-0.5 truncate">{row.promoNote}</p>}

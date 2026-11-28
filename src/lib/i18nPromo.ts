@@ -25,6 +25,9 @@ const en: Record<string, string> = {
   'promo.admin.horror': 'Horror',
   'promo.admin.puzzle': 'Puzzles',
   'promo.admin.all': 'All',
+  'promo.admin.hidden_company': 'Not on the site: the company is not approved yet',
+  'promo.admin.hidden_inactive': 'Not on the site: the room is inactive',
+  'promo.admin.on_home': '{{n}} on the homepage',
 };
 const el: Record<string, string> = {
   'promo.heading': 'Ξεχωρίζουν τώρα',
@@ -52,6 +55,9 @@ const el: Record<string, string> = {
   'promo.admin.horror': 'Τρόμος',
   'promo.admin.puzzle': 'Γρίφοι',
   'promo.admin.all': 'Όλα',
+  'promo.admin.hidden_company': 'Δεν φαίνεται στο site: η εταιρεία δεν έχει εγκριθεί ακόμα',
+  'promo.admin.hidden_inactive': 'Δεν φαίνεται στο site: το δωμάτιο είναι ανενεργό',
+  'promo.admin.on_home': '{{n}} στην αρχική',
 };
 const nl: Record<string, string> = {
   'promo.heading': 'Nu in de kijker',
