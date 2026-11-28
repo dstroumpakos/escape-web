@@ -17,9 +17,9 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: 'Discover Escape Rooms & Collect Stamps | UNLOCKED',
+  title: 'Discover Escape Rooms & Join the Community | UNLOCKED',
   description:
-    'Discover the best escape rooms near you, join the community of players and collect a stamp with every escape. Browse by theme, difficulty & location on UNLOCKED.',
+    'Discover the best escape rooms near you, read real player reviews and join the community of players. Browse by theme, difficulty & location on UNLOCKED.',
   keywords: [
     'escape room',
     'book escape room',
@@ -44,9 +44,9 @@ export const metadata: Metadata = {
     },
   },
   openGraph: {
-    title: 'Discover Escape Rooms & Collect Stamps | UNLOCKED',
+    title: 'Discover Escape Rooms & Join the Community | UNLOCKED',
     description:
-      'Discover the best escape rooms near you, join the community and collect a stamp with every escape.',
+      'Discover the best escape rooms near you, read real player reviews and join the community.',
     type: 'website',
     url: 'https://unlocked.gr',
     siteName: 'UNLOCKED',
@@ -54,9 +54,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Discover Escape Rooms & Collect Stamps | UNLOCKED',
+    title: 'Discover Escape Rooms & Join the Community | UNLOCKED',
     description:
-      'Discover the best escape rooms near you and collect a stamp with every escape on UNLOCKED.',
+      'Discover the best escape rooms near you and join the community on UNLOCKED.',
   },
 };
 
@@ -71,7 +71,7 @@ export default function RootLayout({
     name: 'UNLOCKED',
     url: 'https://unlocked.gr',
     description:
-      'Discover escape rooms around the world, join the community of players and collect a stamp with every escape.',
+      'Discover escape rooms around the world, read real player reviews and join the community of players.',
     applicationCategory: 'EntertainmentApplication',
     operatingSystem: 'Web',
     offers: {

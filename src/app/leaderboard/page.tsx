@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { PASSPORT_ENABLED } from '@/lib/features';
 import Link from 'next/link';
 import { useQuery } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
@@ -353,7 +354,7 @@ export default function LeaderboardPage() {
                 <h2 className="font-display text-2xl sm:text-3xl font-bold">{t('lb.how_title')}</h2>
                 <p className="text-brand-text-secondary mt-1 mb-6">{t('lb.how_sub')}</p>
                 <StaggerContainer stagger={0.05} className="grid gap-3 sm:grid-cols-2">
-                  {SCORE_RULES.map(({ pts, key, Icon }) => (
+                  {SCORE_RULES.filter((r) => PASSPORT_ENABLED || (r.key !== 'lb.rule_game' && r.key !== 'lb.rule_escape')).map(({ pts, key, Icon }) => (
                     <StaggerItem key={key} animation="fadeUp">
                       <div className="panel flex items-center gap-4 p-4 h-full">
                         <span className="shrink-0 w-14 h-14 rounded-xl bg-brand-gold/10 border border-brand-gold/30 flex flex-col items-center justify-center leading-none">
@@ -367,7 +368,7 @@ export default function LeaderboardPage() {
                   ))}
                 </StaggerContainer>
                 <ul className="mt-5 space-y-1.5 text-xs text-brand-text-muted">
-                  <li className="flex gap-2"><Info className="w-3.5 h-3.5 shrink-0 mt-0.5" /> {t('lb.note_manual')}</li>
+                  {PASSPORT_ENABLED && <li className="flex gap-2"><Info className="w-3.5 h-3.5 shrink-0 mt-0.5" /> {t('lb.note_manual')}</li>}
                   <li className="flex gap-2"><Info className="w-3.5 h-3.5 shrink-0 mt-0.5" /> {t('lb.note_refresh')}</li>
                 </ul>
               </div>

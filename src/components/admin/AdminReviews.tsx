@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { PASSPORT_ENABLED } from '@/lib/features';
 import { useMutation, useQuery } from 'convex/react';
 import { Check, X, Star, CalendarCheck } from 'lucide-react';
 import { api } from '../../../convex/_generated/api';
@@ -55,7 +56,7 @@ export function AdminReviews({ sessionToken }: { sessionToken: string }) {
               </p>
               <p className="text-xs text-brand-text-muted mt-0.5 flex items-center gap-1">
                 <CalendarCheck className="w-3 h-3" />
-                {r.stampAt ? `${t('admin.rv.stamp')} ${fmt(r.stampAt)}` : r.hasBooking ? t('admin.rv.booking') : t('admin.rv.none_badge')} · {t('admin.rv.written')} {fmt(r.createdAt)}
+                {PASSPORT_ENABLED && r.stampAt ? `${t('admin.rv.stamp')} ${fmt(r.stampAt)}` : r.hasBooking ? t('admin.rv.booking') : t('admin.rv.none_badge')} · {t('admin.rv.written')} {fmt(r.createdAt)}
               </p>
             </div>
             <div className="flex gap-0.5" role="img" aria-label={`${r.rating}/5`}>

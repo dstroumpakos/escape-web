@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { PASSPORT_ENABLED } from '@/lib/features';
 import { useQuery, useMutation, useAction } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
 import { useTranslation } from '@/lib/i18n';
@@ -142,7 +143,8 @@ export default function AdminPage() {
     { id: 'users' as const, label: t('admin.tab_users'), icon: Users },
     { id: 'reports' as const, label: t('admin.tab_reports'), icon: Flag },
     { id: 'reviews' as const, label: t('admin.rv.tab'), icon: Star },
-    { id: 'plays' as const, label: t('admin.pl.tab'), icon: ListChecks },
+    // Passport (rooms played) is hidden for now (src/lib/features.ts)
+    ...(PASSPORT_ENABLED ? [{ id: 'plays' as const, label: t('admin.pl.tab'), icon: ListChecks }] : []),
     { id: 'shop' as const, label: t('shop.admin.tab'), icon: ShoppingBag },
   ];
 
@@ -516,7 +518,7 @@ export default function AdminPage() {
         {activeTab === 'reports' && adminToken && <AdminReports sessionToken={adminToken} />}
 
         {activeTab === 'reviews' && adminToken && <AdminReviews sessionToken={adminToken} />}
-        {activeTab === 'plays' && adminToken && <AdminPlays sessionToken={adminToken} />}
+        {PASSPORT_ENABLED && activeTab === 'plays' && adminToken && <AdminPlays sessionToken={adminToken} />}
         {activeTab === 'managed' && adminToken && <AdminManagedCompanies sessionToken={adminToken} />}
 
         {activeTab === 'shop' && adminToken && <AdminShop sessionToken={adminToken} />}
