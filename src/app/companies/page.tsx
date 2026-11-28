@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import { FitImage } from '@/components/ui/FitImage';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useQuery } from 'convex/react';
@@ -86,10 +87,9 @@ export default function CompaniesPage() {
               <ScrollRow>
                 {c.rooms.map((r) => (
                   <Link key={r._id} href={`/rooms/${r._id}`} className="group w-44 shrink-0 snap-start">
-                    <div className="aspect-4/3 rounded-lg overflow-hidden bg-black/40 border border-brand-border">
+                    <div className="relative aspect-4/3 rounded-lg overflow-hidden bg-black/40 border border-brand-border group-hover:border-brand-red/60 transition-colors">
                       {r.image ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img src={r.image} alt={r.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+                        <FitImage src={r.image} alt={r.title} />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center"><DoorOpen className="w-8 h-8 text-brand-red/60" /></div>
                       )}

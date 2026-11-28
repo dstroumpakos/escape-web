@@ -126,7 +126,7 @@ export default function CompanyProfilePage() {
           <div className="w-24 h-24 sm:w-32 sm:h-32 shrink-0 rounded-full border-4 border-brand-bg bg-brand-surface overflow-hidden flex items-center justify-center shadow-[0_0_24px_rgba(var(--glow),0.35)]">
             {logoOk ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={data.logo} alt={data.name} className="w-full h-full object-cover" />
+              <img src={data.logo} alt={data.name} className="w-full h-full object-contain p-3" />
             ) : (
               <span className="text-4xl font-display font-bold text-brand-red-light">{(data.name || '?').charAt(0).toUpperCase()}</span>
             )}

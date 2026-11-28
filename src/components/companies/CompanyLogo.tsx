@@ -1,4 +1,5 @@
 /** A company logo, or its first letter when it has none. */
+/** The whole logo, never cropped (logos are often wide). */
 export function CompanyLogo({ name, logo, size }: { name: string; logo: string; size: number }) {
   const ok = logo && /^https?:\/\//.test(logo);
   return (
@@ -8,7 +9,7 @@ export function CompanyLogo({ name, logo, size }: { name: string; logo: string; 
     >
       {ok ? (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={logo} alt={name} className="w-full h-full object-cover" />
+        <img src={logo} alt={name} className="w-full h-full object-contain p-1" />
       ) : (
         <span className="font-display font-bold text-brand-red-light" style={{ fontSize: size * 0.42 }}>
           {(name || '?').charAt(0).toUpperCase()}
