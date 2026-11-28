@@ -18,7 +18,7 @@ export function FeaturedRooms() {
 
   // Map Convex rooms to our card format. No placeholder fallback: until there
   // are real (active) rooms, the whole section stays hidden.
-  // Once a side is picked, paid promotions are in its hero (HeroPromo) and left out here;
+  // Once a side is picked, every paid promotion (both sides) is in its hero (HeroPromo) and left out here;
   // EA partner rooms first, then the best rated.
   const now = Date.now();
   const sorted = convexRooms

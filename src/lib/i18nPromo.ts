@@ -2,7 +2,7 @@
 const en: Record<string, string> = {
   'promo.heading': 'Standing out now',
   'promo.admin.tab': 'Promo',
-  'promo.admin.desc': 'Rooms that pay for promotion. While a promotion runs, the room comes first on the homepage (website and app). Players see no label. It stops by itself on the end date.',
+  'promo.admin.desc': 'Rooms that pay for promotion. While a promotion runs, the room is on the first screen of the homepage (website and app), on both the horror and the puzzles side. Players see no label. It stops by itself on the end date.',
   'promo.admin.running': 'Promoted now',
   'promo.admin.none_running': 'No room is promoted right now.',
   'promo.admin.add': 'Promote a room',
@@ -22,11 +22,14 @@ const en: Record<string, string> = {
   'promo.admin.d30': '1 month',
   'promo.admin.d90': '3 months',
   'promo.admin.no_rooms': 'No rooms found.',
+  'promo.admin.horror': 'Horror',
+  'promo.admin.puzzle': 'Puzzles',
+  'promo.admin.all': 'All',
 };
 const el: Record<string, string> = {
   'promo.heading': 'Ξεχωρίζουν τώρα',
   'promo.admin.tab': 'Promo',
-  'promo.admin.desc': 'Δωμάτια που πληρώνουν για προβολή. Όσο τρέχει η προβολή, το δωμάτιο βγαίνει πρώτο στην αρχική (site και app). Οι παίκτες δεν βλέπουν καμία ένδειξη. Σταματά μόνη της στην ημερομηνία λήξης.',
+  'promo.admin.desc': 'Δωμάτια που πληρώνουν για προβολή. Όσο τρέχει η προβολή, το δωμάτιο βγαίνει στην πρώτη οθόνη της αρχικής (site και app), και στην πλευρά του τρόμου και στων γρίφων. Οι παίκτες δεν βλέπουν καμία ένδειξη. Σταματά μόνη της στην ημερομηνία λήξης.',
   'promo.admin.running': 'Σε προβολή τώρα',
   'promo.admin.none_running': 'Κανένα δωμάτιο δεν είναι σε προβολή αυτή τη στιγμή.',
   'promo.admin.add': 'Βάλε δωμάτιο σε προβολή',
@@ -46,6 +49,9 @@ const el: Record<string, string> = {
   'promo.admin.d30': '1 μήνας',
   'promo.admin.d90': '3 μήνες',
   'promo.admin.no_rooms': 'Δεν βρέθηκαν δωμάτια.',
+  'promo.admin.horror': 'Τρόμος',
+  'promo.admin.puzzle': 'Γρίφοι',
+  'promo.admin.all': 'Όλα',
 };
 const nl: Record<string, string> = {
   'promo.heading': 'Nu in de kijker',

@@ -5,23 +5,26 @@ import { Sparkles, MapPin, ArrowUpRight } from 'lucide-react';
 import { useSafeQuery } from '@/lib/useSafeQuery';
 import { api } from '../../../convex/_generated/api';
 import { useTranslation } from '@/lib/i18n';
-import { forMode, useMode } from '@/lib/mode';
-import { ScrollRow } from '@/components/ui/ScrollRow';
+import { sideOf, useMode } from '@/lib/mode';
 
 /** True while a room's paid promotion runs (convex/promo.ts). */
 export function isPromoted(r: { promoUntil?: number }, now = Date.now()) {
   return typeof r.promoUntil === 'number' && r.promoUntil > now;
 }
 
-/** The promoted rooms of the current side, oldest promotion first. */
+/**
+ * Every promoted room, horror and puzzles alike, on both sides of the home:
+ * the current side's first, then the other's; oldest promotion first.
+ */
 export function usePromoRooms() {
   const mode = useMode();
   const rooms = useSafeQuery<any[]>(api.rooms.list);
   if (!rooms) return [];
   const now = Date.now();
-  return forMode(rooms.filter((r) => isPromoted(r, now)), mode).sort(
-    (a, b) => (a.promoSince ?? 0) - (b.promoSince ?? 0),
-  );
+  const mine = (r: any) => (mode && sideOf(r) === mode ? 0 : 1);
+  return rooms
+    .filter((r) => isPromoted(r, now))
+    .sort((a, b) => mine(a) - mine(b) || (a.promoSince ?? 0) - (b.promoSince ?? 0));
 }
 
 /**
@@ -44,7 +47,7 @@ export function HeroPromo({ variant = 'horror' }: { variant?: 'horror' | 'puzzle
   const ink = puzzle ? 'text-[#f6d27a]' : 'text-brand-gold';
 
   return (
-    <div className="mt-7 [@media(max-height:800px)]:mt-4 w-full max-w-5xl mx-auto text-left animate-fade-up animate-delay-700">
+    <div className="mt-7 [@media(max-height:800px)]:mt-4 relative left-1/2 -translate-x-1/2 w-[min(1600px,calc(100vw-2rem))] text-left animate-fade-up animate-delay-700">
       {/* ── ✦ Standing out ✦ ── (players never see that a room paid) */}
       <div className={`mb-3 flex items-center justify-center gap-3 ${ink}`}>
         <span className="h-px w-10 sm:w-20 bg-linear-to-r from-transparent to-current opacity-60" />
@@ -54,12 +57,20 @@ export function HeroPromo({ variant = 'horror' }: { variant?: 'horror' | 'puzzle
         <span className="h-px w-10 sm:w-20 bg-linear-to-l from-transparent to-current opacity-60" />
       </div>
 
-      <ScrollRow fade={puzzle ? 'from-[#0c1532]' : 'from-black'} className={`${rooms.length < 4 ? 'sm:justify-center' : ''} gap-4! px-1 pt-1 pb-3`}>
+      {/* Phones: a row to swipe. Wider screens: every card visible, up to 10 a row
+          (5 on tablets, 8 on laptops), never wider than 300px, a last row centred; no arrows. */}
+      <div
+        style={{ '--n': rooms.length } as React.CSSProperties}
+        className={`flex gap-3 overflow-x-auto snap-x [scrollbar-width:none] [&::-webkit-scrollbar]:hidden px-1 pt-1 pb-3
+          sm:flex-wrap sm:overflow-visible sm:justify-center sm:gap-(--g)
+          sm:[--c:min(var(--n),5)] lg:[--c:min(var(--n),8)] xl:[--c:min(var(--n),10)]
+          ${rooms.length > 6 ? '[--g:0.625rem]' : '[--g:1rem]'}`}
+      >
         {rooms.map((r) => (
           <Link
             key={r._id}
             href={`/rooms/${r._id}`}
-            className={`group snap-start shrink-0 w-[230px] sm:w-[244px] rounded-xl p-px bg-linear-to-br ${frame} ${glow} transition-all duration-300 hover:-translate-y-1`}
+            className={`group snap-start shrink-0 w-[220px] sm:w-[calc((100%-(var(--c)-1)*var(--g))/var(--c))] sm:max-w-[300px] rounded-xl p-px bg-linear-to-br ${frame} ${glow} transition-all duration-300 hover:-translate-y-1`}
           >
             <div className="relative aspect-[16/11] [@media(max-height:800px)]:aspect-[16/9] rounded-[11px] overflow-hidden bg-black">
               {r.image && (
@@ -83,7 +94,7 @@ export function HeroPromo({ variant = 'horror' }: { variant?: 'horror' | 'puzzle
               </span>
 
               <div className="absolute inset-x-0 bottom-0 p-3">
-                <p className={`font-display font-bold text-base leading-tight truncate ${puzzle ? 'text-[#f4ecd9]' : 'text-brand-bone'} [text-shadow:0_2px_10px_#000]`}>
+                <p className={`font-display font-bold leading-tight truncate ${rooms.length > 7 ? 'text-sm' : 'text-base'} ${puzzle ? 'text-[#f4ecd9]' : 'text-brand-bone'} [text-shadow:0_2px_10px_#000]`}>
                   {r.title}
                 </p>
                 <p className="mt-0.5 text-xs text-white/70 truncate flex items-center gap-1">
@@ -94,7 +105,7 @@ export function HeroPromo({ variant = 'horror' }: { variant?: 'horror' | 'puzzle
             </div>
           </Link>
         ))}
-      </ScrollRow>
+      </div>
     </div>
   );
 }

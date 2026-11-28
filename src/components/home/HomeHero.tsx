@@ -271,7 +271,7 @@ function PuzzleHero() {
       />
       <Stars count={70} seed={11} />
       <Constellations className="opacity-70" />
-      <div className={`relative z-10 w-full mx-auto px-4 sm:px-6 text-center ${hasPromo ? 'max-w-5xl pt-20 pb-8' : 'max-w-4xl pt-28 pb-24'}`}>
+      <div className={`relative z-10 w-full mx-auto px-4 sm:px-6 text-center ${hasPromo ? 'max-w-7xl pt-20 pb-8' : 'max-w-4xl pt-28 pb-24'}`}>
         <span className="inline-flex items-center gap-2 rounded-full border border-[#f2c75c]/40 bg-[#f2c75c]/10 px-3 py-1 font-type text-[11px] tracking-[0.25em] uppercase text-[#f6d27a] animate-fade-up">
           <KeyRound className="w-3.5 h-3.5" /> {t('mode.no_fear')}
         </span>

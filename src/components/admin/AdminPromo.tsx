@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import { useMutation, useQuery } from 'convex/react';
-import { Sparkles, Search, CalendarClock, X } from 'lucide-react';
+import { Sparkles, Search, CalendarClock, X, Skull, Puzzle } from 'lucide-react';
 import { api } from '../../../convex/_generated/api';
 import { useTranslation } from '@/lib/i18n';
 import { cleanError } from '@/lib/errors';
@@ -29,6 +29,7 @@ type Row = {
   location?: string;
   companyName: string;
   isActive: boolean;
+  side: 'horror' | 'puzzle';
   promoUntil: number | null;
   promoSince: number | null;
   promoNote: string;
@@ -44,15 +45,18 @@ export function AdminPromo({ sessionToken }: { sessionToken: string }) {
   const rows = useQuery(api.promo.adminList, { sessionToken }) as Row[] | undefined;
   const [search, setSearch] = useState('');
   const [editing, setEditing] = useState<string | null>(null);
+  // Which side the "promote a room" list shows
+  const [side, setSide] = useState<'all' | 'horror' | 'puzzle'>('all');
 
   const running = (rows ?? []).filter((r) => r.active);
   const others = useMemo(() => {
     const q = search.trim().toLowerCase();
     return (rows ?? [])
       .filter((r) => !r.active)
+      .filter((r) => side === 'all' || r.side === side)
       .filter((r) => !q || r.title.toLowerCase().includes(q) || r.companyName.toLowerCase().includes(q))
       .slice(0, 30);
-  }, [rows, search]);
+  }, [rows, search, side]);
 
   if (rows === undefined) return <p className="text-sm text-brand-text-secondary">…</p>;
 
@@ -66,15 +70,42 @@ export function AdminPromo({ sessionToken }: { sessionToken: string }) {
           <span className="text-brand-text-secondary font-normal">({running.length})</span>
         </h3>
         {running.length === 0 && <p className="text-sm text-brand-text-muted">{t('promo.admin.none_running')}</p>}
-        <div className="space-y-3">
-          {running.map((r) => (
-            <PromoRow key={r._id} row={r} sessionToken={sessionToken} open={editing === r._id} onOpen={() => setEditing(editing === r._id ? null : r._id)} onDone={() => setEditing(null)} />
-          ))}
-        </div>
+        {running.length > 0 && (
+          <div className="grid lg:grid-cols-2 gap-6">
+            {(['horror', 'puzzle'] as const).map((sd) => {
+              const list = running.filter((r) => r.side === sd);
+              return (
+                <div key={sd}>
+                  <SideTitle side={sd} count={list.length} />
+                  {list.length === 0 && <p className="text-sm text-brand-text-muted">{t('promo.admin.none_running')}</p>}
+                  <div className="space-y-3">
+                    {list.map((r) => (
+                      <PromoRow key={r._id} row={r} sessionToken={sessionToken} open={editing === r._id} onOpen={() => setEditing(editing === r._id ? null : r._id)} onDone={() => setEditing(null)} />
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </section>
 
       <section>
         <h3 className="font-semibold mb-3">{t('promo.admin.add')}</h3>
+        <div className="flex flex-wrap gap-2 mb-3">
+          {(['all', 'horror', 'puzzle'] as const).map((sd) => (
+            <button
+              key={sd}
+              type="button"
+              onClick={() => setSide(sd)}
+              className={`text-sm px-3 py-1.5 rounded-full border flex items-center gap-1.5 transition-colors ${side === sd ? 'border-brand-red bg-brand-red/15 text-white' : 'border-white/10 text-brand-text-secondary hover:border-white/30'}`}
+            >
+              {sd === 'horror' && <Skull className="w-3.5 h-3.5" />}
+              {sd === 'puzzle' && <Puzzle className="w-3.5 h-3.5" />}
+              {t(`promo.admin.${sd}`)}
+            </button>
+          ))}
+        </div>
         <div className="relative max-w-md mb-3">
           <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-brand-text-muted" />
           <input
@@ -92,6 +123,17 @@ export function AdminPromo({ sessionToken }: { sessionToken: string }) {
         </div>
       </section>
     </div>
+  );
+}
+
+function SideTitle({ side, count }: { side: 'horror' | 'puzzle'; count: number }) {
+  const { t } = useTranslation();
+  const horror = side === 'horror';
+  return (
+    <p className={`mb-2 text-sm font-semibold flex items-center gap-1.5 ${horror ? 'text-red-300' : 'text-[#f6d27a]'}`}>
+      {horror ? <Skull className="w-4 h-4" /> : <Puzzle className="w-4 h-4" />}
+      {t(`promo.admin.${side}`)} <span className="text-brand-text-muted font-normal">({count})</span>
+    </p>
   );
 }
 
@@ -154,7 +196,11 @@ function PromoRow({
         )}
         <div className="min-w-0 flex-1">
           <p className="font-semibold truncate">
-            {row.title} {!row.isActive && <span className="text-xs text-brand-text-muted font-normal">· {t('promo.admin.inactive')}</span>}
+            {row.title}{' '}
+            <span className={`text-[10px] font-normal px-1.5 py-0.5 rounded-sm border ${row.side === 'horror' ? 'border-red-400/40 text-red-300' : 'border-[#f2c75c]/40 text-[#f6d27a]'}`}>
+              {t(`promo.admin.${row.side}`)}
+            </span>{' '}
+            {!row.isActive && <span className="text-xs text-brand-text-muted font-normal">· {t('promo.admin.inactive')}</span>}
           </p>
           <p className="text-xs text-brand-text-secondary truncate">{[row.companyName, row.location].filter(Boolean).join(' · ')}</p>
           {row.active && row.promoUntil && (
