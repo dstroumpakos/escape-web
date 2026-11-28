@@ -9,6 +9,7 @@ import { BloodDrips } from '@/components/horror/BloodDrips';
 import { WatchingEyes } from '@/components/horror/WatchingEyes';
 import { AriadneThread, MinotaurMark } from '@/components/horror/AriadneThread';
 import { setMode } from '@/lib/mode';
+import { HeroPromo, usePromoRooms } from './HeroPromo';
 
 /** Things written on the walls. Only the flashlight shows them. */
 const scrawls = [
@@ -91,6 +92,8 @@ export function HeroSection() {
   };
 
   const title1 = t('hero.title1');
+  // Paid rooms sit at the bottom of the first screen; the scroll cue makes way
+  const hasPromo = usePromoRooms().length > 0;
 
   return (
     <section
@@ -225,12 +228,12 @@ export function HeroSection() {
       {/* ── Content ────────────────────────────────── */}
       <motion.div
         style={{ y: contentY, opacity: contentOpacity }}
-        className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center pt-28 pb-24"
+        className={`relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center ${hasPromo ? 'pt-20 pb-8' : 'pt-28 pb-24'}`}
       >
-        <MinotaurMark className="mx-auto mb-5 animate-fade-up" />
+        <MinotaurMark className={`mx-auto animate-fade-up ${hasPromo ? 'mb-3 scale-90' : 'mb-5'}`} />
 
         {/* Heading */}
-        <h1 className="font-display font-black tracking-tight leading-[1.05] mb-7 text-balance text-4xl sm:text-5xl md:text-6xl xl:text-7xl">
+        <h1 className={`font-display font-black tracking-tight leading-[1.05] text-balance text-4xl sm:text-5xl md:text-6xl ${hasPromo ? 'mb-4 xl:text-[4rem]' : 'mb-7 xl:text-7xl'}`}>
           <span
             className="glitch text-brand-bone animate-fade-up animate-delay-100 [text-shadow:0_3px_0_#000,0_0_40px_rgba(0,0,0,0.9)]"
             data-text={title1}
@@ -245,7 +248,7 @@ export function HeroSection() {
         </h1>
 
         {/* Subheading */}
-        <p className="text-lg md:text-xl text-brand-text-secondary max-w-xl mx-auto mb-10 text-pretty animate-fade-up animate-delay-500 [text-shadow:0_2px_8px_#000]">
+        <p className={`text-lg md:text-xl text-brand-text-secondary max-w-xl mx-auto ${hasPromo ? 'mb-6' : 'mb-10'} text-pretty animate-fade-up animate-delay-500 [text-shadow:0_2px_8px_#000]`}>
           {t('hero.subtitle')}
         </p>
 
@@ -273,14 +276,17 @@ export function HeroSection() {
         <button
           type="button"
           onClick={() => { setMode('puzzle'); window.scrollTo({ top: 0 }); }}
-          className="mt-6 text-sm text-brand-text-secondary hover:text-[#f2c75c] underline-offset-4 hover:underline transition-colors animate-fade-up animate-delay-700"
+          className={`${hasPromo ? 'mt-3' : 'mt-6'} text-sm text-brand-text-secondary hover:text-[#f2c75c] underline-offset-4 hover:underline transition-colors animate-fade-up animate-delay-700`}
         >
           {t('mode.switch_to_puzzle')}
         </button>
 
+        <HeroPromo />
+
       </motion.div>
 
       {/* Scroll cue */}
+      {!hasPromo && (
       <a
         href="#rooms"
         className="absolute bottom-14 left-1/2 -translate-x-1/2 z-10 hidden [@media(min-height:760px)]:flex flex-col items-center gap-2 text-brand-text-muted hover:text-brand-red-light transition-colors"
@@ -293,6 +299,7 @@ export function HeroSection() {
           />
         </span>
       </a>
+      )}
     </section>
   );
 }

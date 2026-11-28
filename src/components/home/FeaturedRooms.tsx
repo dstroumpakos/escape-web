@@ -9,6 +9,7 @@ import { RoomCard, toRoomCardData, type RoomCardData } from '@/components/rooms/
 import { AnimateIn, StaggerContainer, StaggerItem } from '@/components/animations/AnimateIn';
 import { useMode, forMode } from '@/lib/mode';
 import { shownRating } from '@/lib/roomMedia';
+import { isPromoted } from './HeroPromo';
 
 export function FeaturedRooms() {
   const { t } = useTranslation();
@@ -17,19 +18,22 @@ export function FeaturedRooms() {
 
   // Map Convex rooms to our card format. No placeholder fallback: until there
   // are real (active) rooms, the whole section stays hidden.
-  // EA partner rooms get priority (Featured Spotlight benefit)
-  const rooms: RoomCardData[] = convexRooms
-    ? forMode([...convexRooms], mode)
-          .sort((a: any, b: any) => {
-            // EA partner rooms first
-            const aEA = a.isEarlyAccessPartner ? 1 : 0;
-            const bEA = b.isEarlyAccessPartner ? 1 : 0;
-            if (aEA !== bEA) return bEA - aEA;
-            return (shownRating(b)?.rating ?? 0) - (shownRating(a)?.rating ?? 0);
-          })
-          .slice(0, 6)
-          .map(toRoomCardData)
+  // Once a side is picked, paid promotions are in its hero (HeroPromo) and left out here;
+  // EA partner rooms first, then the best rated.
+  const now = Date.now();
+  const sorted = convexRooms
+    ? forMode(convexRooms.filter((r: any) => !(mode && isPromoted(r, now))), mode).sort((a: any, b: any) => {
+        // Before a side is picked there is no hero row: paid rooms lead the grid
+        const aP = isPromoted(a, now) ? 1 : 0;
+        const bP = isPromoted(b, now) ? 1 : 0;
+        if (aP !== bP) return bP - aP;
+        const aEA = a.isEarlyAccessPartner ? 1 : 0;
+        const bEA = b.isEarlyAccessPartner ? 1 : 0;
+        if (aEA !== bEA) return bEA - aEA;
+        return (shownRating(b)?.rating ?? 0) - (shownRating(a)?.rating ?? 0);
+      })
     : [];
+  const rooms: RoomCardData[] = sorted.slice(0, 6).map(toRoomCardData);
 
   if (rooms.length === 0) return null;
 

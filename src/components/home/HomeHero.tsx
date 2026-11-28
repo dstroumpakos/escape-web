@@ -9,6 +9,7 @@ import { ROOM_THEMES } from '@/lib/roomThemes';
 import { SUBTHEMES } from '../../../convex/roomCategories';
 import { setMode, useMode, type Mode } from '@/lib/mode';
 import { HeroSection } from './HeroSection';
+import { HeroPromo, usePromoRooms } from './HeroPromo';
 import { BloodDrips } from '@/components/horror/BloodDrips';
 import { WatchingEyes } from '@/components/horror/WatchingEyes';
 
@@ -259,6 +260,8 @@ function SearchBox() {
 function PuzzleHero() {
   const { t } = useTranslation();
   const pick = usePick();
+  // Paid rooms at the bottom of the first screen (HeroPromo)
+  const hasPromo = usePromoRooms().length > 0;
   return (
     <section className="relative min-h-[100svh] flex items-center justify-center overflow-hidden">
       <div
@@ -268,21 +271,21 @@ function PuzzleHero() {
       />
       <Stars count={70} seed={11} />
       <Constellations className="opacity-70" />
-      <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 text-center pt-28 pb-24">
+      <div className={`relative z-10 w-full mx-auto px-4 sm:px-6 text-center ${hasPromo ? 'max-w-5xl pt-20 pb-8' : 'max-w-4xl pt-28 pb-24'}`}>
         <span className="inline-flex items-center gap-2 rounded-full border border-[#f2c75c]/40 bg-[#f2c75c]/10 px-3 py-1 font-type text-[11px] tracking-[0.25em] uppercase text-[#f6d27a] animate-fade-up">
           <KeyRound className="w-3.5 h-3.5" /> {t('mode.no_fear')}
         </span>
-        <h1 className="mt-6 font-display font-bold leading-[1.05] text-[#f4ecd9] text-4xl sm:text-5xl md:text-6xl xl:text-7xl text-balance animate-fade-up animate-delay-100">
+        <h1 className={`${hasPromo ? 'mt-4' : 'mt-6'} font-display font-bold leading-[1.05] text-[#f4ecd9] text-4xl sm:text-5xl md:text-6xl ${hasPromo ? 'xl:text-[4rem]' : 'xl:text-7xl'} text-balance animate-fade-up animate-delay-100`}>
           {t('mode.puzzle_title1')}
           <span className="block mt-2 italic text-[#f2c75c] [text-shadow:0_0_40px_rgba(242,199,92,0.35)]">{t('mode.puzzle_title2')}</span>
         </h1>
-        <p className="mt-6 text-lg md:text-xl text-[#c4cde0] max-w-2xl mx-auto text-pretty animate-fade-up animate-delay-300">
+        <p className={`${hasPromo ? 'mt-4' : 'mt-6'} text-lg md:text-xl text-[#c4cde0] max-w-2xl mx-auto text-pretty animate-fade-up animate-delay-300`}>
           {t('mode.puzzle_desc')}
         </p>
-        <div className="mt-9 animate-fade-up animate-delay-500">
+        <div className={`${hasPromo ? 'mt-6' : 'mt-9'} animate-fade-up animate-delay-500`}>
           <SearchBox />
         </div>
-        <div className="mt-6 flex flex-wrap justify-center gap-2 animate-fade-up animate-delay-600">
+        <div className={`${hasPromo ? 'mt-4' : 'mt-6'} flex flex-wrap justify-center gap-2 animate-fade-up animate-delay-600`}>
           {themesOf(PUZZLE_CHIPS).map((th) => (
             <Link
               key={th.value}
@@ -296,10 +299,11 @@ function PuzzleHero() {
         <button
           type="button"
           onClick={() => pick('horror')}
-          className="mt-10 inline-flex items-center gap-2 text-sm text-[#a7b2c9] hover:text-[#ff6a72] transition-colors"
+          className={`${hasPromo ? 'mt-4' : 'mt-10'} inline-flex items-center gap-2 text-sm text-[#a7b2c9] hover:text-[#ff6a72] transition-colors`}
         >
           <Skull className="w-4 h-4" /> {t('mode.switch_to_horror')}
         </button>
+        <HeroPromo variant="puzzle" />
       </div>
     </section>
   );

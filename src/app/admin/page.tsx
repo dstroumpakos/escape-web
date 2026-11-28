@@ -42,12 +42,14 @@ import {
   ShoppingBag,
   ListChecks,
   Megaphone,
+  Sparkles,
 } from 'lucide-react';
 import { AdminReports } from '@/components/admin/AdminReports';
 import { AdminShop } from '@/components/admin/AdminShop';
 import { AdminPlays } from '@/components/admin/AdminPlays';
 import { AdminManagedCompanies } from '@/components/admin/AdminManagedCompanies';
 import { AdminReviews } from '@/components/admin/AdminReviews';
+import { AdminPromo } from '@/components/admin/AdminPromo';
 import { AdminUsers } from '@/components/admin/AdminUsers';
 
 export default function AdminPage() {
@@ -56,7 +58,7 @@ export default function AdminPage() {
   const [adminEmail, setAdminEmail] = useState<string | null>(null);
   const [adminToken, setAdminToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'overview' | 'companies' | 'managed' | 'bookings' | 'users' | 'reports' | 'reviews' | 'plays' | 'shop'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'promo' | 'companies' | 'managed' | 'bookings' | 'users' | 'reports' | 'reviews' | 'plays' | 'shop'>('overview');
   const [companySearch, setCompanySearch] = useState('');
   const [expandedCompany, setExpandedCompany] = useState<string | null>(null);
 
@@ -139,6 +141,8 @@ export default function AdminPage() {
 
   const tabs = [
     { id: 'overview' as const, label: t('admin.tab_overview'), icon: TrendingUp },
+    // Paid room promotion: first on the homepage (convex/promo.ts)
+    { id: 'promo' as const, label: t('promo.admin.tab'), icon: Sparkles },
     { id: 'companies' as const, label: t('admin.tab_companies'), icon: Building2 },
     { id: 'managed' as const, label: t('mc.tab'), icon: Megaphone },
     // UNLOCKED's own booking and plans are off for now (src/lib/features.ts)
@@ -536,6 +540,7 @@ export default function AdminPage() {
         {/* ══════════ REPORTS TAB ══════════ */}
         {activeTab === 'reports' && adminToken && <AdminReports sessionToken={adminToken} />}
 
+        {activeTab === 'promo' && adminToken && <AdminPromo sessionToken={adminToken} />}
         {activeTab === 'reviews' && adminToken && <AdminReviews sessionToken={adminToken} />}
         {PASSPORT_ENABLED && activeTab === 'plays' && adminToken && <AdminPlays sessionToken={adminToken} />}
         {activeTab === 'managed' && adminToken && <AdminManagedCompanies sessionToken={adminToken} />}

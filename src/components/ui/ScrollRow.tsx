@@ -8,7 +8,16 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
  * buttons on the sides (when there is more to see) and soft fades at the edges.
  * Touch and trackpad scrolling work as usual.
  */
-export function ScrollRow({ children, className = '' }: { children: React.ReactNode; className?: string }) {
+export function ScrollRow({
+  children,
+  className = '',
+  fade = 'from-brand-surface',
+}: {
+  children: React.ReactNode;
+  className?: string;
+  /** Tailwind from-* colour of the edge fades: the background behind the row */
+  fade?: string;
+}) {
   const ref = useRef<HTMLDivElement>(null);
   const [canLeft, setCanLeft] = useState(false);
   const [canRight, setCanRight] = useState(false);
@@ -50,10 +59,10 @@ export function ScrollRow({ children, className = '' }: { children: React.ReactN
 
       {/* Edge fades */}
       <div
-        className={`pointer-events-none absolute inset-y-0 left-0 w-10 bg-linear-to-r from-brand-surface to-transparent transition-opacity ${canLeft ? 'opacity-100' : 'opacity-0'}`}
+        className={`pointer-events-none absolute inset-y-0 left-0 w-10 bg-linear-to-r ${fade} to-transparent transition-opacity ${canLeft ? 'opacity-100' : 'opacity-0'}`}
       />
       <div
-        className={`pointer-events-none absolute inset-y-0 right-0 w-10 bg-linear-to-l from-brand-surface to-transparent transition-opacity ${canRight ? 'opacity-100' : 'opacity-0'}`}
+        className={`pointer-events-none absolute inset-y-0 right-0 w-10 bg-linear-to-l ${fade} to-transparent transition-opacity ${canRight ? 'opacity-100' : 'opacity-0'}`}
       />
 
       {canLeft && (
