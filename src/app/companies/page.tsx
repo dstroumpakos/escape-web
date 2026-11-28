@@ -1,7 +1,6 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { FitImage } from '@/components/ui/FitImage';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useQuery } from 'convex/react';
@@ -11,6 +10,7 @@ import { useTranslation } from '@/lib/i18n';
 import { themeLabel } from '@/lib/roomThemes';
 import { CompanyLogo } from '@/components/companies/CompanyLogo';
 import { ScrollRow } from '@/components/ui/ScrollRow';
+import { PosterImage } from '@/components/ui/PosterImage';
 
 /** Companies section: every public escape room company with its rooms (convex/companyPages.ts). */
 export default function CompaniesPage() {
@@ -86,16 +86,20 @@ export default function CompaniesPage() {
               <div className="mt-4">
               <ScrollRow>
                 {c.rooms.map((r) => (
-                  <Link key={r._id} href={`/rooms/${r._id}`} className="group w-44 shrink-0 snap-start">
-                    <div className="relative aspect-4/3 rounded-lg overflow-hidden bg-black/40 border border-brand-border group-hover:border-brand-red/60 transition-colors">
+                  // Poster cards: room art is usually a portrait poster; landscape photos are shown whole (PosterImage)
+                  <Link key={r._id} href={`/rooms/${r._id}`} className="group w-32 sm:w-40 shrink-0 snap-start">
+                    <div className="relative aspect-[5/7] rounded-xl overflow-hidden bg-black/40 border border-brand-border shadow-lg shadow-black/40 transition-all duration-200 group-hover:-translate-y-1 group-hover:border-brand-red/70 group-hover:shadow-brand-red/20">
                       {r.image ? (
-                        <FitImage src={r.image} alt={r.title} />
+                        <PosterImage src={r.image} alt={r.title} />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center"><DoorOpen className="w-8 h-8 text-brand-red/60" /></div>
                       )}
+                      <div className="absolute inset-x-0 bottom-0 h-2/5 bg-linear-to-t from-black/90 via-black/50 to-transparent" />
+                      <div className="absolute inset-x-0 bottom-0 p-2.5">
+                        <p className="text-sm font-semibold leading-tight text-white line-clamp-2 drop-shadow group-hover:text-brand-red-light">{r.title}</p>
+                        <p className="text-[11px] text-white/70 truncate mt-0.5">{themeLabel(t, r.theme)}</p>
+                      </div>
                     </div>
-                    <p className="text-sm font-semibold text-brand-bone mt-1.5 truncate group-hover:text-brand-red-light">{r.title}</p>
-                    <p className="text-[11px] text-brand-text-muted truncate">{themeLabel(t, r.theme)}</p>
                   </Link>
                 ))}
               </ScrollRow>

@@ -43,6 +43,7 @@ import {
   ListChecks,
   Megaphone,
   Sparkles,
+  Trash2,
 } from 'lucide-react';
 import { AdminReports } from '@/components/admin/AdminReports';
 import { AdminShop } from '@/components/admin/AdminShop';
@@ -50,6 +51,7 @@ import { AdminPlays } from '@/components/admin/AdminPlays';
 import { AdminManagedCompanies } from '@/components/admin/AdminManagedCompanies';
 import { AdminReviews } from '@/components/admin/AdminReviews';
 import { AdminPromo } from '@/components/admin/AdminPromo';
+import { DeleteCompanyDialog } from '@/components/admin/DeleteCompanyDialog';
 import { AdminUsers } from '@/components/admin/AdminUsers';
 
 export default function AdminPage() {
@@ -60,6 +62,8 @@ export default function AdminPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'overview' | 'promo' | 'companies' | 'managed' | 'bookings' | 'users' | 'reports' | 'reviews' | 'plays' | 'shop'>('overview');
   const [companySearch, setCompanySearch] = useState('');
+  const [deleting, setDeleting] = useState<string | null>(null);
+  const [deletedMsg, setDeletedMsg] = useState('');
   const [expandedCompany, setExpandedCompany] = useState<string | null>(null);
 
   useEffect(() => {
@@ -441,6 +445,20 @@ export default function AdminPage() {
               </div>
             )}
 
+            {deletedMsg && (
+              <p className="rounded-xl border border-white/10 bg-brand-surface px-4 py-2.5 text-sm text-brand-text-secondary">{deletedMsg}</p>
+            )}
+            {deleting && adminToken && (
+              <DeleteCompanyDialog
+                companyId={deleting}
+                sessionToken={adminToken}
+                onClose={(name) => {
+                  setDeleting(null);
+                  if (name) setDeletedMsg(t('admin.del.done', { name }));
+                }}
+              />
+            )}
+
             {/* All companies table */}
             <div className="bg-brand-surface rounded-2xl border border-white/5 overflow-hidden">
               <div className="px-5 py-4 border-b border-white/5">
@@ -456,6 +474,7 @@ export default function AdminPage() {
                       <th className="text-left text-xs text-brand-text-secondary font-medium px-4 py-3">{t('admin.col_status')}</th>
                       {BOOKING_ENABLED && <th className="text-left text-xs text-brand-text-secondary font-medium px-4 py-3">{t('admin.col_plan')}</th>}
                       <th className="text-left text-xs text-brand-text-secondary font-medium px-4 py-3">{t('admin.col_registered')}</th>
+                      <th className="px-4 py-3" />
                     </tr>
                   </thead>
                   <tbody>
@@ -470,6 +489,14 @@ export default function AdminPage() {
                         {BOOKING_ENABLED && <td className="px-4 py-3">{company.platformPlan ? <PlanBadgeMini plan={company.platformPlan} /> : <span className="text-xs text-brand-text-secondary">—</span>}</td>}
                         <td className="px-4 py-3 text-sm text-brand-text-secondary">
                           {company.createdAt ? new Date(company.createdAt).toLocaleDateString() : '—'}
+                        </td>
+                        <td className="px-4 py-3 text-right">
+                          <button
+                            onClick={() => setDeleting(company._id)}
+                            className="inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-xs text-red-400 hover:bg-red-500/10"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" /> {t('admin.del.button')}
+                          </button>
                         </td>
                       </tr>
                     ))}
