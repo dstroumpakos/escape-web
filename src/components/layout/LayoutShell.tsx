@@ -74,6 +74,9 @@ export function LayoutShell({ children }: { children: React.ReactNode }) {
     const el = document.documentElement;
     if (hideMainLayout || !mode) el.removeAttribute('data-mode');
     else el.setAttribute('data-mode', mode);
+    // No side (or the home): both sides at once, like the home (globals.css)
+    if (!hideMainLayout && !mode) el.setAttribute('data-dual', '');
+    else el.removeAttribute('data-dual');
   }, [hideMainLayout, mode]);
 
   if (hideMainLayout) {

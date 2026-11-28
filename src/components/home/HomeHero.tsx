@@ -208,7 +208,7 @@ function SplitHero() {
       <div className="relative z-30 border-t border-white/10 bg-black/70 backdrop-blur-md px-4 py-4 text-center">
         <h1 className="font-display text-base sm:text-lg font-semibold text-[#f4ecd9]">{t('mode.h1')}</h1>
         <p className="mt-1 text-xs sm:text-sm text-[#b9b0a8]">{t('mode.strip')}</p>
-        <Link href="/discover" className="mt-2 inline-flex items-center gap-1 text-sm text-[#f6d27a] hover:underline">
+        <Link href="/discover" onClick={() => setMode(null)} className="mt-2 inline-flex items-center gap-1 text-sm text-[#f6d27a] hover:underline">
           {t('mode.see_all')} <ArrowRight className="w-3.5 h-3.5" />
         </Link>
       </div>

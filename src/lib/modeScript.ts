@@ -19,7 +19,8 @@ const FX_SCRIPT = `try{var d=document.documentElement,n=navigator,mm=function(q)
 
 /**
  * Runs in <head> before paint; keep it tiny and dependency free (no regex, no
- * escapes: it is a template string). The home page (always both sides), the
- * company portal and photo app are left alone.
+ * escapes: it is a template string). A side picked: data-mode, except on the
+ * home page; the home, and every page while no side is picked: data-dual
+ * (both sides at once). The company portal and photo app are left alone.
  */
-export const MODE_SCRIPT = FX_SCRIPT + `try{var p=location.pathname,h=location.hostname,m=localStorage.getItem('${MODE_KEY}'),skip=p==='/'||p==='/company'||${JSON.stringify(MODE_FREE_PATHS)}.some(function(x){return p.indexOf(x)===0})||h.indexOf('business.')===0||h.indexOf('photos.')===0;if(!skip&&(m==='puzzle'||m==='horror'))document.documentElement.setAttribute('data-mode',m)}catch(e){}`;
+export const MODE_SCRIPT = FX_SCRIPT + `try{var p=location.pathname,h=location.hostname,m=localStorage.getItem('${MODE_KEY}'),skip=p==='/'||p==='/company'||${JSON.stringify(MODE_FREE_PATHS)}.some(function(x){return p.indexOf(x)===0})||h.indexOf('business.')===0||h.indexOf('photos.')===0;if(!skip){if(p!=='/'&&(m==='puzzle'||m==='horror'))document.documentElement.setAttribute('data-mode',m);else document.documentElement.setAttribute('data-dual','')}}catch(e){}`;

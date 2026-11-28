@@ -10,6 +10,8 @@ import { sideOf } from '../../convex/roomCategories';
  * browser and set as <html data-mode> before the first paint (MODE_SCRIPT), so
  * globals.css re-colours the whole site at once. No choice yet = everything.
  * The home page (/) always stays both sides: the choice only changes the other tabs.
+ * No side picked ("show me all rooms", or the toggle pressed off) = every page
+ * looks like the home, both sides at once: <html data-dual> (globals.css).
  */
 export type Mode = 'puzzle' | 'horror';
 
@@ -32,9 +34,15 @@ export function setMode(mode: Mode | null) {
   } catch {
     /* private window: the choice lasts for this page only */
   }
-  // The home stays both sides; LayoutShell sets it again on the other tabs
-  if (mode && location.pathname !== '/') document.documentElement.setAttribute('data-mode', mode);
-  else document.documentElement.removeAttribute('data-mode');
+  // The home stays both sides; LayoutShell keeps this right on every page
+  const el = document.documentElement;
+  if (mode && location.pathname !== '/') {
+    el.setAttribute('data-mode', mode);
+    el.removeAttribute('data-dual');
+  } else {
+    el.removeAttribute('data-mode');
+    el.setAttribute('data-dual', '');
+  }
   window.dispatchEvent(new Event(EVENT));
 }
 
