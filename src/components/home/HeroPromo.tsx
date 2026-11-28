@@ -5,7 +5,7 @@ import { Sparkles, MapPin, ArrowUpRight } from 'lucide-react';
 import { useSafeQuery } from '@/lib/useSafeQuery';
 import { api } from '../../../convex/_generated/api';
 import { useTranslation } from '@/lib/i18n';
-import { sideOf, useMode } from '@/lib/mode';
+import { sideOf } from '@/lib/mode';
 
 /** True while a room's paid promotion runs (convex/promo.ts). */
 export function isPromoted(r: { promoUntil?: number }, now = Date.now()) {
@@ -14,17 +14,16 @@ export function isPromoted(r: { promoUntil?: number }, now = Date.now()) {
 
 /**
  * Every promoted room, horror and puzzles alike, on both sides of the home:
- * the current side's first, then the other's; oldest promotion first.
+ * horror first, then puzzles; oldest promotion first.
  */
 export function usePromoRooms() {
-  const mode = useMode();
   const rooms = useSafeQuery<any[]>(api.rooms.list);
   if (!rooms) return [];
   const now = Date.now();
-  const mine = (r: any) => (mode && sideOf(r) === mode ? 0 : 1);
+  const order = (r: any) => (sideOf(r) === 'horror' ? 0 : 1);
   return rooms
     .filter((r) => isPromoted(r, now))
-    .sort((a, b) => mine(a) - mine(b) || (a.promoSince ?? 0) - (b.promoSince ?? 0));
+    .sort((a, b) => order(a) - order(b) || (a.promoSince ?? 0) - (b.promoSince ?? 0));
 }
 
 /**
@@ -45,6 +44,10 @@ export function HeroPromo({ variant = 'horror' }: { variant?: 'horror' | 'puzzle
     ? 'shadow-[0_0_22px_rgba(242,199,92,0.18)] hover:shadow-[0_10px_34px_rgba(242,199,92,0.38)]'
     : 'shadow-[0_0_22px_rgba(201,154,46,0.16)] hover:shadow-[0_10px_34px_rgba(220,30,40,0.45)]';
   const ink = puzzle ? 'text-[#f6d27a]' : 'text-brand-gold';
+  // Always horror on the top row, puzzles below. Both rows use the bigger
+  // count, so the cards are the same size in the two rows.
+  const groups = [rooms.filter((r) => sideOf(r) === 'horror'), rooms.filter((r) => sideOf(r) !== 'horror')].filter((g) => g.length);
+  const n = Math.max(...groups.map((g) => g.length));
 
   return (
     <div className="mt-7 [@media(max-height:800px)]:mt-4 relative left-1/2 -translate-x-1/2 w-[min(1600px,calc(100vw-2rem))] text-left animate-fade-up animate-delay-700">
@@ -59,14 +62,16 @@ export function HeroPromo({ variant = 'horror' }: { variant?: 'horror' | 'puzzle
 
       {/* Phones: a row to swipe. Wider screens: every card visible, up to 10 a row
           (5 on tablets, 8 on laptops), never wider than 300px, a last row centred; no arrows. */}
+      {groups.map((group, gi) => (
       <div
-        style={{ '--n': rooms.length } as React.CSSProperties}
-        className={`flex gap-3 overflow-x-auto snap-x [scrollbar-width:none] [&::-webkit-scrollbar]:hidden px-1 pt-1 pb-3
+        key={gi}
+        style={{ '--n': n } as React.CSSProperties}
+        className={`flex gap-3 overflow-x-auto snap-x [scrollbar-width:none] [&::-webkit-scrollbar]:hidden px-1 pt-1 pb-2
           sm:flex-wrap sm:overflow-visible sm:justify-center sm:gap-(--g)
           sm:[--c:min(var(--n),5)] lg:[--c:min(var(--n),8)] xl:[--c:min(var(--n),10)]
-          ${rooms.length > 6 ? '[--g:0.625rem]' : '[--g:1rem]'}`}
+          ${n > 6 ? '[--g:0.625rem]' : '[--g:1rem]'}`}
       >
-        {rooms.map((r) => (
+        {group.map((r) => (
           <Link
             key={r._id}
             href={`/rooms/${r._id}`}
@@ -94,7 +99,7 @@ export function HeroPromo({ variant = 'horror' }: { variant?: 'horror' | 'puzzle
               </span>
 
               <div className="absolute inset-x-0 bottom-0 p-3">
-                <p className={`font-display font-bold leading-tight truncate ${rooms.length > 7 ? 'text-sm' : 'text-base'} ${puzzle ? 'text-[#f4ecd9]' : 'text-brand-bone'} [text-shadow:0_2px_10px_#000]`}>
+                <p className={`font-display font-bold leading-tight truncate ${n > 7 ? 'text-sm' : 'text-base'} ${puzzle ? 'text-[#f4ecd9]' : 'text-brand-bone'} [text-shadow:0_2px_10px_#000]`}>
                   {r.title}
                 </p>
                 <p className="mt-0.5 text-xs text-white/70 truncate flex items-center gap-1">
@@ -106,6 +111,7 @@ export function HeroPromo({ variant = 'horror' }: { variant?: 'horror' | 'puzzle
           </Link>
         ))}
       </div>
+      ))}
     </div>
   );
 }
