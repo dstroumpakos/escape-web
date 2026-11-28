@@ -745,35 +745,62 @@ export const sendCompanyWelcome = internalAction({
     companyName: v.string(),
     companyEmail: v.string(),
     plan: v.optional(v.string()),
+    // Language picked on the sign-up form: Greek gets Greek, the rest English
+    lang: v.optional(v.string()),
   },
   handler: async (_ctx, args) => {
     const resend = getResend();
     if (!resend) return;
+    const el = args.lang === "el";
 
     const planLine = args.plan
-      ? `<p style="font-size:15px;color:#555;margin:0 0 8px;">Selected plan: <strong>${planName(args.plan)}</strong></p>`
+      ? `<p style="font-size:15px;color:#555;margin:0 0 8px;">${el ? "Πλάνο" : "Selected plan"}: <strong>${planName(args.plan)}</strong></p>`
       : "";
+    const tx = el
+      ? {
+          title: "Καλώς ήρθατε στο UNLOCKED!",
+          subtitle: "Η πλατφόρμα για escape rooms",
+          hi: "Γεια σας",
+          thanks: `Ευχαριστούμε για την εγγραφή στο <strong style="color:${C.red};">UNLOCKED</strong>! Χαιρόμαστε που είστε μαζί μας.`,
+          next: "Τα επόμενα βήματα:",
+          s1: "Αποδεχτείτε τους όρους στον λογαριασμό σας",
+          s2: "Η ομάδα μας ελέγχει την αίτησή σας",
+          s3: "Μόλις εγκριθεί, προσθέστε τα δωμάτιά σας και εμφανίζονται στο UNLOCKED",
+          step: "Βήμα",
+          mail: "Θα λάβετε email μόλις εγκριθεί ο λογαριασμός σας.",
+          btn: "Στον λογαριασμό μου",
+          subject: "Καλώς ήρθατε στο UNLOCKED! Η εγγραφή σας προχωράει",
+        }
+      : {
+          title: "Welcome to UNLOCKED!",
+          subtitle: "Partner with the escape room platform",
+          hi: "Hi",
+          thanks: `Thank you for registering on <strong style="color:${C.red};">UNLOCKED</strong>! We're excited to have you on board.`,
+          next: "Here's what happens next:",
+          s1: "Accept the terms in your dashboard",
+          s2: "Our team reviews your application",
+          s3: "Once approved, add your rooms and they go live on UNLOCKED",
+          step: "Step",
+          mail: "You'll receive an email as soon as your account is approved.",
+          btn: "Go to Dashboard",
+          subject: "Welcome to UNLOCKED! Your registration is being processed",
+        };
 
     const html = shell(
-      "Welcome to UNLOCKED!",
-      "Partner with the escape room platform",
-      `<p style="${S.greeting}">Hi <strong>${escHtml(args.companyName)}</strong>,</p>
-<p style="${S.bodyText}">
-  Thank you for registering on <strong style="color:${C.red};">UNLOCKED</strong>!
-  We're excited to have you on board.
-</p>
+      tx.title,
+      tx.subtitle,
+      `<p style="${S.greeting}">${tx.hi} <strong>${escHtml(args.companyName)}</strong>,</p>
+<p style="${S.bodyText}">${tx.thanks}</p>
 ${planLine}
-<p style="${S.bodyText}">Here's what happens next:</p>
+<p style="${S.bodyText}">${tx.next}</p>
 ${TABLE(`
-  ${FR(`<strong style="color:${C.white};">Step 1</strong> — Accept the terms in your dashboard`)}
-  ${FR(`<strong style="color:${C.white};">Step 2</strong> — Our team reviews your application`)}
-  ${FR(`<strong style="color:${C.white};">Step 3</strong> — Once approved, add your rooms and they go live on UNLOCKED`)}
+  ${FR(`<strong style="color:${C.white};">${tx.step} 1</strong> — ${tx.s1}`)}
+  ${FR(`<strong style="color:${C.white};">${tx.step} 2</strong> — ${tx.s2}`)}
+  ${FR(`<strong style="color:${C.white};">${tx.step} 3</strong> — ${tx.s3}`)}
 `)}
-<p style="${S.bodyText}">
-  You'll receive an email as soon as your account is approved.
-</p>
+<p style="${S.bodyText}">${tx.mail}</p>
 <div style="text-align:center;margin:32px 0;">
-  <a href="https://business.unlocked.gr" style="${S.btn}">Go to Dashboard</a>
+  <a href="https://business.unlocked.gr" style="${S.btn}">${tx.btn}</a>
 </div>`,
       "UNLOCKED — Escape Room Platform"
     );
@@ -781,10 +808,74 @@ ${TABLE(`
     await resend.emails.send({
       from: fromAddr(),
       to: args.companyEmail,
-      subject: "Welcome to UNLOCKED! Your registration is being processed",
+      subject: tx.subject,
       html,
     }).then(r => console.log("[Email] Company welcome sent:", r))
       .catch(e => console.error("[Email] Company welcome failed:", e));
+  },
+});
+
+// ══════════════════════════════════════════════════════════════
+// COMPANY DECLINED EMAIL (admin declined the application, with notes)
+// ══════════════════════════════════════════════════════════════
+
+export const sendCompanyDeclined = internalAction({
+  args: {
+    companyName: v.string(),
+    companyEmail: v.string(),
+    notes: v.string(),
+    lang: v.optional(v.string()),
+  },
+  handler: async (_ctx, args) => {
+    const resend = getResend();
+    if (!resend) return;
+    const el = args.lang === "el";
+    const tx = el
+      ? {
+          title: "Η αίτησή σας χρειάζεται αλλαγές",
+          subtitle: "Ο λογαριασμός σας στο UNLOCKED δεν εγκρίθηκε ακόμα",
+          hi: "Γεια σας",
+          body: "Ελέγξαμε την αίτησή σας και δεν μπορέσαμε να την εγκρίνουμε όπως είναι.",
+          notes: "Σημειώσεις της ομάδας μας",
+          fix: "Συνδεθείτε, διορθώστε τα στοιχεία σας και στείλτε ξανά την αίτηση. Θα την ελέγξουμε ξανά.",
+          btn: "Διόρθωση και νέα αποστολή",
+          subject: "Η αίτησή σας στο UNLOCKED χρειάζεται αλλαγές",
+        }
+      : {
+          title: "Your application needs changes",
+          subtitle: "Your UNLOCKED account isn't approved yet",
+          hi: "Hi",
+          body: "We reviewed your application and couldn't approve it as it is.",
+          notes: "Notes from our team",
+          fix: "Sign in, update your details and send the application again. We'll take another look.",
+          btn: "Update and resubmit",
+          subject: "Your UNLOCKED application needs changes",
+        };
+    const notes = args.notes.trim()
+      ? `<p style="${S.sectionTitle}">${tx.notes}</p>
+<p style="${S.bodyText}white-space:pre-line;">${escHtml(args.notes.trim())}</p>`
+      : "";
+
+    const html = shell(
+      tx.title,
+      tx.subtitle,
+      `<p style="${S.greeting}">${tx.hi} <strong>${escHtml(args.companyName)}</strong>,</p>
+<p style="${S.bodyText}">${tx.body}</p>
+${notes}
+<p style="${S.bodyText}">${tx.fix}</p>
+<div style="text-align:center;margin:32px 0;">
+  <a href="https://business.unlocked.gr/onboarding" style="${S.btn}">${tx.btn}</a>
+</div>`,
+      "UNLOCKED — Escape Room Platform"
+    );
+
+    await resend.emails.send({
+      from: fromAddr(),
+      to: args.companyEmail,
+      subject: tx.subject,
+      html,
+    }).then(r => console.log("[Email] Company declined sent:", r))
+      .catch(e => console.error("[Email] Company declined failed:", e));
   },
 });
 
@@ -1126,17 +1217,19 @@ export const sendNewApplicationNotification = internalAction({
     companyName: v.string(),
     companyEmail: v.string(),
     plan: v.string(),
+    // Sent again after a decline (companies.resubmitForReview)
+    resubmitted: v.optional(v.boolean()),
   },
   handler: async (_ctx, d) => {
     const resend = getResend();
     if (!resend) return;
 
     const html = shell(
-      "New Company Application",
-      "A new company is waiting for your review",
-      `<h2 style="color:#E53E3E; margin:0 0 16px">New Application Submitted</h2>
+      d.resubmitted ? "Application Resubmitted" : "New Company Application",
+      d.resubmitted ? "A declined company sent its application again" : "A new company is waiting for your review",
+      `<h2 style="color:#E53E3E; margin:0 0 16px">${d.resubmitted ? "Application Resubmitted" : "New Application Submitted"}</h2>
 <p style="color:#ccc; font-size:15px; margin:0 0 8px">
-  <strong>${escHtml(d.companyName)}</strong> has submitted a new application and is waiting for review.
+  <strong>${escHtml(d.companyName)}</strong> has ${d.resubmitted ? "updated and resubmitted its application" : "submitted a new application"} and is waiting for review.
 </p>
 <p style="color:#999; font-size:14px; margin:0 0 4px">Email: ${escHtml(d.companyEmail)}</p>
 <p style="color:#999; font-size:14px; margin:0 0 20px">Plan: ${escHtml(planName(d.plan))}</p>
@@ -1155,7 +1248,7 @@ export const sendNewApplicationNotification = internalAction({
     await resend.emails.send({
       from: fromAddr(),
       to: adminTo,
-      subject: `🏢 New Application: ${d.companyName} — Review Required`,
+      subject: `🏢 ${d.resubmitted ? "Resubmitted" : "New"} Application: ${d.companyName} — Review Required`,
       html,
     }).then(r => console.log("[Email] Admin notification sent:", r))
       .catch(e => console.error("[Email] Admin notification failed:", e));

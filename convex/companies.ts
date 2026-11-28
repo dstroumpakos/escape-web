@@ -35,7 +35,7 @@ import { UPLOADS_PER_HOUR_COMPANY, isOwnStorageUrl } from "./uploads";
 
 // One message for wrong email and wrong password (don't reveal which emails exist).
 const INVALID_LOGIN = "Incorrect email or password";
-import { companyIsPublic, checkRoomInput } from "./companyRules";
+import { companyIsPublic, checkRoomInput, COMPANY_TERMS_VERSION } from "./companyRules";
 import { posterArgs, posterFields } from "./roomPoster";
 import { categoryFields } from "./roomCategories";
 import {
@@ -68,6 +68,7 @@ const companySignupArgs = {
   vatNumber: v.optional(v.string()),
   description: v.string(),
   password: v.string(),
+  website: v.optional(v.string()),
 };
 
 type CompanySignupInput = {
@@ -79,6 +80,7 @@ type CompanySignupInput = {
   vatNumber?: string;
   description: string;
   password: string;
+  website?: string;
 };
 
 type CompanyFields = Omit<CompanySignupInput, "password">;
@@ -101,6 +103,8 @@ async function checkCompanySignup(
   requireNonEmpty(args.address, "Address");
   requireNonEmpty(args.city, "City");
   if (await companyEmailTaken(ctx, email)) return { error: "Email already registered" };
+  // Optional; "Book" on its rooms goes to this site while booking is off
+  const website = cleanExternalUrl(args.website) || undefined;
   return {
     fields: {
       name: args.name.trim().slice(0, 120),
@@ -110,6 +114,7 @@ async function checkCompanySignup(
       city: args.city.trim().slice(0, 100),
       vatNumber: args.vatNumber?.trim().slice(0, 40) || undefined,
       description: args.description.trim().slice(0, 2000),
+      website,
     },
   };
 }
@@ -126,7 +131,8 @@ async function createCompany(
   ctx: MutationCtx,
   fields: CompanyFields,
   hashedPw: string,
-  client: "web" | "app" | undefined
+  client: "web" | "app" | undefined,
+  lang?: string
 ): Promise<{ id: Id<"companies">; sessionToken: string }> {
   // At most this many new business accounts per hour, site-wide.
   await rateLimit(ctx, "companyRegister", 10, HOUR);
@@ -137,10 +143,12 @@ async function createCompany(
     verified: false,
     createdAt: Date.now(),
     onboardingStatus: "pending_terms",
+    ...(lang ? { language: lang.slice(0, 10) } : {}),
   });
   await ctx.scheduler.runAfter(0, internal.email.sendCompanyWelcome, {
     companyName: fields.name,
     companyEmail: fields.email,
+    lang,
   });
   return { id, sessionToken: await createCompanySession(ctx, id, client) };
 }
@@ -171,7 +179,7 @@ export const confirmRegister = mutation({
     if (!r.ok) return { error: r.error };
     if (await companyEmailTaken(ctx, email)) return { error: "Email already registered" };
     const data = r.row.data as { fields: CompanyFields; hashedPw: string };
-    return await createCompany(ctx, { ...data.fields, email }, data.hashedPw, args.client);
+    return await createCompany(ctx, { ...data.fields, email }, data.hashedPw, args.client, r.row.lang);
   },
 });
 
@@ -868,6 +876,8 @@ export const acceptTerms = mutation({
     await requireCompany(ctx, args, "companies:acceptTerms");
     await ctx.db.patch(args.companyId, {
       termsAcceptedAt: Date.now(),
+      // Which text was accepted (companyRules.ts); bump it when the terms change
+      termsVersion: COMPANY_TERMS_VERSION,
       onboardingStatus: "pending_plan",
     });
   },
@@ -1063,11 +1073,21 @@ export const declineCompany = mutation({
     args: { companyId: v.id("companies"), notes: v.string(), sessionToken: v.string() },
   handler: async (ctx, args) => {
     await requireAdminSession(ctx, args.sessionToken);
+    const company = await ctx.db.get(args.companyId);
     await ctx.db.patch(args.companyId, {
       onboardingStatus: "declined",
       reviewedAt: Date.now(),
       adminNotes: args.notes,
     });
+    // Tell the company (before, it only found out by logging in)
+    if (company && company.onboardingStatus !== "declined") {
+      await ctx.scheduler.runAfter(0, internal.email.sendCompanyDeclined, {
+        companyName: company.name,
+        companyEmail: company.email,
+        notes: args.notes.trim().slice(0, 2000),
+        lang: company.language,
+      });
+    }
   },
 });
 
@@ -1075,10 +1095,19 @@ export const declineCompany = mutation({
 export const resubmitForReview = mutation({
   args: { companyId: v.id("companies"), sessionToken: sessionTokenV },
   handler: async (ctx, args) => {
-    await requireCompany(ctx, args, "companies:resubmitForReview");
-    await ctx.db.patch(args.companyId, {
+    const company = await requireCompany(ctx, args, "companies:resubmitForReview");
+    // Only a declined application can be sent again
+    if (company.onboardingStatus !== "declined") return;
+    await ctx.db.patch(company._id, {
       onboardingStatus: "pending_review",
       adminNotes: undefined,
+    });
+    // The team hears about it, like a first application
+    await ctx.scheduler.runAfter(0, internal.email.sendNewApplicationNotification, {
+      companyName: company.name,
+      companyEmail: company.email,
+      plan: company.platformPlan || "listing",
+      resubmitted: true,
     });
   },
 });

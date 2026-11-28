@@ -1,0 +1,17 @@
+{
+ "company.onboarding.terms4_body": "当社は GDPR および適用されるプライバシー法に従ってデータを収集・処理します。UNLOCKED を通じて受け取ったプレイヤーのデータ（メッセージやレビューなど）は機密として扱い、同意なく第三者と共有してはなりません。",
+ "company.register.city_placeholder": "市区町村",
+ "company.register.vat_placeholder": "VAT番号または税番号",
+ "company.register.phone_placeholder": "国番号付きの電話番号",
+ "cx.onboarding.terms_full": "以上が主なポイントです。同意すると、全文にも同意したことになります：",
+ "cx.onboarding.edit_title": "登録情報",
+ "cx.onboarding.edit_hint": "チームから依頼された点を修正して、申請を再送信してください。",
+ "cx.onboarding.edit_required": "会社名、電話番号、住所、市区町村、説明を入力してください。",
+ "cx.register.website": "ウェブサイト（任意）",
+ "cx.register.website_placeholder": "https://your-escape-room.jp",
+ "company.onboarding.terms2_title": "2. 無料掲載",
+ "company.onboarding.terms2_body": "UNLOCKED への会社とルームの掲載は無料です。今後有料機能を追加する場合は事前にお知らせし、同意なく料金が発生することはありません。",
+ "company.onboarding.terms3_title": "3. 予約は御社のサイトで",
+ "company.onboarding.terms3_body": "UNLOCKED はルームの予約や支払いを受け付けません。プレイヤーは御社が追加した予約リンクから、御社の条件で御社のサイトで予約します。ルーム情報とリンクは常に最新に保ってください。",
+ "cx.onboarding.confirm_text": "ローンチ期間中、UNLOCKED への脱出ゲームの掲載は無料です。「続ける」をタップすると、チームが申請を審査します。アカウントが承認され次第メールでお知らせします。"
+}

@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useMutation } from 'convex/react';
 import { api } from '../../../../convex/_generated/api';
-import { Building2, Mail, Lock, Eye, EyeOff, Phone, MapPin, FileText, ArrowRight } from 'lucide-react';
+import { Building2, Mail, Lock, Eye, EyeOff, Phone, MapPin, FileText, ArrowRight, Globe } from 'lucide-react';
 import { EyeKeyhole } from '@/components/brand/EyeKeyhole';
 import { useTranslation } from '@/lib/i18n';
 import { LanguageToggle } from '@/components/LanguageToggle';
@@ -37,6 +37,7 @@ export default function CompanyRegisterPage() {
     address: '',
     city: '',
     vatNumber: '',
+    website: '',
     description: '',
     password: '',
     confirmPassword: '',
@@ -72,6 +73,7 @@ export default function CompanyRegisterPage() {
         address: form.address,
         city: form.city,
         vatNumber: form.vatNumber || undefined,
+        website: form.website.trim() || undefined,
         description: form.description,
         password: form.password,
         lang: language,
@@ -231,6 +233,23 @@ export default function CompanyRegisterPage() {
                   onChange={(e) => updateField('vatNumber', e.target.value)}
                   className="w-full bg-brand-bg border border-white/10 rounded-xl pl-11 pr-4 py-3 text-white placeholder-brand-text-secondary/50 focus:border-brand-red focus:outline-hidden transition-colors"
                   placeholder={t('company.register.vat_placeholder')}
+                />
+              </div>
+            </div>
+
+            {/* Website: where "Book" on its rooms sends players */}
+            <div>
+              <label className="block text-sm text-brand-text-secondary mb-1.5">{t('cx.register.website')}</label>
+              <div className="relative">
+                <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-brand-text-secondary" />
+                <input
+                  type="text"
+                  inputMode="url"
+                  autoComplete="url"
+                  value={form.website}
+                  onChange={(e) => updateField('website', e.target.value)}
+                  className="w-full bg-brand-bg border border-white/10 rounded-xl pl-11 pr-4 py-3 text-white placeholder-brand-text-secondary/50 focus:border-brand-red focus:outline-hidden transition-colors"
+                  placeholder={t('cx.register.website_placeholder')}
                 />
               </div>
             </div>

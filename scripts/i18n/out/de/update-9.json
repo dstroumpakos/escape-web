@@ -1,0 +1,17 @@
+{
+ "company.onboarding.terms4_body": "Wir erheben und verarbeiten Daten gemäß der DSGVO und den geltenden Datenschutzgesetzen. Spielerdaten, die du über UNLOCKED erhältst (zum Beispiel Nachrichten oder Bewertungen), müssen vertraulich behandelt werden und dürfen ohne Einwilligung nicht an Dritte weitergegeben werden.",
+ "company.register.city_placeholder": "Stadt",
+ "company.register.vat_placeholder": "USt-IdNr. oder Steuernummer",
+ "company.register.phone_placeholder": "Telefonnummer mit Ländervorwahl",
+ "cx.onboarding.terms_full": "Das sind die wichtigsten Punkte. Mit der Annahme stimmst du auch den vollständigen Texten zu:",
+ "cx.onboarding.edit_title": "Deine Angaben",
+ "cx.onboarding.edit_hint": "Korrigiere, worum unser Team gebeten hat, und sende deine Bewerbung erneut.",
+ "cx.onboarding.edit_required": "Bitte Firmenname, Telefon, Adresse, Stadt und Beschreibung ausfüllen.",
+ "cx.register.website": "Website (optional)",
+ "cx.register.website_placeholder": "https://dein-escape-room.de",
+ "company.onboarding.terms2_title": "2. Kostenloser Eintrag",
+ "company.onboarding.terms2_body": "Der Eintrag deines Unternehmens und deiner Räume auf UNLOCKED ist kostenlos. Falls wir jemals kostenpflichtige Funktionen einführen, sagen wir es dir vorher, und ohne deine Zustimmung wird nichts berechnet.",
+ "company.onboarding.terms3_title": "3. Buchungen auf deiner Website",
+ "company.onboarding.terms3_body": "UNLOCKED nimmt keine Buchungen oder Zahlungen für Räume an. Spieler buchen auf deiner eigenen Website über den Buchungslink, den du hinzufügst, zu deinen eigenen Bedingungen. Halte deine Raumangaben und den Link aktuell.",
+ "cx.onboarding.confirm_text": "Der Eintrag deiner Escape Rooms auf UNLOCKED ist während des Starts kostenlos. Tippe auf „Weiter“, und unser Team prüft deine Bewerbung. Du bekommst eine E-Mail, sobald dein Konto freigeschaltet ist."
+}

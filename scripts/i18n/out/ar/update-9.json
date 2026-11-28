@@ -1,0 +1,17 @@
+{
+ "company.onboarding.terms4_body": "نجمع البيانات ونعالجها وفقًا للائحة العامة لحماية البيانات (GDPR) وقوانين الخصوصية المعمول بها. يجب التعامل مع أي بيانات للاعبين تصلك عبر UNLOCKED (مثل الرسائل أو التقييمات) بسرية، ولا يجوز مشاركتها مع أطراف ثالثة دون موافقة.",
+ "company.register.city_placeholder": "المدينة",
+ "company.register.vat_placeholder": "الرقم الضريبي",
+ "company.register.phone_placeholder": "رقم الهاتف مع رمز الدولة",
+ "cx.onboarding.terms_full": "هذه هي النقاط الأساسية. بقبولك توافق أيضًا على النصوص الكاملة:",
+ "cx.onboarding.edit_title": "بياناتك",
+ "cx.onboarding.edit_hint": "صحّح ما طلبه فريقنا، ثم أرسل طلبك مرة أخرى.",
+ "cx.onboarding.edit_required": "املأ اسم الشركة والهاتف والعنوان والمدينة والوصف.",
+ "cx.register.website": "الموقع الإلكتروني (اختياري)",
+ "cx.register.website_placeholder": "https://your-escape-room.com",
+ "company.onboarding.terms2_title": "2. إدراج مجاني",
+ "company.onboarding.terms2_body": "إدراج شركتك وغرفك على UNLOCKED مجاني. إذا أضفنا يومًا ميزات مدفوعة فسنخبرك مسبقًا، ولن يُحتسب أي مبلغ دون موافقتك.",
+ "company.onboarding.terms3_title": "3. الحجوزات على موقعك",
+ "company.onboarding.terms3_body": "لا تستقبل UNLOCKED حجوزات أو مدفوعات للغرف. يحجز اللاعبون على موقعك عبر رابط الحجز الذي تضيفه، وفق شروطك. حافظ على تحديث بيانات غرفك والرابط.",
+ "cx.onboarding.confirm_text": "إدراج غرف الهروب الخاصة بك على UNLOCKED مجاني خلال فترة الإطلاق. اضغط \"متابعة\" وسيراجع فريقنا طلبك. ستصلك رسالة بريد إلكتروني فور الموافقة على حسابك."
+}

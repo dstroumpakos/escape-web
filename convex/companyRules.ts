@@ -3,6 +3,13 @@ import type { QueryCtx, MutationCtx } from "./_generated/server";
 import type { Doc, Id } from "./_generated/dataModel";
 
 /**
+ * Version of the terms a company accepts in onboarding (the
+ * company.onboarding.terms* texts in the website and the app). Change it
+ * whenever those texts change, so companies.termsVersion shows who accepted what.
+ */
+export const COMPANY_TERMS_VERSION = "2026-11-28-free-listing";
+
+/**
  * Only companies the UNLOCKED team approved are public: their rooms show up
  * on the site and can be booked. Until then a company can set up its rooms
  * in the portal, but nobody else sees them or can pay them. Declined or

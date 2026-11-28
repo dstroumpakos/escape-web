@@ -1,0 +1,17 @@
+{
+ "company.onboarding.terms4_body": "Nous collectons et traitons les données conformément au RGPD et aux lois applicables sur la vie privée. Les données de joueurs que vous recevez via UNLOCKED (par exemple des messages ou des avis) doivent rester confidentielles et ne peuvent pas être partagées avec des tiers sans consentement.",
+ "company.register.city_placeholder": "Ville",
+ "company.register.vat_placeholder": "N° de TVA ou identifiant fiscal",
+ "company.register.phone_placeholder": "Numéro de téléphone avec l'indicatif du pays",
+ "cx.onboarding.terms_full": "Voici les points principaux. En acceptant, vous acceptez aussi les textes complets :",
+ "cx.onboarding.edit_title": "Vos informations",
+ "cx.onboarding.edit_hint": "Corrigez ce que notre équipe a demandé, puis renvoyez votre candidature.",
+ "cx.onboarding.edit_required": "Renseignez le nom de l'entreprise, le téléphone, l'adresse, la ville et la description.",
+ "cx.register.website": "Site web (facultatif)",
+ "cx.register.website_placeholder": "https://votre-escape-game.fr",
+ "company.onboarding.terms2_title": "2. Référencement gratuit",
+ "company.onboarding.terms2_body": "Le référencement de votre entreprise et de vos salles sur UNLOCKED est gratuit. Si nous ajoutons un jour des fonctions payantes, nous vous préviendrons à l'avance et rien ne sera facturé sans votre accord.",
+ "company.onboarding.terms3_title": "3. Réservations sur votre site",
+ "company.onboarding.terms3_body": "UNLOCKED ne prend ni réservations ni paiements pour les salles. Les joueurs réservent sur votre propre site via le lien de réservation que vous ajoutez, selon vos propres conditions. Tenez à jour les informations de vos salles et le lien.",
+ "cx.onboarding.confirm_text": "Le référencement de vos escape games sur UNLOCKED est gratuit pendant le lancement. Appuyez sur « Continuer » et notre équipe examinera votre candidature. Vous recevrez un e-mail dès que votre compte sera approuvé."
+}

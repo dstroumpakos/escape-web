@@ -1,0 +1,17 @@
+{
+ "company.onboarding.terms4_body": "당사는 GDPR 및 관련 개인정보 보호법에 따라 데이터를 수집하고 처리합니다. UNLOCKED를 통해 받은 플레이어 데이터(예: 메시지나 리뷰)는 기밀로 취급해야 하며 동의 없이 제3자와 공유할 수 없습니다.",
+ "company.register.city_placeholder": "도시",
+ "company.register.vat_placeholder": "부가세 번호 또는 사업자 번호",
+ "company.register.phone_placeholder": "국가 번호를 포함한 전화번호",
+ "cx.onboarding.terms_full": "주요 내용은 위와 같습니다. 동의하면 전체 약관에도 동의하게 됩니다:",
+ "cx.onboarding.edit_title": "회사 정보",
+ "cx.onboarding.edit_hint": "팀이 요청한 내용을 수정한 뒤 신청서를 다시 보내 주세요.",
+ "cx.onboarding.edit_required": "회사명, 전화번호, 주소, 도시, 설명을 입력해 주세요.",
+ "cx.register.website": "웹사이트 (선택)",
+ "cx.register.website_placeholder": "https://your-escape-room.kr",
+ "company.onboarding.terms2_title": "2. 무료 등록",
+ "company.onboarding.terms2_body": "UNLOCKED에 회사와 방을 등록하는 것은 무료입니다. 앞으로 유료 기능을 추가하게 되면 미리 알려 드리며, 동의 없이 요금이 청구되지 않습니다.",
+ "company.onboarding.terms3_title": "3. 예약은 귀사 사이트에서",
+ "company.onboarding.terms3_body": "UNLOCKED는 방 예약이나 결제를 받지 않습니다. 플레이어는 귀사가 추가한 예약 링크를 통해 귀사 사이트에서 귀사의 조건으로 예약합니다. 방 정보와 링크를 최신 상태로 유지해 주세요.",
+ "cx.onboarding.confirm_text": "출시 기간 동안 UNLOCKED에 방탈출을 등록하는 것은 무료입니다. \"계속\"을 누르면 저희 팀이 신청서를 검토합니다. 계정이 승인되는 즉시 이메일을 보내 드립니다."
+}

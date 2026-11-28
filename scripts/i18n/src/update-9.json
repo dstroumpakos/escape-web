@@ -1,0 +1,17 @@
+{
+ "company.onboarding.terms4_body": "We collect and process data in accordance with GDPR and applicable privacy laws. Any player data you receive through UNLOCKED (for example messages or reviews) must be treated confidentially and may not be shared with third parties without consent.",
+ "company.register.city_placeholder": "City",
+ "company.register.vat_placeholder": "VAT or tax ID",
+ "company.register.phone_placeholder": "Phone number with country code",
+ "cx.onboarding.terms_full": "These are the main points. By accepting you also agree to the full texts:",
+ "cx.onboarding.edit_title": "Your details",
+ "cx.onboarding.edit_hint": "Fix what our team asked for, then send your application again.",
+ "cx.onboarding.edit_required": "Fill in the company name, phone, address, city and description.",
+ "cx.register.website": "Website (optional)",
+ "cx.register.website_placeholder": "https://your-escape-room.com",
+ "company.onboarding.terms2_title": "2. Free Listing",
+ "company.onboarding.terms2_body": "Listing your company and rooms on UNLOCKED is free. If we ever add paid features, we will tell you in advance and nothing is charged without your consent.",
+ "company.onboarding.terms3_title": "3. Bookings on Your Site",
+ "company.onboarding.terms3_body": "UNLOCKED does not take bookings or payments for rooms. Players book on your own site through the booking link you add, under your own terms. Keep your room details and link up to date.",
+ "cx.onboarding.confirm_text": "Listing your escape rooms on UNLOCKED is free while we launch. Tap \"Continue\" and our team will review your application. You will get an email as soon as your account is approved."
+}

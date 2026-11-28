@@ -1,0 +1,17 @@
+{
+ "company.onboarding.terms4_body": "Colectăm și prelucrăm datele în conformitate cu GDPR și legile aplicabile privind confidențialitatea. Datele jucătorilor pe care le primești prin UNLOCKED (de exemplu mesaje sau recenzii) trebuie tratate confidențial și nu pot fi împărtășite terților fără consimțământ.",
+ "company.register.city_placeholder": "Oraș",
+ "company.register.vat_placeholder": "Cod TVA sau CUI",
+ "company.register.phone_placeholder": "Număr de telefon cu prefixul țării",
+ "cx.onboarding.terms_full": "Acestea sunt punctele principale. Prin acceptare, ești de acord și cu textele complete:",
+ "cx.onboarding.edit_title": "Datele tale",
+ "cx.onboarding.edit_hint": "Corectează ce a cerut echipa noastră, apoi trimite din nou cererea.",
+ "cx.onboarding.edit_required": "Completează numele companiei, telefonul, adresa, orașul și descrierea.",
+ "cx.register.website": "Site web (opțional)",
+ "cx.register.website_placeholder": "https://escape-room-ul-tau.ro",
+ "company.onboarding.terms2_title": "2. Listare gratuită",
+ "company.onboarding.terms2_body": "Listarea companiei și a camerelor tale pe UNLOCKED este gratuită. Dacă vom adăuga vreodată funcții plătite, te anunțăm din timp și nu se percepe nimic fără acordul tău.",
+ "company.onboarding.terms3_title": "3. Rezervări pe site-ul tău",
+ "company.onboarding.terms3_body": "UNLOCKED nu preia rezervări sau plăți pentru camere. Jucătorii rezervă pe site-ul tău prin linkul de rezervare pe care îl adaugi, în condițiile tale. Ține la zi detaliile camerelor și linkul.",
+ "cx.onboarding.confirm_text": "Listarea escape room-urilor tale pe UNLOCKED este gratuită în perioada de lansare. Apasă „Continuă” și echipa noastră îți va verifica cererea. Primești un email imediat ce contul este aprobat."
+}

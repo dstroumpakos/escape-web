@@ -6,6 +6,12 @@
  */
 export const companyTranslations: { en: Record<string, string>; el: Record<string, string>; nl: Record<string, string> } = {
   en: {
+    'cx.onboarding.terms_full': 'These are the main points. By accepting you also agree to the full texts:',
+    'cx.onboarding.edit_title': 'Your details',
+    'cx.onboarding.edit_hint': 'Fix what our team asked for, then send your application again.',
+    'cx.onboarding.edit_required': 'Fill in the company name, phone, address, city and description.',
+    'cx.register.website': 'Website (optional)',
+    'cx.register.website_placeholder': 'https://your-escape-room.com',
     'cx.nav.passport': "Stamp QR",
     'cx.pp.title': "End of game",
     'cx.pp.subtitle': "Show the QR to the team: each player scans it and gets the room's stamp in their UNLOCKED passport.",
@@ -473,6 +479,12 @@ export const companyTranslations: { en: Record<string, string>; el: Record<strin
   },
 
   el: {
+    'cx.onboarding.terms_full': 'Αυτά είναι τα βασικά σημεία. Με την αποδοχή συμφωνείτε και με τα πλήρη κείμενα:',
+    'cx.onboarding.edit_title': 'Τα στοιχεία σας',
+    'cx.onboarding.edit_hint': 'Διορθώστε ό,τι ζήτησε η ομάδα μας και στείλτε ξανά την αίτηση.',
+    'cx.onboarding.edit_required': 'Συμπληρώστε επωνυμία, τηλέφωνο, διεύθυνση, πόλη και περιγραφή.',
+    'cx.register.website': 'Website (προαιρετικό)',
+    'cx.register.website_placeholder': 'https://to-escape-room-sas.gr',
     'cx.nav.passport': "Σφραγίδες QR",
     'cx.pp.title': "Τέλος παιχνιδιού",
     'cx.pp.subtitle': "Δείξτε το QR στην ομάδα: κάθε παίκτης το σκανάρει και παίρνει τη σφραγίδα του δωματίου στο UNLOCKED passport του.",
@@ -945,6 +957,12 @@ export const companyTranslations: { en: Record<string, string>; el: Record<strin
   },
   // Dutch: only keys translated so far; the rest falls back to English.
   nl: {
+    'cx.onboarding.terms_full': 'Dit zijn de belangrijkste punten. Door te accepteren ga je ook akkoord met de volledige teksten:',
+    'cx.onboarding.edit_title': 'Je gegevens',
+    'cx.onboarding.edit_hint': 'Pas aan wat ons team vroeg en dien je aanvraag opnieuw in.',
+    'cx.onboarding.edit_required': 'Vul bedrijfsnaam, telefoon, adres, stad en beschrijving in.',
+    'cx.register.website': 'Website (optioneel)',
+    'cx.register.website_placeholder': 'https://jouw-escape-room.nl',
     'cx.nav.passport': "Stamp QR",
     'cx.pp.title': "End of game",
     'cx.pp.subtitle': "Show the QR to the team: each player scans it and gets the room's stamp in their UNLOCKED passport.",

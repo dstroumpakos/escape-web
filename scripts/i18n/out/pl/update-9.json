@@ -1,0 +1,17 @@
+{
+ "company.onboarding.terms4_body": "Zbieramy i przetwarzamy dane zgodnie z RODO i obowiązującymi przepisami o ochronie prywatności. Dane graczy, które otrzymujesz przez UNLOCKED (na przykład wiadomości lub opinie), muszą być traktowane poufnie i nie mogą być udostępniane osobom trzecim bez zgody.",
+ "company.register.city_placeholder": "Miasto",
+ "company.register.vat_placeholder": "NIP lub numer VAT",
+ "company.register.phone_placeholder": "Numer telefonu z kierunkowym kraju",
+ "cx.onboarding.terms_full": "To są najważniejsze punkty. Akceptując, zgadzasz się także na pełne teksty:",
+ "cx.onboarding.edit_title": "Twoje dane",
+ "cx.onboarding.edit_hint": "Popraw to, o co prosił nasz zespół, i wyślij zgłoszenie ponownie.",
+ "cx.onboarding.edit_required": "Uzupełnij nazwę firmy, telefon, adres, miasto i opis.",
+ "cx.register.website": "Strona internetowa (opcjonalnie)",
+ "cx.register.website_placeholder": "https://twoj-escape-room.pl",
+ "company.onboarding.terms2_title": "2. Bezpłatna obecność",
+ "company.onboarding.terms2_body": "Umieszczenie firmy i pokojów w UNLOCKED jest bezpłatne. Jeśli kiedyś dodamy płatne funkcje, poinformujemy Cię wcześniej i nic nie zostanie pobrane bez Twojej zgody.",
+ "company.onboarding.terms3_title": "3. Rezerwacje na Twojej stronie",
+ "company.onboarding.terms3_body": "UNLOCKED nie przyjmuje rezerwacji ani płatności za pokoje. Gracze rezerwują na Twojej stronie przez dodany przez Ciebie link do rezerwacji, na Twoich warunkach. Dbaj o aktualność danych pokojów i linku.",
+ "cx.onboarding.confirm_text": "Umieszczenie Twoich escape roomów w UNLOCKED jest bezpłatne w okresie startu. Naciśnij „Dalej”, a nasz zespół sprawdzi Twoje zgłoszenie. Otrzymasz e-mail, gdy tylko konto zostanie zatwierdzone."
+}

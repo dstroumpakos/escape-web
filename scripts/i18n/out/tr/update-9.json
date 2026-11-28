@@ -1,0 +1,17 @@
+{
+ "company.onboarding.terms4_body": "Verileri GDPR ve geçerli gizlilik yasalarına uygun olarak toplar ve işleriz. UNLOCKED üzerinden aldığınız oyuncu verileri (örneğin mesajlar veya yorumlar) gizli tutulmalı ve izin olmadan üçüncü kişilerle paylaşılmamalıdır.",
+ "company.register.city_placeholder": "Şehir",
+ "company.register.vat_placeholder": "Vergi numarası",
+ "company.register.phone_placeholder": "Ülke koduyla telefon numarası",
+ "cx.onboarding.terms_full": "Bunlar ana maddeler. Kabul ederek tam metinleri de kabul etmiş olursunuz:",
+ "cx.onboarding.edit_title": "Bilgileriniz",
+ "cx.onboarding.edit_hint": "Ekibimizin istediklerini düzeltin ve başvurunuzu yeniden gönderin.",
+ "cx.onboarding.edit_required": "Şirket adı, telefon, adres, şehir ve açıklamayı doldurun.",
+ "cx.register.website": "Web sitesi (isteğe bağlı)",
+ "cx.register.website_placeholder": "https://escape-odaniz.com",
+ "company.onboarding.terms2_title": "2. Ücretsiz listeleme",
+ "company.onboarding.terms2_body": "Şirketinizi ve odalarınızı UNLOCKED'da listelemek ücretsizdir. İleride ücretli özellikler eklersek size önceden haber veririz ve onayınız olmadan hiçbir ücret alınmaz.",
+ "company.onboarding.terms3_title": "3. Kendi sitenizde rezervasyon",
+ "company.onboarding.terms3_body": "UNLOCKED odalar için rezervasyon veya ödeme almaz. Oyuncular, eklediğiniz rezervasyon bağlantısıyla kendi sitenizde, kendi koşullarınızla rezervasyon yapar. Oda bilgilerinizi ve bağlantıyı güncel tutun.",
+ "cx.onboarding.confirm_text": "Escape odalarınızı UNLOCKED'da listelemek lansman süresince ücretsizdir. \"Devam\"a dokunun, ekibimiz başvurunuzu incelesin. Hesabınız onaylanır onaylanmaz e-posta alırsınız."
+}

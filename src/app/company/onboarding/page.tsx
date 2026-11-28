@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { useCompanyAction, useCompanyMutation, useCompanyQuery, useCompanyAuth, useCompanyPath } from '@/lib/companyAuth';
+import { useCompanyAction, useCompanyMutation, useCompanyQuery, useCompanyAuth, useCompanyPath, useMainSiteUrl } from '@/lib/companyAuth';
 import { api } from '../../../../convex/_generated/api';
 import { useTranslation } from '@/lib/i18n';
 import {
@@ -47,6 +47,18 @@ const PLANS = [
   },
 ];
 
+// Details a declined company can fix before resubmitting (companies.updateProfile)
+type DetailField = 'name' | 'phone' | 'address' | 'city' | 'website' | 'vatNumber' | 'description';
+const DETAIL_FIELDS: { key: DetailField; label: string; multiline?: boolean; required?: boolean }[] = [
+  { key: 'name', label: 'company.register.company_name', required: true },
+  { key: 'phone', label: 'company.register.phone', required: true },
+  { key: 'address', label: 'company.register.address', required: true },
+  { key: 'city', label: 'company.register.city', required: true },
+  { key: 'website', label: 'cx.register.website' },
+  { key: 'vatNumber', label: 'company.register.vat' },
+  { key: 'description', label: 'company.register.description', multiline: true, required: true },
+];
+
 export default function CompanyOnboardingPage() {
   const { t } = useTranslation();
   const router = useRouter();
@@ -64,6 +76,13 @@ export default function CompanyOnboardingPage() {
   const submitApplication = useCompanyMutation(api.companies.submitApplication);
   const createCheckout = useCompanyAction(api.stripe.createCheckoutSession);
   const resubmit = useCompanyMutation(api.companies.resubmitForReview);
+  const updateProfile = useCompanyMutation(api.companies.updateProfile);
+  // Full legal pages live on the main site (the portal may be on business.)
+  const termsUrl = useMainSiteUrl('/terms');
+  const privacyUrl = useMainSiteUrl('/privacy');
+
+  // Declined: the company fixes its details here before sending them again
+  const [details, setDetails] = useState<Record<DetailField, string> | null>(null);
 
   const [loading, setLoading] = useState(false);
   const [actionError, setActionError] = useState('');
@@ -114,6 +133,15 @@ export default function CompanyOnboardingPage() {
       }
     }
   }, [companyData, company, refreshCompany]);
+
+  // Declined: start the edit form from what the company sent (once)
+  useEffect(() => {
+    if (status !== 'declined' || !companyData || details) return;
+    const c = companyData as Record<string, any>;
+    setDetails(
+      Object.fromEntries(DETAIL_FIELDS.map((f) => [f.key, typeof c[f.key] === 'string' ? c[f.key] : ''])) as Record<DetailField, string>
+    );
+  }, [status, companyData, details]);
 
   const handleLogout = () => {
     logout();
@@ -252,6 +280,18 @@ export default function CompanyOnboardingPage() {
                   </p>
                 </div>
               ))}
+
+              {/* The summary above plus the full texts are what gets accepted */}
+              <p className="text-brand-text-secondary text-sm leading-relaxed border-t border-white/10 pt-4">
+                {t('cx.onboarding.terms_full')}{' '}
+                <a href={termsUrl} target="_blank" rel="noopener" className="text-brand-red-light hover:underline">
+                  {t('footer.terms')}
+                </a>
+                {' · '}
+                <a href={privacyUrl} target="_blank" rel="noopener" className="text-brand-red-light hover:underline">
+                  {t('footer.privacy')}
+                </a>
+              </p>
             </div>
           </div>
 
@@ -625,7 +665,7 @@ export default function CompanyOnboardingPage() {
         {renderHeader(t('company.onboarding.review_title'))}
         {renderSteps()}
 
-        <div className="px-6 flex items-center justify-center mt-8">
+        <div className="px-6 pb-12 flex items-center justify-center mt-8">
           {status === 'declined' ? (
             /* Declined */
             <div className="w-full bg-brand-surface rounded-2xl border border-red-500/20 p-6 sm:p-10 text-center">
@@ -650,6 +690,38 @@ export default function CompanyOnboardingPage() {
                 </div>
               )}
 
+              {details && (
+                <div className="text-left mb-6">
+                  <p className="text-sm font-semibold mb-1">{t('cx.onboarding.edit_title')}</p>
+                  <p className="text-xs text-brand-text-secondary mb-4">{t('cx.onboarding.edit_hint')}</p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {DETAIL_FIELDS.map((f) => {
+                      const cls =
+                        'w-full bg-brand-bg border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:border-brand-red focus:outline-hidden';
+                      const onChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
+                        setDetails((d) => (d ? { ...d, [f.key]: e.target.value } : d));
+                      return (
+                        <label key={f.key} className={f.multiline ? 'sm:col-span-2 block' : 'block'}>
+                          <span className="block text-xs text-brand-text-secondary mb-1">{t(f.label)}</span>
+                          {f.multiline ? (
+                            <textarea rows={4} value={details[f.key]} onChange={onChange} className={`${cls} resize-none`} />
+                          ) : (
+                            <input
+                              type={f.key === 'website' ? 'url' : f.key === 'phone' ? 'tel' : 'text'}
+                              inputMode={f.key === 'website' ? 'url' : undefined}
+                              value={details[f.key]}
+                              onChange={onChange}
+                              placeholder={f.key === 'website' ? t('cx.register.website_placeholder') : undefined}
+                              className={cls}
+                            />
+                          )}
+                        </label>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
               {actionError && <p role="alert" className="text-sm text-red-400 mb-4">{actionError}</p>}
               <button
                 disabled={loading}
@@ -657,8 +729,24 @@ export default function CompanyOnboardingPage() {
                   setLoading(true);
                   setActionError('');
                   try {
+                    if (details) {
+                      if (DETAIL_FIELDS.some((f) => f.required && !details[f.key].trim())) {
+                        setActionError(t('cx.onboarding.edit_required'));
+                        return;
+                      }
+                      await updateProfile({
+                        id: companyId as any,
+                        name: details.name.trim(),
+                        phone: details.phone.trim(),
+                        address: details.address.trim(),
+                        city: details.city.trim(),
+                        website: details.website.trim(),
+                        vatNumber: details.vatNumber.trim(),
+                        description: details.description.trim(),
+                      });
+                    }
                     await resubmit({ companyId: companyId as any });
-                    refreshCompany({ onboardingStatus: 'pending_review' });
+                    refreshCompany({ onboardingStatus: 'pending_review', ...(details ? { name: details.name.trim() } : {}) });
                   } catch (err) {
                     setActionError(friendlyError(err, t));
                   } finally {

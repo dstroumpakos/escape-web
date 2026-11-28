@@ -56,6 +56,10 @@ export default defineSchema({
       v.literal("declined")           // Admin declined (with notes)
     )),
     termsAcceptedAt: v.optional(v.number()),
+    // Version of the onboarding terms accepted (companyRules.COMPANY_TERMS_VERSION)
+    termsVersion: v.optional(v.string()),
+    // Language chosen at sign-up, for the emails we send the company
+    language: v.optional(v.string()),
     // Current plans are "unlimited", "payg" and "listing" (free, while players
     // can't book on UNLOCKED; see plans.ts). The other four are legacy values
     // kept until billing:migrateLegacyPlans has run in prod.

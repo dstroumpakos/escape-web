@@ -1,0 +1,17 @@
+{
+ "company.onboarding.terms4_body": "Recolhemos e tratamos os dados de acordo com o RGPD e as leis de privacidade aplicáveis. Os dados de jogadores que recebes através da UNLOCKED (por exemplo, mensagens ou avaliações) devem ser tratados de forma confidencial e não podem ser partilhados com terceiros sem consentimento.",
+ "company.register.city_placeholder": "Cidade",
+ "company.register.vat_placeholder": "NIF ou número de IVA",
+ "company.register.phone_placeholder": "Número de telefone com indicativo do país",
+ "cx.onboarding.terms_full": "Estes são os pontos principais. Ao aceitar, também concordas com os textos completos:",
+ "cx.onboarding.edit_title": "Os teus dados",
+ "cx.onboarding.edit_hint": "Corrige o que a nossa equipa pediu e envia novamente a tua candidatura.",
+ "cx.onboarding.edit_required": "Preenche o nome da empresa, telefone, morada, cidade e descrição.",
+ "cx.register.website": "Website (opcional)",
+ "cx.register.website_placeholder": "https://o-teu-escape-room.pt",
+ "company.onboarding.terms2_title": "2. Listagem gratuita",
+ "company.onboarding.terms2_body": "Listar a tua empresa e as tuas salas na UNLOCKED é gratuito. Se algum dia adicionarmos funcionalidades pagas, avisamos-te com antecedência e nada é cobrado sem o teu consentimento.",
+ "company.onboarding.terms3_title": "3. Reservas no teu site",
+ "company.onboarding.terms3_body": "A UNLOCKED não aceita reservas nem pagamentos de salas. Os jogadores reservam no teu próprio site através do link de reserva que adicionas, nas tuas condições. Mantém os dados das salas e o link atualizados.",
+ "cx.onboarding.confirm_text": "Listar os teus escape rooms na UNLOCKED é gratuito durante o lançamento. Toca em \"Continuar\" e a nossa equipa vai analisar a tua candidatura. Recebes um email assim que a tua conta for aprovada."
+}

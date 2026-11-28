@@ -1,0 +1,17 @@
+{
+ "company.onboarding.terms4_body": "我们依据 GDPR 及适用的隐私法律收集和处理数据。您通过 UNLOCKED 收到的任何玩家数据（例如消息或评价）必须保密，未经同意不得与第三方共享。",
+ "company.register.city_placeholder": "城市",
+ "company.register.vat_placeholder": "增值税号或税号",
+ "company.register.phone_placeholder": "带国家代码的电话号码",
+ "cx.onboarding.terms_full": "以上是要点。接受即表示您同时同意完整条款：",
+ "cx.onboarding.edit_title": "您的资料",
+ "cx.onboarding.edit_hint": "请按我们团队的要求修改，然后重新提交申请。",
+ "cx.onboarding.edit_required": "请填写公司名称、电话、地址、城市和简介。",
+ "cx.register.website": "网站（可选）",
+ "cx.register.website_placeholder": "https://your-escape-room.com",
+ "company.onboarding.terms2_title": "2. 免费入驻",
+ "company.onboarding.terms2_body": "在 UNLOCKED 上展示您的公司和密室是免费的。如果将来增加付费功能，我们会提前通知您，未经您同意不会收取任何费用。",
+ "company.onboarding.terms3_title": "3. 在您的网站预订",
+ "company.onboarding.terms3_body": "UNLOCKED 不接受密室的预订或付款。玩家通过您添加的预订链接在您自己的网站上按您的条款预订。请保持密室信息和链接为最新。",
+ "cx.onboarding.confirm_text": "在推广期间，在 UNLOCKED 上展示您的密室是免费的。点击\"继续\"，我们的团队将审核您的申请。账户获批后您会立即收到邮件。"
+}
