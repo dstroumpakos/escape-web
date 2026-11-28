@@ -146,7 +146,7 @@ export function HeroSection() {
       />
       <div
         aria-hidden
-        className="absolute inset-0 pointer-events-none mix-blend-screen"
+        className="fx-android-off absolute inset-0 pointer-events-none mix-blend-screen"
         style={{ background: 'radial-gradient(circle 240px at var(--fx) var(--fy), rgba(255,210,170,0.09), transparent 70%)' }}
       />
 
@@ -211,7 +211,7 @@ export function HeroSection() {
       />
 
       {/* Fog rolling along the floor */}
-      <div aria-hidden className="horror-motion horror-still absolute inset-x-0 bottom-0 h-48 pointer-events-none overflow-hidden">
+      <div aria-hidden className="fx-android-off horror-motion horror-still absolute inset-x-0 bottom-0 h-48 pointer-events-none overflow-hidden">
         <div
           className="absolute -inset-x-1/4 inset-y-0 blur-2xl opacity-70"
           style={{

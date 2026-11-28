@@ -893,6 +893,23 @@
   }
 }
 
+/* Chrome on Android paints big moving full-screen layers with blend modes
+   (film grain, fog, the flashlight's glow) as white tiles that blink on and off.
+   There (<html data-android>, set in modeScript.ts) they are left out and the
+   flashlight stands still; iPhones and computers keep them. */
+html[data-android] .fx-android-off {
+  display: none !important;
+}
+html[data-android] .flashlight-wander {
+  animation: none !important;
+  --fx: 50%;
+  --fy: 38%;
+}
+html[data-android] .glitch::before,
+html[data-android] .glitch::after {
+  display: none;
+}
+
 /* ── Ariadne's thread: red thread, labyrinth rings, minotaur horns ── */
 @keyframes ariadne-draw {
   from { stroke-dashoffset: 2000; }
