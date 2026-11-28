@@ -18,6 +18,7 @@ import { assertUpload, MAX_IMAGE_BYTES, UPLOADS_PER_HOUR_USER, isOwnStorageUrl }
 import { filterPublicRooms } from "./companyRules";
 import { removeUserFromChats } from "./messages";
 import { deletePlayerPlays } from "./plays";
+import { refreshRoomRating } from "./reviews";
 import { isSupportedLanguage } from "./languages";
 
 export const getByEmail = internalQuery({
@@ -862,6 +863,29 @@ export const deleteAccount = mutation({
       .withIndex("by_reporter_post", (q) => q.eq("reporterId", userId))
       .collect();
     for (const r of reports) await ctx.db.delete(r._id);
+    const reportsAboutMe = await ctx.db
+      .query("reports")
+      .withIndex("by_reported_user", (q) => q.eq("reportedUserId", userId))
+      .collect();
+    for (const r of reportsAboutMe) await ctx.db.delete(r._id);
+
+    // 11b. Player follows (both ways) and room reviews (room ratings recomputed)
+    const following = await ctx.db
+      .query("follows")
+      .withIndex("by_follower", (q) => q.eq("followerId", userId))
+      .collect();
+    for (const f of following) await ctx.db.delete(f._id);
+    const followers = await ctx.db
+      .query("follows")
+      .withIndex("by_following", (q) => q.eq("followingId", userId))
+      .collect();
+    for (const f of followers) await ctx.db.delete(f._id);
+    const myReviews = await ctx.db
+      .query("reviews")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .collect();
+    for (const r of myReviews) await ctx.db.delete(r._id);
+    for (const roomId of new Set(myReviews.map((r) => r.roomId))) await refreshRoomRating(ctx, roomId);
 
     // 12. Leave every chat and forget the chat devices (messages.ts)
     await removeUserFromChats(ctx, userId);

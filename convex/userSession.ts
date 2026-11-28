@@ -32,6 +32,9 @@ export async function createUserSession(
   userId: Id<"users">,
   client?: string
 ): Promise<string> {
+  // A suspended player (moderation.ts) can't sign in again.
+  const user = await ctx.db.get(userId);
+  if (user?.suspendedAt) throw new ConvexError(ACCOUNT_SUSPENDED);
   const token = toHex(crypto.getRandomValues(new Uint8Array(32)));
   const now = Date.now();
   // Housekeeping: drop this user's expired sessions.
@@ -84,6 +87,9 @@ async function legacyUser(ctx: Ctx, legacyUserId: Id<"users"> | undefined): Prom
   return await ctx.db.get(legacyUserId);
 }
 
+/** The admin suspended this player after reports (moderation.ts). */
+export const ACCOUNT_SUSPENDED = "ACCOUNT_SUSPENDED";
+
 /** Resolves the calling player from a session token (or, for old app builds, their userId), or throws "session expired". */
 export async function requireUser(
   ctx: Ctx,
@@ -99,6 +105,7 @@ export async function requireUser(
   if (!session) throw new ConvexError(USER_SESSION_EXPIRED);
   const user = await ctx.db.get(session.userId);
   if (!user) throw new ConvexError(USER_SESSION_EXPIRED);
+  if (user.suspendedAt) throw new ConvexError(ACCOUNT_SUSPENDED);
   return user;
 }
 
@@ -111,7 +118,8 @@ export async function optionalUser(
   if (!token) return await legacyUser(ctx, legacyUserId);
   const session = await findUserSession(ctx, token);
   if (!session) return null;
-  return await ctx.db.get(session.userId);
+  const user = await ctx.db.get(session.userId);
+  return user && !user.suspendedAt ? user : null;
 }
 
 /** For actions (which cannot read the database): resolves the caller from a session token. */

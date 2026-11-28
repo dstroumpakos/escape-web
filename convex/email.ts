@@ -1509,3 +1509,47 @@ ${table("en")}
     await Promise.all(promises);
   },
 });
+
+// ══════════════════════════════════════════════════════════════
+// Admin: a player reported a post, a comment or a player (moderation.ts)
+// ══════════════════════════════════════════════════════════════
+export const sendContentReport = internalAction({
+  args: {
+    kind: v.union(v.literal("post"), v.literal("comment"), v.literal("user")),
+    reason: v.string(),
+    details: v.optional(v.string()),
+    reporterName: v.string(),
+    targetName: v.string(),
+    text: v.optional(v.string()),
+  },
+  handler: async (_ctx, d) => {
+    const resend = getResend();
+    if (!resend) return;
+    const adminTo = process.env.ADMIN_NOTIFY_EMAIL;
+    if (!adminTo) {
+      console.warn("[Email] ADMIN_NOTIFY_EMAIL not set: content report email skipped");
+      return;
+    }
+    const site = (process.env.SITE_URL || "https://unlocked.gr").replace(/\/$/, "");
+    const what = d.kind === "post" ? "a post" : d.kind === "comment" ? "a comment" : "a player";
+    const html = shell(
+      "New Report",
+      "Apple asks us to act on reports within 24 hours",
+      `<h2 style="color:#E53E3E; margin:0 0 16px">${escHtml(d.reporterName)} reported ${what}</h2>
+<p style="color:#ccc; font-size:15px; margin:0 0 8px">Author: <strong>${escHtml(d.targetName)}</strong></p>
+<p style="color:#ccc; font-size:15px; margin:0 0 8px">Reason: ${escHtml(d.reason.replace(/_/g, " "))}</p>
+${d.text ? `<p style="color:#eee; font-size:15px; margin:0 0 12px; padding:12px 14px; border-left:3px solid #E53E3E; background:rgba(255,255,255,0.04); white-space:pre-line">${escHtml(d.text)}</p>` : ""}
+${d.details ? `<p style="color:#999; font-size:14px; margin:0 0 20px; white-space:pre-line">Details: ${escHtml(d.details)}</p>` : ""}
+<a href="${site}/admin" style="display:inline-block; background:#E53E3E; color:white; padding:12px 24px; border-radius:8px; text-decoration:none; font-weight:600;">
+  Open Reports
+</a>`,
+      "You received this email because a player reported content on UNLOCKED."
+    );
+    await resend.emails.send({
+      from: fromAddr(),
+      to: adminTo,
+      subject: `🚩 Report: ${what} by ${d.targetName}`,
+      html,
+    }).catch(e => console.error("[Email] Content report email failed:", e));
+  },
+});

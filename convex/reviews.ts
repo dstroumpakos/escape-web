@@ -158,7 +158,7 @@ export const canReview = query({
 });
 
 /** Recompute a room's rating and review count from its published reviews. */
-async function refreshRoomRating(ctx: MutationCtx, roomId: Id<"rooms">) {
+export async function refreshRoomRating(ctx: MutationCtx, roomId: Id<"rooms">) {
   const room = await ctx.db.get(roomId);
   if (!room) return;
   const published = (

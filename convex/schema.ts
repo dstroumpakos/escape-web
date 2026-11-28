@@ -336,6 +336,8 @@ export default defineSchema({
     email: v.string(),
     password: v.optional(v.string()), // hashed in production
     appleId: v.optional(v.string()), // Apple Sign In identifier
+    // Set by the admin after reports (moderation.ts): signed out, can't sign in
+    suspendedAt: v.optional(v.number()),
     googleId: v.optional(v.string()), // Google Sign In identifier ("sub")
     avatar: v.string(),
     avatarStorageId: v.optional(v.id("_storage")), // persistent reference
@@ -852,9 +854,14 @@ export default defineSchema({
     .index("by_status", ["status"]),
 
   // ─── Content Reports (Guideline 1.2 — UGC moderation) ───
+  // Reports of player content (moderation.ts): a post, a comment, or a
+  // player (from their profile or a chat; chats are end-to-end encrypted, so
+  // the reporter can paste the message into details).
   reports: defineTable({
     postId: v.optional(v.id("posts")),
     commentId: v.optional(v.id("postComments")),
+    reportedUserId: v.optional(v.id("users")),
+    context: v.optional(v.union(v.literal("profile"), v.literal("chat"))),
     reporterId: v.id("users"),
     reason: v.union(
       v.literal("spam"),
@@ -870,10 +877,13 @@ export default defineSchema({
       v.literal("removed")
     ),
     createdAt: v.number(),
+    resolvedAt: v.optional(v.number()),
   })
     .index("by_post", ["postId"])
     .index("by_reporter_post", ["reporterId", "postId"])
     .index("by_reporter_comment", ["reporterId", "commentId"])
+    .index("by_reporter_user", ["reporterId", "reportedUserId"])
+    .index("by_reported_user", ["reportedUserId"])
     .index("by_status", ["status"]),
 
   // ─── Room reports: a player reports a room they played (see reports.ts) ───
