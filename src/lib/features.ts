@@ -23,3 +23,17 @@ export const FOLLOW_ENABLED = process.env.NEXT_PUBLIC_FOLLOW_ENABLED !== '0';
  * NEXT_PUBLIC_PASSPORT_ENABLED=1 brings it back.
  */
 export const PASSPORT_ENABLED = process.env.NEXT_PUBLIC_PASSPORT_ENABLED === '1';
+
+/**
+ * PREMIUM_ENABLED: the player Premium membership and everything tied to it
+ * (the /premium page, member prices and members-only merch, early access to
+ * new rooms and merch drops, the Premium badge). Off for now: UNLOCKED is free.
+ * The code stays; NEXT_PUBLIC_PREMIUM_ENABLED=1 brings it back.
+ */
+export const PREMIUM_ENABLED = process.env.NEXT_PUBLIC_PREMIUM_ENABLED === '1';
+
+/**
+ * WEB_SERVICES_ENABLED: the paid website packages page (/services/website).
+ * Off for now; NEXT_PUBLIC_WEB_SERVICES_ENABLED=1 brings it back.
+ */
+export const WEB_SERVICES_ENABLED = process.env.NEXT_PUBLIC_WEB_SERVICES_ENABLED === '1';

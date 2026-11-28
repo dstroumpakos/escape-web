@@ -35,6 +35,7 @@ import {
   Languages,
 } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
+import { PREMIUM_ENABLED } from '@/lib/features';
 import { CategoryPicker } from '@/components/company/CategoryPicker';
 import { legacyTheme, type Category } from '../../../../../convex/roomCategories';
 import { translateRoom } from '@/lib/translate';
@@ -817,7 +818,8 @@ export default function NewRoomPage() {
         </Section>
         </BookingOptionsToggle>
 
-        {/* Release Date (Early Access) */}
+        {/* Release Date (Early Access for Premium players) */}
+        {PREMIUM_ENABLED && (
         <Section title={t('company.rooms.new.release_date')}>
           <div className="flex items-start gap-3 mb-4 p-4 bg-purple-500/5 border border-purple-500/10 rounded-xl">
             <CalendarClock className="w-5 h-5 text-purple-400 mt-0.5 shrink-0" />
@@ -862,6 +864,7 @@ export default function NewRoomPage() {
             )}
           </div>
         </Section>
+        )}
 
         {/* Photo Branding */}
         <div className="bg-brand-surface rounded-2xl border border-white/5">
@@ -1126,6 +1129,7 @@ export default function NewRoomPage() {
         {/* Advanced */}
         <Section title={t('company.rooms.new.advanced_settings')}>
           <div className="space-y-4">
+            {PREMIUM_ENABLED && (
             <div className="flex items-center justify-between p-4 bg-brand-bg rounded-xl border border-white/5">
               <div>
                 <p className="font-medium">{t('company.rooms.new.subscription_only')}</p>
@@ -1145,6 +1149,7 @@ export default function NewRoomPage() {
                 )}
               </button>
             </div>
+            )}
 
             {/* Terms of Use */}
             <div>

@@ -4,6 +4,7 @@ import { useEffect, useState, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useCompanyAction, useCompanyMutation, useCompanyQuery, useCompanyAuth, useCompanyPath } from '@/lib/companyAuth';
 import { api } from '../../../../convex/_generated/api';
+import { makeFunctionReference } from 'convex/server';
 import { useTranslation } from '@/lib/i18n';
 import {
   Building2,
@@ -61,6 +62,11 @@ export default function CompanyOnboardingPage() {
 
   const acceptTerms = useCompanyMutation(api.companies.acceptTerms);
   const selectPlan = useCompanyMutation(api.companies.selectPlan);
+  // Free listing (no plan) while UNLOCKED's own booking is off. The function lives in the
+  // Convex copy the partner deploys (escape-app/convex/companies.ts: submitApplication).
+  const submitApplication = useCompanyMutation(
+    makeFunctionReference<'mutation', { companyId: string; sessionToken?: string }>('companies:submitApplication')
+  );
   const createCheckout = useCompanyAction(api.stripe.createCheckoutSession);
   const resubmit = useCompanyMutation(api.companies.resubmitForReview);
 
@@ -352,7 +358,23 @@ export default function CompanyOnboardingPage() {
               <p className="text-brand-text-secondary mb-8">{t('cx.onboarding.confirm_text')}</p>
               {actionError && <p className="text-sm text-red-400 mb-4">{actionError}</p>}
               <button
-                onClick={() => handleSelectPlan('payg')}
+                onClick={async () => {
+                  setLoading(true);
+                  setActionError('');
+                  try {
+                    await submitApplication({ companyId: companyId as any });
+                    refreshCompany({ onboardingStatus: 'pending_review', platformPlan: 'listing' as any });
+                  } catch (err) {
+                    // A backend without submitApplication (older deployment) still takes the old path
+                    if (String(err).includes('Could not find public function')) {
+                      setLoading(false);
+                      return handleSelectPlan('payg');
+                    }
+                    setActionError(friendlyError(err, t));
+                  } finally {
+                    setLoading(false);
+                  }
+                }}
                 disabled={loading}
                 className="btn-primary px-10 py-3 inline-flex items-center gap-2 disabled:opacity-50"
               >

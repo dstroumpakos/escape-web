@@ -8,6 +8,7 @@ import { ArrowLeft, Crown, MapPin, Package, Store } from 'lucide-react';
 import { api } from '../../../../../convex/_generated/api';
 import { useAuth } from '@/lib/auth';
 import { useTranslation } from '@/lib/i18n';
+import { PREMIUM_ENABLED } from '@/lib/features';
 import { ProductCard } from '@/components/shop/ProductCard';
 import { ShopHeaderActions } from '@/components/shop/ShopHeaderActions';
 
@@ -63,7 +64,7 @@ export default function CompanyStorePage() {
             )}
             {c.pickupNote && <p className="text-xs text-brand-text-muted mt-1">{c.pickupNote}</p>}
           </div>
-          {c.premiumDiscountPercent > 0 && (
+          {PREMIUM_ENABLED && c.premiumDiscountPercent > 0 && (
             <div className="rounded-md border border-brand-gold/40 bg-brand-gold/10 px-4 py-3 text-sm text-brand-gold flex items-center gap-2">
               <Crown className="w-4 h-4" />
               {t('shop.store.premium_discount', { pct: String(c.premiumDiscountPercent) })}
@@ -71,14 +72,14 @@ export default function CompanyStorePage() {
           )}
         </div>
 
-        {data.products.length === 0 ? (
+        {data.products.filter((p) => PREMIUM_ENABLED || !p.premiumOnly).length === 0 ? (
           <div className="text-center py-20">
             <Package className="w-12 h-12 mx-auto mb-4 text-brand-text-muted" />
             <p className="text-brand-text-secondary">{t('shop.store.empty')}</p>
           </div>
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
-            {data.products.map((p) => (
+            {data.products.filter((p) => PREMIUM_ENABLED || !p.premiumOnly).map((p) => (
               <ProductCard key={p._id} p={p} showSeller={false} />
             ))}
           </div>

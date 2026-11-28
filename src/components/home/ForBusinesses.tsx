@@ -8,7 +8,7 @@ import { AnimateIn, StaggerContainer, StaggerItem } from '@/components/animation
 export function ForBusinesses() {
   const { t } = useTranslation();
 
-  const features = [
+  const features: { icon: typeof Globe; title: string; desc: string; link?: string }[] = [
     {
       icon: Calendar,
       title: t('business.feature1.title'),
@@ -33,7 +33,6 @@ export function ForBusinesses() {
       icon: Globe,
       title: t('business.feature5.title'),
       desc: t('business.feature5.desc'),
-      link: '/services/website',
     },
   ];
 

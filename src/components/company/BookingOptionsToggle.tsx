@@ -2,10 +2,12 @@
 
 import { CalendarCog } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
+import { BOOKING_ENABLED } from '@/lib/features';
 
 /**
  * The room's booking options (payment terms, operating days, default slots)
- * stay closed until the company switches them on.
+ * stay closed until the company switches them on. Hidden while UNLOCKED's
+ * own booking is off (rooms link to the company's own booking site).
  */
 export function BookingOptionsToggle({
   on,
@@ -17,6 +19,7 @@ export function BookingOptionsToggle({
   children: React.ReactNode;
 }) {
   const { t } = useTranslation();
+  if (!BOOKING_ENABLED) return null;
   return (
     <>
       <div className="bg-brand-surface rounded-2xl border border-white/5 p-6 flex items-center gap-4">

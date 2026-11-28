@@ -9,6 +9,7 @@ import { useAuth } from '@/lib/auth';
 import { useTranslation } from '@/lib/i18n';
 import { ProductCard, PerksBanner } from '@/components/shop/ProductCard';
 import { CATEGORIES } from '@/components/shop/shopUi';
+import { PREMIUM_ENABLED } from '@/lib/features';
 import { ShopHeaderActions } from '@/components/shop/ShopHeaderActions';
 
 type SellerFilter = 'all' | 'platform' | 'company';
@@ -26,6 +27,7 @@ export default function ShopPage() {
     const needle = q.trim().toLowerCase();
     return list.filter(
       (p) =>
+        (PREMIUM_ENABLED || !p.premiumOnly) &&
         (seller === 'all' || p.seller === seller) &&
         (category === 'all' || p.category === category) &&
         (!needle ||
@@ -53,7 +55,7 @@ export default function ShopPage() {
           <ShopHeaderActions />
         </div>
 
-        {data?.perks && (
+        {PREMIUM_ENABLED && data?.perks && (
           <div className="mb-8">
             <PerksBanner perks={data.perks} />
           </div>

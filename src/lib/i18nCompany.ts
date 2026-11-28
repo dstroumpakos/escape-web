@@ -72,7 +72,7 @@ export const companyTranslations: { en: Record<string, string>; el: Record<strin
     'cx.onboarding.tab_title': 'Get started',
     'cx.onboarding.step_confirm': 'Confirm',
     'cx.onboarding.confirm_title': 'Almost there',
-    'cx.onboarding.confirm_text': 'Tap "Continue" and our team will review your application. We will get in touch about packages and prices.',
+    'cx.onboarding.confirm_text': 'Tap "Continue" and our team will review your application. Listing your rooms on UNLOCKED is free.',
     'cx.onboarding.confirm_button': 'Continue',
     'cx.photos.redirecting': 'Opening the Photos app…',
 
@@ -114,7 +114,7 @@ export const companyTranslations: { en: Record<string, string>; el: Record<strin
     'cx.onboarding.question_subject': 'Question about my application ({{company}})',
 
     // ── Getting started ──
-    'cx.start.title': 'Get your rooms bookable',
+    'cx.start.title': 'Get your rooms ready for players',
     'cx.start.progress': '{{done}} of {{total}} done',
     'cx.start.hide': 'Hide checklist',
     'cx.start.profile': 'Complete your company profile',
@@ -122,7 +122,7 @@ export const companyTranslations: { en: Record<string, string>; el: Record<strin
     'cx.start.room': 'Add your first room',
     'cx.start.room_desc': 'Title, story, players, duration and price.',
     'cx.start.photo': 'Add a room photo',
-    'cx.start.photo_desc': 'Rooms with a photo get far more bookings.',
+    'cx.start.photo_desc': 'Rooms with a photo get far more players.',
     'cx.start.times': 'Set your weekly times',
     'cx.start.times_desc': 'The start times players can book. Open or close them any day later.',
     'cx.start.widget': 'Put the booking widget on your website',
@@ -205,7 +205,7 @@ export const companyTranslations: { en: Record<string, string>; el: Record<strin
     'cx.rooms.deleted': '{{title}} deleted',
     'cx.rooms.saved': 'Room saved',
     'cx.rooms.created_title': '“{{title}}” is created',
-    'cx.rooms.created_desc': 'Next: check its times for the coming days so players can book.',
+    'cx.rooms.created_desc': 'Next step: add photos and the booking link to your site, so players can find it and book.',
     'cx.rooms.created_cta': 'Check slots',
 
     // ── Bookings ──
@@ -494,7 +494,7 @@ export const companyTranslations: { en: Record<string, string>; el: Record<strin
     'cx.pp.valid_for': "Ισχύει ακόμα {{time}}",
     'cx.pp.new_game': "Νέο παιχνίδι",
     'cx.website.label': "Το website σας",
-    'cx.website.hint': "Οι παίκτες πατούν «Κράτηση» στο UNLOCKED και έρχονται εδώ για να κλείσουν.",
+    'cx.website.hint': "Οι παίκτες πατούν «Κλείσε στο Site τους» στο UNLOCKED και έρχονται εδώ για να κλείσουν.",
     'cx.booking_url.label': "Link κράτησης για αυτό το δωμάτιο (προαιρετικό)",
     'cx.booking_url.hint': "Αν το δωμάτιο έχει δική του σελίδα κράτησης στο site σας. Κενό = το website σας από τις Ρυθμίσεις.",
     'cx.ig.title': "Instagram στις σελίδες των δωματίων σας",
@@ -513,7 +513,7 @@ export const companyTranslations: { en: Record<string, string>; el: Record<strin
     'cx.video_url.hint': "Link από YouTube ή Vimeo. Εμφανίζεται στη σελίδα του δωματίου.",
     'cx.clicks.title': "Παίκτες που στείλαμε στο site σας",
     'cx.clicks.desc': "Κλικ στο «Κλείσε στο Site τους» τις τελευταίες 30 ημέρες",
-    'cx.clicks.no_site': "Προσθέστε το website σας στις Ρυθμίσεις, για να πηγαίνει εκεί το «Κράτηση».",
+    'cx.clicks.no_site': "Προσθέστε το website σας στις Ρυθμίσεις, για να πηγαίνει εκεί το «Κλείσε στο Site τους».",
     // ── Last-minute offers ──
     'cx.nav.offers': 'Προσφορές',
     'cx.offers.title': 'Προσφορές τελευταίας στιγμής',
@@ -539,7 +539,7 @@ export const companyTranslations: { en: Record<string, string>; el: Record<strin
     'cx.onboarding.tab_title': 'Ξεκινήστε',
     'cx.onboarding.step_confirm': 'Επιβεβαίωση',
     'cx.onboarding.confirm_title': 'Σχεδόν έτοιμοι',
-    'cx.onboarding.confirm_text': 'Πατήστε «Συνέχεια» και η ομάδα μας θα ελέγξει την αίτησή σας. Για πακέτα και τιμές θα επικοινωνήσουμε μαζί σας.',
+    'cx.onboarding.confirm_text': 'Πατήστε «Συνέχεια» και η ομάδα μας θα ελέγξει την αίτησή σας. Η καταχώρηση των δωματίων σας στο UNLOCKED είναι δωρεάν.',
     'cx.onboarding.confirm_button': 'Συνέχεια',
     'cx.photos.redirecting': 'Άνοιγμα της εφαρμογής Photos…',
     'company.rooms.slots': 'Ώρες',
@@ -582,7 +582,7 @@ export const companyTranslations: { en: Record<string, string>; el: Record<strin
     'cx.onboarding.question_subject': 'Ερώτηση για την αίτησή μου ({{company}})',
 
     // ── Getting started ──
-    'cx.start.title': 'Κάντε τα δωμάτιά σας διαθέσιμα για κράτηση',
+    'cx.start.title': 'Ετοιμάστε τα δωμάτιά σας για τους παίκτες',
     'cx.start.progress': '{{done}} από {{total}} ολοκληρώθηκαν',
     'cx.start.hide': 'Απόκρυψη λίστας',
     'cx.start.profile': 'Συμπληρώστε το προφίλ της εταιρείας',
@@ -590,7 +590,7 @@ export const companyTranslations: { en: Record<string, string>; el: Record<strin
     'cx.start.room': 'Προσθέστε το πρώτο σας δωμάτιο',
     'cx.start.room_desc': 'Τίτλος, ιστορία, παίκτες, διάρκεια και τιμή.',
     'cx.start.photo': 'Προσθέστε φωτογραφία δωματίου',
-    'cx.start.photo_desc': 'Τα δωμάτια με φωτογραφία κλείνονται πολύ περισσότερο.',
+    'cx.start.photo_desc': 'Τα δωμάτια με φωτογραφία φέρνουν πολύ περισσότερους παίκτες.',
     'cx.start.times': 'Ορίστε τις εβδομαδιαίες ώρες',
     'cx.start.times_desc': 'Οι ώρες έναρξης που κλείνουν οι παίκτες. Ανοίγετε ή κλείνετε όποια μέρα θέλετε μετά.',
     'cx.start.widget': 'Βάλτε το widget κρατήσεων στο site σας',
@@ -673,7 +673,7 @@ export const companyTranslations: { en: Record<string, string>; el: Record<strin
     'cx.rooms.deleted': 'Το {{title}} διαγράφηκε',
     'cx.rooms.saved': 'Το δωμάτιο αποθηκεύτηκε',
     'cx.rooms.created_title': 'Το «{{title}}» δημιουργήθηκε',
-    'cx.rooms.created_desc': 'Επόμενο βήμα: ελέγξτε τις ώρες του για τις επόμενες μέρες ώστε να μπορούν να κλείσουν οι παίκτες.',
+    'cx.rooms.created_desc': 'Επόμενο βήμα: προσθέστε φωτογραφίες και το link κράτησης του site σας, ώστε οι παίκτες να το βρίσκουν και να κλείνουν.',
     'cx.rooms.created_cta': 'Έλεγχος ωρών',
 
     // ── Bookings ──

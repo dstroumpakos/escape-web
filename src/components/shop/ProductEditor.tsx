@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { ImagePlus, Loader2, Plus, Trash2, X, ArrowLeft, ArrowRight } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
+import { BOOKING_ENABLED, PASSPORT_ENABLED, PREMIUM_ENABLED } from '@/lib/features';
 import { friendlyError } from '@/lib/errors';
 import { convertToWebFormat } from '@/lib/imageUtils';
 import { CATEGORIES, type Category } from './shopUi';
@@ -362,6 +363,7 @@ export function ProductEditor({
           {/* Special */}
           <div className="rounded-xl border border-white/10 p-4 space-y-4">
             <p className="text-sm font-semibold">{t('shop.editor.special')}</p>
+            {PREMIUM_ENABLED && (
             <label className="flex items-start gap-3 text-sm">
               <input type="checkbox" checked={premiumOnly} onChange={(e) => setPremiumOnly(e.target.checked)} className="mt-1" />
               <span>
@@ -369,6 +371,7 @@ export function ProductEditor({
                 <span className="block text-xs text-brand-text-secondary">{t('shop.editor.premium_only_hint')}</span>
               </span>
             </label>
+            )}
             <div>
               <label className={labelCls}>{t('shop.editor.release')}</label>
               <input
@@ -379,7 +382,7 @@ export function ProductEditor({
               />
               <p className="text-xs text-brand-text-secondary mt-1.5">{t('shop.editor.release_hint')}</p>
             </div>
-            {seller === 'company' && rooms.length > 0 && (
+            {(BOOKING_ENABLED || PASSPORT_ENABLED) && seller === 'company' && rooms.length > 0 && (
               <div className="grid sm:grid-cols-2 gap-3">
                 <div>
                   <label className={labelCls}>{t('shop.editor.unlock_room')}</label>

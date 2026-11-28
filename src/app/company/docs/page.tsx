@@ -30,7 +30,7 @@ import {
   MousePointerClick,
 } from 'lucide-react';
 import { useState } from 'react';
-import { BOOKING_ENABLED, PASSPORT_ENABLED } from '@/lib/features';
+import { BOOKING_ENABLED, PASSPORT_ENABLED, PREMIUM_ENABLED } from '@/lib/features';
 
 function Section({
   icon: Icon,
@@ -123,7 +123,7 @@ function Step({ n, title, desc }: { n: number; title: string; desc: string }) {
 /**
  * The guide while UNLOCKED's own booking is off (src/lib/features.ts): rooms
  * are adverts, players book on the company's own site, the company gives out
- * QR stamps and sells merch. No plans, slots, widget or room payments.
+ * sells merch. Listing is free: no plans, slots, widget or room payments.
  */
 function AdvertGuide({ g }: { g: (el: string, en: string) => string }) {
   return (
@@ -151,7 +151,7 @@ function AdvertGuide({ g }: { g: (el: string, en: string) => string }) {
           <Card>
             <div className="space-y-4">
               <Step n={1} title={g('Αποδοχή όρων', 'Accept the terms')} desc={g('Αποδεχτείτε τους όρους χρήσης και την πολιτική απορρήτου.', 'Accept the terms of service and the privacy policy.')} />
-              <Step n={2} title={g('Επιβεβαίωση', 'Confirm')} desc={g('Πατήστε «Συνέχεια». Για πακέτα και τιμές θα επικοινωνήσουμε μαζί σας.', 'Tap "Continue". We will get in touch about packages and prices.')} />
+              <Step n={2} title={g('Επιβεβαίωση', 'Confirm')} desc={g('Πατήστε «Συνέχεια». Η καταχώρηση των δωματίων σας είναι δωρεάν.', 'Tap "Continue". Listing your rooms is free.')} />
               <Step n={3} title={g('Έλεγχος στοιχείων', 'Account review')} desc={g('Ελέγχουμε τα στοιχεία σας, συνήθως μέσα σε 1 με 2 εργάσιμες. Θα λάβετε email μόλις εγκριθεί ο λογαριασμός σας.', 'We check your details, usually within 1 to 2 working days. You get an email as soon as your account is approved.')} />
               <Step n={4} title={g('Λίστα εκκίνησης', 'Getting-started checklist')} desc={g('Μόλις συνδεθείτε, μια σύντομη λίστα στον πίνακα ελέγχου σας οδηγεί: προφίλ εταιρείας, πρώτο δωμάτιο και φωτογραφία δωματίου.', 'Once you sign in, a short checklist on your dashboard walks you through it: company profile, first room and a room photo.')} />
             </div>
@@ -238,7 +238,8 @@ function AdvertGuide({ g }: { g: (el: string, en: string) => string }) {
           </p>
         </Section>
 
-        {/* 6. Early Access */}
+        {/* 6. Early Access (Premium players only) */}
+        {PREMIUM_ENABLED && (
         <Section icon={Sparkles} title={g('Πρόγραμμα Early Access', 'Early Access Partner Program')}>
           <p>{g('Ενταχθείτε από τις Ρυθμίσεις → Early Access. Ως Early Access Partner:', 'Join from Settings → Early Access. As an Early Access Partner:')}</p>
           <Card>
@@ -250,6 +251,7 @@ function AdvertGuide({ g }: { g: (el: string, en: string) => string }) {
             </ul>
           </Card>
         </Section>
+        )}
 
         <div className="mt-8 bg-brand-surface rounded-2xl border border-white/5 p-6 text-center">
           <p className="text-brand-text-secondary text-sm">

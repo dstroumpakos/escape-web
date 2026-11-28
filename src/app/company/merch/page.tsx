@@ -6,6 +6,7 @@ import { useMutation } from 'convex/react';
 import { useCompanyAuth, useCompanyMutation, useCompanyPath, useCompanyQuery } from '@/lib/companyAuth';
 import { api } from '../../../../convex/_generated/api';
 import { useTranslation } from '@/lib/i18n';
+import { BOOKING_ENABLED, PREMIUM_ENABLED } from '@/lib/features';
 import { useToast } from '@/components/company/Toast';
 import { friendlyError } from '@/lib/errors';
 import { ProductEditor, type EditableProduct, type ProductInput } from '@/components/shop/ProductEditor';
@@ -236,7 +237,7 @@ export default function CompanyMerchPage() {
                           <EyeOff className="w-3 h-3" /> {t('shop.portal.hidden_by_admin')}
                         </span>
                       )}
-                      {prod.premiumOnly && (
+                      {PREMIUM_ENABLED && prod.premiumOnly && (
                         <span className="text-[11px] px-2 py-0.5 rounded-full bg-brand-gold/15 text-brand-gold inline-flex items-center gap-1">
                           <Crown className="w-3 h-3" /> {t('shop.badge.members_only')}
                         </span>
@@ -322,6 +323,7 @@ export default function CompanyMerchPage() {
             }}
             className="bg-brand-surface rounded-2xl border border-white/5 p-5 space-y-5"
           >
+            {PREMIUM_ENABLED && (
             <div>
               <label className="flex items-center gap-2 text-sm font-semibold mb-1">
                 <Crown className="w-4 h-4 text-brand-gold" /> {t('shop.portal.premium_discount')}
@@ -340,6 +342,7 @@ export default function CompanyMerchPage() {
                 <span className="w-14 text-right font-bold tabular-nums">{discount}%</span>
               </div>
             </div>
+            )}
             <div>
               <label className="block text-sm font-semibold mb-1">{t('shop.portal.pickup_note')}</label>
               <p className="text-xs text-brand-text-secondary mb-2">{t('shop.portal.pickup_note_hint')}</p>
@@ -362,6 +365,7 @@ export default function CompanyMerchPage() {
           </form>
 
           <div className="bg-brand-surface rounded-2xl border border-white/5 p-5 text-sm space-y-2">
+            {BOOKING_ENABLED && (<>
             <p className="font-semibold">{t('shop.portal.fees_title')}</p>
             <p className="text-brand-text-secondary">
               {settings.plan === 'unlimited' ? t('shop.portal.fees_unlimited') : t('shop.portal.fees_payg')}
@@ -371,6 +375,7 @@ export default function CompanyMerchPage() {
                 {t('shop.portal.fees_month', { fee: euro(summary.monthFeeCents), sales: euro(summary.monthSalesCents) })}
               </p>
             )}
+            </>)}
             <p className="text-brand-text-secondary">{t('shop.portal.seller_duties')}</p>
           </div>
         </div>

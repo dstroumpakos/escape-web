@@ -33,7 +33,7 @@ import { ToastProvider } from '@/components/company/Toast';
 import { LanguageToggle } from '@/components/LanguageToggle';
 import { PlanBadge } from './PlanBadge';
 import { useTranslation } from '@/lib/i18n';
-import { BOOKING_ENABLED, PASSPORT_ENABLED } from '@/lib/features';
+import { BOOKING_ENABLED, PASSPORT_ENABLED, WEB_SERVICES_ENABLED } from '@/lib/features';
 
 type NavLink = {
   href: string;
@@ -69,7 +69,7 @@ function CompanyShell({ children }: { children: React.ReactNode }) {
     ...(BOOKING_ENABLED ? [{ href: p('/company/billing'), label: t('company.nav.billing'), icon: CreditCard }] : []),
     { href: p('/company/settings'), label: t('company.nav.settings'), icon: Settings },
     { href: p('/company/docs'), label: t('company.nav.docs'), icon: BookOpen },
-    { href: '/services/website', label: t('company.nav.web_services'), icon: Globe },
+    ...(WEB_SERVICES_ENABLED ? [{ href: '/services/website', label: t('company.nav.web_services'), icon: Globe }] : []),
   ];
   const allLinks = [...primaryLinks, ...secondaryLinks];
 
@@ -183,9 +183,9 @@ function CompanyShell({ children }: { children: React.ReactNode }) {
               <p className="text-xs text-brand-text-secondary truncate">{company?.email}</p>
             </div>
           </div>
-          {company?.platformPlan && (
+          {BOOKING_ENABLED && company?.platformPlan && (
             <Link href={p('/company/billing')} className="inline-block mt-3" title={t('company.nav.billing')}>
-              {BOOKING_ENABLED && <PlanBadge plan={company.platformPlan} />}
+              <PlanBadge plan={company.platformPlan} />
             </Link>
           )}
         </div>

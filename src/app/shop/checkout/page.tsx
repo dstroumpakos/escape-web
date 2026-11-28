@@ -8,6 +8,7 @@ import { ArrowLeft, CreditCard, Crown, Gift, Loader2, Store, Truck, Wallet } fro
 import { api } from '../../../../convex/_generated/api';
 import { useAuth } from '@/lib/auth';
 import { useTranslation } from '@/lib/i18n';
+import { PREMIUM_ENABLED } from '@/lib/features';
 import { friendlyError } from '@/lib/errors';
 import { SHIP_COUNTRIES, platformShippingCents } from '../../../../convex/merchRules';
 import { countryName, euro, useCart } from '@/components/shop/shopUi';
@@ -307,7 +308,7 @@ function CheckoutContent() {
                 <span className="text-brand-text-muted">{t('shop.cart.total')}</span>
                 <span className="text-3xl font-display font-black text-brand-bone tabular-nums">{euro(total)}</span>
               </div>
-              {isPlatform && !isPremium && (
+              {PREMIUM_ENABLED && isPlatform && !isPremium && (
                 <p className="text-xs text-brand-gold">{t('shop.checkout.premium_would_save')}</p>
               )}
             </div>

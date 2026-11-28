@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { Crown, Lock, Package, Timer, Store, Truck, KeyRound } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
+import { PREMIUM_ENABLED } from '@/lib/features';
 import type { ProductView } from '../../../convex/merch';
 import { euro } from './shopUi';
 import { localeFor } from '@/lib/languages';
@@ -24,7 +25,7 @@ export function PriceTag({ p, large = false }: { p: ProductView; large?: boolean
   return (
     <div className="flex items-baseline gap-2 flex-wrap">
       <span className={`${size} font-display font-black text-brand-bone tabular-nums`}>{euro(p.priceCents)}</span>
-      {p.premiumPriceCents !== null && (
+      {PREMIUM_ENABLED && p.premiumPriceCents !== null && (
         <span className="text-xs text-brand-gold inline-flex items-center gap-1">
           <Crown className="w-3 h-3" /> {t('shop.card.premium_from', { price: euro(p.premiumPriceCents) })}
         </span>
@@ -82,12 +83,12 @@ export function ProductCard({ p, showSeller = true }: { p: ProductView; showSell
           </div>
         )}
         <div className="absolute top-2 left-2 flex flex-wrap gap-1.5">
-          {p.release === 'early_access' && (
+          {PREMIUM_ENABLED && p.release === 'early_access' && (
             <span className="text-[10px] font-type tracking-wider px-2 py-1 rounded-sm bg-brand-gold text-black">
               {t('shop.badge.early_access')}
             </span>
           )}
-          {p.premiumOnly && (
+          {PREMIUM_ENABLED && p.premiumOnly && (
             <span className="text-[10px] font-type tracking-wider px-2 py-1 rounded-sm bg-black/75 border border-brand-gold/60 text-brand-gold inline-flex items-center gap-1">
               <Crown className="w-3 h-3" /> {t('shop.badge.members_only')}
             </span>
@@ -141,6 +142,7 @@ export function ProductCard({ p, showSeller = true }: { p: ProductView; showSell
 /** What Premium gives in the shop. */
 export function PerksBanner({ perks }: { perks: { isPremium: boolean; welcomeGiftAvailable: boolean; platformDiscountPercent: number; earlyAccessHours: number } }) {
   const { t } = useTranslation();
+  if (!PREMIUM_ENABLED) return null;
   return (
     <div className="panel p-5 sm:p-6 border-brand-gold/30! flex flex-col md:flex-row md:items-center gap-4">
       <div className="w-12 h-12 shrink-0 rounded-md bg-brand-gold/15 border border-brand-gold/40 flex items-center justify-center">

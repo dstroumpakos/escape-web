@@ -58,7 +58,7 @@ import {
   Languages,
 } from 'lucide-react';
 import { PlanBadge } from '../PlanBadge';
-import { BOOKING_ENABLED } from '@/lib/features';
+import { BOOKING_ENABLED, PREMIUM_ENABLED } from '@/lib/features';
 import { useTranslation } from '@/lib/i18n';
 
 export default function CompanySettingsPage() {
@@ -98,7 +98,7 @@ export default function CompanySettingsPage() {
   // Respect ?tab= query param
   useEffect(() => {
     const tab = searchParams.get('tab');
-    if ((tab === 'widget' && BOOKING_ENABLED) || tab === 'early-access' || tab === 'profile' || tab === 'translations') {
+    if ((tab === 'widget' && BOOKING_ENABLED) || (tab === 'early-access' && PREMIUM_ENABLED) || tab === 'profile' || tab === 'translations') {
       setActiveTab(tab);
     }
   }, [searchParams]);
@@ -249,7 +249,7 @@ export default function CompanySettingsPage() {
       <div className="flex gap-1 mb-6 bg-brand-surface rounded-xl p-1 border border-white/5 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {[
           { key: 'profile', label: t('company.settings.tab_profile'), icon: Building2 },
-          { key: 'early-access', label: t('company.settings.tab_early_access'), icon: Zap },
+          ...(PREMIUM_ENABLED ? [{ key: 'early-access', label: t('company.settings.tab_early_access'), icon: Zap }] : []),
           { key: 'translations', label: t('company.settings.tab_translations'), icon: Languages },
           ...(BOOKING_ENABLED ? [{ key: 'widget', label: t('company.settings.tab_widget'), icon: Code }] : []),
         ].map(({ key, label, icon: Icon }) => (

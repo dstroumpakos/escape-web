@@ -8,6 +8,7 @@ import { ArrowLeft, Check, Crown, Minus, Plus, ShoppingBag, Store, Truck, Gift }
 import { api } from '../../../../convex/_generated/api';
 import { useAuth } from '@/lib/auth';
 import { useTranslation } from '@/lib/i18n';
+import { PREMIUM_ENABLED } from '@/lib/features';
 import { LockNote, PriceTag, ProductCard } from '@/components/shop/ProductCard';
 import { ShopHeaderActions } from '@/components/shop/ShopHeaderActions';
 import { euro, useCart } from '@/components/shop/shopUi';
@@ -129,12 +130,12 @@ export default function ProductPage() {
               </p>
               <h1 className="text-3xl md:text-4xl font-display font-black text-brand-bone leading-tight">{p.title}</h1>
               <div className="flex flex-wrap gap-2 mt-3">
-                {p.release === 'early_access' && (
+                {PREMIUM_ENABLED && p.release === 'early_access' && (
                   <span className="text-[11px] font-type tracking-wider px-2 py-1 rounded-sm bg-brand-gold text-black">
                     {t('shop.badge.early_access')}
                   </span>
                 )}
-                {p.premiumOnly && (
+                {PREMIUM_ENABLED && p.premiumOnly && (
                   <span className="text-[11px] font-type tracking-wider px-2 py-1 rounded-sm border border-brand-gold/60 text-brand-gold inline-flex items-center gap-1">
                     <Crown className="w-3 h-3" /> {t('shop.badge.members_only')}
                   </span>
@@ -179,7 +180,7 @@ export default function ProductPage() {
             {p.locked ? (
               <div className="panel p-4 space-y-3">
                 <LockNote p={p} />
-                {p.locked === 'premium_only' && (
+                {PREMIUM_ENABLED && p.locked === 'premium_only' && (
                   <Link href="/premium" className="btn-outline inline-flex text-sm py-2! px-5!">
                     {t('shop.perks.get_premium')}
                   </Link>
@@ -240,7 +241,7 @@ export default function ProductPage() {
                   <Truck className="w-4 h-4 mt-0.5 text-brand-red-light shrink-0" />
                   <span>
                     {p.seller === 'platform'
-                      ? data.perks.isPremium
+                      ? PREMIUM_ENABLED && data.perks.isPremium
                         ? t('shop.product.ship_official_free')
                         : t('shop.product.ship_official')
                       : p.shippingCents

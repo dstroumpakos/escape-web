@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Building2, Mail, Lock, Eye, EyeOff, ArrowRight, Shield, Calendar, Ticket, BarChart2, Code, Globe } from 'lucide-react';
+import { Building2, Mail, Lock, Eye, EyeOff, ArrowRight, Shield, DoorOpen, Star, BarChart2, Users, ShoppingBag } from 'lucide-react';
 import { EyeKeyhole } from '@/components/brand/EyeKeyhole';
 import { useCompanyAuth, useCompanyPath, useMainSiteUrl } from '@/lib/companyAuth';
 import { useTranslation } from '@/lib/i18n';
@@ -195,11 +195,11 @@ export default function CompanyLoginPage() {
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {[
-            { icon: Calendar, title: t('business.feature1.title'), desc: t('business.feature1.desc') },
-            { icon: Ticket, title: t('business.feature2.title'), desc: t('business.feature2.desc') },
+            { icon: DoorOpen, title: t('business.feature1.title'), desc: t('business.feature1.desc') },
+            { icon: Star, title: t('business.feature2.title'), desc: t('business.feature2.desc') },
             { icon: BarChart2, title: t('business.feature3.title'), desc: t('business.feature3.desc') },
-            { icon: Code, title: t('business.feature4.title'), desc: t('business.feature4.desc') },
-            { icon: Globe, title: t('business.feature5.title'), desc: t('business.feature5.desc'), href: '/services/website' },
+            { icon: Users, title: t('business.feature4.title'), desc: t('business.feature4.desc') },
+            { icon: ShoppingBag, title: t('business.feature5.title'), desc: t('business.feature5.desc') },
             { icon: Shield, title: t('company.auth.feature_free_title'), desc: t('company.auth.feature_free_desc') },
           ].map((f, i) => (
             <div key={i} className="bg-brand-surface rounded-xl border border-white/5 p-5 hover:border-white/10 transition-colors">

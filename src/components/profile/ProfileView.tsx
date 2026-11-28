@@ -11,7 +11,7 @@ import { api } from '../../../convex/_generated/api';
 import { useAuth } from '@/lib/auth';
 import { useTranslation } from '@/lib/i18n';
 import { cleanError } from '@/lib/errors';
-import { FOLLOW_ENABLED } from '@/lib/features';
+import { FOLLOW_ENABLED, PREMIUM_ENABLED } from '@/lib/features';
 import { squareAvatar } from '@/lib/imageUtils';
 import { since } from '@/lib/memberSince';
 
@@ -201,7 +201,7 @@ export function ProfileView({ userId }: { userId: string }) {
           <div className="flex-1 min-w-0 sm:pb-2">
             <h1 className="text-2xl sm:text-3xl font-display font-bold text-brand-bone truncate flex items-center gap-2">
               {profile.name}
-              {profile.isPremium && <Diamond className="w-5 h-5 text-yellow-400 shrink-0" />}
+              {PREMIUM_ENABLED && profile.isPremium && <Diamond className="w-5 h-5 text-yellow-400 shrink-0" />}
             </h1>
             {profile.title && <p className="text-sm text-brand-red-light">{rankLabel(t, profile.title)}</p>}
           </div>

@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { useTranslation } from '@/lib/i18n';
+import { PREMIUM_ENABLED, WEB_SERVICES_ENABLED } from '@/lib/features';
 import { AnimateIn, StaggerContainer, StaggerItem } from '@/components/animations/AnimateIn';
 import { BloodDrips } from '@/components/horror/BloodDrips';
 import { Logo } from './Navbar';
@@ -59,12 +60,12 @@ export function Footer() {
       { label: t('footer.how_it_works'), href: '/#how-it-works' },
       { label: t('footer.leaderboard'), href: '/leaderboard' },
       { label: t('nav.shop'), href: '/shop' },
-      { label: t('footer.premium'), href: '/premium' },
+      ...(PREMIUM_ENABLED ? [{ label: t('footer.premium'), href: '/premium' }] : []),
       { label: t('footer.download_app'), href: '/#download' },
     ],
     company: [
       { label: t('footer.about_us'), href: '/about' },
-      { label: t('footer.web_services'), href: '/services/website' },
+      ...(WEB_SERVICES_ENABLED ? [{ label: t('footer.web_services'), href: '/services/website' }] : []),
       { label: t('footer.contact'), href: '/contact' },
       { label: t('footer.careers'), href: '/contact' },
     ],

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { PASSPORT_ENABLED } from '@/lib/features';
+import { BOOKING_ENABLED, PASSPORT_ENABLED, PREMIUM_ENABLED } from '@/lib/features';
 import { useQuery, useMutation, useAction } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
 import { useTranslation } from '@/lib/i18n';
@@ -139,7 +139,8 @@ export default function AdminPage() {
     { id: 'overview' as const, label: t('admin.tab_overview'), icon: TrendingUp },
     { id: 'companies' as const, label: t('admin.tab_companies'), icon: Building2 },
     { id: 'managed' as const, label: t('mc.tab'), icon: Megaphone },
-    { id: 'bookings' as const, label: t('admin.tab_bookings'), icon: CalendarCheck },
+    // UNLOCKED's own booking and plans are off for now (src/lib/features.ts)
+    ...(BOOKING_ENABLED ? [{ id: 'bookings' as const, label: t('admin.tab_bookings'), icon: CalendarCheck }] : []),
     { id: 'users' as const, label: t('admin.tab_users'), icon: Users },
     { id: 'reports' as const, label: t('admin.tab_reports'), icon: Flag },
     { id: 'reviews' as const, label: t('admin.rv.tab'), icon: Star },
@@ -211,6 +212,7 @@ export default function AdminPage() {
                 color="text-emerald-400"
                 bg="bg-emerald-500/10"
               />
+              {BOOKING_ENABLED ? (
               <StatCard
                 icon={CalendarCheck}
                 label={t('admin.metric_bookings')}
@@ -219,18 +221,29 @@ export default function AdminPage() {
                 color="text-purple-400"
                 bg="bg-purple-500/10"
               />
+              ) : (
+              <StatCard
+                icon={Star}
+                label={t('admin.rv.tab')}
+                value={rooms.totalReviews}
+                sub={`${rooms.avgRating}/5`}
+                color="text-purple-400"
+                bg="bg-purple-500/10"
+              />
+              )}
               <StatCard
                 icon={Users}
                 label={t('admin.metric_users')}
                 value={users.total}
-                sub={`${users.premium} premium`}
+                sub={PREMIUM_ENABLED ? `${users.premium} premium` : t('admin.registered_players')}
                 color="text-amber-400"
                 bg="bg-amber-500/10"
               />
             </div>
 
             {/* Revenue & Bookings row */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className={`grid grid-cols-1 ${BOOKING_ENABLED ? 'md:grid-cols-3' : 'md:grid-cols-2'} gap-4`}>
+              {BOOKING_ENABLED && (
               <div className="bg-brand-surface rounded-2xl border border-white/5 p-6">
                 <div className="flex items-center gap-2 text-brand-text-secondary text-sm mb-1">
                   <Euro className="w-4 h-4" /> {t('admin.total_revenue')}
@@ -240,6 +253,7 @@ export default function AdminPage() {
                   {bookings.total - bookings.cancelled} {t('admin.paid_bookings')}
                 </p>
               </div>
+              )}
 
               <div className="bg-brand-surface rounded-2xl border border-white/5 p-6">
                 <div className="flex items-center gap-2 text-brand-text-secondary text-sm mb-1">
@@ -262,6 +276,7 @@ export default function AdminPage() {
               </div>
             </div>
 
+            {BOOKING_ENABLED && (<>
             {/* Booking Sources */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="bg-brand-surface rounded-2xl border border-white/5 p-6">
@@ -373,6 +388,7 @@ export default function AdminPage() {
                 </div>
               </div>
             )}
+            </>)}
           </div>
         )}
 
@@ -431,7 +447,7 @@ export default function AdminPage() {
                       <th className="text-left text-xs text-brand-text-secondary font-medium px-4 py-3">{t('admin.col_city')}</th>
                       <th className="text-left text-xs text-brand-text-secondary font-medium px-4 py-3">{t('admin.col_email')}</th>
                       <th className="text-left text-xs text-brand-text-secondary font-medium px-4 py-3">{t('admin.col_status')}</th>
-                      <th className="text-left text-xs text-brand-text-secondary font-medium px-4 py-3">{t('admin.col_plan')}</th>
+                      {BOOKING_ENABLED && <th className="text-left text-xs text-brand-text-secondary font-medium px-4 py-3">{t('admin.col_plan')}</th>}
                       <th className="text-left text-xs text-brand-text-secondary font-medium px-4 py-3">{t('admin.col_registered')}</th>
                     </tr>
                   </thead>
@@ -444,7 +460,7 @@ export default function AdminPage() {
                         <td className="px-4 py-3 text-sm text-brand-text-secondary">{company.city}</td>
                         <td className="px-4 py-3 text-sm text-brand-text-secondary">{company.email}</td>
                         <td className="px-4 py-3"><StatusBadge status={company.onboardingStatus} t={t} /></td>
-                        <td className="px-4 py-3">{company.platformPlan ? <PlanBadgeMini plan={company.platformPlan} /> : <span className="text-xs text-brand-text-secondary">—</span>}</td>
+                        {BOOKING_ENABLED && <td className="px-4 py-3">{company.platformPlan ? <PlanBadgeMini plan={company.platformPlan} /> : <span className="text-xs text-brand-text-secondary">—</span>}</td>}
                         <td className="px-4 py-3 text-sm text-brand-text-secondary">
                           {company.createdAt ? new Date(company.createdAt).toLocaleDateString() : '—'}
                         </td>
@@ -458,7 +474,7 @@ export default function AdminPage() {
         )}
 
         {/* ══════════ BOOKINGS TAB ══════════ */}
-        {activeTab === 'bookings' && (
+        {BOOKING_ENABLED && activeTab === 'bookings' && (
           <div className="space-y-4">
             {/* Quick stats */}
             <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
@@ -535,6 +551,7 @@ export default function AdminPage() {
                 color="text-blue-400"
                 bg="bg-blue-500/10"
               />
+              {PREMIUM_ENABLED && (
               <StatCard
                 icon={Crown}
                 label={t('admin.premium_users')}
@@ -543,6 +560,7 @@ export default function AdminPage() {
                 color="text-amber-400"
                 bg="bg-amber-500/10"
               />
+              )}
               <StatCard
                 icon={MessageSquare}
                 label={t('admin.social_posts')}

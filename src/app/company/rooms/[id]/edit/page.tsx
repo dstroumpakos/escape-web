@@ -36,6 +36,7 @@ import {
   Languages,
 } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
+import { PREMIUM_ENABLED } from '@/lib/features';
 import { CategoryPicker } from '@/components/company/CategoryPicker';
 import { categoryOf, subthemesOf, legacyTheme, type Category } from '../../../../../../convex/roomCategories';
 import { friendlyError } from '@/lib/errors';
@@ -714,7 +715,8 @@ export default function EditRoomPage() {
         </SectionCard>
         </BookingOptionsToggle>
 
-        {/* Release Date (Early Access) */}
+        {/* Release Date (Early Access for Premium players) */}
+        {PREMIUM_ENABLED && (
         <SectionCard title={t('company.rooms.edit.release_date')}>
           <div className="flex items-start gap-3 mb-4 p-4 bg-purple-500/5 border border-purple-500/10 rounded-xl">
             <CalendarClock className="w-5 h-5 text-purple-400 mt-0.5 shrink-0" />
@@ -759,6 +761,7 @@ export default function EditRoomPage() {
             )}
           </div>
         </SectionCard>
+        )}
 
         {/* Photo Branding */}
         <div className="bg-brand-surface rounded-2xl border border-white/5">

@@ -26,6 +26,7 @@ import { roomLimitFor } from '@/lib/plans';
 import { friendlyError } from '@/lib/errors';
 import { useToast } from '@/components/company/Toast';
 import { useTranslation } from '@/lib/i18n';
+import { BOOKING_ENABLED } from '@/lib/features';
 import { AnimateIn, StaggerContainer, StaggerItem } from '@/components/animations/AnimateIn';
 
 
@@ -120,7 +121,7 @@ export default function CompanyRoomsPage() {
             {t('company.rooms.subtitle')}
           </p>
         </div>
-        {atLimit ? (
+        {BOOKING_ENABLED && atLimit ? (
           <Link
             href={p('/company/billing')}
             className="flex items-center gap-2 text-sm text-brand-text-secondary bg-brand-surface border border-white/5 rounded-xl px-4 py-2.5 hover:border-yellow-500/30"
@@ -139,8 +140,8 @@ export default function CompanyRoomsPage() {
       </div>
       </AnimateIn>
 
-      {/* Room limit bar */}
-      {rooms && (
+      {/* Room limit bar (plans only exist with UNLOCKED's own booking) */}
+      {BOOKING_ENABLED && rooms && (
         <div className="mb-8">
           <div className="flex items-center justify-between text-sm mb-2">
             <span className="text-brand-text-secondary">

@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import { Star, Clock, Users, Zap, DoorOpen, BadgeCheck, Skull, Flame, MapPin, VenetianMask } from 'lucide-react';
-import { BOOKING_ENABLED } from '@/lib/features';
+import { BOOKING_ENABLED, PREMIUM_ENABLED } from '@/lib/features';
 import { useTranslation } from '@/lib/i18n';
 import { themeLabel } from '@/lib/roomThemes';
 import { categoryOf, subthemesOf, type Category } from '@/lib/mode';
@@ -125,7 +125,7 @@ export function RoomCard({ room }: { room: RoomCardData }) {
 
         {/* Badges */}
         <div className="absolute top-3 left-3 right-24 z-20 flex flex-wrap gap-2">
-          {room.isEarlyAccessPartner && (
+          {PREMIUM_ENABLED && room.isEarlyAccessPartner && (
             <span className="bg-emerald-700/90 backdrop-blur-xs text-white text-xs font-bold px-2.5 py-1 rounded-sm flex items-center gap-1">
               <BadgeCheck className="w-3 h-3" /> {t('badge.early_access')}
             </span>

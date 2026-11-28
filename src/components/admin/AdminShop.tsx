@@ -5,6 +5,7 @@ import { useMutation, useQuery } from 'convex/react';
 import { Eye, EyeOff, Loader2, Package, Pencil, Plus, ShoppingBag, Store } from 'lucide-react';
 import { api } from '../../../convex/_generated/api';
 import { useTranslation } from '@/lib/i18n';
+import { PREMIUM_ENABLED } from '@/lib/features';
 import { friendlyError } from '@/lib/errors';
 import { ProductEditor, type EditableProduct, type ProductInput } from '@/components/shop/ProductEditor';
 import { SellerOrders } from '@/components/shop/SellerOrders';
@@ -110,7 +111,7 @@ export function AdminShop({ sessionToken }: { sessionToken: string }) {
                   <p className="text-xs text-brand-text-secondary">
                     {t(`shop.status.${p.status}`)} · {t('shop.portal.sold', { count: String(p.sold) })}
                     {p.releaseAt ? ` · ${t('shop.admin.drop', { date: new Date(p.releaseAt).toLocaleString() })}` : ''}
-                    {p.premiumOnly ? ` · ${t('shop.badge.members_only')}` : ''}
+                    {PREMIUM_ENABLED && p.premiumOnly ? ` · ${t('shop.badge.members_only')}` : ''}
                   </p>
                   <div className="flex gap-2 mt-2">
                     <button onClick={() => setEditing(p as any)} className="p-1.5 rounded-lg hover:bg-white/5" aria-label={t('shop.portal.edit')}>
