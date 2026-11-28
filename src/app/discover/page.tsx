@@ -5,12 +5,12 @@ import { useSearchParams } from 'next/navigation';
 import { RoomCard, toRoomCardData } from '@/components/rooms/RoomCard';
 import { useQuery } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
-import { Search, SlidersHorizontal, DoorOpen, X } from 'lucide-react';
+import { Search, SlidersHorizontal, DoorOpen, X, KeyRound, Skull } from 'lucide-react';
 import { BOOKING_ENABLED } from '@/lib/features';
 import { useTranslation } from '@/lib/i18n';
 import { themeLabel as roomThemeLabel } from '@/lib/roomThemes';
 import { useAuth } from '@/lib/auth';
-import { useMode, setMode, forMode, subthemesOf, categoryOf, SUBTHEMES } from '@/lib/mode';
+import { useMode, setMode, forMode, subthemesOf, categoryOf, SUBTHEMES, type Mode } from '@/lib/mode';
 import { AnimateIn, StaggerContainer, StaggerItem } from '@/components/animations/AnimateIn';
 
 /** The "with an actor" chip: puzzle rooms whose category is puzzles with an actor. */
@@ -28,6 +28,15 @@ export default function DiscoverPage() {
   // A side picked (lib/mode.ts): only that side's rooms and subcategories.
   const mode = useMode();
   const puzzle = mode === 'puzzle';
+  // No side picked (both at once): the first chips are All / Puzzle rooms /
+  // Horror rooms; picking one of the two shows its subcategories. A filter on
+  // this page only: the site keeps both sides (the navbar toggle picks a side).
+  const [pickedSide, setPickedSide] = useState<Mode | null>(null);
+  const side: Mode | null = mode ?? pickedSide;
+  const pickSide = (s: Mode | null) => {
+    setPickedSide(s);
+    setSelectedTheme('All');
+  };
 
   // Read theme from URL params (e.g. /discover?theme=Horror)
   useEffect(() => {
@@ -53,11 +62,14 @@ export default function DiscoverPage() {
 
   const allRooms = useQuery(api.rooms.list);
 
-  // A subcategory chip shows only if it has rooms on this side
-  const available = useMemo(() => new Set(forMode(allRooms ?? [], mode).flatMap((r: any) => subthemesOf(r))), [allRooms, mode]);
-  const chips = ['All', ...(mode !== 'horror' ? [ACTOR] : []), ...(mode ? SUBTHEMES[mode] : ALL_SUBTHEMES)].filter(
-    (th) => th === 'All' || th === ACTOR || th === selectedTheme || available.has(th)
-  );
+  // A subcategory chip shows only if it has rooms on this side. With no side
+  // picked and no main category chosen, there are no subcategory chips.
+  const available = useMemo(() => new Set(forMode(allRooms ?? [], side).flatMap((r: any) => subthemesOf(r))), [allRooms, side]);
+  const chips = side
+    ? ['All', ...(side === 'puzzle' ? [ACTOR] : []), ...SUBTHEMES[side]].filter(
+        (th) => th === 'All' || th === ACTOR || th === selectedTheme || available.has(th)
+      )
+    : [];
 
   const filteredRooms = useMemo(() => {
     if (!allRooms) return [];
@@ -78,7 +90,7 @@ export default function DiscoverPage() {
       return now >= release;
     });
 
-    rooms = forMode(rooms, mode);
+    rooms = forMode(rooms, side);
 
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
@@ -109,7 +121,7 @@ export default function DiscoverPage() {
     });
 
     return rooms;
-  }, [allRooms, searchQuery, selectedTheme, sortBy, isPremium, mode]);
+  }, [allRooms, searchQuery, selectedTheme, sortBy, isPremium, side]);
 
   return (
     <>
@@ -160,8 +172,46 @@ export default function DiscoverPage() {
             </p>
           )}
 
-          {/* Theme filters */}
-          <div className="flex items-center gap-2 flex-wrap justify-center mb-4">
+          {/* Both sides at once: the main categories first */}
+          {!mode && (
+            <div className="flex items-center gap-2 flex-wrap justify-center mb-3">
+              {([
+                { s: null, label: t('discover.filter_all'), Icon: null, on: 'bg-brand-red text-brand-bone border-brand-red-light/50 shadow-[0_0_18px_rgba(var(--glow),0.55)]' },
+                { s: 'puzzle', label: t('mode.rooms_puzzle'), Icon: KeyRound, on: 'bg-[#d9a53a] text-[#1a1305] border-[#f6d27a]/60 shadow-[0_0_18px_rgba(242,199,92,0.5)]' },
+                { s: 'horror', label: t('mode.rooms_horror'), Icon: Skull, on: 'bg-brand-red text-brand-bone border-brand-red-light/50 shadow-[0_0_18px_rgba(var(--glow),0.55)]' },
+              ] as { s: Mode | null; label: string; Icon: React.ElementType | null; on: string }[]).map(({ s, label, Icon, on }) => (
+                <button
+                  key={s ?? 'all'}
+                  onClick={() => pickSide(s)}
+                  aria-pressed={pickedSide === s}
+                  className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-sm text-sm font-semibold border transition-all duration-200 ${
+                    pickedSide === s
+                      ? on
+                      : s === 'puzzle'
+                        ? 'bg-black/50 border-[#f2c75c]/30 text-[#f6d27a] hover:border-[#f2c75c]/70 hover:bg-[#f2c75c]/10'
+                        : 'bg-black/50 border-brand-border text-brand-text-secondary hover:text-brand-bone hover:border-brand-red/60 hover:bg-brand-red/10'
+                  }`}
+                >
+                  {Icon && <Icon className="w-4 h-4" />}
+                  {label}
+                </button>
+              ))}
+              {!side && (
+                <button
+                  onClick={() => setShowFilters(!showFilters)}
+                  aria-expanded={showFilters}
+                  className={`px-3.5 py-2 rounded-sm text-sm font-medium border flex items-center gap-1.5 transition-all duration-200 ${showFilters ? 'border-brand-gold/60 text-brand-gold bg-brand-gold/10' : 'border-brand-border bg-black/50 text-brand-text-secondary hover:text-brand-bone hover:border-brand-gold/50'}`}
+                >
+                  <SlidersHorizontal className="w-4 h-4" />
+                  {t('discover.sort')}
+                </button>
+              )}
+            </div>
+          )}
+
+          {/* Subcategories of the side (a picked side, or the main category chosen above) */}
+          {side && (
+          <div className={`flex items-center gap-2 flex-wrap justify-center mb-4 ${!mode && side === 'puzzle' ? 'side-puzzle' : ''}`}>
             {chips.map((theme) => (
               <button
                 key={theme}
@@ -185,6 +235,7 @@ export default function DiscoverPage() {
               {t('discover.sort')}
             </button>
           </div>
+          )}
 
           {showFilters && (
             <div className="flex justify-center gap-2 mb-4">
