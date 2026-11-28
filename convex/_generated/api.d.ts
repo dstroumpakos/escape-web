@@ -9,6 +9,7 @@
  */
 
 import type * as adminSession from "../adminSession.js";
+import type * as adminUsers from "../adminUsers.js";
 import type * as appStore from "../appStore.js";
 import type * as appleAuth from "../appleAuth.js";
 import type * as avatars from "../avatars.js";
@@ -33,6 +34,7 @@ import type * as connections from "../connections.js";
 import type * as crons from "../crons.js";
 import type * as demoSeed from "../demoSeed.js";
 import type * as email from "../email.js";
+import type * as escapeAll from "../escapeAll.js";
 import type * as emailVerify from "../emailVerify.js";
 import type * as exif from "../exif.js";
 import type * as externalLinks from "../externalLinks.js";
@@ -97,6 +99,7 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   adminSession: typeof adminSession;
+  adminUsers: typeof adminUsers;
   appStore: typeof appStore;
   appleAuth: typeof appleAuth;
   avatars: typeof avatars;
@@ -121,6 +124,7 @@ declare const fullApi: ApiFromModules<{
   crons: typeof crons;
   demoSeed: typeof demoSeed;
   email: typeof email;
+  escapeAll: typeof escapeAll;
   emailVerify: typeof emailVerify;
   exif: typeof exif;
   externalLinks: typeof externalLinks;

@@ -11,7 +11,6 @@ export type ShownRating = {
   count: number;
   /** Set when the numbers come from another site (e.g. "EscapeAll"). */
   source?: string;
-  url?: string;
 };
 
 export function shownRating(room: any): ShownRating | null {
@@ -19,7 +18,7 @@ export function shownRating(room: any): ShownRating | null {
   const ext = room?.externalRating;
   const other =
     ext && ext.count > 0
-      ? { rating: ext.rating, count: ext.count, source: ext.source as string, url: ext.url as string | undefined }
+      ? { rating: ext.rating, count: ext.count, source: ext.source as string }
       : null;
   if (own && (!other || own.count >= other.count)) return own;
   return other;

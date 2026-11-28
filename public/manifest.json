@@ -1,7 +1,7 @@
 {
-  "name": "UNLOCKED - Escape Rooms",
+  "name": "UNLOCKED Escape Rooms",
   "short_name": "UNLOCKED",
-  "description": "Discover & Book Escape Rooms",
+  "description": "Every escape room. One app. Discover escape rooms near you and collect a stamp with every escape.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#080505",

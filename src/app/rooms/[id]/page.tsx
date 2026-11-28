@@ -14,8 +14,9 @@ import { useTranslation } from '@/lib/i18n';
 import { themeLabel } from '@/lib/roomThemes';
 import { RoomMerchStrip } from '@/components/shop/RoomMerch';
 import { InstagramStrip } from '@/components/rooms/InstagramStrip';
+import { RoomHero, RoomDetailsIn } from '@/components/rooms/RoomHero';
 import { shownRating, formatRating, videoEmbedUrl } from '@/lib/roomMedia';
-import { Star, Skull, Clock, Users, MapPin, Heart, ArrowLeft, DoorOpen, Zap, BookOpen, Diamond, CalendarClock, BadgeCheck, MessageSquare, ChevronDown, ChevronUp, CheckCircle, PlayCircle, Ghost, KeyRound, VenetianMask } from 'lucide-react';
+import { Star, Skull, Clock, Users, MapPin, Heart, ArrowLeft, Zap, BookOpen, Diamond, CalendarClock, BadgeCheck, MessageSquare, ChevronDown, ChevronUp, CheckCircle, PlayCircle, Ghost, KeyRound, VenetianMask } from 'lucide-react';
 
 /** The server's own message for review errors (it explains what to do), else a generic one. */
 function friendlyReviewError(err: unknown): string {
@@ -61,7 +62,6 @@ export default function RoomDetailsPage() {
   const [reviewError, setReviewError] = useState('');
   const [showAllReviews, setShowAllReviews] = useState(false);
   const [showReviewForm, setShowReviewForm] = useState(false);
-  const [imageFailed, setImageFailed] = useState(false);
 
   const isWishlisted = false; // Would need to query user's wishlist
 
@@ -103,24 +103,8 @@ export default function RoomDetailsPage() {
 
   return (
     <>
-      {/* Hero Image */}
-      <section className="relative h-[44vh] md:h-[56vh] overflow-hidden bg-black">
-        {room.image && !imageFailed ? (
-          <img
-            src={room.image}
-            alt={room.title}
-            onError={() => setImageFailed(true)}
-            className="w-full h-full object-cover contrast-110 brightness-90"
-          />
-        ) : (
-          <div className="w-full h-full bg-[radial-gradient(70%_70%_at_50%_55%,#2a1010,#0a0505)] flex items-center justify-center">
-            <DoorOpen className="w-24 h-24 text-brand-border/60" />
-          </div>
-        )}
-        <div className="absolute inset-0 bg-linear-to-t from-brand-bg via-brand-bg/45 to-black/50" />
-        {/* Vignette so the photo sinks into the page */}
-        <div aria-hidden className="absolute inset-0 shadow-[inset_0_0_160px_rgba(0,0,0,0.85)]" />
-
+      {/* Hero: the photo alone first; the details slide in on scroll */}
+      <RoomHero image={room.image} title={room.title}>
         {/* Back button */}
         <div className="absolute top-24 left-4 sm:left-6 lg:left-8 z-20">
           <Link
@@ -145,11 +129,11 @@ export default function RoomDetailsPage() {
             />
           </button>
         )}
-
-      </section>
+      </RoomHero>
 
       {/* Content */}
-      <section className="relative z-10 -mt-24 md:-mt-32 pb-20">
+      <section id="room-details" className="relative z-10 -mt-10 pb-20 scroll-mt-20">
+        <RoomDetailsIn>
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Countdown Banner */}
           {PREMIUM_ENABLED && releaseCountdown && (
@@ -232,13 +216,8 @@ export default function RoomDetailsPage() {
                 <div className="text-xl font-display font-bold text-brand-bone tabular-nums">{shown ? formatRating(shown.rating) : '—'}</div>
                 <div className="text-xs text-brand-text-muted mt-0.5">
                   {shown?.source ? (
-                    shown.url ? (
-                      <a href={shown.url} target="_blank" rel="noopener noreferrer nofollow" className="underline decoration-dotted underline-offset-2 hover:text-brand-text">
-                        {t('room.reviews_on', { count: shown.count.toLocaleString(), source: shown.source })}
-                      </a>
-                    ) : (
-                      t('room.reviews_on', { count: shown.count.toLocaleString(), source: shown.source })
-                    )
+                    // Reviews from another site: shown as online reviews, the site is not named
+                    t('room.reviews_online', { count: shown.count.toLocaleString() })
                   ) : (
                     <>{shown?.count ?? 0} {t('featured.reviews')}</>
                   )}
@@ -322,7 +301,7 @@ export default function RoomDetailsPage() {
             {room.description && (
               <div className="mb-8">
                 <h3 className="text-xl font-display font-bold text-brand-bone mb-3">{t('room.about')}</h3>
-                <p className="text-brand-text-secondary leading-relaxed text-pretty max-w-[70ch]">
+                <p className="text-brand-text-secondary leading-relaxed text-pretty max-w-[70ch] whitespace-pre-line">
                   {(room as any).descriptionTranslations?.[language] || (room as any).descriptionTranslations?.en || room.description}
                 </p>
               </div>
@@ -610,6 +589,7 @@ export default function RoomDetailsPage() {
             )}
           </div>
         </div>
+        </RoomDetailsIn>
       </section>
     </>
   );

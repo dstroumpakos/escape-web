@@ -96,6 +96,20 @@ export default function LocationPicker({
   // Forward geocode: address text → lat/lng
   const searchAddress = useCallback(async (query: string) => {
     if (!query.trim()) return;
+    // "37.98663, 23.72254" (e.g. copied from Google Maps): put the pin exactly there
+    const coords = query.trim().match(/^(-?\d{1,2}(?:\.\d+)?)\s*[,\s]\s*(-?\d{1,3}(?:\.\d+)?)$/);
+    if (coords) {
+      const latN = parseFloat(coords[1]);
+      const lngN = parseFloat(coords[2]);
+      if (Math.abs(latN) <= 90 && Math.abs(lngN) <= 180) {
+        setMarkerPos([latN, lngN]);
+        setFlyTo([latN, lngN]);
+        setSearching(true);
+        await reverseGeocode(latN, lngN);
+        setSearching(false);
+        return;
+      }
+    }
     setSearching(true);
     try {
       const res = await fetch(
@@ -187,8 +201,21 @@ export default function LocationPicker({
         </MapContainer>
       </div>
 
-      {/* Hint / resolved address */}
-      {location ? (
+      {/* Hint / resolved address. Editable: the map lookup can miss the house number. */}
+      {markerPos ? (
+        <div className="flex items-center gap-2 p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl">
+          <MapPin className="w-4 h-4 text-emerald-400 shrink-0" />
+          <input
+            type="text"
+            value={location}
+            onChange={(e) => onLocationChange(e.target.value, markerPos[0], markerPos[1])}
+            onKeyDown={(e) => { if (e.key === 'Enter') e.preventDefault(); }}
+            maxLength={200}
+            aria-label="Address"
+            className="flex-1 min-w-0 bg-transparent text-sm text-emerald-300 focus:outline-hidden border-b border-transparent focus:border-emerald-400/50"
+          />
+        </div>
+      ) : location ? (
         <div className="flex items-start gap-2 p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl">
           <MapPin className="w-4 h-4 text-emerald-400 mt-0.5 shrink-0" />
           <p className="text-sm text-emerald-300">{location}</p>

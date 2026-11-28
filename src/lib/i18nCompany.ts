@@ -72,7 +72,7 @@ export const companyTranslations: { en: Record<string, string>; el: Record<strin
     'cx.onboarding.tab_title': 'Get started',
     'cx.onboarding.step_confirm': 'Confirm',
     'cx.onboarding.confirm_title': 'Almost there',
-    'cx.onboarding.confirm_text': 'Tap "Continue" and our team will review your application. Listing your rooms on UNLOCKED is free.',
+    'cx.onboarding.confirm_text': 'Listing your escape rooms on UNLOCKED is free while we launch. Tap "Continue" and our team will review your application. You will get an email as soon as your account is approved.',
     'cx.onboarding.confirm_button': 'Continue',
     'cx.photos.redirecting': 'Opening the Photos app…',
 
@@ -539,7 +539,7 @@ export const companyTranslations: { en: Record<string, string>; el: Record<strin
     'cx.onboarding.tab_title': 'Ξεκινήστε',
     'cx.onboarding.step_confirm': 'Επιβεβαίωση',
     'cx.onboarding.confirm_title': 'Σχεδόν έτοιμοι',
-    'cx.onboarding.confirm_text': 'Πατήστε «Συνέχεια» και η ομάδα μας θα ελέγξει την αίτησή σας. Η καταχώρηση των δωματίων σας στο UNLOCKED είναι δωρεάν.',
+    'cx.onboarding.confirm_text': 'Η προβολή των escape rooms σας στο UNLOCKED είναι δωρεάν κατά την περίοδο έναρξης. Πατήστε «Συνέχεια» και η ομάδα μας θα ελέγξει την αίτησή σας. Θα λάβετε email μόλις εγκριθεί ο λογαριασμός σας.',
     'cx.onboarding.confirm_button': 'Συνέχεια',
     'cx.photos.redirecting': 'Άνοιγμα της εφαρμογής Photos…',
     'company.rooms.slots': 'Ώρες',

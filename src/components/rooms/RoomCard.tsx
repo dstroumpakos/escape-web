@@ -98,6 +98,11 @@ export function RoomCard({ room }: { room: RoomCardData }) {
   const { t } = useTranslation();
   // A dead image URL falls back to the door placeholder instead of a broken icon
   const [imageFailed, setImageFailed] = useState(false);
+  // Tall photos (posters) would lose their top and bottom in the wide card
+  const [poster, setPoster] = useState(false);
+  const checkPoster = (img: HTMLImageElement | null) => {
+    if (img && img.complete && img.naturalWidth > 0 && img.naturalHeight > img.naturalWidth * 1.15) setPoster(true);
+  };
 
   const className = 'card-hover group flex h-full flex-col';
   const body = (
@@ -105,13 +110,29 @@ export function RoomCard({ room }: { room: RoomCardData }) {
       {/* Image */}
       <div className="relative aspect-[16/10] bg-[radial-gradient(80%_70%_at_50%_60%,var(--color-brand-surface),var(--color-brand-bg))] overflow-hidden">
         {room.image && !imageFailed ? (
-          <img
-            src={room.image}
-            alt={room.title}
-            loading="lazy"
-            onError={() => setImageFailed(true)}
-            className="w-full h-full object-cover grayscale-[60%] contrast-110 brightness-[0.85] group-hover:grayscale-0 group-hover:brightness-95 group-hover:scale-105 transition-all duration-700"
-          />
+          poster ? (
+            // Tall poster: the whole poster in the middle, over a blurred copy of it
+            <>
+              <img src={room.image} alt="" aria-hidden loading="lazy" className="absolute inset-0 w-full h-full object-cover blur-xl scale-125 opacity-70" />
+              <img
+                src={room.image}
+                alt={room.title}
+                loading="lazy"
+                onError={() => setImageFailed(true)}
+                className="relative mx-auto h-full w-auto object-contain brightness-110 group-hover:scale-105 transition-all duration-700 shadow-[0_8px_30px_rgba(0,0,0,0.8)]"
+              />
+            </>
+          ) : (
+            <img
+              ref={checkPoster}
+              src={room.image}
+              alt={room.title}
+              loading="lazy"
+              onLoad={(e) => checkPoster(e.currentTarget)}
+              onError={() => setImageFailed(true)}
+              className="w-full h-full object-cover grayscale-[60%] contrast-110 brightness-[0.85] group-hover:grayscale-0 group-hover:brightness-95 group-hover:scale-105 transition-all duration-700"
+            />
+          )
         ) : (
           <div className="absolute inset-0 flex items-center justify-center">
             <DoorOpen className="w-16 h-16 text-brand-border/60 group-hover:text-brand-red/60 group-hover:animate-shake transition-colors duration-500" />
@@ -121,7 +142,7 @@ export function RoomCard({ room }: { room: RoomCardData }) {
         <div className="absolute inset-0 z-10 bg-brand-red mix-blend-multiply opacity-0 group-hover:opacity-40 transition-opacity duration-700" />
         {/* VHS scanlines */}
         <div className="absolute inset-0 z-10 opacity-10 bg-[repeating-linear-gradient(0deg,rgba(0,0,0,0.8)_0_1px,transparent_1px_3px)]" />
-        <div className="absolute inset-0 bg-linear-to-t from-brand-card via-brand-card/30 to-transparent z-10" />
+        <div className={`absolute inset-0 bg-linear-to-t from-brand-card ${poster ? "via-transparent via-30%" : "via-brand-card/30"} to-transparent z-10`} />
 
         {/* Badges */}
         <div className="absolute top-3 left-3 right-24 z-20 flex flex-wrap gap-2">
@@ -203,7 +224,7 @@ export function RoomCard({ room }: { room: RoomCardData }) {
           <span className="text-sm text-brand-text-muted truncate">
             (
             {room.ratingSource
-              ? t('room.reviews_on', { count: room.reviews.toLocaleString(), source: room.ratingSource })
+              ? t('room.reviews_online', { count: room.reviews.toLocaleString() })
               : `${room.reviews} ${t('featured.reviews')}`}
             )
           </span>

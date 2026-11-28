@@ -17,9 +17,11 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: 'Discover Escape Rooms & Join the Community | UNLOCKED',
+  // Makes the share image (src/app/opengraph-image.tsx) an absolute unlocked.gr URL in production
+  metadataBase: new URL('https://unlocked.gr'),
+  title: 'UNLOCKED Escape Rooms · Discover Escape Rooms & Join the Community',
   description:
-    'Discover the best escape rooms near you, read real player reviews and join the community of players. Browse by theme, difficulty & location on UNLOCKED.',
+    'Every escape room. One app. Discover the best escape rooms near you, read real player reviews and join the community of players. Browse by theme, difficulty & location.',
   keywords: [
     'escape room',
     'book escape room',
@@ -44,19 +46,19 @@ export const metadata: Metadata = {
     },
   },
   openGraph: {
-    title: 'Discover Escape Rooms & Join the Community | UNLOCKED',
+    title: 'UNLOCKED Escape Rooms · Discover Escape Rooms & Join the Community',
     description:
-      'Discover the best escape rooms near you, read real player reviews and join the community.',
+      'Every escape room. One app. Discover the best escape rooms near you, read real player reviews and join the community.',
     type: 'website',
     url: 'https://unlocked.gr',
-    siteName: 'UNLOCKED',
+    siteName: 'UNLOCKED Escape Rooms',
     locale: 'en_US',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Discover Escape Rooms & Join the Community | UNLOCKED',
+    title: 'UNLOCKED Escape Rooms · Discover Escape Rooms & Join the Community',
     description:
-      'Discover the best escape rooms near you and join the community on UNLOCKED.',
+      'Every escape room. One app. Discover the best escape rooms near you and join the community on UNLOCKED.',
   },
 };
 
@@ -68,7 +70,8 @@ export default function RootLayout({
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'WebApplication',
-    name: 'UNLOCKED',
+    name: 'UNLOCKED Escape Rooms',
+    alternateName: 'UNLOCKED',
     url: 'https://unlocked.gr',
     description:
       'Discover escape rooms around the world, read real player reviews and join the community of players.',
@@ -82,7 +85,8 @@ export default function RootLayout({
     },
     creator: {
       '@type': 'Organization',
-      name: 'UNLOCKED',
+      name: 'UNLOCKED Escape Rooms',
+      alternateName: 'UNLOCKED',
       url: 'https://unlocked.gr',
       logo: 'https://unlocked.gr/icon-512',
       contactPoint: {

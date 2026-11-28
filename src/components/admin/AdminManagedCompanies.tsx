@@ -22,6 +22,16 @@ function useManaged(sessionToken: string) {
   return useQuery(api.managedCompanies.adminList, { sessionToken });
 }
 
+/** "https://www.example.com/book" -> "example.com/book", for the room list. */
+function hostOf(url: string) {
+  try {
+    const u = new URL(url);
+    return (u.hostname.replace(/^www\./, '') + u.pathname).replace(/\/$/, '');
+  } catch {
+    return url;
+  }
+}
+
 const input = 'w-full bg-brand-bg border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-brand-text-secondary/50 focus:border-brand-red focus:outline-hidden';
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
@@ -135,6 +145,7 @@ function CompanyForm({ sessionToken, company, onDone }: { sessionToken: string; 
     address: company?.address ?? '',
     phone: company?.phone ?? '',
     website: company?.website ?? '',
+    instagram: company?.instagram ? `@${company.instagram}` : '',
     description: company?.description ?? '',
     logo: company?.logo ?? '',
   });
@@ -165,7 +176,8 @@ function CompanyForm({ sessionToken, company, onDone }: { sessionToken: string; 
         <Field label={t('mc.address')}><input className={input} value={f.address} onChange={set('address')} maxLength={200} /></Field>
         <Field label={t('mc.phone')}><input className={input} value={f.phone} onChange={set('phone')} maxLength={40} /></Field>
         <Field label={t('mc.website')}><input className={input} value={f.website} onChange={set('website')} placeholder="https://" maxLength={300} /></Field>
-        <ImageField label={t('mc.logo')} value={f.logo} onChange={(logo) => setF({ ...f, logo })} sessionToken={sessionToken} />
+        <Field label={t('mc.instagram')}><input className={input} value={f.instagram} onChange={set('instagram')} placeholder="@escaperoom" maxLength={100} /></Field>
+        <ImageField label={t('mc.logo')} value={f.logo} onChange={(logo) => setF((p) => ({ ...p, logo }))} sessionToken={sessionToken} />
       </div>
       <Field label={t('mc.description')}><textarea className={input} rows={3} value={f.description} onChange={set('description')} maxLength={3000} /></Field>
       {err && <p className="text-sm text-red-300">{err}</p>}
@@ -199,6 +211,12 @@ function CompanyCard({ c, accounts, sessionToken, onEdit }: { c: Managed; accoun
         <div className="min-w-0 flex-1">
           <p className="font-bold">{c.name}</p>
           <p className="text-xs text-brand-text-secondary">{[c.city, c.website].filter(Boolean).join(' · ')}</p>
+          {c.instagram && (
+            <p className={`text-xs ${c.instagramError ? 'text-amber-300/80' : 'text-brand-text-muted'}`}>
+              Instagram @{c.instagram} ·{' '}
+              {c.instagramError ? t(c.instagramError === 'not_found' ? 'mc.ig_err_not_found' : 'mc.ig_err_fetch_failed') :c.instagramSyncedAt ? t('mc.ig_synced') : t('mc.ig_syncing')}
+            </p>
+          )}
         </div>
         <div className="flex flex-wrap gap-2">
           <button onClick={() => setAssigning(!assigning)} className="btn-primary py-1.5! px-3! text-xs flex items-center gap-1.5">
@@ -245,6 +263,12 @@ function CompanyCard({ c, accounts, sessionToken, onEdit }: { c: Managed; accoun
                     {r.title} {!r.isActive && <EyeOff className="w-3.5 h-3.5 text-brand-text-muted" aria-label={t('mc.hidden')} />}
                   </p>
                   <p className="text-xs text-brand-text-secondary truncate">{[t(`cat.${r.category}`), ...r.subthemes.map((s) => themeLabel(t, s)), r.location].filter(Boolean).join(' · ')}</p>
+                  <p className={`text-xs truncate ${r.bookingUrl ? 'text-brand-text-muted' : 'text-amber-300/80'}`}>
+                    {t('mc.book_goes')} {r.bookingUrl ? hostOf(r.bookingUrl) : c.website ? t('mc.book_company_site') : t('mc.book_nowhere')}
+                  </p>
+                  <p className={`text-xs ${r.escapeAll ? 'text-brand-text-muted' : 'text-amber-300/80'}`}>
+                    {r.escapeAll ? t('mc.ea_rating', { rating: r.escapeAll.rating.toFixed(1), n: String(r.escapeAll.count), date: new Date(r.escapeAll.updatedAt).toLocaleDateString('el-GR') }) : t('mc.ea_none')}
+                  </p>
                 </div>
                 <button onClick={() => setRoom(r)} className="p-2 text-brand-text-secondary hover:text-white" aria-label={t('mc.edit')}><Pencil className="w-4 h-4" /></button>
                 <button
@@ -312,6 +336,16 @@ function AssignBox({ c, accounts, sessionToken, onDone }: { c: Managed; accounts
 function RoomForm({ sessionToken, companyId, room, onDone }: { sessionToken: string; companyId: Id<'companies'>; room?: Room; onDone: () => void }) {
   const { t } = useTranslation();
   const save = useMutation(api.managedCompanies.adminSaveRoom);
+  const setEscapeAll = useMutation(api.escapeAll.adminSetRoomRating);
+  // After the first save of a new room, a retry (e.g. a wrong EscapeAll number) edits it instead of adding another
+  const [savedId, setSavedId] = useState<Id<'rooms'> | undefined>(room?._id);
+  const [ea, setEa] = useState({
+    rating: room?.escapeAll ? String(room.escapeAll.rating) : '',
+    count: room?.escapeAll ? String(room.escapeAll.count) : '',
+  });
+  const eaChanged =
+    ea.rating !== (room?.escapeAll ? String(room.escapeAll.rating) : '') ||
+    ea.count !== (room?.escapeAll ? String(room.escapeAll.count) : '');
   const [f, setF] = useState({
     title: room?.title ?? '',
     location: room?.location ?? '',
@@ -343,14 +377,24 @@ function RoomForm({ sessionToken, companyId, room, onDone }: { sessionToken: str
         return;
       }
       const { latitude, longitude, ...rest } = f;
-      await save({
+      const id = await save({
         sessionToken,
         companyId,
-        roomId: room?._id,
+        roomId: savedId,
         ...rest,
         latitude: latitude ?? undefined,
         longitude: longitude ?? undefined,
       });
+      setSavedId(id);
+      if (eaChanged) {
+        try {
+          const n = (s: string) => (s.trim() === '' ? undefined : Number(s.replace(',', '.')));
+          await setEscapeAll({ sessionToken, roomId: id, rating: n(ea.rating), count: n(ea.count) });
+        } catch (x) {
+          setErr(`${t('mc.ea_failed')} ${friendlyError(x, t)}`);
+          return;
+        }
+      }
       onDone();
     } catch (x) {
       setErr(friendlyError(x, t));
@@ -364,7 +408,7 @@ function RoomForm({ sessionToken, companyId, room, onDone }: { sessionToken: str
       <h4 className="font-semibold text-sm">{room ? t('mc.edit_room') : t('mc.new_room')}</h4>
       <div className="grid sm:grid-cols-2 gap-4">
         <Field label={t('mc.room_title')}><input className={input} value={f.title} onChange={(e) => setF({ ...f, title: e.target.value })} required maxLength={120} /></Field>
-        <ImageField label={t('mc.photo')} value={f.image} onChange={(image) => setF({ ...f, image })} sessionToken={sessionToken} />
+        <ImageField label={t('mc.photo')} value={f.image} onChange={(image) => setF((p) => ({ ...p, image }))} sessionToken={sessionToken} />
         <Field label={t('mc.duration')}><input type="number" className={input} value={f.duration} onChange={num('duration')} min={10} max={600} /></Field>
         <Field label={t('mc.difficulty')}><input type="number" className={input} value={f.difficulty} onChange={num('difficulty')} min={1} max={5} /></Field>
         <Field label={t('mc.players_min')}><input type="number" className={input} value={f.playersMin} onChange={num('playersMin')} min={1} max={50} /></Field>
@@ -373,6 +417,10 @@ function RoomForm({ sessionToken, companyId, room, onDone }: { sessionToken: str
         <label className="flex items-center gap-2 text-sm self-end pb-2">
           <input type="checkbox" checked={f.isActive} onChange={(e) => setF({ ...f, isActive: e.target.checked })} /> {t('mc.active')}
         </label>
+      </div>
+      <div className="grid grid-cols-2 sm:w-1/2 gap-4">
+        <Field label={t('mc.ea_score')}><input type="number" step="0.1" min={0} max={5} className={input} value={ea.rating} onChange={(e) => setEa({ ...ea, rating: e.target.value })} placeholder="4.8" /></Field>
+        <Field label={t('mc.ea_count')}><input type="number" step="1" min={0} className={input} value={ea.count} onChange={(e) => setEa({ ...ea, count: e.target.value })} placeholder="350" /></Field>
       </div>
       <CategoryPicker category={f.category} subthemes={f.subthemes} onChange={(category, subthemes) => setF((p) => ({ ...p, category, subthemes }))} />
       <div>

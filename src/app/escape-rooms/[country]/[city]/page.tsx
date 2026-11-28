@@ -17,7 +17,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       title: `${data.roomCount}+ Escape Rooms in ${data.city} | UNLOCKED`,
       description: `Find the best escape rooms in ${data.city}, ${data.country}. Themes: ${data.themes.join(', ')}. Average rating: ${data.avgRating}/5.`,
       url: `https://unlocked.gr/escape-rooms/${country}/${city}`,
-      siteName: 'UNLOCKED',
+      siteName: 'UNLOCKED Escape Rooms',
       type: 'website',
     },
   };

@@ -40,7 +40,10 @@ export function HorrorIntro() {
       <div className="relative font-blood text-4xl sm:text-6xl md:text-7xl tracking-wider text-brand-red-light text-blood-glow animate-flicker-fast">
         UNLOCKED
       </div>
-      <svg viewBox="0 0 400 60" className="relative mt-8 w-[min(80vw,420px)] h-14" fill="none">
+      <div className="relative mt-3 font-sans font-semibold uppercase text-xs sm:text-sm tracking-[0.6em] -mr-[0.6em] text-brand-bone/80">
+        Escape Rooms
+      </div>
+      <svg viewBox="0 0 400 60" className="relative mt-6 w-[min(80vw,420px)] h-14" fill="none">
         <path
           d="M0 30 H120 L135 30 L145 8 L158 52 L170 18 L178 30 H250 L262 30 L270 12 L282 48 L290 30 H400"
           stroke="#ff2a36"

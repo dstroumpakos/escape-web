@@ -46,7 +46,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
     description,
     alternates: { canonical: url },
     robots: room.photosOnly || room.isActive === false ? { index: false, follow: true } : undefined,
-    openGraph: { title, description, url, type: 'website', siteName: 'UNLOCKED', images },
+    openGraph: { title, description, url, type: 'website', siteName: 'UNLOCKED Escape Rooms', images },
     twitter: { card: 'summary_large_image', title, description, images: images?.map((i) => i.url) },
   };
 }
