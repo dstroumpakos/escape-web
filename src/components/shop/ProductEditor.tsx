@@ -31,6 +31,11 @@ export type EditableProduct = ProductInput & { _id: string };
 const inputCls =
   'w-full bg-brand-bg border border-white/10 rounded-xl px-3.5 py-2.5 text-white text-sm focus:border-brand-red focus:outline-hidden';
 const labelCls = 'block text-sm text-brand-text-secondary mb-1.5';
+// Stock choices for the variant dropdown: 0–100 one by one, then bigger steps.
+const STOCK_OPTIONS = [
+  ...Array.from({ length: 101 }, (_, n) => n),
+  150, 200, 250, 300, 400, 500, 750, 1000,
+];
 
 function toLocalInput(ts?: number) {
   if (!ts) return '';
@@ -272,14 +277,22 @@ export function ProductEditor({
                     placeholder={t('shop.editor.variant_placeholder')}
                     onChange={(e) => setVariants((cur) => cur.map((y, j) => (j === i ? { ...y, label: e.target.value } : y)))}
                   />
-                  <input
-                    className={`${inputCls} w-28`}
-                    inputMode="numeric"
+                  <select
+                    className={`${inputCls.replace('w-full ', '')} w-36 shrink-0`}
                     value={x.stock}
-                    placeholder={t('shop.editor.stock_unlimited')}
                     aria-label={t('shop.editor.stock')}
                     onChange={(e) => setVariants((cur) => cur.map((y, j) => (j === i ? { ...y, stock: e.target.value } : y)))}
-                  />
+                  >
+                    <option value="">{t('shop.editor.stock_unlimited')}</option>
+                    {x.stock !== '' && !STOCK_OPTIONS.includes(Number(x.stock)) && (
+                      <option value={x.stock}>{x.stock}</option>
+                    )}
+                    {STOCK_OPTIONS.map((n) => (
+                      <option key={n} value={String(n)}>
+                        {n}
+                      </option>
+                    ))}
+                  </select>
                   <button
                     type="button"
                     disabled={variants.length <= 1}
