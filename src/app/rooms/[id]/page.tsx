@@ -200,19 +200,8 @@ export default function RoomDetailsPage() {
             </div>
 
             {/* Stats row */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-px mb-8 overflow-hidden rounded-md border border-brand-border bg-brand-border">
-              <div className="bg-brand-dark p-4 text-center">
-                <Star className={`w-5 h-5 mx-auto mb-1.5 ${shown ? 'text-brand-gold fill-brand-gold' : 'text-brand-text-muted'}`} />
-                <div className="text-xl font-display font-bold text-brand-bone tabular-nums">{shown ? formatRating(shown.rating) : '—'}</div>
-                <div className="text-xs text-brand-text-muted mt-0.5">
-                  {shown?.source ? (
-                    // Reviews from another site: shown as online reviews, the site is not named
-                    t('room.reviews_online', { count: shown.count.toLocaleString() })
-                  ) : (
-                    <>{shown?.count ?? 0} {t('featured.reviews')}</>
-                  )}
-                </div>
-              </div>
+            {/* Rating tile hidden for now (no star rating or review count on the room page) */}
+            <div className="grid grid-cols-3 gap-px mb-8 overflow-hidden rounded-md border border-brand-border bg-brand-border">
               <div className="bg-brand-dark p-4 text-center">
                 <Clock className="w-5 h-5 text-brand-red-light mx-auto mb-1.5" />
                 <div className="text-xl font-display font-bold text-brand-bone tabular-nums">{room.duration} {t('featured.min')}</div>
