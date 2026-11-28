@@ -39,7 +39,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   const title = `${room.title}${where ? ` · ${where}` : ''} | UNLOCKED`;
   const text = (room.description || '').replace(/\s+/g, ' ').trim();
   const description = (text.length > 155 ? text.slice(0, 152).trimEnd() + '…' : text) ||
-    `Escape room ${room.title}${where ? ` (${where})` : ''}. Δες φωτογραφίες, κριτικές παικτών και μάζεψε τη σφραγίδα του στο UNLOCKED.`;
+    `Escape room ${room.title}${where ? ` (${where})` : ''}. Δες φωτογραφίες, κριτικές παικτών και γράψε τη δική σου στην κοινότητα του UNLOCKED.`;
   const images = room.image && /^https:\/\//.test(room.image) ? [{ url: room.image, alt: room.title }] : undefined;
   return {
     title,

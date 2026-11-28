@@ -490,14 +490,19 @@ export default function RoomDetailsPage() {
               </div>
             )}
 
-            {/* Who can review: players with the room's stamp */}
-            {!reviewSuccess && !canReviewData?.canReview && canReviewData?.reason !== 'reviewed' && (
+            {/* Why the player can't write one: signed out, email not confirmed, or theirs is waiting */}
+            {!reviewSuccess && canReviewData && !canReviewData.canReview && canReviewData.reason !== 'reviewed' && (
               <p className="mb-6 text-sm text-brand-text-secondary flex items-start gap-2">
                 <BadgeCheck className="w-4 h-4 text-brand-red-light shrink-0 mt-0.5" />
-                {canReviewData?.reason === 'need_stamp' ? t('reviews.need_stamp')
-                  : canReviewData?.reason === 'need_email' ? t('reviews.need_email')
-                  : canReviewData?.reason === 'too_late' ? t('reviews.too_late')
-                  : t('reviews.only_players')}
+                {canReviewData.reason === 'pending' ? (
+                  t('reviews.waiting')
+                ) : canReviewData.reason === 'need_email' ? (
+                  t('reviews.need_email')
+                ) : (
+                  <span>
+                    <Link href="/login" className="text-brand-red-light hover:underline">{t('reviews.login_link')}</Link> {t('reviews.login_rest')}
+                  </span>
+                )}
               </p>
             )}
 
