@@ -9,14 +9,14 @@ import { useAuth } from '@/lib/auth';
 import { BookNowButton } from '@/components/rooms/BookNowButton';
 import { BOOKING_ENABLED, PREMIUM_ENABLED } from '@/lib/features';
 import { visitorId } from '@/lib/visitorId';
-import { categoryOf, subthemesOf } from '@/lib/mode';
+import { subthemesOf } from '@/lib/mode';
 import { useTranslation } from '@/lib/i18n';
 import { themeLabel } from '@/lib/roomThemes';
 import { RoomMerchStrip } from '@/components/shop/RoomMerch';
 import { InstagramStrip } from '@/components/rooms/InstagramStrip';
 import { RoomHero, RoomDetailsIn } from '@/components/rooms/RoomHero';
 import { shownRating, formatRating, videoEmbedUrl } from '@/lib/roomMedia';
-import { Star, Skull, Clock, Users, MapPin, Heart, ArrowLeft, Zap, BookOpen, Diamond, CalendarClock, BadgeCheck, MessageSquare, ChevronDown, ChevronUp, CheckCircle, PlayCircle, Ghost, KeyRound, VenetianMask } from 'lucide-react';
+import { Star, Skull, Clock, Users, MapPin, Heart, ArrowLeft, Zap, BookOpen, Diamond, CalendarClock, BadgeCheck, MessageSquare, ChevronDown, ChevronUp, CheckCircle, PlayCircle, Ghost } from 'lucide-react';
 
 /** The server's own message for review errors (it explains what to do), else a generic one. */
 function friendlyReviewError(err: unknown): string {
@@ -161,17 +161,7 @@ export default function RoomDetailsPage() {
             {/* Title & location */}
             <div className="mb-6">
               <div className="flex flex-wrap items-center gap-2 mb-4">
-                {/* Category: puzzles / with an actor / horror (convex/roomCategories.ts) */}
-                {(() => {
-                  const cat = categoryOf(room as any);
-                  const tone = cat === 'horror' ? 'border-red-600/70 text-red-400' : cat === 'puzzle_actor' ? 'border-amber-500/60 text-amber-300' : 'border-sky-500/50 text-sky-300';
-                  const Icon = cat === 'horror' ? Skull : cat === 'puzzle_actor' ? VenetianMask : KeyRound;
-                  return (
-                    <span className={`text-xs font-bold px-2.5 py-1 rounded-sm border flex items-center gap-1 ${tone}`}>
-                      <Icon className="w-3 h-3" /> {t(`cat.${cat}`)}
-                    </span>
-                  );
-                })()}
+                {/* The category (puzzles / with an actor / horror) only sorts rooms, it is not shown */}
                 {/* Its subcategories */}
                 {subthemesOf(room as any).map((th) => (
                   <span key={th} className="font-type text-[11px] tracking-[0.18em] uppercase px-2 py-0.5 rounded-sm border border-brand-red/50 text-brand-red-light">

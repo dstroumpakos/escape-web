@@ -250,12 +250,7 @@ export function HorrorFX() {
           key={`r${routeKey}`}
           className="horror-motion fixed inset-0 z-[70] bg-black"
           style={{ animation: 'route-glitch 0.55s steps(1) forwards' }}
-        >
-          <div
-            className="absolute inset-x-0 top-1/2 h-[2px] bg-brand-red-light shadow-[0_0_20px_rgba(255,40,50,0.9)]"
-            style={{ transform: 'translateY(-50%)' }}
-          />
-        </div>
+        />
       )}
     </div>
   );

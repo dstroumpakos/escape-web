@@ -9,6 +9,7 @@ import { api } from '../../../convex/_generated/api';
 import { useTranslation } from '@/lib/i18n';
 import { themeLabel } from '@/lib/roomThemes';
 import { CompanyLogo } from '@/components/companies/CompanyLogo';
+import { ScrollRow } from '@/components/ui/ScrollRow';
 
 /** Companies section: every public escape room company with its rooms (convex/companyPages.ts). */
 export default function CompaniesPage() {
@@ -81,9 +82,10 @@ export default function CompaniesPage() {
               </div>
 
               {/* Their rooms */}
-              <div className="mt-4 flex gap-3 overflow-x-auto pb-1 [scrollbar-width:thin]">
+              <div className="mt-4">
+              <ScrollRow>
                 {c.rooms.map((r) => (
-                  <Link key={r._id} href={`/rooms/${r._id}`} className="group w-44 shrink-0">
+                  <Link key={r._id} href={`/rooms/${r._id}`} className="group w-44 shrink-0 snap-start">
                     <div className="aspect-4/3 rounded-lg overflow-hidden bg-black/40 border border-brand-border">
                       {r.image ? (
                         // eslint-disable-next-line @next/next/no-img-element
@@ -96,6 +98,7 @@ export default function CompaniesPage() {
                     <p className="text-[11px] text-brand-text-muted truncate">{themeLabel(t, r.theme)}</p>
                   </Link>
                 ))}
+              </ScrollRow>
               </div>
 
               {c.hasProfile && <button onClick={() => openProfile(c._id)} className="sm:hidden mt-3 w-full btn-ghost text-sm flex items-center justify-center gap-1">

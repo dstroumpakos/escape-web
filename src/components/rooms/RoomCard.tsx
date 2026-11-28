@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
-import { Star, Clock, Users, Zap, DoorOpen, BadgeCheck, Skull, Flame, MapPin, VenetianMask } from 'lucide-react';
+import { Star, Clock, Users, Zap, DoorOpen, BadgeCheck, Skull, Flame, MapPin } from 'lucide-react';
 import { BOOKING_ENABLED, PREMIUM_ENABLED } from '@/lib/features';
 import { useTranslation } from '@/lib/i18n';
 import { themeLabel } from '@/lib/roomThemes';
@@ -154,16 +154,6 @@ export function RoomCard({ room }: { room: RoomCardData }) {
           {room.isNew && (
             <span className="bg-brand-red text-brand-bone text-xs font-bold px-2.5 py-1 rounded-sm flex items-center gap-1 shadow-[0_0_14px_rgba(var(--glow-hi),0.6)]">
               <Zap className="w-3 h-3" /> {t('featured.new')}
-            </span>
-          )}
-          {room.category === 'puzzle_actor' && (
-            <span className="bg-black/80 border border-brand-gold/60 text-brand-gold text-xs font-bold px-2.5 py-1 rounded-sm flex items-center gap-1">
-              <VenetianMask className="w-3 h-3" /> {t('discover.with_actor')}
-            </span>
-          )}
-          {room.category === 'horror' && (
-            <span className="bg-black/80 border border-red-600/70 text-red-400 text-xs font-bold px-2.5 py-1 rounded-sm flex items-center gap-1">
-              <Skull className="w-3 h-3" /> {t('cat.horror')}
             </span>
           )}
           {room.isTrending && (
