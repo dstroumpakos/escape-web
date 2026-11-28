@@ -15,3 +15,11 @@ export const BOOKING_ENABLED = process.env.NEXT_PUBLIC_BOOKING_ENABLED === '1';
  * follow"; convex/social.ts). On; NEXT_PUBLIC_FOLLOW_ENABLED=0 hides it.
  */
 export const FOLLOW_ENABLED = process.env.NEXT_PUBLIC_FOLLOW_ENABLED !== '0';
+
+/**
+ * PASSPORT_ENABLED: the passport and QR stamps (player passport, rooms played,
+ * the stamp scan page, the tower game; the company's QR stamps and rooms
+ * played approvals). Hidden for now; the code stays.
+ * NEXT_PUBLIC_PASSPORT_ENABLED=1 brings it back.
+ */
+export const PASSPORT_ENABLED = process.env.NEXT_PUBLIC_PASSPORT_ENABLED === '1';

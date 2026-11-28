@@ -30,7 +30,7 @@ import {
   MousePointerClick,
 } from 'lucide-react';
 import { useState } from 'react';
-import { BOOKING_ENABLED } from '@/lib/features';
+import { BOOKING_ENABLED, PASSPORT_ENABLED } from '@/lib/features';
 
 function Section({
   icon: Icon,
@@ -184,7 +184,8 @@ function AdvertGuide({ g }: { g: (el: string, en: string) => string }) {
           </Card>
         </Section>
 
-        {/* 3. QR stamps */}
+        {/* 3. QR stamps (hidden while the passport is off) */}
+        {PASSPORT_ENABLED && (
         <Section icon={Stamp} title={g('Σφραγίδες QR', 'QR Stamps')}>
           <p>
             {g(
@@ -207,6 +208,8 @@ function AdvertGuide({ g }: { g: (el: string, en: string) => string }) {
             </ul>
           </Card>
         </Section>
+
+        )}
 
         {/* 4. Merch */}
         <Section icon={ShoppingBag} title={g('Merch', 'Merch')}>

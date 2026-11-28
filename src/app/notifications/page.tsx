@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { PASSPORT_ENABLED } from '@/lib/features';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useQuery, useMutation } from 'convex/react';
@@ -302,7 +303,7 @@ export default function NotificationsPage() {
                         <p className="text-xs text-brand-text-muted mt-2">{t('friends.invite_declined')}</p>
                       )}
                       {/* Rooms Played (convex/plays.ts): verified, vouch requests, teammates */}
-                      {['plays', 'vouch', 'plays_teammate', 'passport'].includes(n.data?.kind) && (
+                      {PASSPORT_ENABLED && ['plays', 'vouch', 'plays_teammate', 'passport'].includes(n.data?.kind) && (
                         <Link
                           href={n.data?.kind === 'passport' ? '/passport' : '/passport?tab=played'}
                           onClick={() => !n.read && handleMarkRead(n._id)}

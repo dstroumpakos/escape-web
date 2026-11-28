@@ -20,7 +20,7 @@ import {
   Stamp,
   ShoppingBag,
 } from 'lucide-react';
-import { BOOKING_ENABLED } from '@/lib/features';
+import { BOOKING_ENABLED, PASSPORT_ENABLED } from '@/lib/features';
 import { EyeKeyhole } from '@/components/brand/EyeKeyhole';
 import Link from 'next/link';
 import { useTranslation } from '@/lib/i18n';
@@ -69,7 +69,7 @@ export default function ForEscapeRoomsPage() {
     : [
         { icon: MapPin, key: 'listing' },
         { icon: ExternalLink, key: 'booknow' },
-        { icon: Stamp, key: 'passport' },
+        ...(PASSPORT_ENABLED ? [{ icon: Stamp, key: 'passport' }] : []),
         { icon: Users, key: 'community' },
         { icon: BarChart2, key: 'analytics' },
         { icon: Camera, key: 'photos' },

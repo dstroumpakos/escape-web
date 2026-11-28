@@ -33,7 +33,7 @@ import { ToastProvider } from '@/components/company/Toast';
 import { LanguageToggle } from '@/components/LanguageToggle';
 import { PlanBadge } from './PlanBadge';
 import { useTranslation } from '@/lib/i18n';
-import { BOOKING_ENABLED } from '@/lib/features';
+import { BOOKING_ENABLED, PASSPORT_ENABLED } from '@/lib/features';
 
 type NavLink = {
   href: string;
@@ -55,13 +55,13 @@ function CompanyShell({ children }: { children: React.ReactNode }) {
   const primaryLinks: NavLink[] = [
     { href: p('/company'), label: t('company.nav.dashboard'), icon: LayoutDashboard },
     ...(BOOKING_ENABLED ? [{ href: p('/company/slots'), label: t('cx.nav.slots'), icon: Clock }] : []),
-    { href: p('/company/passport'), label: t('cx.nav.passport'), icon: Stamp },
+    ...(PASSPORT_ENABLED ? [{ href: p('/company/passport'), label: t('cx.nav.passport'), icon: Stamp }] : []),
     ...(BOOKING_ENABLED ? [{ href: p('/company/bookings'), label: t('company.nav.bookings'), icon: CalendarDays }] : []),
     { href: p('/company/rooms'), label: t('company.nav.rooms'), icon: DoorOpen },
   ];
   const secondaryLinks: NavLink[] = [
     { href: p('/company/profile'), label: t('company.nav.profile'), icon: Store },
-    { href: p('/company/plays'), label: t('cx.nav.plays'), icon: ListChecks },
+    ...(PASSPORT_ENABLED ? [{ href: p('/company/plays'), label: t('cx.nav.plays'), icon: ListChecks }] : []),
     { href: p('/company/jobs'), label: t('cx.nav.jobs'), icon: Briefcase },
     ...(BOOKING_ENABLED ? [{ href: p('/company/offers'), label: t('cx.nav.offers'), icon: Flame }] : []),
     { href: p('/company/merch'), label: t('shop.portal.nav'), icon: ShoppingBag },

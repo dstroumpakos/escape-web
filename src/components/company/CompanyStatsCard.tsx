@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { PASSPORT_ENABLED } from '@/lib/features';
 import { Eye, MousePointerClick, Users, Stamp, Star, Globe, TrendingUp, TrendingDown } from 'lucide-react';
 import { useCompanyQuery, useCompanyPath } from '@/lib/companyAuth';
 import { api } from '../../../convex/_generated/api';
@@ -27,11 +28,11 @@ export function CompanyStatsCard({ companyId }: { companyId: string }) {
       </div>
 
       {/* Headline numbers */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-3">
+      <div className={`grid grid-cols-2 sm:grid-cols-3 ${PASSPORT_ENABLED ? 'xl:grid-cols-5' : 'xl:grid-cols-4'} gap-3`}>
         <Tile icon={<Eye className="w-4 h-4" />} label={t('st.views')} value={data.views} delta={<Delta now={data.views} before={data.viewsBefore} t={t} />} />
         <Tile icon={<MousePointerClick className="w-4 h-4" />} label={t('st.clicks')} value={data.clicks} delta={<Delta now={data.clicks} before={data.clicksBefore} t={t} />} />
         <Tile icon={<Users className="w-4 h-4" />} label={t('st.followers')} value={data.followers} delta={data.newFollowers > 0 ? <span className="text-xs text-brand-text-secondary">{t('st.new_n', { n: String(data.newFollowers) })}</span> : null} />
-        <Tile icon={<Stamp className="w-4 h-4" />} label={t('st.stamps')} value={data.stamps} />
+        {PASSPORT_ENABLED && <Tile icon={<Stamp className="w-4 h-4" />} label={t('st.stamps')} value={data.stamps} />}
         <Tile
           icon={<Star className="w-4 h-4" />}
           label={t('st.rating')}
@@ -75,7 +76,7 @@ export function CompanyStatsCard({ companyId }: { companyId: string }) {
                 <th className="font-medium py-1.5">{t('st.room')}</th>
                 <th className="font-medium py-1.5 text-right"><Eye className="w-3.5 h-3.5 inline" aria-label={t('st.views')} /></th>
                 <th className="font-medium py-1.5 text-right"><MousePointerClick className="w-3.5 h-3.5 inline" aria-label={t('st.clicks')} /></th>
-                <th className="font-medium py-1.5 text-right"><Stamp className="w-3.5 h-3.5 inline" aria-label={t('st.stamps')} /></th>
+                {PASSPORT_ENABLED && <th className="font-medium py-1.5 text-right"><Stamp className="w-3.5 h-3.5 inline" aria-label={t('st.stamps')} /></th>}
               </tr>
             </thead>
             <tbody>
@@ -84,7 +85,7 @@ export function CompanyStatsCard({ companyId }: { companyId: string }) {
                   <td className="py-1.5 pr-3 text-brand-text-secondary truncate max-w-[14rem]">{r.title || '—'}</td>
                   <td className="py-1.5 text-right tabular-nums">{r.views}</td>
                   <td className="py-1.5 text-right tabular-nums">{r.clicks}</td>
-                  <td className="py-1.5 text-right tabular-nums">{r.stamps}</td>
+                  {PASSPORT_ENABLED && <td className="py-1.5 text-right tabular-nums">{r.stamps}</td>}
                 </tr>
               ))}
             </tbody>

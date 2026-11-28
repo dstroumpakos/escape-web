@@ -10,7 +10,7 @@ import { useBackgroundKeySharing } from '@/lib/useChat';
 import { EyeKeyhole } from '@/components/brand/EyeKeyhole';
 import { useAuth } from '@/lib/auth';
 import { useTranslation } from '@/lib/i18n';
-import { BOOKING_ENABLED } from '@/lib/features';
+import { BOOKING_ENABLED, PASSPORT_ENABLED } from '@/lib/features';
 import { LanguageToggle } from '@/components/LanguageToggle';
 import { ModeToggle } from '@/components/ModeToggle';
 import { BloodDrips } from '@/components/horror/BloodDrips';
@@ -73,7 +73,7 @@ export function Navbar() {
     // The community is for logged-in players only.
     ...(isAuthenticated ? [{ href: '/social', label: t('nav.social') }] : []),
     { href: '/leaderboard', label: t('nav.leaderboard') },
-    ...(isAuthenticated ? [{ href: '/passport', label: t('nav.passport'), Icon: BookOpen }] : []),
+    ...(isAuthenticated && PASSPORT_ENABLED ? [{ href: '/passport', label: t('nav.passport'), Icon: BookOpen }] : []),
     { href: '/jobs', label: t('nav.jobs'), Icon: Briefcase },
     { href: '/shop', label: t('nav.shop'), Icon: Vault },
     { href: '/contact', label: t('nav.contact'), Icon: ScrollText },
