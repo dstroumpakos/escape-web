@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import { Navbar } from './Navbar';
 import { Footer } from './Footer';
 import { CookieConsent } from './CookieConsent';
-import { motion, AnimatePresence } from 'framer-motion';
+
 import Link from 'next/link';
 import { EyeKeyhole } from '@/components/brand/EyeKeyhole';
 import { LanguageToggle } from '@/components/LanguageToggle';
@@ -116,14 +116,7 @@ export function LayoutShell({ children }: { children: React.ReactNode }) {
           </nav>
         </header>
         <main className="flex-1">
-          <motion.div
-            key={pathname}
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.35, ease: [0.25, 0.4, 0.25, 1] }}
-          >
-            {children}
-          </motion.div>
+          {children}
         </main>
         <Footer />
         <HorrorFX />
@@ -139,14 +132,7 @@ export function LayoutShell({ children }: { children: React.ReactNode }) {
       {pathname === '/' && mode === 'horror' && <HorrorIntro />}
       <Navbar />
       <main className="flex-1">
-        <motion.div
-          key={pathname}
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.35, ease: [0.25, 0.4, 0.25, 1] }}
-        >
-          {children}
-        </motion.div>
+        {children}
       </main>
       <Footer />
       {mode !== 'puzzle' && <HorrorFX />}

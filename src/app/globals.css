@@ -56,8 +56,9 @@
   --animate-bounce-subtle: bounce-subtle 2s ease-in-out infinite;
   --animate-gradient-x: gradient-x 3s ease infinite;
   --animate-spin-slow: spin 3s linear infinite;
-  --animate-flicker: flicker 5s linear infinite;
-  --animate-flicker-fast: flicker 2.2s linear infinite;
+  /* No flickering text: it read as the page blinking */
+  --animate-flicker: none;
+  --animate-flicker-fast: none;
   --animate-heartbeat: heartbeat 1.4s ease-in-out infinite;
   --animate-shake: shake 0.35s linear infinite;
   --animate-sway: sway 5s ease-in-out infinite;
@@ -349,7 +350,6 @@
   text-shadow: none;
   background-image: linear-gradient(180deg, #ff7076 0%, #ff2a36 40%, #d0101c 75%, #8f0610 100%);
   filter: drop-shadow(0 0 14px rgba(var(--glow-hi),0.45));
-  animation: flicker 7s linear infinite;
 }
 
 @utility text-gradient-animated {
@@ -389,7 +389,6 @@
     color: #ff1a2a;
     transform: translate(-3px, 0);
     clip-path: inset(100% 0 0 0);
-    animation: glitch-a 4.2s steps(1) infinite;
     mix-blend-mode: screen;
   }
   &::after {
@@ -397,7 +396,6 @@
     opacity: 0.55;
     transform: translate(3px, 0);
     clip-path: inset(100% 0 0 0);
-    animation: glitch-b 4.2s steps(1) infinite;
     mix-blend-mode: screen;
   }
 }

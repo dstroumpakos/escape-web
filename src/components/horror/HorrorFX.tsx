@@ -129,53 +129,14 @@ function Embers() {
 
 /**
  * Site-wide atmosphere: grain, vignette, scanlines, fog, embers,
- * random power cuts and lightning, and a glitch between pages.
+ * all of it steady: no flashes, power cuts or glitches that blink the page.
  * Everything is pointer-events-none and sits under the navbar.
  */
 export function HorrorFX() {
   const reduced = usePrefersReducedMotion();
   const pathname = usePathname();
-  const [flickerKey, setFlickerKey] = useState(0);
-  const [lightningKey, setLightningKey] = useState(0);
-  const [routeKey, setRouteKey] = useState(0);
-  const prevPath = useRef(pathname);
   // Calm pages and reduced-motion users get no scares
   const quiet = reduced || isCalmRoute(pathname);
-
-  // Random power cuts
-  useEffect(() => {
-    if (quiet) return;
-    let to: ReturnType<typeof setTimeout>;
-    const schedule = () => {
-      to = setTimeout(() => {
-        setFlickerKey((k) => k + 1);
-        schedule();
-      }, 16000 + Math.random() * 22000);
-    };
-    schedule();
-    return () => clearTimeout(to);
-  }, [quiet]);
-
-  // Lightning, a little more often
-  useEffect(() => {
-    if (quiet) return;
-    let to: ReturnType<typeof setTimeout>;
-    const schedule = () => {
-      to = setTimeout(() => {
-        setLightningKey((k) => k + 1);
-        schedule();
-      }, 9000 + Math.random() * 14000);
-    };
-    schedule();
-    return () => clearTimeout(to);
-  }, [quiet]);
-
-  // Glitch cut between pages
-  useEffect(() => {
-    if (prevPath.current === pathname) return;
-    prevPath.current = pathname;
-    setRouteKey((k) => k + 1);
-  }, [pathname]);
 
   return (
     <div aria-hidden className="pointer-events-none">
@@ -226,32 +187,6 @@ export function HorrorFX() {
         />
       </div>
 
-      {/* Lightning */}
-      {lightningKey > 0 && !quiet && (
-        <div
-          key={`l${lightningKey}`}
-          className="horror-motion fixed inset-0 z-[46] bg-[#dfe6ff] opacity-0 mix-blend-overlay"
-          style={{ animation: 'lightning 1.6s ease-out forwards' }}
-        />
-      )}
-
-      {/* Power cut */}
-      {flickerKey > 0 && !quiet && (
-        <div
-          key={`f${flickerKey}`}
-          className="horror-motion fixed inset-0 z-[46] bg-black opacity-0"
-          style={{ animation: 'power-flicker 1.1s steps(1) forwards' }}
-        />
-      )}
-
-      {/* Between pages */}
-      {routeKey > 0 && (
-        <div
-          key={`r${routeKey}`}
-          className="horror-motion fixed inset-0 z-[70] bg-black"
-          style={{ animation: 'route-glitch 0.55s steps(1) forwards' }}
-        />
-      )}
     </div>
   );
 }
