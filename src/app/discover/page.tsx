@@ -272,7 +272,8 @@ export default function DiscoverPage() {
                 <span className="h-px w-8 bg-brand-red/60" />
                 {t('discover.rooms_found', { count: String(filteredRooms.length) })}
               </p>
-              <StaggerContainer stagger={0.08} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {/* Keyed on the filters: a new list animates in again instead of new cards staying hidden */}
+              <StaggerContainer key={`${side ?? 'all'}|${selectedTheme}|${searchQuery}|${sortBy}`} stagger={0.05} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filteredRooms.map((room: any) => (
                   <StaggerItem key={room._id} animation="fadeUp" className="h-full">
                     <RoomCard room={toRoomCardData(room)} />

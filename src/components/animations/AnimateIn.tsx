@@ -131,7 +131,9 @@ export function StaggerContainer({
   className = '',
   stagger = 0.1,
   once = true,
-  amount = 0.15,
+  // Starts as soon as a sliver shows: a share of the height (e.g. 0.15) never
+  // fits on screen for a tall grid (Discover with 30+ rooms) and kept it hidden
+  amount = 0.01,
 }: StaggerContainerProps) {
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once, amount });
