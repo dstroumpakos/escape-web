@@ -62,14 +62,13 @@ export default function DiscoverPage() {
 
   const allRooms = useQuery(api.rooms.list);
 
-  // A subcategory chip shows only if it has rooms on this side. With no side
-  // picked and no main category chosen, there are no subcategory chips.
+  // A subcategory chip shows only if it has rooms on this side. Under the
+  // main "All" (no side), every subcategory of both sides, without a second
+  // "All" chip (the main one does that).
   const available = useMemo(() => new Set(forMode(allRooms ?? [], side).flatMap((r: any) => subthemesOf(r))), [allRooms, side]);
-  const chips = side
-    ? ['All', ...(side === 'puzzle' ? [ACTOR] : []), ...SUBTHEMES[side]].filter(
-        (th) => th === 'All' || th === ACTOR || th === selectedTheme || available.has(th)
-      )
-    : [];
+  const chips = (side ? ['All', ...(side === 'puzzle' ? [ACTOR] : []), ...SUBTHEMES[side]] : [ACTOR, ...ALL_SUBTHEMES]).filter(
+    (th) => th === 'All' || th === ACTOR || th === selectedTheme || available.has(th)
+  );
 
   const filteredRooms = useMemo(() => {
     if (!allRooms) return [];
@@ -183,9 +182,9 @@ export default function DiscoverPage() {
                 <button
                   key={s ?? 'all'}
                   onClick={() => pickSide(s)}
-                  aria-pressed={pickedSide === s}
+                  aria-pressed={pickedSide === s && (s !== null || selectedTheme === 'All')}
                   className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-sm text-sm font-semibold border transition-all duration-200 ${
-                    pickedSide === s
+                    pickedSide === s && (s !== null || selectedTheme === 'All')
                       ? on
                       : s === 'puzzle'
                         ? 'bg-black/50 border-[#f2c75c]/30 text-[#f6d27a] hover:border-[#f2c75c]/70 hover:bg-[#f2c75c]/10'
@@ -196,21 +195,11 @@ export default function DiscoverPage() {
                   {label}
                 </button>
               ))}
-              {!side && (
-                <button
-                  onClick={() => setShowFilters(!showFilters)}
-                  aria-expanded={showFilters}
-                  className={`px-3.5 py-2 rounded-sm text-sm font-medium border flex items-center gap-1.5 transition-all duration-200 ${showFilters ? 'border-brand-gold/60 text-brand-gold bg-brand-gold/10' : 'border-brand-border bg-black/50 text-brand-text-secondary hover:text-brand-bone hover:border-brand-gold/50'}`}
-                >
-                  <SlidersHorizontal className="w-4 h-4" />
-                  {t('discover.sort')}
-                </button>
-              )}
             </div>
           )}
 
-          {/* Subcategories of the side (a picked side, or the main category chosen above) */}
-          {side && (
+          {/* Subcategories: of the side (picked, or the main category chosen above), or of both under "All" */}
+          {(
           <div className={`flex items-center gap-2 flex-wrap justify-center mb-4 ${!mode && side === 'puzzle' ? 'side-puzzle' : ''}`}>
             {chips.map((theme) => (
               <button
